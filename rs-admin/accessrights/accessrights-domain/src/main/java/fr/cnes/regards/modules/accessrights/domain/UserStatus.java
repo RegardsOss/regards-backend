@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.accessrights.domain;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Enumerates possible values for {@link ProjectUser#status}
+ * Enumerates possible values for {@link ProjectUser#getStatus()}
  *
  * @author Xavier-Alexandre Brochard
  */

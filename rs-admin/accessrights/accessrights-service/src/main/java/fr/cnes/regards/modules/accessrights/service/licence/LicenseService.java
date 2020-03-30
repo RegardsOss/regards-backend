@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.accessrights.service.licence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -81,7 +81,7 @@ public class LicenseService implements ILicenseService {
             return new LicenseDTO(true, project.getLicenceLink());
         } else {
             ProjectUser pu = projectUserService.retrieveCurrentUser();
-            if ((project.getLicenceLink() != null) && !project.getLicenceLink().isEmpty()) {
+            if (project.getLicenceLink() != null && !project.getLicenceLink().isEmpty()) {
                 return new LicenseDTO(pu.isLicenseAccepted(), project.getLicenceLink());
             }
             return new LicenseDTO(true, project.getLicenceLink());
@@ -90,7 +90,7 @@ public class LicenseService implements ILicenseService {
 
     private Project retrieveProject(String pProjectName) throws EntityNotFoundException {
         FeignSecurityManager.asSystem();
-        ResponseEntity<Resource<Project>> response = projectsClient.retrieveProject(pProjectName);
+        ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(pProjectName);
         FeignSecurityManager.reset();
         if (!HttpUtils.isSuccess(response.getStatusCode())) {
             LOG.info("Response from the project Client is : " + response.getStatusCode().value());

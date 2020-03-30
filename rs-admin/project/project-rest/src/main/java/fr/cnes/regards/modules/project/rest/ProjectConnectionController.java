@@ -25,8 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -88,7 +88,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<PagedResources<Resource<ProjectConnection>>> getAllProjectConnections(
+    public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(
             @PathVariable String projectName,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectConnection> assembler) {
@@ -107,7 +107,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     @RequestMapping(method = RequestMethod.GET, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "Retrieve a project connection of a given project/tenant",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<ProjectConnection>> getProjectConnection(@PathVariable String projectName,
+    public ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId) throws ModuleException {
         ProjectConnection pConn = projectConnectionService.retrieveProjectConnectionById(connectionId);
         return ResponseEntity.ok(toResource(pConn));
@@ -122,7 +122,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a new project connection", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(@PathVariable String projectName,
+    public ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(@PathVariable String projectName,
             @Valid @RequestBody ProjectConnection projectConnection) throws ModuleException {
         ProjectConnection connection = projectConnectionService.createProjectConnection(projectConnection, false);
         return ResponseEntity.ok(toResource(connection));
@@ -139,7 +139,7 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     @RequestMapping(method = RequestMethod.PUT, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "Update a project connection", role = DefaultRole.INSTANCE_ADMIN)
 
-    public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
+    public ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId, @Valid @RequestBody ProjectConnection projectConnection)
             throws ModuleException {
         ProjectConnection connection = projectConnectionService.updateProjectConnection(connectionId,
@@ -163,8 +163,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     }
 
     @Override
-    public Resource<ProjectConnection> toResource(ProjectConnection element, Object... extras) {
-        final Resource<ProjectConnection> resource = resourceService.toResource(element);
+    public EntityModel<ProjectConnection> toResource(ProjectConnection element, Object... extras) {
+        final EntityModel<ProjectConnection> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getProjectConnection", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getProject().getName()),
                                 MethodParamFactory.build(Long.class, element.getId()));

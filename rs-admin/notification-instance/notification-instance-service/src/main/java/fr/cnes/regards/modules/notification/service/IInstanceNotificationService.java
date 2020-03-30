@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.util.List;
 
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 
@@ -67,7 +67,7 @@ public interface IInstanceNotificationService {
     Notification retrieveNotification(Long pId) throws EntityNotFoundException;
 
     /**
-     * Update the {@link Notification#status}
+     * Update the {@link Notification#getStatus()}
      *
      * @param pId
      *            The notification <code>id</code>

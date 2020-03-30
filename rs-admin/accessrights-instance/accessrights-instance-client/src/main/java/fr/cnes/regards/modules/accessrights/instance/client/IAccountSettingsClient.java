@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.accessrights.instance.client;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,18 +39,18 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.account-settings-client")
-@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IAccountSettingsClient {
 
     /**
      * Retrieve the {@link AccountSettings} for the instance.
      *
-     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
+     * @return The {@link AccountSettings} wrapped in a {@link EntityModel} and a {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings();
+    ResponseEntity<EntityModel<AccountSettings>> retrieveAccountSettings();
 
     /**
      * Update the {@link AccountSettings} for the instance.

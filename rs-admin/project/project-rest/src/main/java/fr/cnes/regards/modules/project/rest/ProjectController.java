@@ -28,8 +28,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,7 +93,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrieveProjectList(pageable);
@@ -108,7 +108,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrievePublicProjectList(pageable);
@@ -123,7 +123,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
+    public ResponseEntity<EntityModel<Project>> createProject(@Valid @RequestBody Project newProject)
             throws ModuleException {
         Project project = projectService.createProject(newProject);
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
@@ -137,7 +137,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String projectName)
+    public ResponseEntity<EntityModel<Project>> retrieveProject(@PathVariable("project_name") String projectName)
             throws ModuleException {
         return ResponseEntity.ok(toResource(projectService.retrieveProject(projectName)));
     }
@@ -167,7 +167,7 @@ public class ProjectController implements IResourceController<Project> {
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String projectName,
+    public ResponseEntity<EntityModel<Project>> updateProject(@PathVariable("project_name") String projectName,
             @Valid @RequestBody Project projectToUpdate) throws ModuleException {
         Project project = projectService.updateProject(projectName, projectToUpdate);
         return ResponseEntity.ok(toResource(project));
@@ -187,8 +187,8 @@ public class ProjectController implements IResourceController<Project> {
     }
 
     @Override
-    public Resource<Project> toResource(Project project, Object... extras) {
-        Resource<Project> resource = null;
+    public EntityModel<Project> toResource(Project project, Object... extras) {
+        EntityModel<Project> resource = null;
         if (project != null && project.getName() != null) {
             resource = resourceService.toResource(project);
             resourceService.addLink(resource, this.getClass(), "retrieveProject", LinkRels.SELF,

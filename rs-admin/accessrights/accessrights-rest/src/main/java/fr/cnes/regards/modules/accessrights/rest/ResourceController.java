@@ -25,8 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,7 +90,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(
+    public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
         return new ResponseEntity<>(toPagedResources(resourceService.retrieveRessources(null, pageable), assembler),
@@ -102,11 +102,11 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceId resource id
      * @return {@link ResourcesAccess}
      * @throws ModuleException Exception if resource with given id does not exists
-    
+
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") Long resourceId)
+    public ResponseEntity<EntityModel<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") Long resourceId)
             throws ModuleException {
         return new ResponseEntity<>(toResource(resourceService.retrieveRessource(resourceId)), HttpStatus.OK);
     }
@@ -117,12 +117,13 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
      * @throws ModuleException Exception if resource with given id does not exists
-    
+
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") Long resourceId,
-            @Valid @RequestBody ResourcesAccess resourceAccessToUpdate) throws ModuleException {
+    public ResponseEntity<EntityModel<ResourcesAccess>> updateResourceAccess(
+            @PathVariable("resource_id") Long resourceId, @Valid @RequestBody ResourcesAccess resourceAccessToUpdate)
+            throws ModuleException {
         if ((resourceAccessToUpdate.getId() == null) || !resourceAccessToUpdate.getId().equals(resourceId)) {
             throw new EntityInvalidException(
                     String.format("Resource to update with id %d do not match the required resource id %d",
@@ -132,8 +133,8 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(final ResourcesAccess element, final Object... extras) {
-        final Resource<ResourcesAccess> resource = hateoasService.toResource(element);
+    public EntityModel<ResourcesAccess> toResource(final ResourcesAccess element, final Object... extras) {
+        final EntityModel<ResourcesAccess> resource = hateoasService.toResource(element);
         hateoasService.addLink(resource, this.getClass(), "getAllResourceAccesses", LinkRels.LIST,
                                MethodParamFactory.build(Pageable.class),
                                MethodParamFactory.build(PagedResourcesAssembler.class));

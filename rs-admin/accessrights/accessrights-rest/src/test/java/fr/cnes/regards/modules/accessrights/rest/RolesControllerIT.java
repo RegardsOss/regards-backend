@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -240,6 +241,25 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST)));
+    }
+
+
+    @Ignore("This test does not work on CI platform but works well everywhere else")
+    @Test
+    public void testShouldAccessToResourceRequiring() {
+        // Send the request with an user having role REGISTERED_USER
+        String userJwt = manageSecurity(getDefaultTenant(), RoleController.SHOULD_ACCESS_TO_RESOURCE,
+                RequestMethod.GET, getDefaultUserEmail(),
+                DefaultRole.REGISTERED_USER.name());
+
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, userJwt,
+                customizer().expectStatusOk().expectToHaveToString("$", "true"),
+                "Failed to validate role hierarchie", DefaultRole.PUBLIC.toString());
+
+
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, userJwt,
+                customizer().expectStatusOk().expectToHaveToString("$", "false"),
+                "users is not above instance admin", DefaultRole.ADMIN.toString());
     }
 
 }

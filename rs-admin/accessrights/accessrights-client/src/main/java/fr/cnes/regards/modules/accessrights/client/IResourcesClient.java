@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.accessrights.client;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,8 +34,8 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 
 @RestClient(name = "rs-admin", contextId = "rs-admin.resources-client")
-@RequestMapping(value = IResourcesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IResourcesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IResourcesClient {
 
     /**
@@ -58,7 +58,7 @@ public interface IResourcesClient {
      * @return list of user resource accesses
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
+    ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
     /**
@@ -70,7 +70,7 @@ public interface IResourcesClient {
      * @return {@link ResourcesAccess}
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
-    ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
+    ResponseEntity<EntityModel<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
 
     /**
      *
@@ -83,7 +83,8 @@ public interface IResourcesClient {
      * @return updated ResourcesAccess
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
-    ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") final Long pResourceId,
+    ResponseEntity<EntityModel<ResourcesAccess>> updateResourceAccess(
+            @PathVariable("resource_id") final Long pResourceId,
             @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);
 
 }

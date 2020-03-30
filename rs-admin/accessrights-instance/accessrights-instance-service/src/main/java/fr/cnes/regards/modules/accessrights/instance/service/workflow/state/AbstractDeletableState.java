@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -113,10 +113,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 doDelete(pAccount);
                 break;
             default:
-                throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
-                                                             ProjectUser.class,
-                                                             pAccount.getStatus().toString(),
-                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
+                throw new EntityTransitionForbiddenException(pAccount.getId().toString(), ProjectUser.class,
+                        pAccount.getStatus().toString(), Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
@@ -133,7 +131,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 runtimeTenantResolver.forceTenant(tenant);
                 try {
                     FeignSecurityManager.asSystem();
-                    ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
+                    ResponseEntity<EntityModel<ProjectUser>> projectUserResponse = projectUsersClient
                             .retrieveProjectUserByEmail(account.getEmail());
                     if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                         return false;
@@ -165,9 +163,9 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
         // Fail if not allowed to delete
         if (!canDelete(pAccount)) {
-            final String message = String.format(
-                    "Cannot remove account %s because it is linked to at least one project.",
-                    pAccount.getEmail());
+            final String message = String
+                    .format("Cannot remove account %s because it is linked to at least one project.",
+                            pAccount.getEmail());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
@@ -192,7 +190,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 runtimeTenantResolver.forceTenant(tenant);
                 FeignSecurityManager.asSystem();
                 //lets get the project user
-                ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
+                ResponseEntity<EntityModel<ProjectUser>> projectUserResponse = projectUsersClient
                         .retrieveProjectUserByEmail(email);
                 if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                     ProjectUser projectUser = projectUserResponse.getBody().getContent();

@@ -30,8 +30,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,7 +89,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all sessions", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<Session>>> getSessions(
+    public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(
             @RequestParam(value = "source", required = false) String source,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "from",
@@ -102,7 +102,7 @@ public class SessionController implements IResourceController<Session> {
             PagedResourcesAssembler<Session> assembler) {
         Page<Session> sessions = sessionService.retrieveSessions(source, name, from, to, state, onlyLastSession,
                                                                  pageable);
-        PagedResources<Resource<Session>> resources = toPagedResources(sessions, assembler);
+        PagedModel<EntityModel<Session>> resources = toPagedResources(sessions, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
@@ -121,7 +121,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(method = RequestMethod.PATCH, value = SESSION_MAPPING)
     @ResourceAccess(description = "Update specific field of the session", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<Session>> updateSession(@PathVariable("session_id") Long id,
+    public ResponseEntity<EntityModel<Session>> updateSession(@PathVariable("session_id") Long id,
             @Valid @RequestBody UpdateSession session) throws ModuleException {
         Session updateSession = sessionService.updateSessionState(id, session.getState());
         return new ResponseEntity<>(toResource(updateSession), HttpStatus.OK);
@@ -137,8 +137,8 @@ public class SessionController implements IResourceController<Session> {
     }
 
     @Override
-    public Resource<Session> toResource(Session element, Object... pExtras) {
-        final Resource<Session> resource = resourceService.toResource(element);
+    public EntityModel<Session> toResource(Session element, Object... pExtras) {
+        final EntityModel<Session> resource = resourceService.toResource(element);
         if (element.getState() == SessionState.ERROR) {
             resourceService.addLink(resource, this.getClass(), "updateSession", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, element.getId()),

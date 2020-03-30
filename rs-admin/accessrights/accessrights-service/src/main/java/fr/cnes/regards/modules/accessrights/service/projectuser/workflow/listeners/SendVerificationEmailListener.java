@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
@@ -96,7 +96,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         // lets retrive the account
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(projectUser.getEmail());
             if (accountResponse.getStatusCode().is2xxSuccessful()) {
                 data.put("name", accountResponse.getBody().getContent().getFirstName());

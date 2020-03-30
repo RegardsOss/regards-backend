@@ -22,8 +22,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,8 +43,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.ms-resources-client")
-@RequestMapping(value = IMicroserviceResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IMicroserviceResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IMicroserviceResourceClient {
 
     /**
@@ -74,7 +74,7 @@ public interface IMicroserviceResourceClient {
      * @return list of user resource accesses for given microservice
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
+    ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
             @PathVariable("microservicename") final String pMicroserviceName, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
@@ -111,7 +111,7 @@ public interface IMicroserviceResourceClient {
      * @return List of accessible resources for the specified microservice and controller
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
-    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
+    ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @PathVariable("controllername") final String pControllerName);
 

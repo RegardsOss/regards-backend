@@ -88,7 +88,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void initResources() {
 
         JWTService service = new JWTService();
-        service.setSecret("123456789");
+        service.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
         publicToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PUBLIC.toString());
         projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
                                                   DefaultRole.PROJECT_ADMIN.toString());

@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -164,7 +164,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService));
@@ -218,7 +218,7 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService));

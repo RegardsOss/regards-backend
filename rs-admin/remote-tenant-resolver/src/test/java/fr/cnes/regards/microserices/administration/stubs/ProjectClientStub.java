@@ -21,9 +21,9 @@ package fr.cnes.regards.microserices.administration.stubs;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.PagedResources.PageMetadata;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -49,32 +49,31 @@ public class ProjectClientStub implements IProjectsClient {
     public static final Project PROJECT = new Project(0L, "", "", true, PROJECT_NAME);
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
-        List<Resource<Project>> resources = new ArrayList<>();
-        resources.add(new Resource<>(PROJECT));
-        PagedResources<Resource<Project>> page = new PagedResources<>(resources,
-                                                                            new PageMetadata(pSize, pPage, 1),
-                                                                            new ArrayList<>());
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
+        List<EntityModel<Project>> resources = new ArrayList<>();
+        resources.add(new EntityModel<>(PROJECT));
+        PagedModel<EntityModel<Project>> page = new PagedModel<>(resources, new PageMetadata(pSize, pPage, 1),
+                new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(int page, int size) {
+    public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(int page, int size) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(Project pNewProject) {
+    public ResponseEntity<EntityModel<Project>> createProject(Project pNewProject) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> retrieveProject(String pProjectName) {
-        return new ResponseEntity<>(new Resource<>(PROJECT), HttpStatus.OK);
+    public ResponseEntity<EntityModel<Project>> retrieveProject(String pProjectName) {
+        return new ResponseEntity<>(new EntityModel<>(PROJECT), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
+    public ResponseEntity<EntityModel<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 

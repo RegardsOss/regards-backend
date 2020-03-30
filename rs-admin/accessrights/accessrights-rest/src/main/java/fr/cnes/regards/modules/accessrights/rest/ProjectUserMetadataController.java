@@ -23,7 +23,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -79,7 +79,7 @@ public class ProjectUserMetadataController implements IResourceController<MetaDa
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of all metadata of the user", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long userId)
+    public ResponseEntity<List<EntityModel<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long userId)
             throws EntityNotFoundException {
         final List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(userId);
         return new ResponseEntity<>(toResources(metaDatas), HttpStatus.OK);
@@ -95,7 +95,7 @@ public class ProjectUserMetadataController implements IResourceController<MetaDa
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "update the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<MetaData>>> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
+    public ResponseEntity<List<EntityModel<MetaData>>> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
             @Valid @RequestBody List<MetaData> updatedUserMetaData) throws EntityNotFoundException {
         List<MetaData> updated = projectUserService.updateUserMetaData(userId, updatedUserMetaData);
         return new ResponseEntity<>(toResources(updated), HttpStatus.OK);
@@ -117,7 +117,7 @@ public class ProjectUserMetadataController implements IResourceController<MetaDa
     }
 
     @Override
-    public Resource<MetaData> toResource(final MetaData element, final Object... extras) {
+    public EntityModel<MetaData> toResource(final MetaData element, final Object... extras) {
         return resourceService.toResource(element);
     }
 

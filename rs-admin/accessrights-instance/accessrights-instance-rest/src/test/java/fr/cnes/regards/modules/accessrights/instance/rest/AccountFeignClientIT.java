@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -83,14 +83,13 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-
+    
      */
     @Ignore
     @Test
     public void retrieveAccountListFromFeignClient() {
         try {
-            final ResponseEntity<PagedResources<Resource<Account>>> accounts = accountsClient.retrieveAccountList(0,
-                                                                                                                  10);
+            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(0, 10);
             Assert.assertEquals(accounts.getStatusCode(), HttpStatus.OK);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -102,7 +101,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can create an account.
      *
-
+    
      */
     @Ignore
     @Test
@@ -110,7 +109,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
         try {
             final Account account = new Account(MAIL_TEST, "feign", "feign", "password");
             AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
-            final ResponseEntity<Resource<Account>> response = accountsClient.createAccount(accountNPassword);
+            final ResponseEntity<EntityModel<Account>> response = accountsClient.createAccount(accountNPassword);
             Assert.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -122,7 +121,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-
+    
      */
     @Test
     @Ignore
@@ -130,7 +129,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
         try {
             final Account account = new Account("feign@user.com", "feign", "feign", "password");
             account.setId(150L);
-            final ResponseEntity<Resource<Account>> response = accountsClient.updateAccount(150L, account);
+            final ResponseEntity<EntityModel<Account>> response = accountsClient.updateAccount(150L, account);
             Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -142,7 +141,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-
+    
      */
     @Test
     @Ignore
@@ -160,13 +159,13 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-
+    
      */
     @Test
     @Ignore
     public void retrieveAccountFromFeignClient() {
         try {
-            final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccount(150L);
+            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccount(150L);
             Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -178,13 +177,14 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-
+    
      */
     @Test
     @Ignore
     public void retrieveAccountByEmailFromFeignClient() {
         try {
-            final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccounByEmail("email@unkown.fr");
+            final ResponseEntity<EntityModel<Account>> response = accountsClient
+                    .retrieveAccounByEmail("email@unkown.fr");
             Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -196,7 +196,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-
+    
      */
     @Test
     @Ignore
@@ -214,7 +214,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-
+    
      */
     @Test
     @Ignore
@@ -233,7 +233,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-
+    
      */
     @Test
     public void validatePasswordFromFeignClient() {

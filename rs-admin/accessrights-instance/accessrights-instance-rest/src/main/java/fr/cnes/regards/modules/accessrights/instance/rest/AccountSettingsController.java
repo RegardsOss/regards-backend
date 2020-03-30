@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.accessrights.instance.rest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,13 +70,13 @@ public class AccountSettingsController implements IResourceController<AccountSet
 
     /**
      * Retrieve the {@link AccountSettings} for the instance.
-     * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
+     * @return The {@link AccountSettings} wrapped in a {@link EntityModel} and a {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of setting managing the accounts",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
+    public ResponseEntity<EntityModel<AccountSettings>> retrieveAccountSettings() {
         AccountSettings settings = accountSettingsService.retrieve();
         return new ResponseEntity<>(toResource(settings), HttpStatus.OK);
     }
@@ -89,15 +89,15 @@ public class AccountSettingsController implements IResourceController<AccountSet
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<AccountSettings>> updateAccountSetting(
+    public ResponseEntity<EntityModel<AccountSettings>> updateAccountSetting(
             @Valid @RequestBody AccountSettings updatedAccountSetting) throws EntityNotFoundException {
         AccountSettings updated = accountSettingsService.update(updatedAccountSetting);
         return new ResponseEntity<>(toResource(updated), HttpStatus.OK);
     }
 
     @Override
-    public Resource<AccountSettings> toResource(AccountSettings element, final Object... extras) {
-        Resource<AccountSettings> resource = resourceService.toResource(element);
+    public EntityModel<AccountSettings> toResource(AccountSettings element, final Object... extras) {
+        EntityModel<AccountSettings> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "updateAccountSetting", LinkRels.UPDATE,
                                 MethodParamFactory.build(AccountSettings.class));

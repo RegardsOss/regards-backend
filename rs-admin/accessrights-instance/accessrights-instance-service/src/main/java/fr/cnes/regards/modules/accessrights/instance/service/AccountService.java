@@ -118,6 +118,7 @@ public class AccountService implements IAccountService {
     @Autowired
     private MeterRegistry registry;
 
+    @SuppressWarnings("unused")
     private Counter createdAccountCounter;
 
     /**

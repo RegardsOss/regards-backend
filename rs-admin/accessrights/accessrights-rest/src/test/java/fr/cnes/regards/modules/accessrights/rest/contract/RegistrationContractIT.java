@@ -21,14 +21,13 @@ package fr.cnes.regards.modules.accessrights.rest.contract;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -59,12 +58,12 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
 
         Mockito.when(accountsClient.retrieveAccounByEmail("sebastien.binda@c-s.fr"))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                            new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         String accessRequest = readJsonContract("request-access.json");
 

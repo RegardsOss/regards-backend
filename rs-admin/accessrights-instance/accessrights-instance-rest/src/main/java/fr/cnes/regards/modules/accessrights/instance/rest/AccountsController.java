@@ -27,8 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -166,7 +167,7 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<PagedResources<Resource<Account>>> retrieveAccountList(
+    public ResponseEntity<PagedModel<EntityModel<Account>>> retrieveAccountList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Account> assembler,
             @RequestParam(value = "status", required = false) AccountStatus status) {
@@ -185,12 +186,12 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody AccountNPassword newAccountWithPassword)
-            throws EntityException {
+    public ResponseEntity<EntityModel<Account>> createAccount(
+            @Valid @RequestBody AccountNPassword newAccountWithPassword) throws EntityException {
         Account newAccount = newAccountWithPassword.getAccount();
         newAccount.setPassword(newAccountWithPassword.getPassword());
         accountService.checkPassword(newAccount);
-        return new ResponseEntity<>(new Resource<>(accountService.createAccount(newAccount)), HttpStatus.CREATED);
+        return new ResponseEntity<>(new EntityModel<>(accountService.createAccount(newAccount)), HttpStatus.CREATED);
     }
 
     /**
@@ -201,7 +202,7 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_ID, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the account account_id", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> retrieveAccount(@PathVariable("account_id") Long accountId)
+    public ResponseEntity<EntityModel<Account>> retrieveAccount(@PathVariable("account_id") Long accountId)
             throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccount(accountId)));
     }
@@ -214,8 +215,8 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_ACCOUNT_EMAIL, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> retrieveAccounByEmail(@PathVariable("account_email") String accountEmail)
-            throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(
+            @PathVariable("account_email") String accountEmail) throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(accountEmail)));
 
     }
@@ -230,7 +231,7 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(value = PATH_ACCOUNT_ID, method = RequestMethod.PUT)
     @ResourceAccess(description = "update the account account_id according to the body specified",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> updateAccount(@PathVariable("account_id") Long accountId,
+    public ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long accountId,
             @Valid @RequestBody Account updatedAccount) throws EntityException {
         if (updatedAccount.getPassword() != null) {
             accountService.checkPassword(updatedAccount);
@@ -490,8 +491,8 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     @Override
-    public Resource<Account> toResource(Account element, final Object... extras) {
-        Resource<Account> resource = null;
+    public EntityModel<Account> toResource(Account element, final Object... extras) {
+        EntityModel<Account> resource = null;
         if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             // Self retrieve link
@@ -511,22 +512,22 @@ public class AccountsController implements IResourceController<Account> {
             }
             // Accept link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "acceptAccount", "accept",
+                resourceService.addLink(resource, this.getClass(), "acceptAccount", LinkRelation.of("accept"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Refuse link, only if the account is in PENDING state
             if (AccountStatus.PENDING.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "refuseAccount", "refuse",
+                resourceService.addLink(resource, this.getClass(), "refuseAccount", LinkRelation.of("refuse"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Inactive link, only if the account is in ACTIVE state
             if (AccountStatus.ACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "inactiveAccount", "inactive",
+                resourceService.addLink(resource, this.getClass(), "inactiveAccount", LinkRelation.of("inactive"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
             // Active link, only if the account is in INACTIVE state
             if (AccountStatus.INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "activeAccount", "active",
+                resourceService.addLink(resource, this.getClass(), "activeAccount", LinkRelation.of("active"),
                                         MethodParamFactory.build(String.class, element.getEmail()));
             }
         }

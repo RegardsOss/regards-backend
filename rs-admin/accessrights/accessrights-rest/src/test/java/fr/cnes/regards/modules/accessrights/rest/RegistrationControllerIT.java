@@ -23,9 +23,8 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -151,48 +150,34 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccessSuccess() {
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL,
-                                                                 FIRST_NAME,
-                                                                 LAST_NAME,
-                                                                 null,
-                                                                 new ArrayList<>(),
-                                                                 PASSWORD,
-                                                                 ORIGIN_URL,
-                                                                 REQUEST_LINK);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(),
+                PASSWORD, ORIGIN_URL, REQUEST_LINK);
         requestAccess(newAccessRequest);
 
     }
 
     private void requestAccess(AccessRequestDto newAccessRequest) {
         //lets mock the feign clients
-        Account account = new Account(newAccessRequest.getEmail(),
-                                      newAccessRequest.getFirstName(),
-                                      newAccessRequest.getLastName(),
-                                      newAccessRequest.getPassword());
+        Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(),
+                newAccessRequest.getLastName(), newAccessRequest.getPassword());
         AccountSettings accountSettings = new AccountSettings();
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                            new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.CREATED));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusCreated(), ERROR_MESSAGE);
     }
 
     @Test
     public void requestAccessConflict() {
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL,
-                                                                 FIRST_NAME,
-                                                                 LAST_NAME,
-                                                                 null,
-                                                                 new ArrayList<>(),
-                                                                 PASSWORD,
-                                                                 ORIGIN_URL,
-                                                                 REQUEST_LINK);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(),
+                PASSWORD, ORIGIN_URL, REQUEST_LINK);
         requestAccess(newAccessRequest);
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusConflict(), ERROR_MESSAGE);
     }
@@ -213,10 +198,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultPut(apiAccessAccept, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
 
         // Now the project user is ACCESS_GRANTED, so trying to re-accept will fail
-        performDefaultPut(apiAccessAccept,
-                          null,
-                          customizer().expectStatusForbidden(),
-                          ERROR_MESSAGE,
+        performDefaultPut(apiAccessAccept, null, customizer().expectStatusForbidden(), ERROR_MESSAGE,
                           projectUser.getId());
 
         // something that does not exist
@@ -240,7 +222,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
 
         Mockito.when(accountsClient.retrieveAccounByEmail(account.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
 
         performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -249,10 +231,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void denyAccessRequestTwice() {
         denyAccessRequest();
         // Now the project user is ACCESS_DENIED, so trying to re-deny it will fail
-        performDefaultPut(apiAccessDeny,
-                          null,
-                          customizer().expectStatusForbidden(),
-                          ERROR_MESSAGE,
+        performDefaultPut(apiAccessDeny, null, customizer().expectStatusForbidden(), ERROR_MESSAGE,
                           projectUser.getId());
     }
 
@@ -293,17 +272,15 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.save(projectUser);
 
         //lets mock the feign clients
-        Account account = new Account(projectUser.getEmail(),
-                                      "projectUser.getFirstName()",
-                                      "projectUser.getLastName()",
-                                      "projectUser.getPassword()");
+        Account account = new Account(projectUser.getEmail(), "projectUser.getFirstName()", "projectUser.getLastName()",
+                "projectUser.getPassword()");
 
         Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
-                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
 
         // Endpoint
-        String endpoint =
-                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -322,8 +299,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.save(projectUser);
 
         // Endpoint
-        String endpoint =
-                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
