@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
  * When all requests of a group has been rejected by the associated service, then a {@link FileRequestsGroupEvent} is published
  *  with {@link FlowItemStatus#DENIED} status.<br>
  * When all requests of a group are done (successfully or with errors), a {@link FileRequestsGroupEvent} is published
- * with {@link FlowItemStatus#DONE} or with {@link FlowItemStatus#ERROR} status.<br>
+ * with {@link FlowItemStatus#SUCCESS} or with {@link FlowItemStatus#ERROR} status.<br>
  *
  * @author Sébastien Binda
  */
@@ -121,15 +121,6 @@ public class RequestsGroupService {
 
     /**
      * Handle new request error for the given groupId.<br>
-     *
-     * @param groupId
-     * @param type
-     * @param checksum
-     * @param storage
-     * @param storePath
-     * @param owners
-     * @param errorCause
-     * @param checkGroupDone
      */
     public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
             Set<String> owners, String errorCause) {
@@ -188,9 +179,6 @@ public class RequestsGroupService {
 
     /**
      * Save new granted request groups and send bus messages to inform that the given groupIds are granted.
-     *
-     * @param groupId
-     * @param type
      */
     public void granted(Set<String> groupIds, FileRequestType type, OffsetDateTime expirationDate) {
         // Create new group request
@@ -337,8 +325,6 @@ public class RequestsGroupService {
 
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
-     * @param groupId
-     * @param type
      */
     private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> resultInfos,
             Optional<FlowItemStatus> forcedStatus) {

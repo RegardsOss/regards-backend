@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -128,7 +128,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         for (int i = 0; i < 100; i++) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
                                   new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
-                                          MediaType.APPLICATION_JSON_UTF8),
+                                          MediaType.APPLICATION_JSON),
                                   new FileLocation("somewhere", "file://plop/plip.file_" + i));
         }
         Response response = client.export();
@@ -146,7 +146,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void retrieveStorageLocations() {
-        ResponseEntity<List<Resource<StorageLocationDTO>>> response = client.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDTO>>> response = client.retrieve();
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         // Expected 2 storages. One created in init method and 1 cache system
         Assert.assertEquals(2, response.getBody().size());

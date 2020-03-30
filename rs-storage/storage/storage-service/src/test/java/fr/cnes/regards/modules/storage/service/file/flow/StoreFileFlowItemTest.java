@@ -100,7 +100,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -140,7 +140,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                  originUrl, ONLINE_CONF_LABEL, Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(requests, UUID.randomUUID().toString());
 
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -191,7 +191,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, storageDestination, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -217,7 +217,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -277,7 +277,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                               "application/octet-stream", owner, originUrl, storageDestination,
                                               Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -287,7 +287,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
         RetryFlowItem retry = RetryFlowItem.buildStorageRetry(Lists.newArrayList(owner));
-        TenantWrapper<RetryFlowItem> retryWrapper = new TenantWrapper<>(retry, getDefaultTenant());
+        TenantWrapper<RetryFlowItem> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
@@ -322,7 +322,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                               "application/octet-stream", owners.get(2), originUrl, storageDestination,
                                               Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
+        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
         // Publish request
         storeHandler.handleSync(wrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -332,7 +332,7 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
         RetryFlowItem retry = RetryFlowItem.buildStorageRetry(owners);
-        TenantWrapper<RetryFlowItem> retryWrapper = new TenantWrapper<>(retry, getDefaultTenant());
+        TenantWrapper<RetryFlowItem> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 

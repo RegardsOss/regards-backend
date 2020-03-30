@@ -25,11 +25,11 @@
     <artifactId>storage-client</artifactId>
     <packaging>jar</packaging>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>storage</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
-    </parent>
+	<parent>
+		<groupId>fr.cnes.regards.modules</groupId>
+		<artifactId>storage</artifactId>
+		<version>GEODE</version>
+	</parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

@@ -318,8 +318,6 @@ public class FileStorageRequestService {
 
     /**
      * Search for {@link FileStorageRequest}s matching the given destination storage and checksum
-     * @param destinationStorage
-     * @param checksum
      * @return {@link FileStorageRequest}
      */
     @Transactional(readOnly = true)
@@ -415,7 +413,7 @@ public class FileStorageRequestService {
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> allStorages = fileStorageRequestRepo.findStoragesByStatus(status);
-        Set<String> storagesToSchedule = (storages != null) && !storages.isEmpty()
+        Set<String> storagesToSchedule = storages != null && !storages.isEmpty()
                 ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                 : allStorages;
         long start = System.currentTimeMillis();

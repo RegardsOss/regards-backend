@@ -23,8 +23,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -83,7 +83,7 @@ public class FileRequestsController implements IResourceController<FileRequestIn
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
-    public ResponseEntity<PagedResources<Resource<FileRequestInfoDTO>>> search(
+    public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDTO>>> search(
             @PathVariable(name = "storage") String storageLocationId, @PathVariable(name = "type") FileRequestType type,
             @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page,
             PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
@@ -114,8 +114,8 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     }
 
     @Override
-    public Resource<FileRequestInfoDTO> toResource(FileRequestInfoDTO element, Object... extras) {
-        Resource<FileRequestInfoDTO> resource = resourceService.toResource(element);
+    public EntityModel<FileRequestInfoDTO> toResource(FileRequestInfoDTO element, Object... extras) {
+        EntityModel<FileRequestInfoDTO> resource = resourceService.toResource(element);
         return resource;
     }
 

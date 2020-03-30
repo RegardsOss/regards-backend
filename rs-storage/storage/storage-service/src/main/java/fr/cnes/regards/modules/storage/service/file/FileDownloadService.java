@@ -113,7 +113,6 @@ public class FileDownloadService {
      * </ul>
      *
      * @param checksum Checksum of the file to download
-     * @throws FileNotFoundException
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
     public DownloadableFile downloadFile(String checksum) throws ModuleException {
@@ -255,7 +254,7 @@ public class FileDownloadService {
     /**
      * Generate a public download URL for the file associated to the given Checksum
      * @param checksum
-     * @return
+     * @return download url
      * @throws ModuleException if the Eureka server is not reachable
      */
     public String generateDownloadUrl(String checksum) throws ModuleException {
@@ -264,7 +263,7 @@ public class FileDownloadService {
             String host = instance.get().getUri().toString();
             String path = Paths.get(FILES_PATH, DOWNLOAD_TOKEN_PATH).toString();
             String p = path.toString().replace("{checksum}", checksum);
-            p = (p.charAt(0) == '/') ? p.replaceFirst("/", "") : p;
+            p = p.charAt(0) == '/' ? p.replaceFirst("/", "") : p;
             return String.format("%s/%s?scope=%s&%s=%s", host, p, tenantResolver.getTenant(), TOKEN_PARAM,
                                  createDownloadToken(checksum));
         } else {
@@ -289,7 +288,7 @@ public class FileDownloadService {
     /**
      * Generate a download token for the file associated to the given checksum
      * @param checksum
-     * @return
+     * @return download token
      */
     public String createDownloadToken(String checksum) {
         String newToken = UUID.randomUUID().toString();

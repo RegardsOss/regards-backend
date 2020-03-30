@@ -51,7 +51,6 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -67,7 +66,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
  * plugin.<br/>
- * When a file is requested by {@link #restore} method this service retrieve the file from the
+ * When a file is requested by restore method this service retrieve the file from the
  * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
  * As the cache maximum size is limited, this service queues the file requests and handle them when it is possible<br/>
  *
@@ -119,7 +118,6 @@ public class CacheService {
      * @param fileSize
      * @param location
      * @param expirationDate
-     * @throws EntityAlreadyExistsException
      */
     public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
             OffsetDateTime expirationDate, String groupId) {
