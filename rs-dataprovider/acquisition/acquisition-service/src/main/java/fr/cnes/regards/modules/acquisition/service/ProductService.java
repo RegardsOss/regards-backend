@@ -625,7 +625,7 @@ public class ProductService implements IProductService {
     @Override
     public boolean existsByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             ISipState productSipState) {
-        return productRepository.existsByProcessingChainAndSipStateIn(processingChain, productSipState);
+        return productRepository.existsByProcessingChainAndSipState(processingChain, productSipState);
     }
 
     @Override

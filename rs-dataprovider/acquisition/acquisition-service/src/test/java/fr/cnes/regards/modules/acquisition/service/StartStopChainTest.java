@@ -47,9 +47,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -135,7 +134,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                 .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
                                         PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -153,7 +152,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                     .build(GlobDiskScanning.FIELD_DIRS,
                            PluginParameterTransformer.toJson(Arrays.asList(searchDirThumbnail.toString()))));
 
-            PluginConfiguration scanPlugin2 = PluginUtils.getPluginConfiguration(parameters2, GlobDiskScanning.class);
+            PluginConfiguration scanPlugin2 = PluginConfiguration.build(GlobDiskScanning.class, "ScanPlugin2",
+                                                                        parameters2);
             scanPlugin2.setIsActive(true);
             scanPlugin2.setLabel("Scan plugin");
             fileInfo2.setScanPlugin(scanPlugin2);
@@ -162,23 +162,22 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         }
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                                  DefaultFileValidation.class);
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+                                                                         new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        Set<IPluginParam> productParameters = IPluginParam
-                .set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE));
-        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(productParameters,
-                                                                               DefaultProductPlugin.class);
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+                                                                      new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(), sipGenPluginClass);
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(LongLastingSIPGeneration.class, null,
+                                                                     new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -204,8 +203,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         AcquisitionProcessingChain processingChain = processingService.getChain(processingChainId);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                              DefaultSIPGeneration.class);
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+                                                                     new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("Default SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);

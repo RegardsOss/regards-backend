@@ -28,8 +28,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -99,7 +99,7 @@ public class ProductController implements IResourceController<Product> {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for products", role = DefaultRole.ADMIN)
-    public ResponseEntity<PagedResources<Resource<Product>>> search(
+    public ResponseEntity<PagedModel<EntityModel<Product>>> search(
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<ProductState> state,
             @RequestParam(name = REQUEST_PARAM_SIP_STATE, required = false) List<ISipState> sipState,
             @RequestParam(name = REQUEST_PARAM_PRODUCT_NAME, required = false) String productName,
@@ -120,12 +120,12 @@ public class ProductController implements IResourceController<Product> {
      */
     @RequestMapping(method = RequestMethod.GET, value = PRODUCT_PATH)
     @ResourceAccess(description = "Get a product", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<Product>> get(@PathVariable Long productId) throws ModuleException {
+    public ResponseEntity<EntityModel<Product>> get(@PathVariable Long productId) throws ModuleException {
         return ResponseEntity.ok(toResource(productService.loadProduct(productId)));
     }
 
     @Override
-    public Resource<Product> toResource(Product element, Object... extras) {
+    public EntityModel<Product> toResource(Product element, Object... extras) {
         return resourceService.toResource(element);
     }
 
