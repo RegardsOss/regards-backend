@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
@@ -65,6 +66,7 @@ import fr.cnes.regards.modules.indexer.service.IIndexerService;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
@@ -275,7 +277,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
             String modelName = invocation.getArgument(0);
-            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName));
+            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream()
+                    .map(a -> new EntityModel<ModelAttrAssoc>(a)).collect(Collectors.toList()));
         });
 
         // - Refresh attribute factory
