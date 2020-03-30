@@ -89,9 +89,8 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineTestClient;
  */
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-                "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
+        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true", "regards.storage.schedule.delay=200" },
         locations = { "classpath:application-test.properties" })
 public class StorageClientIT extends AbstractRegardsTransactionalIT {
 
