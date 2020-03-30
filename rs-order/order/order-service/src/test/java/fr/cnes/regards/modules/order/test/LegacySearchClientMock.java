@@ -20,16 +20,16 @@ package fr.cnes.regards.modules.order.test;
 
 import java.util.List;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
  * @author Sébastien Binda
@@ -37,20 +37,20 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
 public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAll(HttpHeaders headers,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAll(HttpHeaders headers,
             MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getEntity(UniformResourceName urn, HttpHeaders headers) {
+    public ResponseEntity<EntityModel<EntityFeature>> getEntity(UniformResourceName urn, HttpHeaders headers) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllCollections(HttpHeaders headers,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllCollections(HttpHeaders headers,
             MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
         // TODO Auto-generated method stub
         return null;
@@ -64,13 +64,13 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getCollection(UniformResourceName urn, HttpHeaders headers) {
+    public ResponseEntity<EntityModel<EntityFeature>> getCollection(UniformResourceName urn, HttpHeaders headers) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDatasets(HttpHeaders headers,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDatasets(HttpHeaders headers,
             MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
         // TODO Auto-generated method stub
         return null;
@@ -84,12 +84,12 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getDataset(UniformResourceName urn, HttpHeaders headers) {
-        return new ResponseEntity<>(new Resource<>(SearchClientMock.DS_MAP.get(urn)), HttpStatus.OK);
+    public ResponseEntity<EntityModel<EntityFeature>> getDataset(UniformResourceName urn, HttpHeaders headers) {
+        return new ResponseEntity<>(new EntityModel<>(SearchClientMock.DS_MAP.get(urn)), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDataobjects(HttpHeaders headers,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDataobjects(HttpHeaders headers,
             MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
         // TODO Auto-generated method stub
         return null;
@@ -103,13 +103,13 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getDataobject(UniformResourceName urn, HttpHeaders headers) {
+    public ResponseEntity<EntityModel<EntityFeature>> getDataobject(UniformResourceName urn, HttpHeaders headers) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(String datasetUrn,
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchSingleDataset(String datasetUrn,
             HttpHeaders headers, MultiValueMap<String, String> queryParams, String engineParserType, int page,
             int size) {
         // TODO Auto-generated method stub
@@ -124,7 +124,7 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataobjectsReturnDatasets(
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataobjectsReturnDatasets(
             HttpHeaders headers, MultiValueMap<String, String> queryParams, String engineParserType, int page,
             int size) {
         // TODO Auto-generated method stub

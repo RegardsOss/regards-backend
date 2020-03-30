@@ -22,16 +22,16 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 
 /**
  * Helper class to retrieve model attributes
@@ -59,7 +59,8 @@ public class OrderAttributeHelper implements IAttributeHelper {
             runtimeTenantResolver.forceTenant(pTenant);
             FeignSecurityManager.asSystem();
 
-            ResponseEntity<List<Resource<AttributeModel>>> resources = attributeModelClient.getAttributes(null, null);
+            ResponseEntity<List<EntityModel<AttributeModel>>> resources = attributeModelClient.getAttributes(null,
+                                                                                                             null);
             if (resources != null) {
                 return HateoasUtils.unwrapList(resources.getBody());
             }

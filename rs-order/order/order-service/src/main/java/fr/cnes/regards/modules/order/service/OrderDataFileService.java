@@ -52,7 +52,7 @@ import com.google.common.io.ByteStreams;
 import feign.Response;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -123,7 +123,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     public OrderDataFile save(OrderDataFile dataFile) {
         dataFile = repos.save(dataFile);
         // Look at FilesTask if it is ended (no more file to download)...
-        FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
+        FilesTask filesTask = filesTasksRepository.findDistinctByFilesContaining(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
             if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)

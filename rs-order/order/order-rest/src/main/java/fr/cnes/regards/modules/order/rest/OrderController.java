@@ -31,8 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -149,7 +149,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Validate current basket and create corresponding order",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
-    public ResponseEntity<Resource<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
+    public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
             throws IllegalStateException {
         try {
             String user = authResolver.getUser();
@@ -165,7 +165,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Retrieve specified order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = GET_ORDER_PATH)
-    public ResponseEntity<Resource<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
+    public ResponseEntity<EntityModel<OrderDto>> retrieveOrder(@PathVariable("orderId") Long orderId) {
         Order order = orderService.loadSimple(orderId);
         if (order != null) {
             return ResponseEntity.ok(toResource(OrderDto.fromOrder(order)));
@@ -204,7 +204,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Find all specified user orders or all users orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
-    public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
         Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
                 : orderService.findAll(user, pageRequest);
@@ -226,7 +226,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Find all user current orders", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
-    public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
+    public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(
                                                   orderService.findAll(user, pageRequest, OrderStatus.DELETED,
@@ -305,7 +305,7 @@ public class OrderController implements IResourceController<OrderDto> {
     }
 
     @Override
-    public Resource<OrderDto> toResource(OrderDto order, Object... extras) {
+    public EntityModel<OrderDto> toResource(OrderDto order, Object... extras) {
         return resourceService.toResource(order);
     }
 }

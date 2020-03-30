@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.junit.Assert;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,24 +39,24 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration
@@ -65,14 +65,14 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  */
 public class SearchClientMock implements IComplexSearchClient {
 
-    public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
     private static Dataset ds1;
 
@@ -256,15 +256,15 @@ public class SearchClientMock implements IComplexSearchClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataObjects(
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
             ComplexSearchRequest complexSearchRequest) {
         if (complexSearchRequest.getPage() == 0) {
             try {
-                List<Resource<EntityFeature>> list = new ArrayList<>();
+                List<EntityModel<EntityFeature>> list = new ArrayList<>();
                 File testDir = new File("src/test/resources/files");
                 for (File dir : testDir.listFiles()) {
-                    EntityFeature feature = new DataObjectFeature("tenant", dir.getName(), dir.getName());
-                    feature.setId(UniformResourceName.fromString(dir.getName()));
+                    EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
+                            dir.getName(), dir.getName());
                     Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                     for (File file : dir.listFiles()) {
                         DataFile dataFile = new DataFile();
@@ -281,16 +281,16 @@ public class SearchClientMock implements IComplexSearchClient {
                         fileMultimap.put(getDataType(file.getName()), dataFile);
                     }
                     feature.setFiles(fileMultimap);
-                    list.add(new Resource<>(feature));
+                    list.add(new EntityModel<>(feature));
                 }
 
-                return ResponseEntity.ok(new FacettedPagedResources<>(Sets.newHashSet(), list,
-                        new PagedResources.PageMetadata(list.size(), 0, list.size())));
+                return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), list,
+                        new PagedModel.PageMetadata(list.size(), 0, list.size())));
             } catch (URISyntaxException e) {
                 throw new RsRuntimeException(e);
             }
         }
-        return ResponseEntity.ok(new FacettedPagedResources<>(Sets.newHashSet(), Collections.emptyList(),
-                new PagedResources.PageMetadata(0, 0, 0)));
+        return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), Collections.emptyList(),
+                new PagedModel.PageMetadata(0, 0, 0)));
     }
 }

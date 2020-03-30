@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -44,13 +44,13 @@ import org.springframework.util.MultiValueMap;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -88,29 +88,29 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO4_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO4_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-            "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO5_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
     private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
         BasketSelectionRequest request = new BasketSelectionRequest();
@@ -134,7 +134,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new Resource<>(project)));
+                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }

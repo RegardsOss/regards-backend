@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,6 +32,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -44,7 +45,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -59,18 +60,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.xml.sax.SAXException;
 
 import com.google.common.io.ByteStreams;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -98,53 +100,29 @@ import fr.cnes.regards.modules.project.domain.Project;
 @TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
 public class OrderControllerIT extends AbstractRegardsIT {
 
-    public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATASET,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATASET,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATASET,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATA,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATA,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO3_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATA,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DO3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO4_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATA,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DO4_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP,
-                                                                                EntityType.DATA,
-                                                                                "ORDER",
-                                                                                UUID.randomUUID(),
-                                                                                1);
+    public static final UniformResourceName DO5_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -176,7 +154,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new Resource<>(project)));
+                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
@@ -189,20 +167,15 @@ public class OrderControllerIT extends AbstractRegardsIT {
         basket.setOwner(getDefaultUserEmail());
         basketRepos.save(basket);
         // Test POST with empty order => 201, an order creation cannot fail
-        performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest(),
-                           customizer().expectStatusCreated(),
-                           "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
+                           customizer().expectStatusCreated(), "error");
     }
 
     @Test
     public void testPause() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "error",
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
                           order.getId());
     }
 
@@ -211,18 +184,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "error",
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
                           order.getId());
 
         // Re-pause Order => fail
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                          null,
-                          customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                          "error",
-                          order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error", order.getId());
     }
 
     @Test
@@ -230,17 +197,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "error",
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
                           order.getId());
 
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "error",
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatusOk(), "error",
                           order.getId());
     }
 
@@ -248,11 +209,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testResumeFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH,
-                          null,
-                          customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                          "error",
-                          order.getId());
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -261,10 +219,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsPending();
 
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH,
-                          null,
-                          customizer().expectStatusOk(),
-                          "error",
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
                           order.getId());
 
         Thread.sleep(1000);
@@ -277,20 +232,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testDeleteFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
         // Pause Order
-        performDefaultDelete(OrderController.DELETE_ORDER_PATH,
-                             customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                             "error",
-                             order.getId());
+        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error", order.getId());
     }
 
     @Test
     public void testRemoveFailed() throws URISyntaxException {
         Order order = createOrderAsRunning();
         // Pause Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH,
-                             customizer().expectStatus(HttpStatus.UNAUTHORIZED),
-                             "error",
-                             order.getId());
+        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -309,17 +260,15 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Add doc
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderController.OrderRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
-        fields.add(constrainedFields.withPath("onSuccessUrl",
-                                              "url used by frontend to display a page if order creation has succeeded")
-                           .optional().type(JSON_STRING_TYPE));
+        fields.add(constrainedFields
+                .withPath("onSuccessUrl", "url used by frontend to display a page if order creation has succeeded")
+                .optional().type(JSON_STRING_TYPE));
         customizer.document(PayloadDocumentation.relaxedRequestFields(fields));
 
         // All baskets have been deleted so order creation must fail
         // Test POST without argument
-        performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("http://perdu.com"),
-                           customizer,
-                           "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest("http://perdu.com"),
+                           customizer, "error");
     }
 
     @Test
@@ -351,8 +300,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order.getDatasetTasks().first();
 
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(),
-                                                        "Should return result",
+                                                        customizer().expectStatusOk(), "Should return result",
                                                         order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
@@ -377,8 +325,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         // Download metalink file
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(),
-                                                        "Should return result",
+                                                        customizer().expectStatusOk(), "Should return result",
                                                         order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
@@ -396,8 +343,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
-        @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u
-                .unmarshal(resultFileMl);
+        @SuppressWarnings("unchecked")
+        JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         FileType fileType = metalink.getFiles().getFile().get(0);
         ResourcesType.Url urlO = fileType.getResources().getUrl().iterator().next();
@@ -414,12 +361,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("orderToken", token);
         // request parameters
         customizer.document(RequestDocumentation
-                                    .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken")
-                                                                      .optional().description(
-                                                    "token generated at order creation and sent by email to user.")
-                                                                      .attributes(Attributes
-                                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                          .value("String"))));
+                .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
+                        .description("token generated at order creation and sent by email to user.")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
 
         // Try downloading file as if, with token given into public file url
         performDefaultGet(OrderController.PUBLIC_METALINK_DOWNLOAD_PATH, customizer, "Should return result");
@@ -434,17 +378,15 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_STO_CMD_410")
     @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
-    public void testDownloadZipFile()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+    public void testDownloadZipFile() throws URISyntaxException, IOException, InterruptedException, JAXBException,
+            SAXException, ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(),
-                                                        "Should return result",
+                                                        customizer().expectStatusOk(), "Should return result",
                                                         order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
@@ -470,36 +412,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.document(RequestDocumentation
-                                    .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
-                                                                      .description("page number (from 0)")
-                                                                      .attributes(Attributes
-                                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                          .value("Integer")),
-                                                              RequestDocumentation.parameterWithName("size").optional()
-                                                                      .description("page size").attributes(Attributes
-                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value("Integer"))));
+        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
+                .optional().description("page number (from 0)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")), RequestDocumentation
+                                .parameterWithName("size").optional().description("page size")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("datasetId")
-                                                                        .description("dataset task id (from order)")
-                                                                        .attributes(Attributes
-                                                                                            .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                            .value("Long")),
-                                                                RequestDocumentation.parameterWithName("orderId")
-                                                                        .description("order id").attributes(Attributes
-                                                                                                                    .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value("Long"))));
+                .description("dataset task id (from order)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")), RequestDocumentation
+                                .parameterWithName("orderId").description("order id")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
 
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDataFile.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "files").optional().type(JSON_ARRAY_TYPE));
         customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
 
-        performDefaultGet(OrderDataFileController.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES,
-                          customizer,
-                          "error",
-                          order.getId(),
-                          order.getDatasetTasks().first().getId());
+        performDefaultGet(OrderDataFileController.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES, customizer, "error",
+                          order.getId(), order.getDatasetTasks().first().getId());
 
     }
 
@@ -512,17 +442,15 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_STO_CMD_410")
     @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
-    public void testDownloadFile()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+    public void testDownloadFile() throws URISyntaxException, IOException, InterruptedException, JAXBException,
+            SAXException, ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         ////////////////////////////////////////
         // First Download metalink order file //
         ////////////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(),
-                                                        "Should return result",
+                                                        customizer().expectStatusOk(), "Should return result",
                                                         order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
@@ -541,10 +469,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
-        resultActions = performDefaultGet("/user/orders/{orderId}/download",
-                                          customizer().expectStatusOk(),
-                                          "Should return result",
-                                          order.getId());
+        resultActions = performDefaultGet("/user/orders/{orderId}/download", customizer().expectStatusOk(),
+                                          "Should return result", order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
@@ -574,8 +500,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
-        @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u
-                .unmarshal(resultFileMl);
+        @SuppressWarnings("unchecked")
+        JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         int fileCount = 0;
         int i = 0;
@@ -603,38 +529,27 @@ public class OrderControllerIT extends AbstractRegardsIT {
             RequestBuilderCustomizer customizer = customizer().expectStatusOk().addParameter("orderToken", token);
 
             customizer.document(RequestDocumentation
-                                        .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken")
-                                                                          .optional().description(
-                                                        "token generated at order creation and sent by email to user.")
-                                                                          .attributes(Attributes
-                                                                                              .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                              .value("String"))));
+                    .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
+                            .description("token generated at order creation and sent by email to user.")
+                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
 
             customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("aipId")
-                                                                            .description(
-                                                                                    "IP_ID of data object of which file belongs to")
-                                                                            .attributes(Attributes
-                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                .value("String")),
-                                                                    RequestDocumentation.parameterWithName("dataFileId")
-                                                                            .description("file id ")
-                                                                            .attributes(Attributes
-                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                .value("Long"))));
+                    .description("IP_ID of data object of which file belongs to").attributes(Attributes
+                            .key(RequestBuilderCustomizer.PARAM_TYPE).value("String")), RequestDocumentation
+                                    .parameterWithName("dataFileId").description("file id ")
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
 
             // Try downloading file as if, with token given into public file url
-            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID,
-                                                      customizer,
-                                                      "Should return result",
-                                                      URLDecoder.decode(aipId, "UTF-8"),
+            ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
+                                                      "Should return result", URLDecoder.decode(aipId, "UTF-8"),
                                                       dataFileId);
 
             File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
             tmpFile.deleteOnExit();
             try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
                 resultActions.andReturn().getAsyncResult();
-                InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse()
-                                                                  .getContentAsByteArray());
+                InputStream is = new ByteArrayInputStream(
+                        resultActions.andReturn().getResponse().getContentAsByteArray());
                 ByteStreams.copy(is, fos);
                 is.close();
             }
@@ -654,8 +569,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // First Download metalink order file //
         ////////////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(),
-                                                        "Should return result",
+                                                        customizer().expectStatusOk(), "Should return result",
                                                         order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
@@ -684,8 +598,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
         Unmarshaller u = jaxbContext.createUnmarshaller();
 
-        @SuppressWarnings("unchecked") JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u
-                .unmarshal(resultFileMl);
+        @SuppressWarnings("unchecked")
+        JAXBElement<MetalinkType> rootElt = (JAXBElement<MetalinkType>) u.unmarshal(resultFileMl);
         MetalinkType metalink = rootElt.getValue();
         // Some variable to make data file not yet available download as last action (for Doc with a 202 expectation)
         long lastDataFileId = -1l;
@@ -714,11 +628,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Attempt to download not yet available data file
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.ACCEPTED);
         customizer.addParameter("orderToken", lastDataFileToken);
-        performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID,
-                          customizer,
-                          "Should return result",
-                          URLDecoder.decode(lastDataFileAipId, "UTF-8"),
-                          lastDataFileId);
+        performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer, "Should return result",
+                          URLDecoder.decode(lastDataFileAipId, "UTF-8"), lastDataFileId);
     }
 
     private Order createOrderAsRunning() throws URISyntaxException {
@@ -812,21 +723,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("size", "20");
         // request parameters
         customizer.document(RequestDocumentation
-                                    .relaxedRequestParameters(RequestDocumentation.parameterWithName("user").optional()
-                                                                      .description(
-                                                                              "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
-                                                                      .attributes(Attributes
-                                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                          .value("String")),
-                                                              RequestDocumentation.parameterWithName("page").optional()
-                                                                      .description("page number (from 0)")
-                                                                      .attributes(Attributes
-                                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                          .value("Integer")),
-                                                              RequestDocumentation.parameterWithName("size").optional()
-                                                                      .description("page size").attributes(Attributes
-                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value("Integer"))));
+                .relaxedRequestParameters(RequestDocumentation.parameterWithName("user").optional()
+                        .description("Optional - user email whom orders are requested, if not provided all users orders are retrieved")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
+                                          RequestDocumentation.parameterWithName("page").optional()
+                                                  .description("page number (from 0)")
+                                                  .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value("Integer")),
+                                          RequestDocumentation.parameterWithName("size").optional()
+                                                  .description("page size").attributes(Attributes
+                                                          .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -845,16 +751,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.document(RequestDocumentation
-                                    .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
-                                                                      .description("page number (from 0)")
-                                                                      .attributes(Attributes
-                                                                                          .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                          .value("Integer")),
-                                                              RequestDocumentation.parameterWithName("size").optional()
-                                                                      .description("page size").attributes(Attributes
-                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value("Integer"))));
+        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
+                .optional().description("page number (from 0)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")), RequestDocumentation
+                                .parameterWithName("size").optional().description("page size")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -891,25 +792,21 @@ public class OrderControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                 .addHeader(HttpConstants.CONTENT_TYPE, "application/json").addHeader(HttpConstants.ACCEPT, "text/csv");
 
-        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                                                  customizer,
+        ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV, customizer,
                                                   "error");
         // Just test headers are present and CSV format is ok
         Assert.assertTrue(results.andReturn().getResponse().getContentAsString()
-                                  .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+                .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
         // now let check that optional parameter are correctly parsed
         // First status
         performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("status", OrderStatus.DONE.toString()),
-                          "error");
+                          customizer.addParameter("status", OrderStatus.DONE.toString()), "error");
         // then from
         performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()),
-                          "error");
+                          customizer.addParameter("from", OffsetDateTime.now().minusHours(3).toString()), "error");
         // then to
         performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
-                          customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()),
-                          "error");
+                          customizer.addParameter("to", OffsetDateTime.now().plusSeconds(3).toString()), "error");
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state)
