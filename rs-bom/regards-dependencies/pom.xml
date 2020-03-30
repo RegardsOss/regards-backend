@@ -41,7 +41,7 @@
 	</developers>
 
 	<properties>
-		<regards.version>GEODE</regards.version>
+		<regards.version>1.1.0-SNAPSHOT</regards.version>
 
         <!-- Framework starters -->
 		<amqp.starter.version>${regards.version}</amqp.starter.version>
