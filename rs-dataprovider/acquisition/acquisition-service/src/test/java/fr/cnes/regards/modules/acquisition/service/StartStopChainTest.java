@@ -152,7 +152,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                     .build(GlobDiskScanning.FIELD_DIRS,
                            PluginParameterTransformer.toJson(Arrays.asList(searchDirThumbnail.toString()))));
 
-            PluginConfiguration scanPlugin2 = PluginUtils.getPluginConfiguration(parameters2, GlobDiskScanning.class);
+            PluginConfiguration scanPlugin2 = PluginConfiguration.build(GlobDiskScanning.class, "ScanPlugin2",
+                                                                        parameters2);
             scanPlugin2.setIsActive(true);
             scanPlugin2.setLabel("Scan plugin");
             fileInfo2.setScanPlugin(scanPlugin2);
