@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
+import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 
@@ -78,7 +79,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
 
     public static final String SUMMARY_MAPPING = "/summary";
 
-    public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = "dataobjects/attributes";
+    public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = "/dataobjects/attributes";
 
     /**
      * To build resource links
@@ -153,9 +154,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
             @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
-        List<String> modelNames = searchService.retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest),
-                                                                                 SearchType.DATAOBJECTS, "model", 100,
-                                                                                 null);
+        List<String> modelNames = searchService
+                .retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest), SearchType.DATAOBJECTS,
+                                                  CatalogAttributeHelper.MODEL_ATTRIBUTE, 100, null);
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
     }
 

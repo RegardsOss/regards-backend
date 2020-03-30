@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
+import fr.cnes.regards.modules.dam.domain.models.ModelAttrAssoc;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
 
@@ -50,6 +51,8 @@ import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
 @Service
 public class CatalogAttributeHelper implements IAttributeHelper {
 
+    public static final String MODEL_ATTRIBUTE = "model.name";
+
     /**
      * Runtime tenant resolver
      */
@@ -60,13 +63,13 @@ public class CatalogAttributeHelper implements IAttributeHelper {
      */
     private final IAttributeModelClient attributeModelClient;
 
-    private final IModelAttrAssocClient attruteModelAssocClient;
+    private final IModelAttrAssocClient attributeModelAssocClient;
 
     public CatalogAttributeHelper(IRuntimeTenantResolver runtimeTenantResolver,
             IAttributeModelClient attributeModelClient, IModelAttrAssocClient attruteModelAssocClient) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.attributeModelClient = attributeModelClient;
-        this.attruteModelAssocClient = attruteModelAssocClient;
+        this.attributeModelAssocClient = attruteModelAssocClient;
     }
 
     @Override
@@ -92,15 +95,19 @@ public class CatalogAttributeHelper implements IAttributeHelper {
         boolean first = true;
         for (String modelName : modelNames) {
             try {
-                Set<AttributeModel> modelAttributes = attruteModelAssocClient.getModelAttrAssocs(modelName).getBody()
-                        .stream().map(f -> f.getContent().getAttribute()).collect(Collectors.toSet());
-                if (first) {
-                    commonAttributes.addAll(modelAttributes);
-                } else {
-                    commonAttributes = commonAttributes.stream().filter(f -> !modelAttributes.contains(f))
-                            .collect(Collectors.toSet());
+                ResponseEntity<List<Resource<ModelAttrAssoc>>> response = attributeModelAssocClient
+                        .getModelAttrAssocs(modelName);
+                if ((response != null) && response.hasBody()) {
+                    Set<AttributeModel> modelAttributes = response.getBody().stream()
+                            .map(f -> f.getContent().getAttribute()).collect(Collectors.toSet());
+                    if (first) {
+                        commonAttributes.addAll(modelAttributes);
+                    } else {
+                        commonAttributes = commonAttributes.stream().filter(f -> modelAttributes.contains(f))
+                                .collect(Collectors.toSet());
+                    }
+                    first = false;
                 }
-                first = false;
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 throw new ModuleException("Error retrieving attribute models from dam microservice.", e);
             }

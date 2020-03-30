@@ -30,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
@@ -41,6 +42,7 @@ import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.dam.service.models.ModelService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -109,7 +111,7 @@ public class EngineConfiguration {
     }
 
     @Bean
-    public IModelAttrAssocClient modelAttrAssocClient() {
+    public IModelAttrAssocClient modelAttrAssocClient(ModelService modelService) throws ModuleException {
         return Mockito.mock(IModelAttrAssocClient.class);
     }
 

@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
+import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
@@ -341,12 +342,11 @@ public class SearchEngineController {
     @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(
             @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
             @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyName("model").withMaxCount(100));
+                        .withPropertyName(CatalogAttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(result.getBody()));
     }
 

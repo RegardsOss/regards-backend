@@ -94,7 +94,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     private ResultActions searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
+        // 9 data from planets & 2 datas from test datas
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(11)));
         return performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                                  customizer, "Search all error", ENGINE_TYPE);
     }

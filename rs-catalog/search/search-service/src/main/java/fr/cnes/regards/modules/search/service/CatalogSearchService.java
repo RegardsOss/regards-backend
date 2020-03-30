@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,7 +40,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.MultiValueMap;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -76,7 +74,6 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -348,17 +345,27 @@ public class CatalogSearchService implements ICatalogSearchService {
     public <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
             SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
             throws SearchException, OpenSearchUnknownParameter {
-
-        AttributeModel attModel = finder.findByName(propertyPath);
+        AttributeModel attModel = null;
+        String attributePath = propertyPath;
+        try {
+            attModel = finder.findByName(propertyPath);
+            attributePath = attModel.getFullJsonPath();
+        } catch (OpenSearchUnknownParameter e) {
+            LOGGER.debug("Unknown attribute. Not from an existing model : %s", propertyPath);
+        }
 
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
             // Add partialText contains criterion if not empty
             if (!Strings.isNullOrEmpty(partialText)) {
-                criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
+                if (attModel != null) {
+                    criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
+                } else {
+                    criterion = ICriterion.and(criterion, ICriterion.contains(propertyPath, partialText));
+                }
             }
-            return searchService.searchUniqueTopValues(searchKey, criterion, attModel.getFullJsonPath(), maxCount);
+            return searchService.searchUniqueTopValues(searchKey, criterion, attributePath, maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();
