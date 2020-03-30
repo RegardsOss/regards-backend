@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -30,9 +31,9 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
  */
 public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
 
-    public InstancePublisher(RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
+    public InstancePublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
+        super(rabbitTemplate, rabbitAdmin, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Override

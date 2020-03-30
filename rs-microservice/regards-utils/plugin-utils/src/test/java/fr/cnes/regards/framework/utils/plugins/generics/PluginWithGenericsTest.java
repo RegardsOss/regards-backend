@@ -26,13 +26,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollection;
-import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
+import fr.cnes.regards.framework.utils.cycle.generics.invalid1.PluginWithCyclicPojoCollection;
+import fr.cnes.regards.framework.utils.cycle.generics.invalid2.PluginWithCyclicPojoMap;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -47,6 +49,11 @@ public class PluginWithGenericsTest {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginWithGenericsTest.class);
 
+    @Before
+    public void initContext() {
+        PluginUtils.setup(this.getClass().getPackage().getName());
+    }
+
     @Test
     public void primitiveTest() throws NotAvailablePluginConfigurationException {
 
@@ -55,8 +62,8 @@ public class PluginWithGenericsTest {
                      IPluginParam.build(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false),
                      IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string"));
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class, null);
+        IPluginWithGenerics plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(PluginWithBoolean.class, "", parameters), null);
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }
@@ -68,8 +75,8 @@ public class PluginWithGenericsTest {
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringCollection.FIELD_NAME,
                                                                            PluginParameterTransformer.toJson(infos)));
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class, null);
+        IPluginWithGenerics plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(PluginWithStringCollection.class, "", parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -78,7 +85,6 @@ public class PluginWithGenericsTest {
     @Test
     public void pojoCollectionTest() throws NotAvailablePluginConfigurationException {
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
         Info info1 = new Info();
         info1.setMessage("info 1");
         Info info2 = new Info();
@@ -91,8 +97,8 @@ public class PluginWithGenericsTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class, null);
+        IPluginWithGenerics plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(PluginWithPojoCollection.class, "", parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -108,8 +114,8 @@ public class PluginWithGenericsTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(PluginWithStringMap.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class, null);
+        IPluginWithGenerics plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(PluginWithStringMap.class, "", parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -131,8 +137,8 @@ public class PluginWithGenericsTest {
         Set<IPluginParam> parameters = IPluginParam
                 .set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME, PluginParameterTransformer.toJson(infos)));
 
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class, null);
+        IPluginWithGenerics plugin = PluginUtils
+                .getPlugin(PluginConfiguration.build(PluginWithPojoMap.class, "", parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -140,13 +146,13 @@ public class PluginWithGenericsTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cyclicCollectionTest() throws NotAvailablePluginConfigurationException {
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        PluginUtils.getPlugin(null, PluginWithCyclicPojoCollection.class, null);
+        PluginUtils.setup(PluginWithCyclicPojoCollection.class.getPackage().getName());
+        PluginUtils.getPlugin(PluginConfiguration.build(PluginWithCyclicPojoCollection.class, "", null), null);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cyclicMapTest() throws NotAvailablePluginConfigurationException {
-        PluginUtils.setup(this.getClass().getPackage().getName());
-        PluginUtils.getPlugin(null, PluginWithCyclicPojoMap.class, null);
+        PluginUtils.setup(PluginWithCyclicPojoMap.class.getPackage().getName());
+        PluginUtils.getPlugin(PluginConfiguration.build(PluginWithCyclicPojoMap.class, "", null), null);
     }
 }

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * {@link InstanceSubscriber} uses a fixed tenant to subscribe to instance events.
@@ -35,8 +36,10 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
     public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler) {
-        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler);
+            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
+            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
+        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler, microserviceName, instancePublisher,
+              publisher, runtimeTenantResolver);
     }
 
     @Override

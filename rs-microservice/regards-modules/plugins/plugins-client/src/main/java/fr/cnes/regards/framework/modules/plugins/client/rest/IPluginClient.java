@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@RequestMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IPluginClient {
 
     /**
@@ -85,7 +85,7 @@ public interface IPluginClient {
      */
     @RequestMapping(value = PLUGINS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<PluginMetaData>>> getPlugins(
+    ResponseEntity<List<EntityModel<PluginMetaData>>> getPlugins(
             @RequestParam(value = "pluginType", required = false) final String pPluginType);
 
     /**
@@ -94,7 +94,7 @@ public interface IPluginClient {
      */
     @RequestMapping(value = PLUGIN_TYPES, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<String>>> getPluginTypes();
+    ResponseEntity<List<EntityModel<String>>> getPluginTypes();
 
     /**
      * Get all the metadata of a specified plugin.
@@ -103,7 +103,7 @@ public interface IPluginClient {
      */
     @RequestMapping(value = PLUGINS_PLUGINID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") final String pPluginId);
+    ResponseEntity<EntityModel<PluginMetaData>> getPluginMetaDataById(@PathVariable("pluginId") final String pPluginId);
 
     /**
      * Get all the {@link PluginConfiguration} of a specified plugin.
@@ -113,7 +113,7 @@ public interface IPluginClient {
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurations(
+    ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurations(
             @PathVariable("pluginId") final String pPluginId);
 
     /**
@@ -125,7 +125,7 @@ public interface IPluginClient {
      */
     @RequestMapping(value = PLUGINS_CONFIGS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<List<Resource<PluginConfiguration>>> getPluginConfigurationsByType(
+    ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurationsByType(
             @RequestParam(value = "pluginType", required = false) final String pPluginType);
 
     /**
@@ -136,7 +136,7 @@ public interface IPluginClient {
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<PluginConfiguration>> savePluginConfiguration(
+    ResponseEntity<EntityModel<PluginConfiguration>> savePluginConfiguration(
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration);
 
     /**
@@ -148,7 +148,7 @@ public interface IPluginClient {
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<PluginConfiguration>> getPluginConfiguration(
+    ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId);
 
     /**
@@ -158,7 +158,7 @@ public interface IPluginClient {
      */
     @RequestMapping(value = PLUGINS_CONFIGID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<PluginConfiguration>> getPluginConfigurationDirectAccess(
+    ResponseEntity<EntityModel<PluginConfiguration>> getPluginConfigurationDirectAccess(
             @PathVariable("configId") final Long pConfigId);
 
     /**
@@ -171,7 +171,7 @@ public interface IPluginClient {
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    ResponseEntity<Resource<PluginConfiguration>> updatePluginConfiguration(
+    ResponseEntity<EntityModel<PluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginId") final String pPluginId, @PathVariable("configId") final Long pConfigId,
             @Valid @RequestBody final PluginConfiguration pPluginConfiguration);
 

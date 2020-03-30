@@ -42,7 +42,7 @@ public class VhostConfig {
     public RabbitTemplate rabbitTemplate() {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory());
         // rabbitTemplate.setRoutingKey(QUEUE_NAME);
-        rabbitTemplate.setQueue(QUEUE_NAME);
+        //        rabbitTemplate.setQueue(QUEUE_NAME);
         rabbitTemplate.setMandatory(true);
         rabbitTemplate.setChannelTransacted(true);
         return rabbitTemplate;

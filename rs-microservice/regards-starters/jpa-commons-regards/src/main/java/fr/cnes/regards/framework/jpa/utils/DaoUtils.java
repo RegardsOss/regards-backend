@@ -95,8 +95,8 @@ public final class DaoUtils {
 
         final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
         final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
-        final List<Class<?>> projectsClasses = DaoUtils
-                .scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
+        final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class,
+                                                                           packagesToScan);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
         final List<String> projectPackages = new ArrayList<>();
@@ -104,9 +104,9 @@ public final class DaoUtils {
         for (final String instancePackage : instancePackages) {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
-                    LOGGER.error(String.format(
-                            "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
-                            instancePackage));
+                    LOGGER.error(String
+                            .format("Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
+                                    instancePackage));
                     throw new MultiDataBasesException(
                             "Invalid classpath for JPA multitenant and JPA instance databases.");
                 }
@@ -136,13 +136,13 @@ public final class DaoUtils {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
         }
 
-        // Add the packages that contains a class annotated with org.springframework.data.jpa.repository.JpaRepository
+        // Add the packages that contains a class implementing with org.springframework.data.jpa.repository.JpaRepository
         final Set<Class<? extends JpaRepository>> subTypeJpaRepository = reflections.getSubTypesOf(JpaRepository.class);
         for (Class<?> aClass : subTypeJpaRepository) {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
         }
 
-        // Add the packages that contains a class annotated with org.springframework.data.repository.CrudRepository
+        // Add the packages that contains a class implementing with org.springframework.data.repository.CrudRepository
         final Set<Class<? extends CrudRepository>> subTypeRepository = reflections.getSubTypesOf(CrudRepository.class);
         for (Class<?> aClass : subTypeRepository) {
             packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
@@ -202,7 +202,7 @@ public final class DaoUtils {
     private static Set<Class<?>> scanPackageForJpa(String pPackageToScan,
             Class<? extends Annotation> pIncludeAnnotation, Class<? extends Annotation> pExcludeAnnotation,
             Set<Class<?>> pClasses) {
-        final Set<Class<?>> classes = (pClasses == null) ? new HashSet<>() : pClasses;
+        final Set<Class<?>> classes = pClasses == null ? new HashSet<>() : pClasses;
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         if (pExcludeAnnotation != null) {
@@ -229,12 +229,12 @@ public final class DaoUtils {
                             inRelationClass = (Class<?>) ((ParameterizedType) field.getGenericType())
                                     .getActualTypeArguments()[0];
                         }
-                    } else if (field.isAnnotationPresent(ManyToOne.class) || field
-                            .isAnnotationPresent(OneToOne.class)) {
+                    } else if (field.isAnnotationPresent(ManyToOne.class)
+                            || field.isAnnotationPresent(OneToOne.class)) {
                         inRelationClass = field.getType();
                     }
                     // Adding found class if not already present into classes (to avoid infinite recursion)
-                    if ((inRelationClass != null) && !classes.contains(inRelationClass)) {
+                    if (inRelationClass != null && !classes.contains(inRelationClass)) {
                         classes.add(inRelationClass);
                         inRelationClasses.add(inRelationClass);
                     }

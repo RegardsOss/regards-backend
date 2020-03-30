@@ -35,8 +35,8 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 import fr.cnes.regards.framework.oais.ProvenanceInformation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.Syntax;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Builds the description of all fields found in {@link AbstractFeatureCollection}.

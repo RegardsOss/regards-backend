@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,16 +25,11 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.listener.exception.ListenerExecutionFailedException;
+import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
 import org.springframework.util.ErrorHandler;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
@@ -54,7 +46,7 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-    private static final String AMQP_DLQ_FAILURE_MESSAGE = "AMQP message failure";
+    private static final String AMQP_DLQ_FAILURE_MESSAGE = "Message failure";
 
     private final IInstancePublisher instancePublisher;
 
@@ -63,9 +55,6 @@ public class RegardsErrorHandler implements ErrorHandler {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final String microserviceName;
-
-    // Basic JSON parser
-    private final JsonParser parser = new JsonParser();
 
     public RegardsErrorHandler(IRuntimeTenantResolver runtimeTenantResolver, IInstancePublisher instancePublisher,
             IPublisher publisher, String microserviceName) {
@@ -77,7 +66,7 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     /**
      * This method notifies AMQP failure to INSTANCE_ADMIN and if possible to PROJECT_ADMIN.<br/>
-     * To notify PROJECT_ADMIN, this method uses {@link TenantWrapper#getTenant()} property to retrieve the target tenant.
+     * To notify PROJECT_ADMIN, this method uses only work with tenant header.
      */
     @Override
     public void handleError(Throwable t) {
@@ -100,14 +89,10 @@ public class RegardsErrorHandler implements ErrorHandler {
                 instancePublisher.publish(event);
 
                 // Try to publish to PROJECT_ADMIN looking for tenant to properly route the notification
-                try (Reader json = new InputStreamReader(new ByteArrayInputStream(lefe.getFailedMessage().getBody()),
-                        DEFAULT_CHARSET)) {
-                    JsonElement el = parser.parse(json);
-                    if (el.isJsonObject()) {
-                        JsonObject o = el.getAsJsonObject();
-                        String tenant = o.get("tenant").getAsString();
-                        LOGGER.trace("Tenant {} detected", tenant);
-
+                if (RabbitVersion.isVersion1_1(lefe.getFailedMessage())) {
+                    String tenant = lefe.getFailedMessage().getMessageProperties()
+                            .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+                    if (tenant != null) {
                         try {
                             // Route notification to the right tenant
                             runtimeTenantResolver.forceTenant(tenant);
@@ -116,9 +101,6 @@ public class RegardsErrorHandler implements ErrorHandler {
                             runtimeTenantResolver.clearTenant();
                         }
                     }
-                } catch (Exception e) { // NOSONAR avoid any exception trying to retrieve tenant
-                    // Cannot retrieve tenant if message cannot be parsed
-                    LOGGER.warn("Cannot parse AMQP message, skipping project admin notification", e);
                 }
             }
         } else {

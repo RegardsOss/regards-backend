@@ -35,9 +35,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(properties = { "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=1234567812345678", "regards.workspace.occupation.threshold=0",
-        "regards.workspace.critical.occupation.threshold=0", "spring.datasource.type=" })
+@TestPropertySource(
+        properties = { "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
+                "regards.workspace.occupation.threshold=0", "regards.workspace.critical.occupation.threshold=0" })
 public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
 
     @Autowired

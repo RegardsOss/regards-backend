@@ -54,6 +54,7 @@ import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -112,6 +113,17 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoWithGson() {
         GsonInfoHandler handler = new GsonInfoHandler();
+        subscriber.subscribeTo(GsonInfo.class, handler, true);
+        publisher.publish(new GsonInfo());
+        handler.assertCount(1);
+    }
+
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
+    @Requirement("REGARDS_DSL_CMP_ARC_160")
+    @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
+    @Test
+    public void publishInfoNoWrapperWithGson() {
+        GsonInfoNoWrapperHandler handler = new GsonInfoNoWrapperHandler();
         subscriber.subscribeTo(GsonInfo.class, handler, true);
         publisher.publish(new GsonInfo());
         handler.assertCount(1);
@@ -266,13 +278,13 @@ public abstract class AbstractSubscriberIT {
             // To do so, we have to do it by hand
             OnePerMicroserviceInfo wrongEvent = new OnePerMicroserviceInfo();
             wrongEvent.setMessage(wrongEvent.getMessage() + Math.random());
-            TenantWrapper messageSended = new TenantWrapper(wrongEvent, "PROJECT");
-            rabbitTemplate
-                    .convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
-                        MessageProperties messageProperties = pMessage.getMessageProperties();
-                        messageProperties.setPriority(0);
-                        return new Message(pMessage.getBody(), messageProperties);
-                    });
+            TenantWrapper<OnePerMicroserviceInfo> messageSended = TenantWrapper.build(wrongEvent, "PROJECT");
+            rabbitTemplate.convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended,
+                                          pMessage -> {
+                                              MessageProperties messageProperties = pMessage.getMessageProperties();
+                                              messageProperties.setPriority(0);
+                                              return new Message(pMessage.getBody(), messageProperties);
+                                          });
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -287,11 +299,10 @@ public abstract class AbstractSubscriberIT {
                 return;
             }
             if (fromDlq instanceof TenantWrapper) {
-                Object content = ((TenantWrapper) fromDlq).getContent();
+                Object content = ((TenantWrapper<?>) fromDlq).getContent();
                 if (!(content instanceof OnePerMicroserviceInfo)) {
                     Assert.fail(String.format("Message from DLQ is not %s but %s",
-                                              OnePerMicroserviceInfo.class.getName(),
-                                              content.getClass().getName()));
+                                              OnePerMicroserviceInfo.class.getName(), content.getClass().getName()));
                 }
             } else {
                 Assert.fail("Message from DLQ is not a TenantWrapper. You might have been compromised by other tests.");
@@ -320,7 +331,7 @@ public abstract class AbstractSubscriberIT {
     private class ErrorHandler extends AbstractReceiver<ErrorEvent> {
 
         @Override
-        public void handle(TenantWrapper<ErrorEvent> wrapper) {
+        public void handle(String tenant, ErrorEvent message) {
             throw new RuntimeException("Because");
         }
     }

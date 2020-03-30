@@ -55,15 +55,9 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     private static final String DOT = ".";
 
-    public static final String REGARDS_NAMESPACE = "regards";
-
     public static final String UNICAST_BASE_EXCHANGE_NAME = "unicast";
 
     public static final String BROADCAST_BASE_EXCHANGE_NAME = "broadcast";
-
-    public static final String UNICAST_NAMESPACE = REGARDS_NAMESPACE + DOT + UNICAST_BASE_EXCHANGE_NAME;
-
-    public static final String BROADCAST_NAMESPACE = REGARDS_NAMESPACE + DOT + BROADCAST_BASE_EXCHANGE_NAME;
 
     /**
      * Default routing key
@@ -105,12 +99,18 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      */
     private String microserviceInstanceId;
 
+    /*
+     * Namespace used in queue and exchange naming
+     */
+    private String namespace;
+
     /**
      * Whether above instance identifier is generated or not. If so, queues using instance identifier will be auto delete queues.
      */
     private boolean instanceIdGenerated = false;
 
-    public RegardsAmqpAdmin(String microserviceTypeId, String microserviceInstanceId) {
+    public RegardsAmqpAdmin(String namespace, String microserviceTypeId, String microserviceInstanceId) {
+        this.namespace = namespace;
         this.microserviceTypeId = microserviceTypeId;
         this.microserviceInstanceId = microserviceInstanceId;
     }
@@ -125,6 +125,14 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
             this.instanceIdGenerated = true;
             this.microserviceInstanceId = microserviceName + UUID.randomUUID();
         }
+    }
+
+    private String getUnicastNamespace() {
+        return namespace + DOT + UNICAST_BASE_EXCHANGE_NAME;
+    }
+
+    private String getBroadcastNamespace() {
+        return namespace + DOT + BROADCAST_BASE_EXCHANGE_NAME;
     }
 
     @Override
@@ -152,13 +160,13 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * @return exchange name
      */
     private String getUnicastExchangeName() {
-        return UNICAST_NAMESPACE;
+        return getUnicastNamespace();
     }
 
     @Override
     public String getBroadcastExchangeName(String eventType, Target target) {
         StringBuilder builder = new StringBuilder();
-        builder.append(BROADCAST_NAMESPACE);
+        builder.append(getBroadcastNamespace());
         if (Target.MICROSERVICE.equals(target)) {
             // Restrict exchange to microservice type
             builder.append(DOT);
@@ -236,7 +244,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append(UNICAST_NAMESPACE);
+        builder.append(getUnicastNamespace());
         builder.append(DOT);
         builder.append(tenant);
         if (Target.MICROSERVICE.equals(target)) {
@@ -258,7 +266,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Override
     public String getSubscriptionQueueName(Class<? extends IHandler<?>> handlerType, Target target) {
         StringBuilder builder = new StringBuilder();
-        builder.append(BROADCAST_NAMESPACE);
+        builder.append(getBroadcastNamespace());
         builder.append(DOT);
         builder.append(microserviceTypeId);
         if (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target)) {

@@ -19,9 +19,7 @@
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.amqp.RabbitHealthIndicatorAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -34,9 +32,10 @@ import fr.cnes.regards.framework.amqp.AmqpHealthIndicator;
  *
  * @author Marc SORDI
  *
+ * FIXME : WIP with spring boot admin
+ *
  */
 @Configuration
-@AutoConfigureBefore(RabbitHealthIndicatorAutoConfiguration.class)
 public class AmqpHealthIndicatorAutoConfiguration {
 
     /**

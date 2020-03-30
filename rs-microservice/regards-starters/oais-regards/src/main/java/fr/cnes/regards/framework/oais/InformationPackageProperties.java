@@ -16,7 +16,7 @@ import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Information package<br/>
@@ -75,7 +75,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * Methods to use :
  * <ul>
  * <li>{@link #withContextTags(String...)}</li>
- * <li> {@link #withContextCategories(String...)}</li>
  * <li>{@link #withContextInformation(String, Object)}</li>
  * </ul>
  * <br/>

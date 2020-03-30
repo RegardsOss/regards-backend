@@ -247,7 +247,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     private void unregisterConnectionFactory(String virtualHost) {
         // if there is a connection factory for this vhost then unregister it
-        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) == null) {
+        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) != null) {
             simpleRoutingConnectionFactory.removeTargetConnectionFactory(virtualHost);
         }
     }
@@ -309,7 +309,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
                                                                       HttpMethod.DELETE, request, String.class);
             int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
-            if (!(isSuccess(statusValue) || statusValue == HttpStatus.NOT_FOUND.value())) {
+            if (!(isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
                 String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s", virtualHost, statusValue,
                                                     response.getBody());
                 LOGGER.error(errorMessage);
@@ -349,7 +349,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isSuccess(int statusValue) {
         final int hundred = 100;
-        return statusValue / hundred == 2;
+        return (statusValue / hundred) == 2;
     }
 
     @Override
@@ -395,9 +395,10 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isBound(String virtualHost) {
         String boundVhost = (String) SimpleResourceHolder.get(simpleRoutingConnectionFactory);
-        return virtualHost != null && virtualHost.equals(boundVhost);
+        return (virtualHost != null) && virtualHost.equals(boundVhost);
     }
 
+    @Override
     public VirtualHostMode getMode() {
         return mode;
     }

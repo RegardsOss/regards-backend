@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import org.springframework.hateoas.Link;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.LinkRelation;
 
 /**
  * Link relations
@@ -29,47 +30,47 @@ public final class LinkRels {
     /**
      * Self
      */
-    public static final String SELF = Link.REL_SELF;
+    public static final LinkRelation SELF = IanaLinkRelations.SELF;
 
     /**
      * First
      */
-    public static final String FIRST = Link.REL_FIRST;
+    public static final LinkRelation FIRST = IanaLinkRelations.FIRST;
 
     /**
      * Previous
      */
-    public static final String PREVIOUS = Link.REL_PREVIOUS;
+    public static final LinkRelation PREVIOUS = IanaLinkRelations.PREV;
 
     /**
      * Next
      */
-    public static final String NEXT = Link.REL_NEXT;
+    public static final LinkRelation NEXT = IanaLinkRelations.NEXT;
 
     /**
      * Next
      */
-    public static final String LAST = Link.REL_LAST;
+    public static final LinkRelation LAST = IanaLinkRelations.LAST;
 
     /**
      * Create
      */
-    public static final String CREATE = "create";
+    public static final LinkRelation CREATE = LinkRelation.of("create");
 
     /**
      * Update
      */
-    public static final String UPDATE = "update";
+    public static final LinkRelation UPDATE = LinkRelation.of("update");
 
     /**
      * Delete
      */
-    public static final String DELETE = "delete";
+    public static final LinkRelation DELETE = LinkRelation.of("delete");
 
     /**
      * List of elements
      */
-    public static final String LIST = "list";
+    public static final LinkRelation LIST = LinkRelation.of("list");
 
     private LinkRels() {
     }

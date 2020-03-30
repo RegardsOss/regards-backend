@@ -23,6 +23,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -41,7 +42,7 @@ public class InheritanceTests {
                      IPluginParam.build(BasicPlugin.INHERITED_FIELD_NAME_STRING, "inherited hello!"));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
-        IBasicPlugin plugin = PluginUtils.getPlugin(parameters, BasicPlugin.class, null);
+        IBasicPlugin plugin = PluginUtils.getPlugin(PluginConfiguration.build(BasicPlugin.class, "", parameters), null);
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }

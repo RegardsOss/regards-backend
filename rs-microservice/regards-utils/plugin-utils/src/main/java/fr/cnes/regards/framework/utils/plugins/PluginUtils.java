@@ -30,7 +30,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.reflections.Configuration;
@@ -228,6 +227,11 @@ public final class PluginUtils {
         return pluginMetaData;
     }
 
+    public static <T> T getPlugin(PluginConfiguration conf, Map<String, Object> instantiatedPlugins,
+            IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
+        return getPlugin(conf, pluginMetadataCache.get(conf.getPluginId()), instantiatedPlugins, dynamicParams);
+    }
+
     /**
      * Create an instance of {@link Plugin} based on its configuration and metadata
      * @param <T> a {@link Plugin}
@@ -240,6 +244,10 @@ public final class PluginUtils {
     public static <T> T getPlugin(PluginConfiguration conf, PluginMetaData pluginMetadata,
             Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams)
             throws NotAvailablePluginConfigurationException {
+        if (pluginMetadata == null) {
+            throw new IllegalArgumentException(
+                    String.format("Plugin metadata are required for plugin \"%s\"", conf.getPluginId()));
+        }
         if (!conf.isActive()) {
             throw new NotAvailablePluginConfigurationException(
                     String.format("Plugin configuration <%d - %s> is not active.", conf.getId(), conf.getLabel()));
@@ -285,25 +293,25 @@ public final class PluginUtils {
         return returnPlugin;
     }
 
-    /**
-     * Create an instance of {@link Plugin} based on its configuration and metadata
-     * @param <T> a {@link Plugin}
-     * @param params a {@link List} of {@link IPluginParam}
-     * @param pluginClass the required returned type
-     * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
-     * @return a {@link Plugin} instance
-     * @deprecated TODO this method is only used to do tests and should be remove from main code
-     */
-    @Deprecated
-    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass,
-            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicPlugins)
-            throws NotAvailablePluginConfigurationException {
-        // Build plugin metadata
-        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
-
-        PluginConfiguration pluginConfiguration = new PluginConfiguration("", params, pluginMetadata.getPluginId());
-        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPlugins, dynamicPlugins);
-    }
+    //    /**
+    //     * Create an instance of {@link Plugin} based on its configuration and metadata
+    //     * @param <T> a {@link Plugin}
+    //     * @param params a {@link List} of {@link IPluginParam}
+    //     * @param pluginClass the required returned type
+    //     * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
+    //     * @return a {@link Plugin} instance
+    //     * @deprecated TODO this method is only used to do tests and should be remove from main code
+    //     */
+    //    @Deprecated
+    //    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass,
+    //            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicPlugins)
+    //            throws NotAvailablePluginConfigurationException {
+    //        // Build plugin metadata
+    //        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
+    //
+    //        PluginConfiguration pluginConfiguration = new PluginConfiguration("", params, pluginMetadata.getPluginId());
+    //        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPlugins, dynamicPlugins);
+    //    }
 
     /**
      * Look for {@link PluginDestroy} annotation and launch corresponding method if found.
@@ -360,21 +368,21 @@ public final class PluginUtils {
         }
     }
 
-    /**
-     * Create an instance of {@link PluginConfiguration}
-     * @param <T> a plugin
-     * @param params the plugin parameters
-     * @param returnInterfaceType the required returned type
-     * @return an instance @ if a problem occurs
-     * @deprecated TODO remove this method from main code because it is only used in test
-     */
-    @Deprecated
-    public static <T> PluginConfiguration getPluginConfiguration(Set<IPluginParam> params,
-            Class<T> returnInterfaceType) {
-        // Build plugin metadata
-        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
-        return new PluginConfiguration(UUID.randomUUID().toString(), params, pluginMetadata.getPluginId());
-    }
+    //    /**
+    //     * Create an instance of {@link PluginConfiguration}
+    //     * @param <T> a plugin
+    //     * @param params the plugin parameters
+    //     * @param returnInterfaceType the required returned type
+    //     * @return an instance @ if a problem occurs
+    //     * @deprecated TODO remove this method from main code because it is only used in test
+    //     */
+    //    @Deprecated
+    //    public static <T> PluginConfiguration getPluginConfiguration(Set<IPluginParam> params,
+    //            Class<T> returnInterfaceType) {
+    //        // Build plugin metadata
+    //        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
+    //        return new PluginConfiguration(UUID.randomUUID().toString(), params, pluginMetadata.getPluginId());
+    //    }
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);

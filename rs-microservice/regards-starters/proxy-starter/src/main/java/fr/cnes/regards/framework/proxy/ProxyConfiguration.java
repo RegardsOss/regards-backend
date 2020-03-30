@@ -34,7 +34,7 @@ import fr.cnes.httpclient.HttpClientFactory.Type;
  * Proxy configuration is set with spring properties with the possibilities of the JSPNego library.
  * This configuration is mained used for CNES specific proxy authorization.
  *
- * @see https://github.com/CNES/JSPNego
+ * @see "https://github.com/CNES/JSPNego"
  * @author sbinda
  *
  */
@@ -65,7 +65,7 @@ public class ProxyConfiguration {
     @Primary
     public org.apache.http.client.HttpClient getHttpClient() {
         // https://github.com/CNES/JSPNego
-        if ((proxyHost != null) && !proxyHost.isEmpty()) {
+        if (proxyHost != null && !proxyHost.isEmpty()) {
             LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
                         proxyLogin);
             if (proxyPort != null) {
@@ -73,10 +73,10 @@ public class ProxyConfiguration {
             } else {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
             }
-            if ((noProxy != null) && !noProxy.isEmpty()) {
+            if (noProxy != null && !noProxy.isEmpty()) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
             }
-            if ((proxyLogin != null) && (proxyPassword != null)) {
+            if (proxyLogin != null && proxyPassword != null) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
                 fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
             }

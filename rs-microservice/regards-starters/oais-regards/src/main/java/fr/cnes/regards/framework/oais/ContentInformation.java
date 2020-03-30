@@ -29,7 +29,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * OAIS content information<br/>
@@ -54,7 +54,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * To set the representation information, use :
  * <ul>
- * <li>{@link #withSyntax(String, String, MimeType)}</li>
+ * <li>{@link #withSyntax(String, String, MimeType, Double, Double)}</li>
  * <li>{@link #withSyntax(MimeType)}</li>
  * <li>{@link #withSyntaxAndSemantic(String, String, MimeType, String)}</li>
  * <li>{@link #withHardwareEnvironmentProperty(String, Object)}</li>

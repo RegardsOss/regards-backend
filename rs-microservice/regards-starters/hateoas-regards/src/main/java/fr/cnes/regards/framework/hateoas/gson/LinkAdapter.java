@@ -45,7 +45,7 @@ public class LinkAdapter extends TypeAdapter<Link> {
             out.nullValue();
         } else {
             out.beginObject();
-            out.name(REL).value(link.getRel());
+            out.name(REL).value(link.getRel().value());
             out.name(HREF).value(link.getHref());
             out.endObject();
         }

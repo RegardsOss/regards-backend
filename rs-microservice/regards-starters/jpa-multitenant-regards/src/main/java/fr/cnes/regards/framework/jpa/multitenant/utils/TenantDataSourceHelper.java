@@ -24,6 +24,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
@@ -33,7 +35,6 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  * @author Marc Sordi
  */
 public final class TenantDataSourceHelper {
-
 
     private TenantDataSourceHelper() {
     }
@@ -68,5 +69,24 @@ public final class TenantDataSourceHelper {
             DataSourceHelper.testConnection(dataSource, true);
         }
         return dataSource;
+    }
+
+    public static void verifyBatchParameter(JpaProperties properties, TenantConnection connection) {
+        String q = "?";
+        String rbi = "reWriteBatchedInserts";
+        String batchSize = properties.getProperties().get("hibernate.jdbc.batch_size");
+        if (batchSize != null && TenantConnection.DEFAULT_DRIVER_CLASS_NAME.equals(connection.getDriverClassName())) {
+            if (connection.getUrl().contains(rbi)) {
+                // Nothing to do
+            } else {
+                StringBuffer buffer = new StringBuffer(connection.getUrl());
+                if (!connection.getUrl().contains(q)) {
+                    buffer.append(q);
+                }
+                buffer.append(rbi);
+                buffer.append("=true");
+                connection.setUrl(buffer.toString());
+            }
+        }
     }
 }

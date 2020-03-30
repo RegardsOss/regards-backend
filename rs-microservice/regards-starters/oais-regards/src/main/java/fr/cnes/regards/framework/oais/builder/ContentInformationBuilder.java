@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -33,7 +32,7 @@ import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.Semantic;
 import fr.cnes.regards.framework.oais.Syntax;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Content Information Builder.<br/>

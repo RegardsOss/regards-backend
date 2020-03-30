@@ -12,8 +12,8 @@ import javax.validation.Payload;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * Ensure that {@link AbstractInformationPackage} of type {@link EntityType#DATA} have at least one

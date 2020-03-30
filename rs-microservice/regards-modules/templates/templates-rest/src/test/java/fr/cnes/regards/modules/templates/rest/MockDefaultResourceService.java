@@ -22,8 +22,9 @@ import java.lang.reflect.Method;
 import java.net.URI;
 
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.core.AnnotationMappingDiscoverer;
-import org.springframework.hateoas.core.MappingDiscoverer;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.server.core.AnnotationMappingDiscoverer;
+import org.springframework.hateoas.server.core.MappingDiscoverer;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +48,7 @@ public class MockDefaultResourceService extends DefaultResourceService {
     }
 
     @Override
-    protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
+    protected Link buildLink(Method pMethod, LinkRelation pRel, Object... pParameterValues) {
 
         Assert.notNull(pMethod, "Method must not be null!");
 

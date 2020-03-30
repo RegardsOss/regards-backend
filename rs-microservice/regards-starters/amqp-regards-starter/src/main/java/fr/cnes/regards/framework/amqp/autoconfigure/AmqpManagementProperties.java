@@ -41,6 +41,11 @@ public class AmqpManagementProperties {
 
     private VirtualHostMode mode = VirtualHostMode.SINGLE;
 
+    /*
+     * Namespace used in queue and exchange naming
+     */
+    private String namespace = "regards";
+
     /**
      * @return the management host
      */
@@ -75,5 +80,13 @@ public class AmqpManagementProperties {
 
     public void setMode(VirtualHostMode mode) {
         this.mode = mode;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 }

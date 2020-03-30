@@ -66,10 +66,14 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
         // Change tenant
         String tenant = "PROJECT1";
-        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
 
-        message = "Forced tenant message!";
-        publisher.publish(Info.create(message));
+            message = "Forced tenant message!";
+            publisher.publish(Info.create(message));
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
         // Same receiver so count is incremented
         receiver.assertCount(2);
 
@@ -127,6 +131,11 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
     @Override
     public void publishInfoWithGson() {
         super.publishInfoWithGson();
+    }
+
+    @Override
+    public void publishInfoNoWrapperWithGson() {
+        super.publishInfoNoWrapperWithGson();
     }
 
     @Override

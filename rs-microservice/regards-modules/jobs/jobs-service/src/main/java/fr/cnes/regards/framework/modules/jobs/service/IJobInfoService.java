@@ -117,4 +117,9 @@ public interface IJobInfoService {
      * @param statuses jobInfo statuses
      */
     Long retrieveJobsCount(String className, JobStatus... statuses);
+
+    /**
+     * @param jobInfo list of {@link JobInfo} to save
+     */
+    void saveAll(List<JobInfo> jobInfo);
 }

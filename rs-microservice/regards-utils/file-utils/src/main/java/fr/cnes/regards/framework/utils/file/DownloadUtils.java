@@ -71,7 +71,7 @@ public final class DownloadUtils {
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Integer)} with {@link Proxy#NO_PROXY} as proxy
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum, Integer pConnectionTimeout) throws IOException, NoSuchAlgorithmException {
@@ -80,7 +80,7 @@ public final class DownloadUtils {
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Integer)} with {@link Proxy#NO_PROXY} as proxy and default timeout
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy and default timeout
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum) throws IOException, NoSuchAlgorithmException {
@@ -151,7 +151,7 @@ public final class DownloadUtils {
     }
 
     public static boolean needProxy(URL url, Collection<String> nonProxyHosts) {
-        if ((nonProxyHosts != null) && !nonProxyHosts.isEmpty()) {
+        if (nonProxyHosts != null && !nonProxyHosts.isEmpty()) {
             return !nonProxyHosts.stream().anyMatch(host -> Pattern.matches(host, url.getHost()));
         } else {
             return true;

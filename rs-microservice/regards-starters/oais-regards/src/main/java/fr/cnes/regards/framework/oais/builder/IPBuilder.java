@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -37,8 +36,8 @@ import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * Information package builder<br/>

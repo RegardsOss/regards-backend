@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.modules.workspace.rest;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,19 +64,19 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
     private IWorkspaceService workspaceService;
 
     /**
-     * @return workspace monitoring information wrapped into a {@link Resource}
+     * @return workspace monitoring information wrapped into a {@link EntityModel}
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send monitoring informations about the workspace", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<WorkspaceMonitoringInformation>> getMonitoringInformation() throws IOException {
+    public HttpEntity<EntityModel<WorkspaceMonitoringInformation>> getMonitoringInformation() throws IOException {
         return new ResponseEntity<>(toResource(workspaceService.getMonitoringInformation()), HttpStatus.OK);
     }
 
     @Override
-    public Resource<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation element,
+    public EntityModel<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation element,
             Object... extras) {
-        Resource<WorkspaceMonitoringInformation> resource = resourceService.toResource(element);
+        EntityModel<WorkspaceMonitoringInformation> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getMonitoringInformation", LinkRels.SELF);
         return resource;
     }

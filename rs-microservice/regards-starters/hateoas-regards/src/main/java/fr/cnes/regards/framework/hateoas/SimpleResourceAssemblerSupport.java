@@ -3,32 +3,32 @@ package fr.cnes.regards.framework.hateoas;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
-import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 
 import com.google.common.base.Preconditions;
 
 /**
- * Alternative solution to {@link ResourceAssemblerSupport}.
+ * Alternative solution to {@link RepresentationModelAssemblerSupport}.
  * It does not require the developper to define a [PersonResource] type, which is often unnessary.
- * @param <T> The base type wrapped in {@link Resource}
+ * @param <T> The base type wrapped in {@link EntityModel}
  * @author Xavier-Alexandre Brochard
  */
-public abstract class SimpleResourceAssemblerSupport<T> implements ResourceAssembler<T, Resource<T>> {
+public abstract class SimpleResourceAssemblerSupport<T> implements RepresentationModelAssembler<T, EntityModel<T>> {
 
     /**
      * Converts all given entities into resources.
      * @param entities must not be {@literal null}.
-     * @see #toResource(Object)
+     * @see #toModel(Object)
      */
-    public List<Resource<T>> toResources(Iterable<? extends T> entities) {
+    public List<EntityModel<T>> toResources(Iterable<? extends T> entities) {
 
         Preconditions.checkNotNull(entities);
-        List<Resource<T>> result = new ArrayList<>();
+        List<EntityModel<T>> result = new ArrayList<>();
 
         for (T entity : entities) {
-            result.add(toResource(entity));
+            result.add(toModel(entity));
         }
 
         return result;

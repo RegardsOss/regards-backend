@@ -22,6 +22,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
@@ -50,20 +51,12 @@ public class TenantWrapper<T> implements Cloneable {
      */
     private Date date;
 
-    /**
-     * Default constructor
-     */
-    public TenantWrapper() {
-        // constructor for serialization
-    }
-
-    /**
-     * Constructor setting the wrapper content and tenant and initializing the publishing date
-     */
-    public TenantWrapper(T pContent, String pTenant) {
-        content = pContent;
-        tenant = pTenant;
-        date = new Date();
+    public static <T> TenantWrapper<T> build(T content, String tenant) {
+        TenantWrapper<T> w = new TenantWrapper<T>();
+        w.setContent(content);
+        w.setTenant(tenant);
+        w.setDate(new Date());
+        return w;
     }
 
     /**
@@ -100,6 +93,10 @@ public class TenantWrapper<T> implements Cloneable {
      */
     public Date getDate() {
         return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     @Override

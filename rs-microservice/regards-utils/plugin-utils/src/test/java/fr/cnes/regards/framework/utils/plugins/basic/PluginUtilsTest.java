@@ -23,10 +23,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -45,7 +47,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtilsTest.class);
 
-    private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins.basic";
+    @Before
+    public void initContext() {
+        PluginUtils.setup(SamplePlugin.class.getPackage().getName());
+    }
 
     /**
      * Load all plugins
@@ -57,7 +62,6 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Get all the plugins
-        PluginUtils.setup(PLUGIN_PACKAGE);
         Map<String, PluginMetaData> maps = PluginUtils.getPlugins();
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);
@@ -108,8 +112,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                      IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "chris_test_1"));
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -140,8 +144,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dynParam = IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, -1);
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), dynParam);
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>(), dynParam);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -163,8 +167,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                      IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix"));
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -196,8 +200,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.BLUE);
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), dyn);
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>(), dyn);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -225,8 +229,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                              .dynamic(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN));
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -255,8 +259,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.CINQ);
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), dyn);
+        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new HashMap<>(), dyn);
     }
 
     /**
@@ -276,7 +279,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // instantiate plugin
         PluginUtils.setup(SamplePlugin.class.getPackage().getName());
-        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
+        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                             new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -295,9 +299,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
                      IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ));
 
-        // instantiate plugin
-        PluginUtils.setup("fr.cnes.regards.plugins.utils.plugintypes");
-        PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
+        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new HashMap<>());
 
         // Use the plugin
         Assert.fail();
@@ -318,8 +320,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                      IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ));
 
         // instantiate plugin
-        PluginUtils.setup(PLUGIN_PACKAGE);
-        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, new HashMap<>());
+        PluginUtils.getPlugin(PluginConfiguration.build(SampleErrorPlugin.class, "", parameters), new HashMap<>());
     }
 
     @Test
