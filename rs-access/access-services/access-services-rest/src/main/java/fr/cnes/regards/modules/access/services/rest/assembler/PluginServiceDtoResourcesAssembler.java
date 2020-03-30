@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.assembler;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -47,9 +47,9 @@ public class PluginServiceDtoResourcesAssembler extends SimpleResourceAssemblerS
     }
 
     @Override
-    public Resource<PluginServiceDto> toResource(PluginServiceDto element) {
+    public EntityModel<PluginServiceDto> toModel(PluginServiceDto element) {
         return resourceService.toResource(element);
-        // Add links here
+
     }
 
 }

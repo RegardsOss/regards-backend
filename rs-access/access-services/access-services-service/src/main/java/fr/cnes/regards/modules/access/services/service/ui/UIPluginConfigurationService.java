@@ -18,21 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -46,7 +34,19 @@ import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 /**
  * Class PluginConfigurationService
@@ -59,6 +59,11 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 @Service
 @RegardsTransactional
 public class UIPluginConfigurationService implements IUIPluginConfigurationService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(UIPluginConfigurationService.class);
 
     /**
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
@@ -75,6 +80,12 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     private final IPublisher publisher;
 
+
+    /**
+     * Client to control roles
+     */
+    private final IRolesClient rolesClient;
+
     /**
      * @param pPluginRepository
      * @param pLinkedUiPluginRespository
@@ -83,12 +94,13 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      */
     public UIPluginConfigurationService(IUIPluginDefinitionRepository pPluginRepository,
             ILinkUIPluginsDatasetsRepository pLinkedUiPluginRespository, IUIPluginConfigurationRepository pRepository,
-            IPublisher pPublisher) {
+            IPublisher pPublisher, IRolesClient pRolesClient) {
         super();
         pluginRepository = pPluginRepository;
         linkedUiPluginRespository = pLinkedUiPluginRespository;
         repository = pRepository;
         publisher = pPublisher;
+        rolesClient = pRolesClient;
     }
 
     @Override
@@ -100,8 +112,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             if (pPluginType != null) {
                 if ((pIsActive != null) && (pIsLinkedToAllEntities != null)) {
                     return repository.findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(pPluginType, pIsActive,
-                                                                                                pIsLinkedToAllEntities,
-                                                                                                pPageable);
+                            pIsLinkedToAllEntities,
+                            pPageable);
                 } else if (pIsActive != null) {
                     return repository.findByPluginDefinitionTypeAndActive(pPluginType, pIsActive, pPageable);
                 } else {
@@ -238,9 +250,21 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
                 }
             });
         }
-
         try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationModes)).collect(Collectors.toList());
+            return stream.filter(IS_APPLICABLE_ON.apply(pApplicationModes))
+                    // Apply UIPlugin authorization
+                    .filter(uiPluginConfiguration -> {
+                        boolean shouldFilter = true;
+                        String roleName = uiPluginConfiguration.getPluginDefinition().getRoleName();
+                        try {
+                            shouldFilter = !rolesClient.shouldAccessToResourceRequiring(roleName).getBody();
+                        } catch (EntityNotFoundException e) {
+                            LOGGER.error("Failed to retrieve role authorisation. UIPluginDefinition role {} and UIPluginConf id {}",
+                                    roleName, uiPluginConfiguration.getId(), e);
+                        }
+                        return shouldFilter;
+                    })
+                    .collect(Collectors.toList());
         }
     }
 

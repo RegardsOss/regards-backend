@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -73,7 +73,7 @@ public class ServicesAggregatorControllerTest {
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
         PluginConfigurationDto dto = new AccessServicesITConfiguration().dummyPluginConfigurationDto();
         Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyList(), Mockito.any()))
-                .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
+                .thenReturn(new ResponseEntity<List<EntityModel<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dto)), HttpStatus.OK));
 
         // Mock Ui Services
@@ -96,7 +96,7 @@ public class ServicesAggregatorControllerTest {
      */
     @Test
     public final void testRetrieveServices() {
-        ResponseEntity<List<Resource<PluginServiceDto>>> result = controller
+        ResponseEntity<List<EntityModel<PluginServiceDto>>> result = controller
                 .retrieveServices(Lists.newArrayList("coucou"), Lists.newArrayList(ServiceScope.MANY));
         Assert.assertNotNull(result);
         Assert.assertThat(result.getBody(), Matchers.hasSize(2));

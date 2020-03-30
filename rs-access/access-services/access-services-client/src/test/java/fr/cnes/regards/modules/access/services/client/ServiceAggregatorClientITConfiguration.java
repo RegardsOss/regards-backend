@@ -23,7 +23,7 @@ import java.util.List;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -52,7 +52,7 @@ public class ServiceAggregatorClientITConfiguration {
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
-        ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
+        ResponseEntity<List<EntityModel<PluginConfigurationDto>>> result = new ResponseEntity<List<EntityModel<PluginConfigurationDto>>>(
                 HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
 
         Mockito.when(client.retrieveServices(Mockito.anyList(), Mockito.any())).thenReturn(result);
@@ -66,7 +66,7 @@ public class ServiceAggregatorClientITConfiguration {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         metaData.setPluginId(SampleServicePlugin.class.getAnnotation(Plugin.class).id());
-        PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf",metaData.getPluginId());
+        PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf", metaData.getPluginId());
         pluginConfiguration.setMetaData(metaData);
         pluginConfiguration.setId(ID);
         ID = ID + 1;

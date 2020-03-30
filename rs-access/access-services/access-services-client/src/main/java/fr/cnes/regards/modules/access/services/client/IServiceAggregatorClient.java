@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,8 +40,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-access-project", contextId = "rs-access-project.service-agg-client")
-@RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IServiceAggregatorClient {
 
     /**
@@ -60,7 +60,7 @@ public interface IServiceAggregatorClient {
      */
     @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, sync = true)
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
+    ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
             @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationMode);
 

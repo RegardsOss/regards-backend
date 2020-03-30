@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -36,7 +34,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=bff", "spring.datasource.type=" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=bff" })
 public class AccessSearchControllerIT extends AbstractRegardsIT {
 
     /**

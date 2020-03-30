@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -35,7 +36,7 @@ import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionReposit
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  * Unit Test for {@link UIPluginConfigurationService}
@@ -57,6 +58,8 @@ public class UIPluginConfigurationServiceTest {
 
     private IPublisher publisher;
 
+    private IRolesClient rolesClient;
+
     /**
      * @throws java.lang.Exception
      */
@@ -66,9 +69,10 @@ public class UIPluginConfigurationServiceTest {
         linkedUiPluginRespository = Mockito.mock(ILinkUIPluginsDatasetsRepository.class);
         repository = Mockito.mock(IUIPluginConfigurationRepository.class);
         publisher = Mockito.mock(IPublisher.class);
+        rolesClient = Mockito.mock(IRolesClient.class);
 
         pluginConfigurationService = new UIPluginConfigurationService(pluginRepository, linkedUiPluginRespository,
-                repository, publisher);
+                repository, publisher, rolesClient);
     }
 
     /**

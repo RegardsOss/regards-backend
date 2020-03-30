@@ -26,8 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +91,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugin configurations", role = DefaultRole.PUBLIC)
-    public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurations(
+    public HttpEntity<PagedModel<EntityModel<UIPluginConfiguration>>> retrievePluginConfigurations(
             @RequestParam(value = "isActive", required = false) final Boolean isActive,
             @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
             @RequestParam(value = "type", required = false) final UIPluginTypesEnum pluginType,
@@ -116,7 +116,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin for a given PluginDefinition",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
+    public HttpEntity<PagedModel<EntityModel<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
             @PathVariable("pluginId") final Long pPluginId,
             @RequestParam(value = "isActive", required = false) final Boolean isActive,
             @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
@@ -138,7 +138,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<UIPluginConfiguration>> retrievePluginConfiguration(
+    public HttpEntity<EntityModel<UIPluginConfiguration>> retrievePluginConfiguration(
             @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityInvalidException {
         final UIPluginConfiguration pluginConf = service.retrievePluginconfiguration(pluginConfigurationId);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
@@ -154,7 +154,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.PUT)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<UIPluginConfiguration>> updatePluginConfiguration(
+    public HttpEntity<EntityModel<UIPluginConfiguration>> updatePluginConfiguration(
             @PathVariable("pluginConfId") final Long pluginConfigurationId,
             @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
         if ((pluginConfigurationId == null) || !pluginConfigurationId.equals(pluginConfiguration.getId())) {
@@ -173,7 +173,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<UIPluginConfiguration>> createPluginConfiguration(
+    public HttpEntity<EntityModel<UIPluginConfiguration>> createPluginConfiguration(
             @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
         final UIPluginConfiguration pluginConf = service.createPluginconfiguration(pluginConfiguration);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
@@ -188,7 +188,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> deletePluginConfiguration(
+    public HttpEntity<EntityModel<Void>> deletePluginConfiguration(
             @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityException {
         final UIPluginConfiguration pluginConfToDelete = new UIPluginConfiguration();
         pluginConfToDelete.setId(pluginConfigurationId);
@@ -197,8 +197,8 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     }
 
     @Override
-    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
-        final Resource<UIPluginConfiguration> resource = resourceService.toResource(element);
+    public EntityModel<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
+        final EntityModel<UIPluginConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrievePluginConfiguration", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
@@ -214,7 +214,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * @param element
      * @return {@link UIPluginConfiguration}
      */
-    public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration element) {
+    public EntityModel<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration element) {
         return resourceService.toResource(element);
     }
 

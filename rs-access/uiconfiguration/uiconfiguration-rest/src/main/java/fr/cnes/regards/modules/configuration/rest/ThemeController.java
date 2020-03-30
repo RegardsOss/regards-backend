@@ -25,8 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.SortDefault;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -78,7 +78,7 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM theme", role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<Theme>> retrieveTheme(@PathVariable("themeId") Long themeId)
+    public HttpEntity<EntityModel<Theme>> retrieveTheme(@PathVariable("themeId") Long themeId)
             throws EntityNotFoundException {
         return new ResponseEntity<>(toResource(service.retrieveTheme(themeId)), HttpStatus.OK);
     }
@@ -92,10 +92,10 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve HMI themes", role = DefaultRole.PUBLIC)
-    public HttpEntity<PagedResources<Resource<Theme>>> retrieveThemes(
+    public HttpEntity<PagedModel<EntityModel<Theme>>> retrieveThemes(
             @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<Theme> assembler) {
-        PagedResources<Resource<Theme>> resources = toPagedResources(service.retrieveThemes(pageable), assembler);
+        PagedModel<EntityModel<Theme>> resources = toPagedResources(service.retrieveThemes(pageable), assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
@@ -107,7 +107,7 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new HMI Theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Theme>> saveTheme(@Valid @RequestBody Theme theme) {
+    public HttpEntity<EntityModel<Theme>> saveTheme(@Valid @RequestBody Theme theme) {
         return new ResponseEntity<>(toResource(service.saveTheme(theme)), HttpStatus.OK);
     }
 
@@ -121,7 +121,7 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an HMI theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Theme>> updateTheme(@PathVariable("themeId") Long themeId,
+    public HttpEntity<EntityModel<Theme>> updateTheme(@PathVariable("themeId") Long themeId,
             @Valid @RequestBody Theme theme) throws EntityException {
         if (!theme.getId().equals(themeId)) {
             throw new EntityInvalidException("Invalide application identifier for theme");
@@ -139,15 +139,15 @@ public class ThemeController implements IResourceController<Theme> {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> deleteTheme(@PathVariable("themeId") Long themeId)
+    public HttpEntity<EntityModel<Void>> deleteTheme(@PathVariable("themeId") Long themeId)
             throws EntityNotFoundException {
         service.deleteTheme(themeId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    public Resource<Theme> toResource(final Theme element, final Object... extras) {
-        final Resource<Theme> resource = resourceService.toResource(element);
+    public EntityModel<Theme> toResource(final Theme element, final Object... extras) {
+        final EntityModel<Theme> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveTheme", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "updateTheme", LinkRels.UPDATE,
