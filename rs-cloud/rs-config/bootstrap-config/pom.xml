@@ -178,6 +178,11 @@
                             <targetPath>/config/regards</targetPath>
                             <include>*</include>
                         </resource>
+                        <resource>
+                            <directory>${project.build.directory}/classes/templates</directory>
+                            <targetPath>/config-templates</targetPath>
+                            <include>*</include>
+                        </resource>
                     </resources>
                 </configuration>
             </plugin>
