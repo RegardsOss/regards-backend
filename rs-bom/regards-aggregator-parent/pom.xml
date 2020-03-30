@@ -23,7 +23,7 @@
 
     <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-aggregator-parent</artifactId>
-    <version>GEODE</version>
+    <version>1.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>Aggregates all microservices and the frontend</description>
