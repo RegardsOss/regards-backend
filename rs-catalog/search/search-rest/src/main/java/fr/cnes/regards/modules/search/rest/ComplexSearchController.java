@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
@@ -58,7 +59,6 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
-import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 
@@ -156,7 +156,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
             @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
         List<String> modelNames = searchService
                 .retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest), SearchType.DATAOBJECTS,
-                                                  CatalogAttributeHelper.MODEL_ATTRIBUTE, 100, null);
+                                                  AttributeHelper.MODEL_ATTRIBUTE, 100, null);
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
     }
 

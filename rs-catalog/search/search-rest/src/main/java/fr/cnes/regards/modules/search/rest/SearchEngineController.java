@@ -58,11 +58,11 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
-import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
@@ -348,7 +348,7 @@ public class SearchEngineController {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyName(CatalogAttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
+                        .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(result.getBody()));
     }
 
