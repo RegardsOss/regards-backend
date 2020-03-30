@@ -18,16 +18,23 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -42,6 +49,8 @@ import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 @Service
 public class CatalogAttributeHelper implements IAttributeHelper {
 
+    public static final String MODEL_ATTRIBUTE = "model.name";
+
     /**
      * Runtime tenant resolver
      */
@@ -52,10 +61,13 @@ public class CatalogAttributeHelper implements IAttributeHelper {
      */
     private final IAttributeModelClient attributeModelClient;
 
+    private final IModelAttrAssocClient attributeModelAssocClient;
+
     public CatalogAttributeHelper(IRuntimeTenantResolver runtimeTenantResolver,
-            IAttributeModelClient attributeModelClient) {
+            IAttributeModelClient attributeModelClient, IModelAttrAssocClient attruteModelAssocClient) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.attributeModelClient = attributeModelClient;
+        this.attributeModelAssocClient = attruteModelAssocClient;
     }
 
     @Override
@@ -74,5 +86,31 @@ public class CatalogAttributeHelper implements IAttributeHelper {
             FeignSecurityManager.reset();
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public Set<AttributeModel> getAllCommonAttributes(Collection<String> modelNames) throws ModuleException {
+        Set<AttributeModel> commonAttributes = Sets.newHashSet();
+        boolean first = true;
+        for (String modelName : modelNames) {
+            try {
+                ResponseEntity<List<Resource<ModelAttrAssoc>>> response = attributeModelAssocClient
+                        .getModelAttrAssocs(modelName);
+                if ((response != null) && response.hasBody()) {
+                    Set<AttributeModel> modelAttributes = response.getBody().stream()
+                            .map(f -> f.getContent().getAttribute()).collect(Collectors.toSet());
+                    if (first) {
+                        commonAttributes.addAll(modelAttributes);
+                    } else {
+                        commonAttributes = commonAttributes.stream().filter(f -> modelAttributes.contains(f))
+                                .collect(Collectors.toSet());
+                    }
+                    first = false;
+                }
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                throw new ModuleException("Error retrieving attribute models from dam microservice.", e);
+            }
+        }
+        return commonAttributes;
     }
 }

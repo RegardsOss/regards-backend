@@ -71,7 +71,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("page", "2");
         customizer.addParameter("maxRecords", "3");
         customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("11")));
         customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -95,7 +95,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         // Test specific opensearch pagination parameters
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(11)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -251,8 +251,9 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=15]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=16]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='name_test']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='diameter']").exists());
@@ -351,7 +352,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("13")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("15")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
@@ -362,7 +363,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("11")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -389,7 +390,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(13)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(15)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }

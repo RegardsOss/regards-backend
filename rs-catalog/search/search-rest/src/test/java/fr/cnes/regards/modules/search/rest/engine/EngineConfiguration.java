@@ -109,7 +109,7 @@ public class EngineConfiguration {
     }
 
     @Bean
-    public IModelAttrAssocClient modelAttrAssocClient() {
+    public IModelAttrAssocClient modelAttrAssocClient(ModelService modelService) throws ModuleException {
         return Mockito.mock(IModelAttrAssocClient.class);
     }
 

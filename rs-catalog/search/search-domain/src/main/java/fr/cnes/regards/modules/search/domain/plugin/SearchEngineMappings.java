@@ -68,6 +68,11 @@ public final class SearchEngineMappings {
      */
     private static final String PROPERTIES_BOUNDS_MAPPING = "/properties/bounds";
 
+    /**
+     * To get attributes associated to entities search results
+     */
+    private static final String ATTRIBUTES_MAPPING = "/attributes";
+
     // Search on all entities
 
     private static final String ENTITIES_MAPPING = "/entities";
@@ -118,6 +123,8 @@ public final class SearchEngineMappings {
 
     public static final String SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS = SEARCH_DATAOBJECTS_MAPPING
             + PROPERTIES_BOUNDS_MAPPING;
+
+    public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = SEARCH_DATAOBJECTS_MAPPING + ATTRIBUTES_MAPPING;
 
     public static final String GET_DATAOBJECT_MAPPING = DATAOBJECTS_MAPPING + URN_MAPPING;
 

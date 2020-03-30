@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +45,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -53,7 +57,9 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
+import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
  * Complex search controller. Handle complex searches on catalog with multiple search requests. Each request handles :
@@ -72,6 +78,8 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
 
     public static final String SUMMARY_MAPPING = "/summary";
 
+    public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = "/dataobjects/attributes";
+
     /**
      * To build resource links
      */
@@ -89,6 +97,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      */
     @Autowired
     protected IBusinessSearchService searchService;
+
+    @Autowired
+    private IAttributeHelper attributeHelper;
 
     /**
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
@@ -136,6 +147,16 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
                 .search(ICriterion.or(searchCriterions), SearchType.DATAOBJECTS, null,
                         PageRequest.of(complexSearchRequest.getPage(), complexSearchRequest.getSize()));
         return new ResponseEntity<>(toPagedResources(facetPage, assembler), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES)
+    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
+            @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
+        List<String> modelNames = searchService
+                .retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest), SearchType.DATAOBJECTS,
+                                                  CatalogAttributeHelper.MODEL_ATTRIBUTE, 100, null);
+        return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
     }
 
     /**

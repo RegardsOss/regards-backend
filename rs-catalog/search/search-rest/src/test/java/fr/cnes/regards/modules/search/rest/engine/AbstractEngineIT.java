@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
@@ -261,6 +262,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // DATA : Planet
         Model planetModel = modelService.importModel(this.getClass().getResourceAsStream("data_planet.xml"));
 
+        Model testModel = modelService.importModel(this.getClass().getResourceAsStream("data_model_test.xml"));
+
         // - Manage attribute model retrieval
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsFor(Mockito.any())).thenAnswer(invocation -> {
             EntityType type = invocation.getArgument(0);
@@ -271,6 +274,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                     // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
                     return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
                 });
+        Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
+            String modelName = invocation.getArgument(0);
+            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream().map(a -> new Resource<>(a))
+                    .collect(Collectors.toList()));
+        });
 
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
@@ -296,6 +304,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         indexerService.saveEntity(getDefaultTenant(), kepler90System);
         DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
         indexerService.saveEntity(getDefaultTenant(), kepler90b);
+
+        // Add test datas
+        indexerService.saveBulkEntities(getDefaultTenant(), createTestData(testModel));
 
         // Refresh index to be sure data is available for requesting
         indexerService.refresh(getDefaultTenant());
@@ -416,6 +427,24 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Attach planets to dataset
         planets.forEach(planet -> planet.addTags(dataset.toString()));
         return planets;
+    }
+
+    protected List<DataObject> createTestData(Model model) {
+        List<DataObject> datas = new ArrayList<>();
+
+        DataObject data = createEntity(model, "data_one");
+        data.addProperty(AttributeBuilder.buildString("name_test", "data_one_test"));
+        data.setGroups(getAccessGroups());
+        data.setCreationDate(OffsetDateTime.now());
+        datas.add(data);
+
+        data = createEntity(model, "data_two");
+        data.addProperty(AttributeBuilder.buildString("name_test", "data_two_test"));
+        data.setGroups(getAccessGroups());
+        data.setCreationDate(OffsetDateTime.now());
+        datas.add(data);
+
+        return datas;
     }
 
     protected DataObject createMercury(Model planetModel) {
