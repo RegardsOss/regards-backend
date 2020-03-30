@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
@@ -276,8 +275,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
             String modelName = invocation.getArgument(0);
-            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream().map(a -> new Resource<>(a))
-                    .collect(Collectors.toList()));
+            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName));
         });
 
         // - Refresh attribute factory
@@ -433,13 +431,13 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         List<DataObject> datas = new ArrayList<>();
 
         DataObject data = createEntity(model, "data_one");
-        data.addProperty(AttributeBuilder.buildString("name_test", "data_one_test"));
+        data.addProperty(IProperty.buildString("name_test", "data_one_test"));
         data.setGroups(getAccessGroups());
         data.setCreationDate(OffsetDateTime.now());
         datas.add(data);
 
         data = createEntity(model, "data_two");
-        data.addProperty(AttributeBuilder.buildString("name_test", "data_two_test"));
+        data.addProperty(IProperty.buildString("name_test", "data_two_test"));
         data.setGroups(getAccessGroups());
         data.setCreationDate(OffsetDateTime.now());
         datas.add(data);

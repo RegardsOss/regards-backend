@@ -37,6 +37,8 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 
@@ -94,7 +96,7 @@ public class CatalogAttributeHelper implements IAttributeHelper {
         boolean first = true;
         for (String modelName : modelNames) {
             try {
-                ResponseEntity<List<Resource<ModelAttrAssoc>>> response = attributeModelAssocClient
+                ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = attributeModelAssocClient
                         .getModelAttrAssocs(modelName);
                 if ((response != null) && response.hasBody()) {
                     Set<AttributeModel> modelAttributes = response.getBody().stream()
