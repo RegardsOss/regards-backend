@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.legacy-search-engind-json.client")
-@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ILegacySearchEngineJsonClient {
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_ALL_MAPPING)

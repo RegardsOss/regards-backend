@@ -31,13 +31,14 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
@@ -82,7 +83,7 @@ public class ServiceManagerTest {
         PluginMetaData exampleOneManyMeta = PluginUtils.getPlugins()
                 .get(ExampleOneManyPlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleOneManyConf = new PluginConfiguration("First configuration",
-                                                                         exampleOneManyMeta.getPluginId());
+                exampleOneManyMeta.getPluginId());
         exampleOneManyConf.setMetaData(exampleOneManyMeta);
 
         PLUGIN_CONFIGURATIONS.add(exampleOneManyConf);
@@ -90,7 +91,7 @@ public class ServiceManagerTest {
         PluginMetaData exampleManyMeta = PluginUtils.getPlugins()
                 .get(ExampleManyPlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleManyConf = new PluginConfiguration("Second configuration",
-                                                                      exampleManyMeta.getPluginId());
+                exampleManyMeta.getPluginId());
         exampleManyConf.setMetaData(exampleManyMeta);
         PLUGIN_CONFIGURATIONS.add(exampleManyConf);
         ALL_VALID_PLUGIN_CONFS.add(exampleManyConf);
@@ -98,17 +99,15 @@ public class ServiceManagerTest {
         PluginMetaData exampleOneMeta = PluginUtils.getPlugins()
                 .get(ExampleOnePlugin.class.getAnnotation(Plugin.class).id());
         PluginConfiguration exampleOneConf = new PluginConfiguration("Third configuration",
-                                                                     exampleOneMeta.getPluginId());
+                exampleOneMeta.getPluginId());
         exampleOneConf.setMetaData(exampleOneMeta);
         PLUGIN_CONFIGURATIONS.add(exampleOneConf);
         ALL_VALID_PLUGIN_CONFS.add(exampleOneConf);
 
         // now lets create a conf that is linked to all datasets and that should not be return by ILinkPluginsDatasetsService
         EXAMPLE_ONE_MANY_CONF_ALL_DS = new PluginConfiguration("First configuration",
-                                                               Sets.newHashSet(IPluginParam.build(
-                                                                                      AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM,
-                                                                                      true)),
-                                                               exampleOneManyMeta.getPluginId());
+                Sets.newHashSet(IPluginParam.build(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM, true)),
+                exampleOneManyMeta.getPluginId());
         EXAMPLE_ONE_MANY_CONF_ALL_DS.setMetaData(exampleOneManyMeta);
         ALL_VALID_PLUGIN_CONFS.add(EXAMPLE_ONE_MANY_CONF_ALL_DS);
     }
@@ -149,7 +148,7 @@ public class ServiceManagerTest {
     public final void testRetrieveServices_shouldThrowPluginUtilsRuntimeException() throws EntityNotFoundException {
         // Prepare test
         final LinkPluginsDatasets linkPluginsDatasets = new LinkPluginsDatasets("test",
-                                                                                PLUGIN_CONFIGURATIONS_WRONG_PLUGIN);
+                PLUGIN_CONFIGURATIONS_WRONG_PLUGIN);
         Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString())).thenReturn(linkPluginsDatasets);
 
         // Trigger exception
@@ -177,16 +176,16 @@ public class ServiceManagerTest {
 
         // Check
         Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(3));
-        Assert.assertThat(pluginConfigurationDtos,
-                          Matchers.hasItem(Matchers.hasProperty("applicationModes",
-                                                                Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
         Assert.assertThat(pluginConfigurationDtos,
                           Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
-        Assert.assertThat(pluginConfigurationDtos, Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
 
         // Call tested method
-        pluginConfigurationDtos = serviceManager
-                .retrieveServices(Arrays.asList(datasetId), Arrays.asList(ServiceScope.MANY));
+        pluginConfigurationDtos = serviceManager.retrieveServices(Arrays.asList(datasetId),
+                                                                  Arrays.asList(ServiceScope.MANY));
 
         // Define expected
         expectedApplicationModes = Sets.newHashSet(ServiceScope.MANY);
@@ -194,16 +193,16 @@ public class ServiceManagerTest {
 
         // Check
         Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(3));
-        Assert.assertThat(pluginConfigurationDtos,
-                          Matchers.hasItem(Matchers.hasProperty("applicationModes",
-                                                                Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
         Assert.assertThat(pluginConfigurationDtos,
                           Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
-        Assert.assertThat(pluginConfigurationDtos, Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
 
         // Call tested method
-        pluginConfigurationDtos = serviceManager
-                .retrieveServices(Arrays.asList(datasetId), Arrays.asList(ServiceScope.MANY, ServiceScope.ONE));
+        pluginConfigurationDtos = serviceManager.retrieveServices(Arrays.asList(datasetId),
+                                                                  Arrays.asList(ServiceScope.MANY, ServiceScope.ONE));
 
         // Define expected
         expectedApplicationModes = Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY);
@@ -211,12 +210,12 @@ public class ServiceManagerTest {
 
         // Check
         Assert.assertThat(pluginConfigurationDtos, Matchers.hasSize(2));
-        Assert.assertThat(pluginConfigurationDtos,
-                          Matchers.hasItem(Matchers.hasProperty("applicationModes",
-                                                                Matchers.equalTo(expectedApplicationModes))));
+        Assert.assertThat(pluginConfigurationDtos, Matchers
+                .hasItem(Matchers.hasProperty("applicationModes", Matchers.equalTo(expectedApplicationModes))));
         Assert.assertThat(pluginConfigurationDtos,
                           Matchers.hasItem(Matchers.hasProperty("entityTypes", Matchers.equalTo(expectedEntityTypes))));
-        Assert.assertThat(pluginConfigurationDtos, Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
+        Assert.assertThat(pluginConfigurationDtos,
+                          Matchers.hasItem(new PluginConfigurationDto(EXAMPLE_ONE_MANY_CONF_ALL_DS)));
     }
 
 }

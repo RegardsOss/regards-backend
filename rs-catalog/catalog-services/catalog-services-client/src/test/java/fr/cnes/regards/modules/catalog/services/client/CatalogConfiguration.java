@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.catalog.services.rest;
+package fr.cnes.regards.modules.catalog.services.client;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
@@ -38,13 +39,12 @@ import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
- * Module-wide configuration for integration tests.
+ * @author kevin
  *
- * @author Sylvain Vissiere-Guerinet
- * @author Xavier-Alexandre Brochard
  */
 @Configuration
-public class CatalogServicesITConfiguration {
+@TestPropertySource("classpath:test.properties")
+public class CatalogConfiguration {
 
     @Bean
     public IDatasetClient datasetClient() {

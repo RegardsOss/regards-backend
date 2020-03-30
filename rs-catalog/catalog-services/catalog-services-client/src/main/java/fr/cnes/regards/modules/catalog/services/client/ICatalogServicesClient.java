@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.catalog.services.client;
 
 import java.util.List;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,8 +36,8 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.services-client")
-@RequestMapping(value = "/services", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/services", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ICatalogServicesClient {
 
     /**
@@ -47,7 +47,7 @@ public interface ICatalogServicesClient {
      * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
+    ResponseEntity<List<EntityModel<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIds,
             @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> serviceScopes);
 

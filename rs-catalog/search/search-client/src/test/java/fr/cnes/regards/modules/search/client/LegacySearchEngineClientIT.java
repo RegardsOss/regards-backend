@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.search.client;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
  * @author Marc Sordi
@@ -41,7 +41,7 @@ public class LegacySearchEngineClientIT extends AbstractSearchClientIT<ILegacySe
 
     @Test
     public void search() {
-        ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> result = client
+        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> result = client
                 .searchAllDataobjects(new HttpHeaders(), new LinkedMultiValueMap<>(), null, 0, 10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }

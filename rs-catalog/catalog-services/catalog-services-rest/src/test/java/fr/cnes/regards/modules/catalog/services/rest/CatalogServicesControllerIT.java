@@ -60,13 +60,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.dao.ILinkPluginsDatasetsRepository;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -149,8 +148,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
             parameters = IPluginParam.set(IPluginParam
                     .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON)
                     .dynamic());
-            samplePlgConf = new PluginConfiguration(
-                    PLUGIN_CONF_LABEL_1, parameters, SampleServicePlugin.class.getAnnotation(Plugin.class).id());
+            samplePlgConf = new PluginConfiguration(PLUGIN_CONF_LABEL_1, parameters,
+                    SampleServicePlugin.class.getAnnotation(Plugin.class).id());
             pluginService.savePluginConfiguration(samplePlgConf);
         } else {
             LOG.warn("----------------------------------> Conf already exists for initialization {}",
@@ -168,8 +167,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         parameters = IPluginParam.set(IPluginParam
                 .build(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON).dynamic());
-        PluginConfiguration samplePlgConf2 = new PluginConfiguration(
-                PLUGIN_CONF_LABEL_2, parameters, SampleServicePlugin.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration samplePlgConf2 = new PluginConfiguration(PLUGIN_CONF_LABEL_2, parameters,
+                SampleServicePlugin.class.getAnnotation(Plugin.class).id());
         pluginService.savePluginConfiguration(samplePlgConf2);
 
         linkService.updateLink(DATA_SET_NAME,
@@ -377,7 +376,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         Map<String, List<String>> headers = Maps.newHashMap();
         headers.put(HttpConstants.CONTENT_TYPE, Lists.newArrayList("application/json"));
         headers.put(HttpConstants.ACCEPT,
-                    Lists.newArrayList(MediaType.APPLICATION_JSON_UTF8_VALUE, MediaType.TEXT_PLAIN_VALUE));
+                    Lists.newArrayList(MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE));
 
         return headers;
     }

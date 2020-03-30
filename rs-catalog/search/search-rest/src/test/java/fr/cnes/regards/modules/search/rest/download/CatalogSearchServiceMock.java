@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.search.rest.download;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.service.CatalogSearchService;

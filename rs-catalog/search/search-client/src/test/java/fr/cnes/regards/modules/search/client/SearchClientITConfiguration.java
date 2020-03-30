@@ -24,8 +24,8 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -33,10 +33,10 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
-import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
-import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
@@ -72,10 +72,10 @@ public class SearchClientITConfiguration {
         IAccessGroupClient accessGroupClient = Mockito.mock(IAccessGroupClient.class);
 
         // Build accessGroupMock mock
-        final PagedResources.PageMetadata md = new PagedResources.PageMetadata(0, 0, 0);
-        final PagedResources<Resource<AccessGroup>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
+        final PagedModel.PageMetadata md = new PagedModel.PageMetadata(0, 0, 0);
+        final PagedModel<EntityModel<AccessGroup>> pagedResources = new PagedModel<>(new ArrayList<>(), md,
                 new ArrayList<>());
-        final ResponseEntity<PagedResources<Resource<AccessGroup>>> pageResponseEntity = ResponseEntity
+        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> pageResponseEntity = ResponseEntity
                 .ok(pagedResources);
         Mockito.when(accessGroupClient.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(),
                                                                 Mockito.anyInt()))

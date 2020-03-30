@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -149,7 +149,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * </ol>
      * @throws ModuleException
      */
-    default ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    default ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         throw new UnsupportedOperationException(
                 "Bound calculation not implemented for engine " + context.getEngineType());

@@ -50,15 +50,14 @@ import com.google.common.reflect.TypeToken;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -72,6 +71,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
@@ -319,8 +319,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                     .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
                                                       ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
-            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)
-                    .map(UniformResourceName::toString).collect(Collectors.toSet());
+
+            Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId).map(urn -> urn.toString())
+                    .collect(Collectors.toSet());
             // If summary is restricted to a specified datasetIpId, it must be taken into account
             if (dataset != null) {
                 if (datasetIpids.contains(dataset.toString())) {

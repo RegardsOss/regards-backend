@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -58,18 +58,18 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.dao.models.IAttributeModelRepository;
-import fr.cnes.regards.modules.dam.dao.models.IModelRepository;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.builder.AttributeBuilder;
-import fr.cnes.regards.modules.dam.domain.models.Model;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
+import fr.cnes.regards.modules.model.dao.IModelRepository;
+import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.AbstractEngineIT;
@@ -157,8 +157,8 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
-        List<Resource<AttributeModel>> resAtts = new ArrayList<>();
-        atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
+        List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
+        atts.forEach(att -> resAtts.add(new EntityModel<AttributeModel>(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
         finder.refresh(getDefaultTenant());
 
@@ -167,7 +167,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         indexerService.saveEntity(getDefaultTenant(), france);
 
         // Create data
-        prepareDepartments(departmentModel, france.getIpId());
+        prepareDepartments(departmentModel, OaisUniformResourceName.build(france.getIpId()));
 
         // Refresh index to be sure data is available for requesting
         indexerService.refresh(getDefaultTenant());
@@ -207,7 +207,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         return configGson;
     }
 
-    private void prepareDepartments(Model departmentModel, UniformResourceName dataset) {
+    private void prepareDepartments(Model departmentModel, OaisUniformResourceName dataset) {
 
         List<DataObject> departments = new ArrayList<>();
         Random random = new Random();
@@ -223,10 +223,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                 department.setCreationDate(OffsetDateTime.now());
                 department.setGeometry(feature.getGeometry());
                 department.setWgs84(feature.getGeometry());
-                department.addProperty(AttributeBuilder.buildString("Code",
-                                                                    (String) feature.getProperties().get("code")));
-                department.addProperty(AttributeBuilder.buildLong("FileSize", random.nextLong()));
-                department.addProperty(AttributeBuilder.buildString("Name", name));
+                department.addProperty(IProperty.buildString("Code", (String) feature.getProperties().get("code")));
+                department.addProperty(IProperty.buildLong("FileSize", random.nextLong()));
+                department.addProperty(IProperty.buildString("Name", name));
 
                 // Attach to dataset
                 department.addTags(dataset.toString());

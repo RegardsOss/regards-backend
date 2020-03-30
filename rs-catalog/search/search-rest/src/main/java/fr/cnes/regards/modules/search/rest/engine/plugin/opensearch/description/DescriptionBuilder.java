@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -47,15 +48,15 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.ModelAttrAssoc;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -155,7 +156,8 @@ public class DescriptionBuilder {
         List<OpenSearchParameter> parameters = buildParameters(descParameters, extensions);
 
         // Build urls
-        Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
+        Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context,
+                                                                     LinkRelation.of("search"));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
                                    context.getQueryParams().isEmpty()));
         desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
@@ -309,7 +311,7 @@ public class DescriptionBuilder {
             parameter.setPattern(restriction.getPattern());
         }
 
-        if ((descParameter.getQueryableAttribute().getAggregation() != null)) {
+        if (descParameter.getQueryableAttribute().getAggregation() != null) {
             if (descParameter.getQueryableAttribute().getAggregation() instanceof ParsedStringTerms) {
                 ParsedStringTerms terms = (ParsedStringTerms) descParameter.getQueryableAttribute().getAggregation();
                 terms.getBuckets().forEach(b -> {

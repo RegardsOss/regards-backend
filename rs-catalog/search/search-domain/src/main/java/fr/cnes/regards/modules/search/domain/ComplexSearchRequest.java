@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * POJO Containig information to handle a new search on catalog from complex search system controller

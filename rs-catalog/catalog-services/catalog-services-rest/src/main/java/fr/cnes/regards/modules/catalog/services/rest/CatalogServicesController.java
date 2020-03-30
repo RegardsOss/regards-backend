@@ -23,7 +23,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -85,7 +85,7 @@ public class CatalogServicesController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all services applied to given dataset, augmented with meta information",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<Resource<PluginConfigurationDto>>> retrieveServices(
+    public ResponseEntity<List<EntityModel<PluginConfigurationDto>>> retrieveServices(
             @RequestParam(value = DATASET_IDS_QUERY_PARAM, required = false) final List<String> pDatasetIds,
             @RequestParam(value = SCOPES_QUERY_PARAM, required = false) final List<ServiceScope> pServiceScopes) {
         final List<PluginConfigurationDto> services = serviceManager.retrieveServices(pDatasetIds, pServiceScopes);

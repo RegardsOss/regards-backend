@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * API to request data access rights
@@ -40,8 +40,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.access-rights.client")
-@RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
-        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IAccessRights {
 
     String TYPE_MAPPING = "/entities";

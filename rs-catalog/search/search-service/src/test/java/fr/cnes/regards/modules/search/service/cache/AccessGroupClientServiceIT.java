@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCach
  * Test verifying {@link IAccessGroupCache} caching facilities.<br>
  * Widely inspired by Oliver Gierke (lead dev. of Spring Data project) example below.
  *
- * @see http://stackoverflow.com/questions/24221569/how-to-test-springs-declarative-caching-support-on-spring-data-repositories
+ * @see "http://stackoverflow.com/questions/24221569/how-to-test-springs-declarative-caching-support-on-spring-data-repositories"
  * @author Xavier-Alexandre Brochard
  */
 @RunWith(SpringRunner.class)

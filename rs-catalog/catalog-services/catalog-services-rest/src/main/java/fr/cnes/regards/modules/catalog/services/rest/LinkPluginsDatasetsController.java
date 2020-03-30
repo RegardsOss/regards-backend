@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,20 +64,21 @@ public class LinkPluginsDatasetsController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset")
     @ResponseBody
-    public ResponseEntity<Resource<LinkPluginsDatasets>> retrieveLink(
+    public ResponseEntity<EntityModel<LinkPluginsDatasets>> retrieveLink(
             @PathVariable("datasetId") final String pDatasetId) throws EntityNotFoundException {
         final LinkPluginsDatasets link = linkService.retrieveLink(pDatasetId);
-        Resource<LinkPluginsDatasets> resource = resourceService.toResource(link);
+        EntityModel<LinkPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset")
     @ResponseBody
-    public ResponseEntity<Resource<LinkPluginsDatasets>> updateLink(@PathVariable("datasetId") final String pDatasetId,
-            @RequestBody final LinkPluginsDatasets pUpdatedLink) throws EntityException {
+    public ResponseEntity<EntityModel<LinkPluginsDatasets>> updateLink(
+            @PathVariable("datasetId") final String pDatasetId, @RequestBody final LinkPluginsDatasets pUpdatedLink)
+            throws EntityException {
         final LinkPluginsDatasets link = linkService.updateLink(pDatasetId, pUpdatedLink);
-        Resource<LinkPluginsDatasets> resource = resourceService.toResource(link);
+        EntityModel<LinkPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 

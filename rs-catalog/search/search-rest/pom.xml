@@ -42,7 +42,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>search</artifactId>
-		<version>0.5.0-SNAPSHOT</version>
+		<version>GEODE</version>
 	</parent>
 
 	<dependencies>
@@ -90,6 +90,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.model</groupId>
+			<artifactId>model-gson-helper</artifactId>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.rometools/rome RSS & Atom lib -->

@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.search-engine.client")
-@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
 public interface ISearchEngineClient {
 
     // Search on all entities

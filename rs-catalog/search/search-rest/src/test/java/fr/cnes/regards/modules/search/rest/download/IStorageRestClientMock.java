@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -88,7 +88,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
      * @see fr.cnes.regards.modules.storage.client.IStorageRestClient#retrieve()
      */
     @Override
-    public ResponseEntity<List<Resource<StorageLocationDTO>>> retrieve() {
+    public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() {
         // TODO Auto-generated method stub
         return null;
     }

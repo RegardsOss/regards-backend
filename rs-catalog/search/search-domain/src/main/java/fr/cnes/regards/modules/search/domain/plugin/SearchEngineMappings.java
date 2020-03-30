@@ -176,7 +176,7 @@ public final class SearchEngineMappings {
 
     public static HttpHeaders getJsonHeaders() {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+        headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return headers;
     }
 }

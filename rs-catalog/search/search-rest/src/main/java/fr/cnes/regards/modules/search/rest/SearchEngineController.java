@@ -31,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -49,18 +51,18 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
-import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.SearchException;
 
 /**
@@ -100,7 +102,7 @@ public class SearchEngineController {
     /**
      * HATEOAS link to reach dataobjects from a dataset
      */
-    private static final String LINK_TO_DATAOBJECTS = "dataobjects";
+    private static final LinkRelation LINK_TO_DATAOBJECTS = LinkRelation.of("dataobjects");
 
     /**
      * Pagination property
@@ -155,8 +157,8 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_ENTITY_MAPPING)
     @ResourceAccess(description = "Generic endpoint for retrieving an entity", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getEntity(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn,
+            @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get entity \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, null, null).withUrn(urn));
@@ -215,8 +217,8 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_COLLECTION_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a collection", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getCollection(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn,
+            @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get collection \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, null, null)
                 .withUrn(urn));
@@ -272,8 +274,8 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATASET_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a dataset", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getDataset(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn,
+            @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataset \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, null, null)
                 .withUrn(urn));
@@ -346,7 +348,7 @@ public class SearchEngineController {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyName(CatalogAttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
+                        .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(result.getBody()));
     }
 
@@ -356,8 +358,8 @@ public class SearchEngineController {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a dataobject", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getDataobject(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+            @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn,
+            @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataobject \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, null, null)
                 .withUrn(urn));
@@ -378,7 +380,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"", datasetUrn.toString(),
                      engineType);
-        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
+        OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withDatasetUrn(urn));
     }
@@ -397,7 +399,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" extra mapping \"{}\" handling delegated to engine \"{}\"",
                      datasetUrn, extra, engineType);
-        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
+        OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
                         .withDatasetUrn(urn).withExtra(extra));
@@ -416,7 +418,7 @@ public class SearchEngineController {
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataobject property values for \"{}\" on dataset \"{}\" delegated to engine \"{}\"",
                      propertyName, datasetUrn, engineType);
-        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
+        OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
                         .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
@@ -452,14 +454,17 @@ public class SearchEngineController {
         // Build previous link
         if (page.hasPrevious()) {
             int pageNumber = context.getPageable().getPageNumber() - 1;
-            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_PREVIOUS));
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber,
+                                          IanaLinkRelations.PREV));
         }
         // Build current page link
-        links.add(buildPaginationLink(resourceService, context, page.getSize(), page.getNumber(), Link.REL_SELF));
+        links.add(buildPaginationLink(resourceService, context, page.getSize(), page.getNumber(),
+                                      IanaLinkRelations.SELF));
         // Build next link
         if (page.hasNext()) {
             int pageNumber = context.getPageable().getPageNumber() - 1;
-            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber, Link.REL_NEXT));
+            links.add(buildPaginationLink(resourceService, context, page.getSize(), pageNumber,
+                                          IanaLinkRelations.NEXT));
         }
         return links;
     }
@@ -470,7 +475,7 @@ public class SearchEngineController {
      * @return {@link Link}, may be null.
      */
     public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
-            int pageNumber, String rel) {
+            int pageNumber, LinkRelation rel) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.putAll(context.getQueryParams());
         SearchContext newContext = SearchContext.build(context.getSearchType(), context.getEngineType(),
@@ -484,7 +489,7 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, String rel) {
+    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, LinkRelation rel) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
                     .buildLinkWithParams(SearchEngineController.class, getMethod(context), rel,
@@ -508,7 +513,7 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildExtraLink(IResourceService resourceService, SearchContext context, String rel,
+    public static Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
             String extra) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
@@ -559,7 +564,8 @@ public class SearchEngineController {
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
             EntityFeature entity) {
         if (entity != null) {
-            return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+            return buildEntityLinks(resourceService, context, entity.getEntityType(),
+                                    OaisUniformResourceName.build(entity.getId()));
         } else {
             return Lists.newArrayList();
         }
@@ -569,7 +575,7 @@ public class SearchEngineController {
      * Build contextual entity links according to search context and entity type
      */
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
-            EntityType entityType, UniformResourceName id) {
+            EntityType entityType, OaisUniformResourceName id) {
         List<Link> links = new ArrayList<>();
 
         switch (entityType) {
@@ -578,7 +584,7 @@ public class SearchEngineController {
                         resourceService.buildLink(SearchEngineController.class,
                                                   SearchEngineController.GET_COLLECTION_METHOD, LinkRels.SELF,
                                                   MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(OaisUniformResourceName.class, id),
                                                   MethodParamFactory.build(HttpHeaders.class)));
                 break;
             case DATA:
@@ -586,7 +592,7 @@ public class SearchEngineController {
                         resourceService.buildLink(SearchEngineController.class,
                                                   SearchEngineController.GET_DATAOBJECT_METHOD, LinkRels.SELF,
                                                   MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(OaisUniformResourceName.class, id),
                                                   MethodParamFactory.build(HttpHeaders.class)));
                 break;
             case DATASET:
@@ -594,7 +600,7 @@ public class SearchEngineController {
                         resourceService.buildLink(SearchEngineController.class,
                                                   SearchEngineController.GET_DATASET_METHOD, LinkRels.SELF,
                                                   MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(UniformResourceName.class, id),
+                                                  MethodParamFactory.build(OaisUniformResourceName.class, id),
                                                   MethodParamFactory.build(HttpHeaders.class)));
                 // Add link to DATA OBJECTS
                 addLink(links,

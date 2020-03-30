@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -29,23 +32,23 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -61,8 +64,6 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for {@link CatalogSearchService}.
@@ -130,21 +131,18 @@ public class CatalogSearchServiceTest {
                 .thenAnswer(invocation -> invocation.getArguments()[0]);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(SampleDataUtils.TENANT);
         Mockito.when(resourceService.toResource(Mockito.any()))
-                .thenAnswer(invocation -> new Resource<>(invocation.getArguments()[0]));
+                .thenAnswer(invocation -> new EntityModel<>(invocation.getArguments()[0]));
 
         // Instanciate the tested class
-        catalogSearchService = new CatalogSearchService(searchService,
-                                                        openSearchService,
-                                                        accessRightFilter,
-                                                        facetConverter,
-                                                        pageableConverter);
+        catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
+                facetConverter, pageableConverter);
     }
 
     /**
      * Test the main search method
      * @throws OpenSearchUnknownParameter
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doSearchShouldPerformASimpleSearch()
@@ -162,18 +160,16 @@ public class CatalogSearchServiceTest {
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
         FacetPage<DataObject> facetPageDataobject = SampleDataUtils.FACET_PAGE_DATAOBJECT;
         // thanks to mockito not properly handling dynamic typing, we have to do this trick
-        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataobject.getContent()
-                                                                             .stream().map(data -> (IIndexable) data)
-                                                                             .collect(Collectors.toList()),
-                                                                     facetPageDataobject.getFacets());
+        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(
+                facetPageDataobject.getContent().stream().map(data -> (IIndexable) data).collect(Collectors.toList()),
+                facetPageDataobject.getFacets());
 
         // Mock dependencies
-        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class),
-                                          Mockito.any(Pageable.class),
-                                          Mockito.any(ICriterion.class),
-                                          Mockito.any())).thenReturn(expectedSearchResult);
-        PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
-        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
+                                          Mockito.any(ICriterion.class), Mockito.any()))
+                .thenReturn(expectedSearchResult);
+        PagedModel<EntityModel<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         catalogSearchService.search(expectedCriterion, searchKey, SampleDataUtils.QUERY_FACETS, pageable);
@@ -186,7 +182,7 @@ public class CatalogSearchServiceTest {
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
      * @throws OpenSearchUnknownParameter
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     @Test
     @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
     @Requirement("REGARDS_DSL_DAM_CAT_620")
@@ -205,19 +201,16 @@ public class CatalogSearchServiceTest {
         ICriterion expectedCriterion = SampleDataUtils.SIMPLE_STRING_MATCH_CRITERION;
         FacetPage<DataObject> facetPageDataobject = SampleDataUtils.FACET_PAGE_DATAOBJECT;
         // thanks to mockito not properly handling dynamic typing, we have to do this trick
-        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(facetPageDataobject.getContent()
-                                                                             .stream().map(data -> (IIndexable) data)
-                                                                             .collect(Collectors.toList()),
-                                                                     facetPageDataobject.getFacets());
+        FacetPage<IIndexable> expectedSearchResult = new FacetPage<>(
+                facetPageDataobject.getContent().stream().map(data -> (IIndexable) data).collect(Collectors.toList()),
+                facetPageDataobject.getFacets());
 
         // Mock dependencies
-        Mockito.when(searchService
-                             .search(Mockito.any(SimpleSearchKey.class),
-                                     Mockito.any(Pageable.class),
-                                     Mockito.any(ICriterion.class),
-                                     Mockito.any())).thenReturn(expectedSearchResult);
-        PagedResources<Resource<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
-        Mockito.when(assembler.toResource(Mockito.any())).thenReturn(pageResources);
+        Mockito.when(searchService.search(Mockito.any(SimpleSearchKey.class), Mockito.any(Pageable.class),
+                                          Mockito.any(ICriterion.class), Mockito.any()))
+                .thenReturn(expectedSearchResult);
+        PagedModel<EntityModel<DataObject>> pageResources = SampleDataUtils.PAGED_RESOURCES_DATAOBJECT;
+        Mockito.when(assembler.toModel(Mockito.any())).thenReturn(pageResources);
 
         // Perform the test
         catalogSearchService.search(expectedCriterion, searchKey, null, pageable);
@@ -238,10 +231,10 @@ public class CatalogSearchServiceTest {
         Multimap<DataType, DataFile> multiMap = ArrayListMultimap.create();
         ;
         multiMap.put(DataType.RAWDATA, new DataFile());
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
         Mockito.when(toReturn.getFiles()).thenReturn(multiMap);
-        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(UniformResourceName.class)));
+        Mockito.doReturn(toReturn).when(mock).get((Mockito.any(OaisUniformResourceName.class)));
         assertTrue(mock.hasAccess(urn));
     }
 
@@ -254,10 +247,10 @@ public class CatalogSearchServiceTest {
      */
     @Test
     public void testHasAccessForbidden() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
         Mockito.doThrow(EntityOperationForbiddenException.class).when(mock)
-                .get((Mockito.any(UniformResourceName.class)));
+                .get((Mockito.any(OaisUniformResourceName.class)));
         assertFalse(mock.hasAccess(urn));
     }
 
@@ -269,9 +262,9 @@ public class CatalogSearchServiceTest {
      */
     @Test(expected = EntityNotFoundException.class)
     public void testHasAccessNotFound() throws EntityOperationForbiddenException, EntityNotFoundException {
-        UniformResourceName urn = Mockito.mock(UniformResourceName.class);
+        OaisUniformResourceName urn = Mockito.mock(OaisUniformResourceName.class);
         CatalogSearchService mock = Mockito.spy(catalogSearchService);
-        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(UniformResourceName.class)));
+        Mockito.doThrow(new EntityNotFoundException("")).when(mock).get((Mockito.any(OaisUniformResourceName.class)));
         assertFalse(mock.hasAccess(urn));
     }
 }

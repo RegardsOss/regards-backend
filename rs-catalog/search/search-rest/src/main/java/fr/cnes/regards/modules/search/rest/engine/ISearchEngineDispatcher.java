@@ -23,7 +23,7 @@ import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 

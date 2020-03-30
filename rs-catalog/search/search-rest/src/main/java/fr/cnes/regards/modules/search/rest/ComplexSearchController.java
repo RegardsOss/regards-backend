@@ -26,8 +26,8 @@ import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,17 +40,18 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.gson.entities.IAttributeHelper;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
@@ -58,7 +59,6 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
-import fr.cnes.regards.modules.search.service.CatalogAttributeHelper;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
 
@@ -137,7 +137,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<EntityFeature>>> searchDataObjects(
+    public ResponseEntity<PagedModel<EntityModel<EntityFeature>>> searchDataObjects(
             @RequestBody ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
             throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
@@ -156,7 +156,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
             @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
         List<String> modelNames = searchService
                 .retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest), SearchType.DATAOBJECTS,
-                                                  CatalogAttributeHelper.MODEL_ATTRIBUTE, 100, null);
+                                                  AttributeHelper.MODEL_ATTRIBUTE, 100, null);
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
     }
 
@@ -165,9 +165,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      * @throws ModuleException
      */
     private ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {
-        UniformResourceName datasetUrn = null;
+        OaisUniformResourceName datasetUrn = null;
         if (searchRequest.getDatasetUrn() != null) {
-            datasetUrn = UniformResourceName.fromString(searchRequest.getDatasetUrn());
+            datasetUrn = OaisUniformResourceName.fromString(searchRequest.getDatasetUrn());
         }
         ISearchEngine<?, ?, ?, ?> searchEngine = dispatcher.getSearchEngine(Optional.ofNullable(datasetUrn),
                                                                             searchRequest.getEngineType());
@@ -177,7 +177,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
                                                     SearchEngineMappings.getJsonHeaders(),
                                                     searchRequest.getSearchParameters(), PageRequest.of(0, 1));
         if (searchRequest.getDatasetUrn() != null) {
-            context = context.withDatasetUrn(UniformResourceName.fromString(searchRequest.getDatasetUrn()));
+            context = context.withDatasetUrn(OaisUniformResourceName.fromString(searchRequest.getDatasetUrn()));
         }
         ICriterion reqCrit = searchEngine.parse(context);
 
@@ -213,7 +213,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     }
 
     @Override
-    public Resource<EntityFeature> toResource(EntityFeature entity, Object... extras) {
+    public EntityModel<EntityFeature> toResource(EntityFeature entity, Object... extras) {
         return resourceService.toResource(entity);
     }
 }

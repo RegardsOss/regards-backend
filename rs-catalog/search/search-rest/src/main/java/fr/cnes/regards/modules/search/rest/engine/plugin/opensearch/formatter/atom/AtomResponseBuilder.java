@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.compress.utils.Lists;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.MediaType;
 
 import com.google.gson.Gson;
@@ -114,12 +115,12 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
         List<Module> mods = feed.getModules();
         OpenSearchModule osm = new OpenSearchModuleImpl();
         osm.setItemsPerPage(page.getSize());
-        osm.setStartIndex((page.getNumber() * page.getSize()) + 1);
+        osm.setStartIndex(page.getNumber() * page.getSize() + 1);
         osm.setTotalResults((int) page.getTotalElements());
 
         // Add the query from opensearch module
         OSQuery query = new OSQuery();
-        if ((context.getQueryParams() != null) && context.getQueryParams().containsKey("q")) {
+        if (context.getQueryParams() != null && context.getQueryParams().containsKey("q")) {
             query.setSearchTerms(context.getQueryParams().get("q").get(0));
         }
         query.setStartPage(context.getPageable().getPageNumber());
@@ -176,7 +177,7 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
             String href = GeoJsonLinkBuilder.getDataFileHref(link.getHref(), token);
             feedEntityLink.setHref(href);
             feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
-            if (link.getRel().equals(org.springframework.hateoas.Link.REL_SELF)) {
+            if (link.getRel().equals(IanaLinkRelations.SELF)) {
                 feedEntityLink.setTitle(String.format("ATOM link for %s", entity.getId().toString()));
             }
             entry.getAlternateLinks().add(feedEntityLink);

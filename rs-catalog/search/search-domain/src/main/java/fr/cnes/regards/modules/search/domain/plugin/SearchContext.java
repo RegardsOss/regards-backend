@@ -34,15 +34,16 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Search context for search engine.<br/>
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
- * Additional optional properties can be set using {@link #withDatasetUrn(UniformResourceName)},
+ * Additional optional properties can be set using {@link #withDatasetUrn(OaisUniformResourceName)},
  * {@link #withExtra(String)},
- * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
+ * {@link #withUrn(OaisUniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
  * {@link #withDataTypes(List)}.
  *
  * @author Marc Sordi
@@ -148,7 +149,7 @@ public class SearchContext {
         return Optional.ofNullable(datasetUrn);
     }
 
-    public void setDatasetUrn(UniformResourceName datasetUrn) {
+    public void setDatasetUrn(OaisUniformResourceName datasetUrn) {
         this.datasetUrn = datasetUrn;
     }
 
@@ -231,7 +232,7 @@ public class SearchContext {
         context.setHeaders(headers);
         if (queryParams != null) {
             List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
-            if (parser != null && !parser.isEmpty()) {
+            if ((parser != null) && !parser.isEmpty()) {
                 context.setEngineRequestParserType(parser.get(0));
             }
             // Filter spring pagination parameters if any
@@ -279,7 +280,7 @@ public class SearchContext {
     }
 
     public SearchContext withPropertyNames(Collection<String> propertyNames) {
-        if (propertyNames != null && !propertyNames.isEmpty()) {
+        if ((propertyNames != null) && !propertyNames.isEmpty()) {
             this.propertyNames.addAll(propertyNames);
         }
         return this;

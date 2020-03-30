@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -50,8 +50,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
@@ -114,8 +113,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     // Create the new one
                     conf = new SearchEngineConfiguration();
                     conf.setLabel("REGARDS search protocol");
-                    PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(IPluginParam.set(),
-                                                                                        legacySearchEnginePluginClass);
+                    PluginConfiguration pluginConf = PluginConfiguration.build(legacySearchEnginePluginClass, null,
+                                                                               IPluginParam.set());
                     pluginConf.setBusinessId(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
                     pluginConf.setLabel(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
                     conf.setConfiguration(pluginConf);
@@ -257,7 +256,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 // Retrieve dataset from dam
                 try {
                     FeignSecurityManager.asSystem();
-                    ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
+                    ResponseEntity<EntityModel<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
                     if ((response != null) && (response.getBody() != null)
                             && (response.getBody().getContent() != null)) {
                         conf.setDataset(response.getBody().getContent());

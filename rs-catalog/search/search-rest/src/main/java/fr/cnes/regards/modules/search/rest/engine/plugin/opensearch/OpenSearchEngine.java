@@ -36,8 +36,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -55,13 +55,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.dam.domain.entities.attribute.DateAttribute;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.DateProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
@@ -251,7 +251,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IResponseBuilder<?> builder = getBuilder(context);
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration,
                             SearchEngineController
-                                    .buildExtraLink(resourceService, context, Link.REL_SELF, EXTRA_DESCRIPTION)
+                                    .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION)
                                     .getHref(),
                             context, configuration, page,
                             SearchEngineController.buildPaginationLinks(resourceService, page, context));
@@ -269,10 +269,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private Optional<OffsetDateTime> getEntityLastUpdateDate(EntityFeature entity) {
         Optional<OffsetDateTime> date = Optional.empty();
         if (engineConfiguration.getEntityLastUpdateDatePropertyPath() != null) {
-            AbstractAttribute<?> dateAttribute = entity
-                    .getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
-            if (dateAttribute instanceof DateAttribute) {
-                DateAttribute dateAttr = (DateAttribute) dateAttribute;
+            IProperty<?> dateAttribute = entity.getProperty(engineConfiguration.getEntityLastUpdateDatePropertyPath());
+            if (dateAttribute instanceof DateProperty) {
+                DateProperty dateAttr = (DateProperty) dateAttribute;
                 return Optional.ofNullable(dateAttr.getValue());
             }
         }
@@ -447,12 +446,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     @Override
-    public ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+    public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity
-                .ok(bounds.stream().map(bound -> new Resource<PropertyBound<?>>(bound)).collect(Collectors.toList()));
+        return ResponseEntity.ok(bounds.stream().map(bound -> new EntityModel<PropertyBound<?>>(bound))
+                .collect(Collectors.toList()));
     }
 
 }

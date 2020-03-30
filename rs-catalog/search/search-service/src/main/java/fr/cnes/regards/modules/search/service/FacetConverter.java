@@ -27,9 +27,9 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
@@ -46,23 +46,23 @@ public class FacetConverter implements IFacetConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(FacetConverter.class);
 
     // @formatter:off
-    private static final Map<AttributeType, FacetType> MAP = new ImmutableMap.Builder<AttributeType, FacetType>()
-            .put(AttributeType.URL, FacetType.STRING)
-            .put(AttributeType.STRING, FacetType.STRING)
-            .put(AttributeType.STRING_ARRAY, FacetType.STRING)
-            .put(AttributeType.BOOLEAN, FacetType.BOOLEAN)
-            .put(AttributeType.INTEGER, FacetType.NUMERIC)
-            .put(AttributeType.INTEGER_ARRAY, FacetType.NUMERIC)
-            .put(AttributeType.DOUBLE, FacetType.NUMERIC)
-            .put(AttributeType.DOUBLE_ARRAY, FacetType.NUMERIC)
-            .put(AttributeType.LONG, FacetType.NUMERIC)
-            .put(AttributeType.LONG_ARRAY, FacetType.NUMERIC)
-            .put(AttributeType.DATE_ISO8601, FacetType.DATE)
-            .put(AttributeType.DATE_ARRAY, FacetType.DATE)
-            .put(AttributeType.INTEGER_INTERVAL, FacetType.NUMERIC)
-            .put(AttributeType.DOUBLE_INTERVAL, FacetType.NUMERIC)
-            .put(AttributeType.LONG_INTERVAL, FacetType.NUMERIC)
-            .put(AttributeType.DATE_INTERVAL, FacetType.NUMERIC)
+    private static final Map<PropertyType, FacetType> MAP = new ImmutableMap.Builder<PropertyType, FacetType>()
+            .put(PropertyType.URL, FacetType.STRING)
+            .put(PropertyType.STRING, FacetType.STRING)
+            .put(PropertyType.STRING_ARRAY, FacetType.STRING)
+            .put(PropertyType.BOOLEAN, FacetType.BOOLEAN)
+            .put(PropertyType.INTEGER, FacetType.NUMERIC)
+            .put(PropertyType.INTEGER_ARRAY, FacetType.NUMERIC)
+            .put(PropertyType.DOUBLE, FacetType.NUMERIC)
+            .put(PropertyType.DOUBLE_ARRAY, FacetType.NUMERIC)
+            .put(PropertyType.LONG, FacetType.NUMERIC)
+            .put(PropertyType.LONG_ARRAY, FacetType.NUMERIC)
+            .put(PropertyType.DATE_ISO8601, FacetType.DATE)
+            .put(PropertyType.DATE_ARRAY, FacetType.DATE)
+            .put(PropertyType.INTEGER_INTERVAL, FacetType.NUMERIC)
+            .put(PropertyType.DOUBLE_INTERVAL, FacetType.NUMERIC)
+            .put(PropertyType.LONG_INTERVAL, FacetType.NUMERIC)
+            .put(PropertyType.DATE_INTERVAL, FacetType.NUMERIC)
             .build();
     // @formatter:on
 

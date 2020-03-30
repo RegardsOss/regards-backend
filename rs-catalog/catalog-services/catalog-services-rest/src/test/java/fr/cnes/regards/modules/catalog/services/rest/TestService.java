@@ -29,9 +29,10 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
@@ -39,7 +40,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -65,10 +66,11 @@ public class TestService implements IService {
         } else {
             Model model = Model.build("pName", "pDescription", EntityType.DATA);
             DataObject do1 = new DataObject(model, "pTenant", "DO1", "pLabel1");
-            do1.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
-                    UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1));
+            do1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, "pTenant",
+                                                  UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1, null,
+                                                  null));
             DataObject do2 = new DataObject(model, "pTenant", "DO2", "pLabel2");
-            do2.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
+            do2.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
                     UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1));
             responseList = Sets.newLinkedHashSet(do1, do2);
         }

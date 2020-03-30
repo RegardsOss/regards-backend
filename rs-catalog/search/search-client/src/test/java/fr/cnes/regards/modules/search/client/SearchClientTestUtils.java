@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.search.client;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
@@ -32,10 +32,10 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
-import fr.cnes.regards.modules.dam.domain.models.attributes.Fragment;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
  *
@@ -75,16 +75,16 @@ public class SearchClientTestUtils {
     public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
 
     public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_ATTRIBUTE_NAME, AttributeType.INTEGER, INTEGER_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+            .build(INTEGER_ATTRIBUTE_NAME, PropertyType.INTEGER, INTEGER_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_ATTRIBUTE_NAME, AttributeType.STRING, STRING_ATTRIBUTE_NAME).get();
+            .build(STRING_ATTRIBUTE_NAME, PropertyType.STRING, STRING_ATTRIBUTE_NAME).get();
 
     public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DATE_ATTRIBUTE_NAME, AttributeType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+            .build(DATE_ATTRIBUTE_NAME, PropertyType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
     public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(EXTRA_ATTRIBUTE_NAME, AttributeType.STRING, EXTRA_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+            .build(EXTRA_ATTRIBUTE_NAME, PropertyType.STRING, EXTRA_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
 
     public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL,
                                                                        EXTRA_ATTRIBUTE_MODEL);
@@ -101,7 +101,7 @@ public class SearchClientTestUtils {
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
-    public static final ResponseEntity<List<Resource<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(LIST));
 
     /**
@@ -137,16 +137,16 @@ public class SearchClientTestUtils {
     /**
      * Sample response from the {@link IUserClient}
      */
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedResources<Resource<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
 
     /**
