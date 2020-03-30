@@ -26,8 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,7 +73,7 @@ public class MonitoringController implements IResourceController<AcquisitionProc
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChainMonitor>>> search(
+    public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChainMonitor>>> search(
             @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
             @RequestParam(name = "running", required = false) Boolean running,
             @RequestParam(name = "label", required = false) String label,
@@ -85,26 +85,27 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     }
 
     @Override
-    public Resource<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
+    public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
             Object... pExtras) {
-        Resource<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
+        EntityModel<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
         if ((element != null) && (element.getChain() != null)) {
             if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
                     && !element.getChain().isLocked() && element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
-                                        "start", MethodParamFactory.build(Long.class, element.getChain().getId()),
+                                        LinkRels.SELF, MethodParamFactory.build(Long.class, element.getChain().getId()),
                                         MethodParamFactory.build(Optional.class));
             }
             if (element.isActive()) {
-                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain", "stop",
+                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain",
+                                        LinkRels.SELF,
                                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
             if (!element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "delete", LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
-            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode", "patch",
-                                    MethodParamFactory.build(Long.class, element.getChain().getId()),
+            resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode",
+                                    LinkRels.UPDATE, MethodParamFactory.build(Long.class, element.getChain().getId()),
                                     MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
         return resource;

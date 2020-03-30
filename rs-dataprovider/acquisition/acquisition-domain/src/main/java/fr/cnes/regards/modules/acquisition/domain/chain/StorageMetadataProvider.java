@@ -18,16 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
+
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Storage information
@@ -48,13 +51,13 @@ public class StorageMetadataProvider {
      * To use a plugin from storage, this identifier must match a plugin configuration business identifier.
      */
     @NotBlank(message = StorageMetadataProvider.MISSING_STORAGE)
-    @Size(min=1, max= STORAGE_MAX_LENGTH)
+    @Size(min = 1, max = STORAGE_MAX_LENGTH)
     private String pluginBusinessId;
 
     /**
      * Optional path identifying the base directory in which to store related files
      */
-    @Size(max= URL_MAX_LENGTH)
+    @Size(max = URL_MAX_LENGTH)
     private String storePath;
 
     /**
@@ -63,7 +66,7 @@ public class StorageMetadataProvider {
     @Valid
     @NotNull(message = MISSING_TARGET_TYPES)
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String" ) })
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<DataType> targetTypes;
 
     public String getPluginBusinessId() {

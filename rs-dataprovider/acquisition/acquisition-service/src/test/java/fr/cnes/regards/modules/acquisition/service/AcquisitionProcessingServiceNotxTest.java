@@ -43,9 +43,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -97,7 +96,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
 
         Set<IPluginParam> param = IPluginParam.set(IPluginParam
                 .build(GlobDiskScanning.FIELD_DIRS, PluginParameterTransformer.toJson(new ArrayList<>())));
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, param);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin 2");
         pluginService.savePluginConfiguration(scanPlugin);

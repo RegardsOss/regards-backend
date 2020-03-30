@@ -28,8 +28,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -81,13 +81,13 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition files", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedResources<Resource<AcquisitionFile>>> search(
+    public ResponseEntity<PagedModel<EntityModel<AcquisitionFile>>> search(
             @RequestParam(name = REQUEST_PARAM_FILEPATH, required = false) String filePath,
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<AcquisitionFileState> state,
             @RequestParam(name = REQUEST_PARAM_PRODUCT_ID, required = false) Long productId,
             @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long chainId,
-            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_FROM,
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AcquisitionFile> assembler) {
         Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);
@@ -95,7 +95,7 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
     }
 
     @Override
-    public Resource<AcquisitionFile> toResource(AcquisitionFile element, Object... extras) {
+    public EntityModel<AcquisitionFile> toResource(AcquisitionFile element, Object... extras) {
         return resourceService.toResource(element);
     }
 }

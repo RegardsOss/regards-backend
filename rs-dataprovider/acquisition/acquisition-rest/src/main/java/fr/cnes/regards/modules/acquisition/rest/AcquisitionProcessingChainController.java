@@ -47,9 +47,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -106,13 +105,13 @@ public class AcquisitionProcessingChainController implements IResourceController
     /**
      * Get all {@link AcquisitionProcessingChain}
      * @param pageable a {@link Pageable} for pagination information
-     * @param assembler a {@link ResourceAssembler} to easily convert {@link Page} instances into {@link PagedResources}
-     * @return {@link List} of {@link Resource} of {@link AcquisitionProcessingChain}
+     * @param assembler a {@link ResourceAssembler} to easily convert {@link Page} instances into {@link PagedModel}
+     * @return {@link List} of {@link EntityModel} of {@link AcquisitionProcessingChain}
      * @throws ModuleException if error occurs!
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "List all the chains", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChain>>> retrieveAll(
+    public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChain>>> retrieveAll(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChain> assembler) throws ModuleException {
         return new ResponseEntity<>(toPagedResources(processingService.getFullChains(pageable), assembler),
@@ -127,7 +126,7 @@ public class AcquisitionProcessingChainController implements IResourceController
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Add a chain", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> create(
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> create(
             @Valid @RequestBody AcquisitionProcessingChain processingChain) throws ModuleException {
         return new ResponseEntity<>(toResource(processingService.createChain(processingChain)), HttpStatus.CREATED);
     }
@@ -135,7 +134,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @RequestMapping(method = RequestMethod.PATCH)
     @ResourceAccess(description = "Patch several acquisition chains with new state and mode",
             role = DefaultRole.EXPLOIT)
-    public ResponseEntity<List<Resource<AcquisitionProcessingChain>>> updateChainsStateAndMode(
+    public ResponseEntity<List<EntityModel<AcquisitionProcessingChain>>> updateChainsStateAndMode(
             @Valid @RequestBody UpdateAcquisitionProcessingChains payload) throws ModuleException {
         return new ResponseEntity<>(toResources(processingService.patchChainsStateAndMode(payload)), HttpStatus.OK);
     }
@@ -148,7 +147,8 @@ public class AcquisitionProcessingChainController implements IResourceController
      */
     @RequestMapping(method = RequestMethod.GET, value = CHAIN_PATH)
     @ResourceAccess(description = "Get a chain", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> get(@PathVariable Long chainId) throws ModuleException {
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> get(@PathVariable Long chainId)
+            throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.getChain(chainId)));
     }
 
@@ -161,14 +161,14 @@ public class AcquisitionProcessingChainController implements IResourceController
      */
     @RequestMapping(method = RequestMethod.PUT, value = CHAIN_PATH)
     @ResourceAccess(description = "Update a chain", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> update(@PathVariable Long chainId,
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> update(@PathVariable Long chainId,
             @Valid @RequestBody AcquisitionProcessingChain processingChain) throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.updateChain(processingChain)));
     }
 
     @RequestMapping(method = RequestMethod.PATCH, value = CHAIN_PATH)
     @ResourceAccess(description = "Patch the state and the mode of the chain", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> updateStateAndMode(@PathVariable Long chainId,
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> updateStateAndMode(@PathVariable Long chainId,
             @Valid @RequestBody UpdateAcquisitionProcessingChain payload) throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.patchStateAndMode(chainId, payload)));
     }
@@ -182,14 +182,14 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.GET, value = START_MANUAL_CHAIN_PATH)
     @ResourceAccess(description = "Start a manual chain", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> startManualChain(@PathVariable Long chainId,
             @RequestParam(name = "session", required = false) Optional<String> session) throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.startManualChain(chainId, session, false)));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = STOP_CHAIN_PATH)
     @ResourceAccess(description = "Stop a chain", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Resource<AcquisitionProcessingChain>> stopChain(@PathVariable Long chainId)
+    public ResponseEntity<EntityModel<AcquisitionProcessingChain>> stopChain(@PathVariable Long chainId)
             throws ModuleException {
         return ResponseEntity.ok(toResource(processingService.stopAndCleanChain(chainId)));
     }
@@ -215,8 +215,8 @@ public class AcquisitionProcessingChainController implements IResourceController
     }
 
     @Override
-    public Resource<AcquisitionProcessingChain> toResource(AcquisitionProcessingChain element, Object... extras) {
-        Resource<AcquisitionProcessingChain> resource = resourceService.toResource(element);
+    public EntityModel<AcquisitionProcessingChain> toResource(AcquisitionProcessingChain element, Object... extras) {
+        EntityModel<AcquisitionProcessingChain> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.LIST,
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
@@ -227,7 +227,7 @@ public class AcquisitionProcessingChainController implements IResourceController
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
         if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
                 && element.isActive()) {
-            resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
+            resourceService.addLink(resource, this.getClass(), "startManualChain", LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, element.getId()),
                                     MethodParamFactory.build(Optional.class));
         }
@@ -235,9 +235,9 @@ public class AcquisitionProcessingChainController implements IResourceController
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
-        resourceService.addLink(resource, this.getClass(), "stopChain", "stop",
+        resourceService.addLink(resource, this.getClass(), "stopChain", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", "patch",
+        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         return resource;
