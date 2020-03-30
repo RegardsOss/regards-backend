@@ -36,9 +36,9 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -107,7 +107,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(UniformResourceName
+        sip4.setSipId(OaisUniformResourceName
                 .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
@@ -122,14 +122,14 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         sip4 = sipRepository.save(sip4);
 
         AIP aip = AIP.build(sip4.getSip(),
-                            UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                            OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                             Optional.empty(), "SIP_001", sip4.getVersion());
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
         aipEntity = aipRepository.save(aipEntity);
 
         AIP aip2 = AIP.build(sip4.getSip(),
-                             UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
+                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
                              Optional.empty(), "SIP_002", sip4.getVersion());
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 

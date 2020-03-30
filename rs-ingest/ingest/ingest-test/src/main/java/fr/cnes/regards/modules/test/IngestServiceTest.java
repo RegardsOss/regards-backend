@@ -153,7 +153,6 @@ public class IngestServiceTest {
      * Helper method to wait for SIP ingestion
      * @param expectedSips expected count of sips in database
      * @param timeout in ms
-     * @throws InterruptedException
      */
     public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
         long end = System.currentTimeMillis() + timeout;
@@ -260,7 +259,6 @@ public class IngestServiceTest {
      * Helper method to wait for DB ingestion
      * @param expectedTasks expected count of task in db
      * @param timeout in ms
-     * @throws InterruptedException
      */
     public void waitForRequestReach(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;

@@ -35,7 +35,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.Sets;
 import com.jayway.jsonpath.JsonPath;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
@@ -43,7 +42,6 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -98,7 +96,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                 + IngestProcessingChainController.EXPORT_PATH, requestBuilderCustomizer,
                                                         "Default processing chain should be exported",
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
-        assertMediaType(resultActions, MediaType.APPLICATION_JSON_UTF8);
+        assertMediaType(resultActions, MediaType.APPLICATION_JSON);
         String chain = payload(resultActions);
         Assert.assertNotNull(chain);
     }
@@ -128,7 +126,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void createIngestProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
@@ -137,7 +135,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void updateIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         ResultActions resultActions = performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
                                                          ingestProcessingChain, requestBuilderCustomizer,
@@ -153,8 +151,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
-        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE,
-                                              GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
@@ -169,13 +166,13 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void deleteIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, ingestProcessingChain,
                            requestBuilderCustomizer, "Ingest processing creation error");
 
         requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
@@ -236,16 +233,4 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         return new IngestProcessingChain("ingestProcessingChain_test", "the ingest processing chain description",
                 validationConf, generationConf);
     }
-
-    private PluginMetaData getPluginMetaData(String pluginId, String className, String interfaceName) {
-        final PluginMetaData pluginMetaData = new PluginMetaData();
-        pluginMetaData.setPluginClassName(className);
-        pluginMetaData.setInterfaceNames(Sets.newHashSet(interfaceName));
-        pluginMetaData.setPluginId(pluginId);
-        pluginMetaData.setAuthor("AUTHOR");
-        pluginMetaData.setVersion("1.0.0");
-
-        return pluginMetaData;
-    }
-
 }

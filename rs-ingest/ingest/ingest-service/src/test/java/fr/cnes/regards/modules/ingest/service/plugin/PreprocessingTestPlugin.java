@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.InvalidSIPReferenceException;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;

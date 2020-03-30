@@ -39,10 +39,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -113,7 +113,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         String session = "session";
         String storage = "storage";
         String storePath = null;
-        MimeType mimeType = MediaType.APPLICATION_JSON_UTF8;
+        MimeType mimeType = MediaType.APPLICATION_JSON;
         SIP sip = SIP.build(EntityType.DATA, providerId);
         SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
                                               IngestMetadata.build(sessionOwner, session, "ingestChain",
@@ -122,9 +122,9 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         sipEntity.setChecksum(UUID.randomUUID().toString());
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        UniformResourceName sipId = sipEntity.getSipIdUrn();
-        UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
-        aipId.setOaisIdentifier(OAISIdentifier.AIP);
+        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
+        OaisUniformResourceName aipId = OaisUniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
+        aipId.setIdentifier(OAISIdentifier.AIP);
         String fileName = UUID.randomUUID().toString();
         String storedUrl = "storage://in/the/place/" + fileToStoreChecksum;
         AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
@@ -141,11 +141,12 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         Collection<RequestResultInfoDTO> results = Sets.newHashSet();
         if (metaStorage) {
             results.add(RequestResultInfoDTO
-                    .build(groupId, aipEntity.getChecksum(), storage, storePath, owners, FileReferenceDTO
-                            .build(OffsetDateTime.now(),
-                                   FileReferenceMetaInfoDTO.build(aipEntity.getChecksum(), "MD5", fileName, 10L, null,
-                                                                  null, MediaType.APPLICATION_JSON_UTF8, null),
-                                   FileLocationDTO.build(storage, storedUrl), owners),
+                    .build(groupId, aipEntity.getChecksum(), storage, storePath, owners,
+                           FileReferenceDTO
+                                   .build(OffsetDateTime.now(),
+                                          FileReferenceMetaInfoDTO.build(aipEntity.getChecksum(), "MD5", fileName, 10L,
+                                                                         null, null, MediaType.APPLICATION_JSON, null),
+                                          FileLocationDTO.build(storage, storedUrl), owners),
                            null));
             AIPStoreMetaDataRequest request = AIPStoreMetaDataRequest
                     .build(aipEntity, Sets.newHashSet(StoreLocation.build(storage, storePath)), true, true);
@@ -154,11 +155,12 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
 
         } else {
             results.add(RequestResultInfoDTO
-                    .build(groupId, fileToStoreChecksum, storage, storePath, owners, FileReferenceDTO
-                            .build(OffsetDateTime.now(),
-                                   FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L, null, null,
-                                                                  MediaType.APPLICATION_JSON_UTF8, null),
-                                   FileLocationDTO.build(storage, storedUrl), owners),
+                    .build(groupId, fileToStoreChecksum, storage, storePath, owners,
+                           FileReferenceDTO
+                                   .build(OffsetDateTime.now(),
+                                          FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L,
+                                                                         null, null, MediaType.APPLICATION_JSON, null),
+                                          FileLocationDTO.build(storage, storedUrl), owners),
                            null));
             IngestRequest request = IngestRequest.build(IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),

@@ -18,14 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import java.util.Set;
-import javax.validation.constraints.NotBlank;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.urn.DataType;
 
 /**
  * Metadata for storage
@@ -87,7 +90,8 @@ public class StorageMetadata {
      * @param storePath path to the directory in which files have to be stored
      * @param targetTypes list of data type this storage will handle
      */
-    public static StorageMetadata build(String pluginBusinessId, @Nullable String storePath, Set<DataType> targetTypes) {
+    public static StorageMetadata build(String pluginBusinessId, @Nullable String storePath,
+            Set<DataType> targetTypes) {
         Assert.hasLength(pluginBusinessId, MISSING_STORAGE_ERROR);
         StorageMetadata m = new StorageMetadata();
         m.setPluginBusinessId(pluginBusinessId);
@@ -95,7 +99,6 @@ public class StorageMetadata {
         m.setTargetTypes(targetTypes);
         return m;
     }
-
 
     /**
      * Build storage metadata with empty target types and storage path

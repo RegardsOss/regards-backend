@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
@@ -61,8 +61,8 @@ public final class SIPEntitySpecifications {
      * @param page
      */
     public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner,
-            String session, EntityType ipType, OffsetDateTime from, List<SIPState> states, boolean areIdListInclusive, List<String> tags,
-            Set<String> categories, Pageable page) {
+            String session, EntityType ipType, OffsetDateTime from, List<SIPState> states, boolean areIdListInclusive,
+            List<String> tags, Set<String> categories, Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if ((states != null) && !states.isEmpty()) {
@@ -109,7 +109,7 @@ public final class SIPEntitySpecifications {
             }
 
             predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags, sessionOwner, session,
-                    ipType, null, categories));
+                                                                           ipType, null, categories));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

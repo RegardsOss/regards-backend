@@ -90,9 +90,6 @@ public class AIPEntityUpdateWrapper {
         return wrapper;
     }
 
-    /**
-     * @return
-     */
     public boolean isAipPristine() {
         return aipPristine;
     }

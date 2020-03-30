@@ -42,7 +42,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -113,11 +113,11 @@ public class SIPEntity extends AbstractOAISEntity {
         this.sipId = sipId;
     }
 
-    public UniformResourceName getSipIdUrn() {
-        return UniformResourceName.fromString(sipId);
+    public OaisUniformResourceName getSipIdUrn() {
+        return OaisUniformResourceName.fromString(sipId);
     }
 
-    public void setSipId(UniformResourceName sipId) {
+    public void setSipId(OaisUniformResourceName sipId) {
         this.sipId = sipId.toString();
     }
 
@@ -184,7 +184,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
         SIPEntity sipEntity = new SIPEntity();
 
-        UniformResourceName urn = generationUrn(tenant, sip, version);
+        OaisUniformResourceName urn = generationUrn(tenant, sip, version);
         sipEntity.setProviderId(sip.getId());
         sipEntity.setSipId(urn);
         sipEntity.setCreationDate(OffsetDateTime.now());
@@ -202,9 +202,9 @@ public class SIPEntity extends AbstractOAISEntity {
         return sipEntity;
     }
 
-    public static UniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
+    public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        return new UniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
+        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
     }
 
 }

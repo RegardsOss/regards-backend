@@ -40,7 +40,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
@@ -85,14 +84,13 @@ public class UpdateProcessingChainIT extends AbstractDaoTest {
         newChain.setDescription("Ingest processing chain");
         newChain.setName(CHAIN_NAME);
 
-        PluginConfiguration validation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            ValidationTestPlugin.class);
+        PluginConfiguration validation = PluginConfiguration.build(ValidationTestPlugin.class, null, Sets.newHashSet());
         validation.setIsActive(true);
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            AIPGenerationTestPlugin.class);
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);
@@ -108,14 +106,13 @@ public class UpdateProcessingChainIT extends AbstractDaoTest {
         String validationLabel = chain.getValidationPlugin().getLabel();
         String generationLabel = chain.getGenerationPlugin().getLabel();
 
-        PluginConfiguration validation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            ValidationTestPlugin.class);
+        PluginConfiguration validation = PluginConfiguration.build(ValidationTestPlugin.class, null, Sets.newHashSet());
         validation.setIsActive(true);
         validation.setLabel("validationPlugin_ipst_new");
         chain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                            AIPGenerationTestPlugin.class);
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst_new");
         chain.setGenerationPlugin(generation);

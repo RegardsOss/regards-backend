@@ -32,8 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
@@ -152,12 +152,10 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<AIPEntityLight>>> searchAIPs(
-            @RequestBody SearchAIPsParameters filters,
+    public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntityLight> assembler) {
         Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
@@ -210,7 +208,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
         LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
 
         try {
-            aipService.downloadAIP(UniformResourceName.fromString(aipId), response);
+            aipService.downloadAIP(OaisUniformResourceName.fromString(aipId), response);
         } catch (ModuleException e) {
 
             // Workaround to handle conversion of ServletErrorResponse in JSON format and
@@ -237,8 +235,8 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     }
 
     @Override
-    public Resource<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
-        Resource<AIPEntityLight> resource = resourceService.toResource(element);
+    public EntityModel<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
+        EntityModel<AIPEntityLight> resource = resourceService.toResource(element);
         return resource;
     }
 

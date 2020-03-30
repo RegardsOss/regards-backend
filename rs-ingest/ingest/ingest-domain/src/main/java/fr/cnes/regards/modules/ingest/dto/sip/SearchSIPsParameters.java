@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +31,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 

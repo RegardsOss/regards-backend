@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.sip.validator.CheckSIP;
 import fr.cnes.regards.modules.ingest.dto.sip.validator.CheckSIPId;
 

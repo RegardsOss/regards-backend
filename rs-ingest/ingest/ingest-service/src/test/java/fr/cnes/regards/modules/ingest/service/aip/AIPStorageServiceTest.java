@@ -41,12 +41,12 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -127,8 +127,8 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
         aipEntity1 = AIPEntity
                 .build(sipEntity, AIPState.GENERATED,
                        AIP.build(sipEntity.getSip(),
-                                 UniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                     getDefaultTenant(), 1),
+                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
+                                                                         getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
         aipEntity1.setChecksum("some checksum");

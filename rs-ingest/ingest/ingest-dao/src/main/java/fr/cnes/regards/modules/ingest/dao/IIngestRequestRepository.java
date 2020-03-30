@@ -79,7 +79,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      */
     Optional<IngestRequest> findOne(Specification<IngestRequest> spec);
 
-    List<IngestRequest> findAllByAipsIn(AIPEntity aipEntity);
+    List<IngestRequest> findAllByAipsIn(List<AIPEntity> aipEntity);
 
     boolean existsByAipsIdAndState(Long id, InternalRequestState state);
 

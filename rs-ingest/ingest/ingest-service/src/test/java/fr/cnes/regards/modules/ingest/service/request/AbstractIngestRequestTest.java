@@ -32,9 +32,9 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -100,9 +100,9 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         sipEntity.setChecksum(checksum);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
-        UniformResourceName sipId = sipEntity.getSipIdUrn();
-        UniformResourceName aipId = UniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
-        aipId.setOaisIdentifier(OAISIdentifier.AIP);
+        OaisUniformResourceName sipId = sipEntity.getSipIdUrn();
+        OaisUniformResourceName aipId = OaisUniformResourceName.fromString(sipEntity.getSipIdUrn().toString());
+        aipId.setIdentifier(OAISIdentifier.AIP);
         AIP aip = AIP.build(EntityType.DATA, aipId, Optional.of(sipId), providerId, sipEntity.getVersion());
         aipEntity = AIPEntity.build(sipEntity, AIPState.STORED, aip);
         aipEntity = aipRepo.save(aipEntity);

@@ -89,14 +89,11 @@ public interface IRequestService {
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
      * @param request the request to save
-     * @return
      */
     AbstractRequest scheduleRequest(AbstractRequest request);
 
     /**
      * Check the given request is runnable or should  be delayed.
-     * @param request
-     * @return
      */
     public boolean shouldDelayRequest(AbstractRequest request);
 
@@ -159,9 +156,6 @@ public interface IRequestService {
 
     /**
      * Retrieve {@link AbstractRequest}s associated to the given storage respones associated by groupId.
-     *
-     * @param requestInfos
-     * @return
      */
     public List<AbstractRequest> getRequests(Set<RequestInfo> requestInfos);
 }

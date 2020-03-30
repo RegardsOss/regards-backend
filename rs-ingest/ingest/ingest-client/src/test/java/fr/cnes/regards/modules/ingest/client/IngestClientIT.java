@@ -40,9 +40,9 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;

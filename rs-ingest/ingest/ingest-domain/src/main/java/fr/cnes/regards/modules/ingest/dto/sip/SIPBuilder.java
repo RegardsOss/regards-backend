@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  *

@@ -28,8 +28,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,7 +112,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "SIP collections submission (bulk request)", role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
     public ResponseEntity<RequestInfoDto> ingest(@RequestBody SIPCollection sips) throws ModuleException {
         RequestInfoDto requestInfo = ingestService.handleSIPCollection(sips);
         return ResponseEntity.status(HttpStatus.OK).body(requestInfo);
@@ -143,17 +143,17 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
+    public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
         Page<SIPEntity> sipEntities = sipService.search(params, pageable);
-        PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
+        PagedModel<EntityModel<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retrieve one SIP by its sipId.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
+    public ResponseEntity<EntityModel<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
         SIPEntity sip = sipService.getEntity(sipId)
                 .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
@@ -161,8 +161,8 @@ public class SIPController implements IResourceController<SIPEntity> {
     }
 
     @Override
-    public Resource<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
-        final Resource<SIPEntity> resource = resourceService.toResource(sipEntity);
+    public EntityModel<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
+        final EntityModel<SIPEntity> resource = resourceService.toResource(sipEntity);
         resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
         return resource;

@@ -33,8 +33,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,18 +90,18 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.",
             role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<IngestProcessingChain>>> search(
+    public ResponseEntity<PagedModel<EntityModel<IngestProcessingChain>>> search(
             @RequestParam(name = "name", required = false) String name,
             @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable,
             PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
         Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
-        PagedResources<Resource<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);
+        PagedModel<EntityModel<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<IngestProcessingChain>> get(@PathVariable("name") String name)
+    public ResponseEntity<EntityModel<IngestProcessingChain>> get(@PathVariable("name") String name)
             throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.getChain(name);
         return new ResponseEntity<>(toResource(chain), HttpStatus.OK);
@@ -115,7 +116,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @ResourceAccess(description = "Create a new ingestion processing chain", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Resource<IngestProcessingChain>> create(
+    public ResponseEntity<EntityModel<IngestProcessingChain>> create(
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.createNewChain(processingChain);
         return new ResponseEntity<>(toResource(chain), HttpStatus.CREATED);
@@ -125,7 +126,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file",
             role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
-    public ResponseEntity<Resource<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
+    public ResponseEntity<EntityModel<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
             throws ModuleException {
         try {
             IngestProcessingChain chain = ingestProcessingService.createNewChain(file.getInputStream());
@@ -145,7 +146,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         String exportedFilename = applicationName + "-" + chain.getName() + ".json";
 
         // Produce octet stream to force navigator opening "save as" dialog
-        pResponse.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        pResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
         pResponse.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportedFilename + "\"");
 
         try {
@@ -163,7 +164,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @ResourceAccess(description = "Update an existing IngestProcessingChain.", role = DefaultRole.ADMIN)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.PUT)
-    public ResponseEntity<Resource<IngestProcessingChain>> update(@PathVariable("name") String name,
+    public ResponseEntity<EntityModel<IngestProcessingChain>> update(@PathVariable("name") String name,
             @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
         if (!name.equals(processingChain.getName())) {
             throw new EntityInvalidException("Name of entity to update does not match.");
@@ -173,8 +174,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
     }
 
     @Override
-    public Resource<IngestProcessingChain> toResource(IngestProcessingChain ingestChain, Object... pExtras) {
-        final Resource<IngestProcessingChain> resource = resourceService.toResource(ingestChain);
+    public EntityModel<IngestProcessingChain> toResource(IngestProcessingChain ingestChain, Object... pExtras) {
+        final EntityModel<IngestProcessingChain> resource = resourceService.toResource(ingestChain);
         resourceService.addLink(resource, this.getClass(), "get", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
         if (!ingestChain.getName().equals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL)) {
@@ -184,7 +185,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, ingestChain.getName()),
                                 MethodParamFactory.build(IngestProcessingChain.class));
-        resourceService.addLink(resource, this.getClass(), "export", "export",
+        resourceService.addLink(resource, this.getClass(), "export", LinkRelation.of("export"),
                                 MethodParamFactory.build(HttpServletRequest.class),
                                 MethodParamFactory.build(HttpServletResponse.class),
                                 MethodParamFactory.build(String.class, ingestChain.getName()));

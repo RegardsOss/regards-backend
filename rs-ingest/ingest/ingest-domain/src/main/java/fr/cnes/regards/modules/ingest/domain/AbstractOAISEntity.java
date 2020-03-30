@@ -34,7 +34,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * Define common attributes between SIPEntity and AIPEntity

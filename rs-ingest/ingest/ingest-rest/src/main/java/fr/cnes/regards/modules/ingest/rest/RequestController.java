@@ -28,8 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -102,7 +103,7 @@ public class RequestController implements IResourceController<RequestDto> {
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of Requests", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedResources<Resource<RequestDto>>> searchRequest(
+    public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
             @RequestBody SearchRequestsParameters filters,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
@@ -133,18 +134,17 @@ public class RequestController implements IResourceController<RequestDto> {
     }
 
     @Override
-    public Resource<RequestDto> toResource(RequestDto element, Object... extras) {
-        Resource<RequestDto> resource = resourceService.toResource(element);
+    public EntityModel<RequestDto> toResource(RequestDto element, Object... extras) {
+        EntityModel<RequestDto> resource = resourceService.toResource(element);
 
         if ((InternalRequestState.ERROR == element.getState())
                 || (element.getState() == InternalRequestState.ABORTED)) {
-            resourceService.addLink(resource, this.getClass(), "retryRequests", "RETRY",
+            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("RETRY"),
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                 .contains(element.getState())) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
-                                    MethodParamFactory.build(SearchRequestsParameters.class));
+            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE);
         }
 
         return resource;

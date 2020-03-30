@@ -29,7 +29,7 @@ import org.apache.commons.compress.utils.Lists;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
 

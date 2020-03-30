@@ -50,14 +50,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -135,7 +135,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
                            "azertyuiopqsdfmlmld");
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
 
         // Add creation event

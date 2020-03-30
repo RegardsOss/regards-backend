@@ -38,8 +38,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -113,7 +113,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
                            UUID.randomUUID().toString());
-        sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
+        sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
         if ((tags != null) && !tags.isEmpty()) {
             sip.withContextTags(tags.toArray(new String[0]));

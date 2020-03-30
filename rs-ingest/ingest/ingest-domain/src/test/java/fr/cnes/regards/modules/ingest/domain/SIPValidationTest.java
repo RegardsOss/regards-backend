@@ -44,10 +44,10 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;

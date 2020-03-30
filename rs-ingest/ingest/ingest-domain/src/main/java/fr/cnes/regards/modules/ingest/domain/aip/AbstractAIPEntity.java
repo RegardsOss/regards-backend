@@ -40,7 +40,7 @@ import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -124,11 +124,11 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
         this.aipId = aipId;
     }
 
-    public UniformResourceName getAipIdUrn() {
-        return UniformResourceName.fromString(aipId);
+    public OaisUniformResourceName getAipIdUrn() {
+        return OaisUniformResourceName.fromString(aipId);
     }
 
-    public void setAipId(UniformResourceName aipId) {
+    public void setAipId(OaisUniformResourceName aipId) {
         this.aipId = aipId.toString();
     }
 

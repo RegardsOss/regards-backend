@@ -57,7 +57,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.ingest.dao.AIPEntitySpecification;
@@ -187,7 +187,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void downloadAIP(UniformResourceName aipId, HttpServletResponse response) throws ModuleException {
+    public void downloadAIP(OaisUniformResourceName aipId, HttpServletResponse response) throws ModuleException {
 
         // Find AIP
         AIPEntity aipEntity = aipRepository.findByAipId(aipId.toString()).orElse(null);
@@ -202,7 +202,7 @@ public class AIPService implements IAIPService {
         // Populate response
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + aip.getProviderId() + ".json");
         // NOTE : Do not set content type after download. It can be ignored.
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         // Stream AIP file
         try {
@@ -306,7 +306,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Optional<AIPEntity> getAip(UniformResourceName aipId) {
+    public Optional<AIPEntity> getAip(OaisUniformResourceName aipId) {
         return aipRepository.findByAipId(aipId.toString());
     }
 

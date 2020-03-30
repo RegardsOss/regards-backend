@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
  * @author Léo Mieulet
  */
 public enum AIPUpdateTaskType {
+
     /**
      * Task to add a tag to an AIP
      */
@@ -57,7 +58,6 @@ public enum AIPUpdateTaskType {
     /**
      * Get the comparator between two tasks, as some task must be executed before others
      * @param otherTaskType
-     * @return
      */
     public int getOrder(AIPUpdateTaskType otherTaskType) {
         // Test if the current type should be executed at the end
