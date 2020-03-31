@@ -34,7 +34,6 @@ import java.util.Set;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +79,6 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 @AutoConfigureMockMvc(printOnlyOnFailure = true)
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
-@Ignore("Error in spring-test dependency fixed in 5.2.0. https://github.com/spring-projects/spring-framework/issues/23460")
 public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(CatalogServicesControllerIT.class);
@@ -256,11 +254,15 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
             resultActions.andReturn().getAsyncResult();
             InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
             ByteStreams.copy(is, fos);
+            fos.flush();
             is.close();
         }
+        System.out.printf("--------- %s", resultFile.getAbsolutePath());
         logFileContent(resultFile);
+        System.out.println("---------");
         logFileContent(expectedFileResult);
-        Assert.assertTrue("Request result is not valid", Files.equal(expectedFileResult, resultFile));
+        System.out.println("---------");
+        Assert.assertTrue("Request result is not valid", Files.equal(resultFile, expectedFileResult));
     }
 
     private void logFileContent(File file) {
@@ -297,7 +299,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     @Test
-    @Ignore("Random success of test.")
     public void testSampleServiceWithJsonResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
@@ -311,12 +312,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", samplePlgConf.getId());
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.json"));
     }
 
     @Test
-    @Ignore("Random success of test.")
     public void testSampleServiceWithXmlResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
@@ -330,12 +331,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", samplePlgConf.getId());
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.xml"));
     }
 
     @Test
-    @Ignore("Random success of test.")
     public void testSampleServiceWithImageResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
@@ -349,12 +350,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", samplePlgConf.getId());
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/LogoCnes.png"));
     }
 
     @Test
-    @Ignore("Random success of test.")
     public void testSampleServiceWithUnkownResponse() throws IOException {
 
         HashMap<String, String> dynamicParameters = new HashMap<>();
@@ -368,7 +369,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
                 + CatalogServicesController.PATH_SERVICE_NAME, parameters, requestBuilderCustomizer,
-                                                         "there should not be any error", samplePlgConf.getId());
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result.other"));
     }
 
