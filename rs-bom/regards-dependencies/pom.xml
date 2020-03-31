@@ -680,6 +680,17 @@
 				<version>${regards.version}</version>
 				<classifier>shaded</classifier>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
+				<artifactId>feature-datasource</artifactId>
+				<version>${regards.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
+				<artifactId>feature-datasource</artifactId>
+				<version>${regards.version}</version>
+				<classifier>shaded</classifier>
+			</dependency>
             <!-- DAM -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
