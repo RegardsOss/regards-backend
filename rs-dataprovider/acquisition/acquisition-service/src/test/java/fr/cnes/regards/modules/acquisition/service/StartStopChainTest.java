@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -106,6 +107,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     public void before() {
         pluginRepo.deleteAll();
         jobInfoRepo.deleteAll();
+        productRepository.deleteAll();
     }
 
     /**
@@ -162,21 +164,24 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         }
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, "validPlugin",
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
-                                                                      new HashSet<IPluginParam>());
+        Set<IPluginParam> parametersProduct = IPluginParam
+                .set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT, true));
+
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, "productPlugin",
+                                                                      parametersProduct);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(LongLastingSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(LongLastingSIPGeneration.class, "sipGenPlugin",
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
@@ -203,7 +208,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         AcquisitionProcessingChain processingChain = processingService.getChain(processingChainId);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, "sipGenPlugin",
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("Default SIP generation plugin");
@@ -229,7 +234,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                                                      "startstop", "images")
                                                                                    .toAbsolutePath());
         // Start chain
-        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
+        processingService.startManualChain(processingChain.getId(), Optional.of(UUID.randomUUID().toString()), false);
 
         // Check all products are registered
         long productCount;
@@ -244,9 +249,11 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             Assert.fail();
         }
 
+        LOGGER.info("-----> All {} products are registered !", productCount);
+
         // Check that no running jobs remain
         loops = 100;
-        long runningAcquisitionJobs;
+        long runningAcquisitionJobs = 0;
         long runningGenerationJobs = 0;
         do {
             Thread.sleep(1_000);
@@ -262,7 +269,10 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             Assert.assertEquals(0, runningGenerationJobs);
         }
 
-        // At the end, 95 product must be valid / 5 incompletes
+        LOGGER.info("-----> Number of running ProductAcquisitionJob jobs {} ", runningAcquisitionJobs);
+        LOGGER.info("-----> Number of running SIPGenerationJob jobs {} ", runningGenerationJobs);
+
+        // At the end, 95 product must be valid / 5 incomplete
         loops = 100;
         long validProducts;
         do {
@@ -327,8 +337,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                                                    .toAbsolutePath(),
                                                                            null);
 
+        String session = UUID.randomUUID().toString();
         // Start chain
-        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
+        processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
         // Check all products are registered
         long productCount;
@@ -381,7 +392,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
-        processingService.startManualChain(processingChain.getId(), Optional.empty(), false);
+        processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
         // At the end, all product must be valid
         loops = 100;
