@@ -53,6 +53,10 @@
 			<groupId>fr.cnes.regards.modules.order</groupId>
 			<artifactId>order-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.model</groupId>
+			<artifactId>model-gson-helper</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
