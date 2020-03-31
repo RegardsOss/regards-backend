@@ -254,23 +254,18 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         // Check that no running jobs remain
         loops = 100;
         long runningAcquisitionJobs = 0;
-        long runningGenerationJobs = 0;
         do {
             Thread.sleep(1_000);
             loops--;
             runningAcquisitionJobs = jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(),
                                                                       JobStatus.RUNNING);
-            runningGenerationJobs = jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(),
-                                                                     JobStatus.RUNNING);
-        } while (((runningAcquisitionJobs != 0) || (runningGenerationJobs != 0)) && (loops != 0));
+        } while (((runningAcquisitionJobs != 0) && (loops != 0)));
 
         if (loops == 0) {
             Assert.assertEquals(0, runningAcquisitionJobs);
-            Assert.assertEquals(0, runningGenerationJobs);
         }
 
         LOGGER.info("-----> Number of running ProductAcquisitionJob jobs {} ", runningAcquisitionJobs);
-        LOGGER.info("-----> Number of running SIPGenerationJob jobs {} ", runningGenerationJobs);
 
         // At the end, 95 product must be valid / 5 incomplete
         loops = 100;
