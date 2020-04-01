@@ -57,6 +57,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
+import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugin.LongLastingSIPGeneration;
@@ -78,7 +80,9 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOp
  *
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" }
+// ,locations = { "classpath:application-local.properties" }
+)
 @ActiveProfiles("testAmqp")
 public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
@@ -104,7 +108,16 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     private SessionNotificationHandler notifHandler;
 
     @Before
-    public void before() {
+    public void before() throws ModuleException {
+        processingService.getFullChains().forEach(c -> {
+            try {
+                processingService.patchStateAndMode(c.getId(), UpdateAcquisitionProcessingChains
+                        .build(false, AcquisitionProcessingChainMode.AUTO, UpdateAcquisitionProcessingChainType.ALL));
+                processingService.deleteChain(c.getId());
+            } catch (ModuleException e) {
+                Assert.fail(e.getMessage());
+            }
+        });
         pluginRepo.deleteAll();
         jobInfoRepo.deleteAll();
         productRepository.deleteAll();
@@ -181,7 +194,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(LongLastingSIPGeneration.class, "sipGenPlugin",
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(sipGenPluginClass, "sipGenPlugin",
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
@@ -333,6 +346,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                                            null);
 
         String session = UUID.randomUUID().toString();
+        notifHandler.clear();
         // Start chain
         processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
