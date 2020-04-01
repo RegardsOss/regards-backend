@@ -52,10 +52,14 @@
     </developers>
 
     <dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-        </dependency>
+      		<groupId>org.springdoc</groupId>
+      		<artifactId>springdoc-openapi-webmvc-core</artifactId>
+   		</dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
@@ -84,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>multitenant-regards</artifactId>
+            <artifactId>multitenant-regards-starter</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>
@@ -102,5 +106,16 @@
             <artifactId>spring-boot-starter-jetty</artifactId>
             <scope>test</scope>
         </dependency>
+   		<dependency>
+      		<groupId>org.springdoc</groupId>
+      		<artifactId>springdoc-openapi-ui</artifactId>
+      		<scope>test</scope>
+      	</dependency>
+		<!-- DevTools -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
     </dependencies>
 </project>
