@@ -151,7 +151,8 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     }
 
     @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES)
-    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
             @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
         List<String> modelNames = searchService

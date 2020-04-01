@@ -341,7 +341,8 @@ public class SearchEngineController {
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES)
-    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
+            role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(
             @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
             @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
