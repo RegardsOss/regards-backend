@@ -79,7 +79,7 @@ public class SwaggerAutoConfiguration {
         return registrationBean;
     }
 
-    @Value("${regards.swagger.host:127.0.0.1}")
+    @Value("${regards.swagger.host:http\\://127.0.0.1}")
     private String regardsSwaggerHost;
 
     @Bean
@@ -88,7 +88,7 @@ public class SwaggerAutoConfiguration {
                 .components(new Components().addSecuritySchemes("REGARDS", new SecurityScheme()
                         .type(SecurityScheme.Type.OAUTH2)
                         .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl(String
-                                .format("http://%s%s/rs-authentication/oauth/token", regardsSwaggerHost, zuulPrefix))
+                                .format("%s%s/rs-authentication/oauth/token", regardsSwaggerHost, zuulPrefix))
                                 .scopes(getScopes())))))
                 .info(new Info().title(properties.getApiTitle()).version(properties.getApiVersion())
                         .description(properties.getApiDescription())
