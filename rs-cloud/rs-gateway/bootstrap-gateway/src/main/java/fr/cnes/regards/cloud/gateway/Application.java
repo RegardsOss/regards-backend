@@ -36,10 +36,6 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 @EnableEurekaClient
 public class Application { // NOSONAR
 
-    /**
-     * Starter method
-     * @param pArgs params
-     */
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
     }

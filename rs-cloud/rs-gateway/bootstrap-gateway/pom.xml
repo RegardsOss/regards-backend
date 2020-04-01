@@ -40,6 +40,10 @@
     </properties>
 
     <dependencies>
+    	<dependency>
+      		<groupId>org.springdoc</groupId>
+      		<artifactId>springdoc-openapi-ui</artifactId>
+   		</dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-logger</artifactId>
