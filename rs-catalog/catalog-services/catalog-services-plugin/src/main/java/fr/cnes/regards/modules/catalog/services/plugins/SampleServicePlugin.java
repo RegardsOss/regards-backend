@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * SampleServicePlugin
@@ -107,9 +108,9 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
             HttpServletResponse response) {
-        return apply(pOpenSearchQuery, response);
+        return apply("exemple response", response);
     }
 
     @Override

@@ -52,6 +52,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -68,7 +69,7 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.IServiceHelper;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 @Plugin(description = "Plugin to allow download on multiple data selection by creating an archive.",
         id = "MultiDownloadPlugin", version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr",
@@ -129,15 +130,14 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
             HttpServletResponse response) {
         Page<DataObject> results;
         try {
-            results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, 10000);
+            results = serviceHelper.getDataObjects(searchRequest, 0, 10000);
             return apply(results.getContent(), response);
-        } catch (OpenSearchParseException e) {
-            String message = String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
-                                           pOpenSearchQuery);
+        } catch (ModuleException e) {
+            String message = String.format("Error applying service. Cause : %s", e.getMessage());
             LOGGER.error(message, e);
             return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
                                                                       message);
@@ -187,9 +187,9 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         }
 
         // Create and stream the ZIP archive containing all downloadable files
-        return CatalogPluginResponseFactory
-                .createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap), getArchiveName(),
-                                             MediaType.APPLICATION_OCTET_STREAM);
+        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap),
+                                                                        getArchiveName(),
+                                                                        MediaType.APPLICATION_OCTET_STREAM);
     }
 
     /**

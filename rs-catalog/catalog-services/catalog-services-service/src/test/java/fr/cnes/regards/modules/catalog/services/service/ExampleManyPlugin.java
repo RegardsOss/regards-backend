@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServiceP
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 @Plugin(description = "Example many plugin.", id = "ManyTestPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
@@ -47,7 +48,7 @@ public class ExampleManyPlugin extends AbstractCatalogServicePlugin implements I
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
             HttpServletResponse response) {
         return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
                                                                   "Response example !");

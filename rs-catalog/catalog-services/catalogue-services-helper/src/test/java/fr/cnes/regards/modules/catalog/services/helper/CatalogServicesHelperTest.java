@@ -22,18 +22,22 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
-@MultitenantTransactional
 public class CatalogServicesHelperTest {
 
     @Test
-    public void searchDataObjects() throws OpenSearchParseException {
+    public void searchDataObjects() throws ModuleException {
         ServiceHelper serviceHelper = Mockito.mock(ServiceHelper.class);
         serviceHelper.getDataObjects(new ArrayList<>(), 0, 10);
-        serviceHelper.getDataObjects("ipId:test", 0, 10);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("q", "id:test");
+        SearchRequest request = new SearchRequest("legacy", null, params, null, null, null);
+        serviceHelper.getDataObjects(request, 0, 10);
     }
 
 }

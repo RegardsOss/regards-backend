@@ -22,8 +22,9 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * Service Helper interface
@@ -42,13 +43,13 @@ public interface IServiceHelper {
 
     /**
      * Search for all {@link DataObject}s corresponding to the given open search query
-     * @param openSearchQuery open search query
+     * @param searchRequest {@link SearchRequest}
      * @param pageIndex index of the page to retrieve.
      * @param nbEntitiesByPage number of entities by page.
-     * @throws {@link OpenSearchParseException} Invalid open search query
+     * @throws {@link ModuleException} Invalid request
      * @return {@link Page}<{@link DataObject}>
      */
-    Page<DataObject> getDataObjects(String openSearchQuery, int pageIndex, int nbEntitiesByPage)
-            throws OpenSearchParseException;
+    Page<DataObject> getDataObjects(SearchRequest searchRequest, int pageIndex, int nbEntitiesByPage)
+            throws ModuleException;
 
 }

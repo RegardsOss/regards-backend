@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * Catalog service plugin parameters used to execute the plugin.
@@ -49,7 +50,7 @@ public class ServicePluginParameters {
     /**
      * Opensearch query to retrieve entities to apply plugin service on (case of MANY catalog service plugin type)
      */
-    private String q;
+    private SearchRequest searchRequest;
 
     /**
      * Plugin dynamic parameters
@@ -60,14 +61,14 @@ public class ServicePluginParameters {
         super();
     }
 
-    public ServicePluginParameters(String pEntityId, List<String> pEntitiesId, EntityType pEntityType,
-            String pOpenSearchQuery, Map<String, String> pDynamicParameters) {
+    public ServicePluginParameters(String entityId, List<String> entitiesId, EntityType entityType,
+            SearchRequest searchRequest, Map<String, String> dynamicParameters) {
         super();
-        entityId = pEntityId;
-        entitiesId = pEntitiesId;
-        entityType = pEntityType;
-        q = pOpenSearchQuery;
-        dynamicParameters = pDynamicParameters;
+        this.entityId = entityId;
+        this.entitiesId = entitiesId;
+        this.entityType = entityType;
+        this.searchRequest = searchRequest;
+        this.dynamicParameters = dynamicParameters;
     }
 
     public String getEntityId() {
@@ -82,8 +83,8 @@ public class ServicePluginParameters {
         return entityType;
     }
 
-    public String getOpenSearchQuery() {
-        return q;
+    public SearchRequest getSearchRequest() {
+        return searchRequest;
     }
 
     public Map<String, String> getDynamicParameters() {

@@ -25,6 +25,7 @@ import java.util.StringJoiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -34,11 +35,17 @@ import org.springframework.validation.Validator;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
@@ -166,5 +173,57 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Compute a {@link SearchRequest} to a {@link ICriterion}
+     * @throws ModuleException
+     */
+    public ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {
+        OaisUniformResourceName datasetUrn = null;
+        if (searchRequest.getDatasetUrn() != null) {
+            datasetUrn = OaisUniformResourceName.fromString(searchRequest.getDatasetUrn());
+        }
+        ISearchEngine<?, ?, ?, ?> searchEngine = this.getSearchEngine(Optional.ofNullable(datasetUrn),
+                                                                      searchRequest.getEngineType());
+
+        // Open search request
+        SearchContext context = SearchContext.build(SearchType.DATAOBJECTS, searchRequest.getEngineType(),
+                                                    SearchEngineMappings.getJsonHeaders(),
+                                                    searchRequest.getSearchParameters(), PageRequest.of(0, 1));
+        if (searchRequest.getDatasetUrn() != null) {
+            context = context.withDatasetUrn(OaisUniformResourceName.fromString(searchRequest.getDatasetUrn()));
+        }
+        ICriterion reqCrit = searchEngine.parse(context);
+
+        // Date criterion
+        if (searchRequest.getSearchDateLimit() != null) {
+            reqCrit = ICriterion.and(reqCrit,
+                                     ICriterion.lt(StaticProperties.CREATION_DATE, searchRequest.getSearchDateLimit()));
+        }
+
+        // Include ids criterion
+        if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
+            ICriterion idsCrit = null;
+            for (String ipId : searchRequest.getEntityIdsToInclude()) {
+                if (idsCrit == null) {
+                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId);
+                } else {
+                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
+                }
+            }
+            if (idsCrit != null) {
+                reqCrit = ICriterion.and(reqCrit, idsCrit);
+            }
+        }
+
+        // Exclude ids criterion
+        if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+            for (String ipId : searchRequest.getEntityIdsToExclude()) {
+                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
+            }
+        }
+
+        return reqCrit;
     }
 }

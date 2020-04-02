@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.search.rest;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
@@ -40,11 +39,9 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -54,9 +51,6 @@ import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
-import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
@@ -114,7 +108,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
             @RequestBody ComplexSearchRequest complexSearchRequest) throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
         for (SearchRequest request : complexSearchRequest.getRequests()) {
-            searchCriterions.add(computeComplexCriterion(request));
+            searchCriterions.add(dispatcher.computeComplexCriterion(request));
         }
 
         List<DataType> dataTypes = complexSearchRequest.getDataTypes();
@@ -142,7 +136,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
             throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
         for (SearchRequest request : complexSearchRequest.getRequests()) {
-            searchCriterions.add(computeComplexCriterion(request));
+            searchCriterions.add(dispatcher.computeComplexCriterion(request));
         }
         FacetPage<EntityFeature> facetPage = searchService
                 .search(ICriterion.or(searchCriterions), SearchType.DATAOBJECTS, null,
@@ -156,61 +150,9 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
     public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(@RequestBody SearchRequest searchRequest,
             @RequestHeader HttpHeaders headers) throws SearchException, ModuleException {
         List<String> modelNames = searchService
-                .retrieveEnumeratedPropertyValues(computeComplexCriterion(searchRequest), SearchType.DATAOBJECTS,
-                                                  AttributeHelper.MODEL_ATTRIBUTE, 100, null);
+                .retrieveEnumeratedPropertyValues(dispatcher.computeComplexCriterion(searchRequest),
+                                                  SearchType.DATAOBJECTS, AttributeHelper.MODEL_ATTRIBUTE, 100, null);
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(modelNames));
-    }
-
-    /**
-     * Compute a {@link SearchRequest} to a {@link ICriterion}
-     * @throws ModuleException
-     */
-    private ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {
-        OaisUniformResourceName datasetUrn = null;
-        if (searchRequest.getDatasetUrn() != null) {
-            datasetUrn = OaisUniformResourceName.fromString(searchRequest.getDatasetUrn());
-        }
-        ISearchEngine<?, ?, ?, ?> searchEngine = dispatcher.getSearchEngine(Optional.ofNullable(datasetUrn),
-                                                                            searchRequest.getEngineType());
-
-        // Open search request
-        SearchContext context = SearchContext.build(SearchType.DATAOBJECTS, searchRequest.getEngineType(),
-                                                    SearchEngineMappings.getJsonHeaders(),
-                                                    searchRequest.getSearchParameters(), PageRequest.of(0, 1));
-        if (searchRequest.getDatasetUrn() != null) {
-            context = context.withDatasetUrn(OaisUniformResourceName.fromString(searchRequest.getDatasetUrn()));
-        }
-        ICriterion reqCrit = searchEngine.parse(context);
-
-        // Date criterion
-        if (searchRequest.getSearchDateLimit() != null) {
-            reqCrit = ICriterion.and(reqCrit,
-                                     ICriterion.lt(StaticProperties.CREATION_DATE, searchRequest.getSearchDateLimit()));
-        }
-
-        // Include ids criterion
-        if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
-            ICriterion idsCrit = null;
-            for (String ipId : searchRequest.getEntityIdsToInclude()) {
-                if (idsCrit == null) {
-                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId);
-                } else {
-                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
-                }
-            }
-            if (idsCrit != null) {
-                reqCrit = ICriterion.and(reqCrit, idsCrit);
-            }
-        }
-
-        // Exclude ids criterion
-        if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
-            for (String ipId : searchRequest.getEntityIdsToExclude()) {
-                reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
-            }
-        }
-
-        return reqCrit;
     }
 
     @Override

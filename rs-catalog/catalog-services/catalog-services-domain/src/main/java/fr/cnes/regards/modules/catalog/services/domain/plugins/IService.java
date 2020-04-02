@@ -45,8 +45,8 @@ public interface IService {
         if ((this instanceof ISingleEntityServicePlugin) && (pParameters.getEntityId() != null)) {
             return ((ISingleEntityServicePlugin) this).applyOnEntity(pParameters.getEntityId(), response);
         } else if (this instanceof IEntitiesServicePlugin) {
-            if (pParameters.getOpenSearchQuery() != null) {
-                return ((IEntitiesServicePlugin) this).applyOnQuery(pParameters.getOpenSearchQuery(),
+            if (pParameters.getSearchRequest() != null) {
+                return ((IEntitiesServicePlugin) this).applyOnQuery(pParameters.getSearchRequest(),
                                                                     pParameters.getEntityType(), response);
             } else {
                 return ((IEntitiesServicePlugin) this).applyOnEntities(pParameters.getEntitiesId(), response);
