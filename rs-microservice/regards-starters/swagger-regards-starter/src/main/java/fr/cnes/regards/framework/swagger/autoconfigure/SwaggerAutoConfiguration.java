@@ -42,6 +42,7 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.OAuthFlow;
 import io.swagger.v3.oas.models.security.OAuthFlows;
 import io.swagger.v3.oas.models.security.Scopes;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 /**
@@ -59,11 +60,16 @@ public class SwaggerAutoConfiguration {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(SwaggerAutoConfiguration.class);
 
+    private static final String AUTHENTICATION_KEY = "REGARDS_OAUTH2";
+
     @Value("${spring.application.name}")
     private String springAppName;
 
     @Value("${zuul.prefix}")
     private String zuulPrefix;
+
+    @Value("${regards.instance.tenant.name:instance}")
+    private String instanceTenant;
 
     @Autowired
     private SwaggerProperties properties;
@@ -85,17 +91,22 @@ public class SwaggerAutoConfiguration {
     @Bean
     public OpenAPI customOpenAPI(@Value("${springdoc.version}") String appVersion) {
         return new OpenAPI()
-                .components(new Components().addSecuritySchemes("REGARDS", new SecurityScheme()
+                .components(new Components().addSecuritySchemes(AUTHENTICATION_KEY, new SecurityScheme()
                         .type(SecurityScheme.Type.OAUTH2)
                         .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl(String
                                 .format("%s%s/rs-authentication/oauth/token", regardsSwaggerHost, zuulPrefix))
                                 .scopes(getScopes())))))
+                .addSecurityItem(new SecurityRequirement().addList(AUTHENTICATION_KEY))
                 .info(new Info().title(properties.getApiTitle()).version(properties.getApiVersion())
                         .description(properties.getApiDescription())
                         .license(new License().name(properties.getApiLicense())));
     }
 
     private Scopes getScopes() {
+        if (properties.isInstance()) {
+            return new Scopes().addString(instanceTenant, "");
+        }
+
         Set<String> tenants = tenantResolver.getAllActiveTenants();
         Scopes scopes = new Scopes();
         tenants.forEach(tenant -> scopes.addString(tenant, ""));

@@ -46,6 +46,9 @@ public class SwaggerProperties {
     @NotNull
     private String apiVersion;
 
+    @NotNull
+    private Boolean instance = false;
+
     public String getApiName() {
         return apiName;
     }
@@ -84,5 +87,13 @@ public class SwaggerProperties {
 
     public void setApiVersion(String pApiVersion) {
         apiVersion = pApiVersion;
+    }
+
+    public Boolean isInstance() {
+        return instance;
+    }
+
+    public void setInstance(Boolean instance) {
+        this.instance = instance;
     }
 }
