@@ -78,7 +78,7 @@ public class SwaggerAutoConfiguration {
     private ITenantResolver tenantResolver;
 
     @Bean
-    public FilterRegistrationBean<OpenApiFilter> loggingFilter() {
+    public FilterRegistrationBean<OpenApiFilter> openApiFilterRegistration() {
         FilterRegistrationBean<OpenApiFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new OpenApiFilter());
         registrationBean.addUrlPatterns("/v3/api-docs");
