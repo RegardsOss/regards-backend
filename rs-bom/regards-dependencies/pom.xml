@@ -1127,6 +1127,11 @@
 				<artifactId>search-client</artifactId>
 				<version>${modules.search.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.search</groupId>
+				<artifactId>search-domain</artifactId>
+				<version>${modules.search.version}</version>
+			</dependency>
             <!-- Catalog - Catalog Services -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
