@@ -1,0 +1,60 @@
+{
+    "requestId": "TEST:REQUEST:2321",
+    "requestDate": "2020-03-17T12:24:05.995Z",
+    "metadata": {
+        "sessionOwner": "CHRONOS",
+        "session": "20200331",
+        "override": false,
+        "priority": "NORMAL"
+    },
+    "feature": {
+        "id": "TEST:2321",
+        "type": "Feature",
+        "entityType": "DATA",
+        "model": "GEODE001",
+        "geometry": {
+            "coordinates": [
+                10.0,
+                20.0
+            ],
+            "type": "Point"
+        },
+        "properties": {
+            "system": {
+                "filesize": 2321,
+                "ingestion_date": "2020-04-03T00:00:00Z",
+                "change_date": "2020-04-03T00:00:00Z",
+                "gpfs_url": "file://home/geode/test.tar",
+                "filename": "test.tar",
+                "extension": "tar"
+            },
+            "data": {
+                "type": "L0A_LR_Packet",
+                "production_date": "2020-03-03T23:00:00Z",
+                "utc_start_date": "2020-03-03T23:00:00Z",
+                "utc_end_date": "2020-03-03T23:00:00Z",
+                "tai_start_date": "2020-03-03T23:00:00Z",
+                "tai_end_date": "2020-03-03T23:00:00Z",
+                "validity_flag": false
+            },
+            "swot": {
+                "crid": "crid",
+                "product_counter": "22",
+                "station": "KUX",
+                "day_date": "2020-03-03T00:00:00Z",
+                "cycle_number": 23,
+                "pass_number": 125,
+                "tile_number": 25,
+                "tile_side": "Full",
+                "file_identifier": "Basic",
+                "apid": "0001",
+                "granule_type": "Cycle",
+                "continent_id": [
+                    1,
+                    2
+                ],
+                "bassin_id": "bassinid"
+            }
+        }
+    }
+}
