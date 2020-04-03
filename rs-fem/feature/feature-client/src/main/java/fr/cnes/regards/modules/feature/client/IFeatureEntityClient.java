@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,7 +36,8 @@ import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
  * @author Kevin Marchois
  */
 @RestClient(name = "rs-fem", contextId = "rs-fem.model-att-assoc.client")
-@RequestMapping(IFeatureEntityClient.PATH_DATA_FEATURE_OBJECT)
+@RequestMapping(value = IFeatureEntityClient.PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IFeatureEntityClient {
 
     static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
@@ -45,5 +47,4 @@ public interface IFeatureEntityClient {
     ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(@RequestParam("model") String model,
             @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate, @RequestParam("page") int page,
             @RequestParam("size") int size);
-
 }

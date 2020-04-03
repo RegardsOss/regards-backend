@@ -119,7 +119,7 @@
 		</attribute>
 		<attribute optional="true">
 			<label>Validition flag</label>
-			<name>valid</name>
+			<name>validation_flag</name>
 			<type>BOOLEAN</type>
 		</attribute>
 		<attribute optional="true">
