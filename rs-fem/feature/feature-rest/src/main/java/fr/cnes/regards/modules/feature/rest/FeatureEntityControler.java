@@ -27,13 +27,13 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -80,7 +80,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
             description = "Get features according last update date and model")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Get features according last update date and model") })
-    @RequestMapping(method = RequestMethod.GET, produces = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
+    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get features according last update date")
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Model used to filter feature") @RequestParam("model") String model,
