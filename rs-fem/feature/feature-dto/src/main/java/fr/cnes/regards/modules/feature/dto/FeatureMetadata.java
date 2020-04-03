@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class FeatureMetadata {
 
     @Valid
     @NotNull(message = MISSING_STORAGE_METADATA)
-    private List<StorageMetadata> storages;
+    private List<StorageMetadata> storages = new ArrayList<>();
 
     @NotNull(message = MISSING_PRIORITY_LEVEL)
     private PriorityLevel priority;
@@ -67,7 +68,7 @@ public class FeatureMetadata {
     }
 
     /**
-
+    
      * Build feature metadata
      * @param storages storage metadata
      */
