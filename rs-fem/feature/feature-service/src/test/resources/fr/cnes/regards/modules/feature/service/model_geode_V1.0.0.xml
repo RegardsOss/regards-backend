@@ -337,7 +337,7 @@
 		<attribute optional="true">
 			<label>Continent id</label>
 			<name>continent_id</name>
-			<type>STRING_ARRAY</type>
+			<type>INTEGER_ARRAY</type>
 		</attribute>
 		<attribute optional="true">
 			<label>Bassin id</label>
