@@ -242,7 +242,7 @@
 		<name>swot</name>
 		<attribute optional="true">
 			<label>CRID</label>
-			<name>CRID</name>
+			<name>crid</name>
 			<type>STRING</type>
 		</attribute>
 		<attribute optional="true">
