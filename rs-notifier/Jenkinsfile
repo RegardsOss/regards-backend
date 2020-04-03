@@ -30,4 +30,6 @@
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
 @Library('regards/standardPipeline') _
-standardPipeline {}
+standardPipeline {
+		upstreamProjects = 'rs-admin-multi-branch'
+}
