@@ -64,7 +64,8 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
      */
-    ResponseEntity<R> search(SearchContext context, ISearchEngine<?, ?, ?, ?> requestParser) throws ModuleException;
+    ResponseEntity<R> search(SearchContext context, ISearchEngine<?, ?, ?, ?> requestParser,
+            IEntityLinkBuilder linkBuilder) throws ModuleException;
 
     /**
      * Parse query parameters and transform to {@link ICriterion} (available for all search method)<br/>
@@ -86,7 +87,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
      */
-    default ResponseEntity<E> extra(SearchContext context) throws ModuleException {
+    default ResponseEntity<E> extra(SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException {
         throw new UnsupportedOperationException(
                 "Additional path handling not implemented for engine " + context.getEngineType());
     }
@@ -100,7 +101,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * {@link SearchContext#getUrn()}</li>
      * </ol>
      */
-    ResponseEntity<T> getEntity(SearchContext context) throws ModuleException;
+    ResponseEntity<T> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException;
 
     /**
      * Get contextual property values<br/>

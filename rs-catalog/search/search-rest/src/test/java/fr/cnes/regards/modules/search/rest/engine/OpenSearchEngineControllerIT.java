@@ -45,8 +45,8 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionBuilder;
 
 /**
  * Search engine tests
@@ -315,7 +315,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                                                          .format((OffsetDateTime) stopDate.getValue())))
                                   .exists());
 
-        customizer.addParameter("token", "pu blic_token");
+        // customizer.addParameter("token", "public_token");
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);

@@ -51,7 +51,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
 /**
@@ -131,8 +131,8 @@ public class SearchEngineConfigurationController implements IResourceController<
         final EntityModel<SearchEngineConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConf", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        if (element.getDatasetUrn() != null
-                || !element.getConfiguration().getPluginId().equals(LegacySearchEngine.PLUGIN_ID)) {
+        if ((element.getDatasetUrn() != null)
+                || !element.getConfiguration().getPluginId().equals(SearchEngineMappings.LEGACY_PLUGIN_ID)) {
             resourceService.addLink(resource, this.getClass(), "deleteConf", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }

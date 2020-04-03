@@ -126,9 +126,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-service</artifactId>
-			<scope>test</scope>
-		</dependency>
+		    <groupId>fr.cnes.regards.modules.dam</groupId>
+		    <artifactId>dam-service</artifactId>
+		    <scope>test</scope>
+	    </dependency>
 	</dependencies>
 </project>

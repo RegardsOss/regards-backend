@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
@@ -169,9 +168,6 @@ public class SampleDataUtils {
                           INTEGER_ARRAY_ATTRIBUTE_MODEL, DOUBLE_ARRAY_ATTRIBUTE_MODEL, LONG_ARRAY_ATTRIBUTE_MODEL,
                           STRING_ARRAY_ATTRIBUTE_MODEL, LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL, TAGS_ATTRIBUTE_MODEL);
 
-    /**
-     * Sample response from the {@link IAttributeModelClient}
-     */
     public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
             .ok(HateoasUtils.wrapList(SampleDataUtils.LIST));
 

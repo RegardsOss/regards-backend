@@ -38,8 +38,8 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.rest.ComplexSearchController;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 
 @TestPropertySource(locations = { "classpath:test.properties" }, properties = { "regards.tenant=complex_search",
         "spring.jpa.properties.hibernate.default_schema=complex_search" })

@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.rest.SearchEngineConfigurationController;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
 
 /**
  * {@link SearchEngineConfiguration} tests

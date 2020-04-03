@@ -36,8 +36,6 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.storage.client.IStorageClient;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -94,11 +92,6 @@ public class CatalogServicesITConfiguration {
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
-    }
-
-    @Bean
-    public IStorageRestClient storageRestClient() {
-        return Mockito.mock(IStorageRestClient.class);
     }
 
 }

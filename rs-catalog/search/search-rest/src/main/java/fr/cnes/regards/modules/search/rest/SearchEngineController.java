@@ -59,11 +59,12 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
+import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.SearchException;
+import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 
 /**
  * This controller manages search engines on top of system search stack<br/>
@@ -73,7 +74,7 @@ import fr.cnes.regards.modules.search.service.SearchException;
  */
 @RestController
 @RequestMapping(path = SearchEngineMappings.TYPE_MAPPING)
-public class SearchEngineController {
+public class SearchEngineController implements IEntityLinkBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineController.class);
 
@@ -135,7 +136,7 @@ public class SearchEngineController {
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all entities delegated to engine \"{}\"", engineType);
         return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, queryParams, pageable));
+                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, queryParams, pageable), this);
     }
 
     /**
@@ -148,7 +149,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.ALL, engineType, headers, queryParams, pageable).withExtra(extra));
+                .build(SearchType.ALL, engineType, headers, queryParams, pageable).withExtra(extra), this);
     }
 
     /**
@@ -161,7 +162,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get entity \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, null, null).withUrn(urn));
+                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, null, null).withUrn(urn),
+                                 this);
     }
 
     // Collection mappings
@@ -176,7 +178,8 @@ public class SearchEngineController {
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all collections delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams,
-                                                              pageable));
+                                                              pageable),
+                                          this);
     }
 
     /**
@@ -191,7 +194,7 @@ public class SearchEngineController {
         LOGGER.debug("Search all collections extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.COLLECTIONS, engineType, headers, queryParams, pageable).withExtra(extra));
+                .build(SearchType.COLLECTIONS, engineType, headers, queryParams, pageable).withExtra(extra), this);
     }
 
     /**
@@ -208,7 +211,7 @@ public class SearchEngineController {
                      engineType);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams, null)
-                        .withPropertyName(propertyName).withMaxCount(maxCount));
+                        .withPropertyName(propertyName).withMaxCount(maxCount), this);
     }
 
     /**
@@ -221,7 +224,7 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get collection \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, null, null)
-                .withUrn(urn));
+                .withUrn(urn), this);
     }
 
     // Dataset mappings
@@ -236,7 +239,8 @@ public class SearchEngineController {
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all datasets delegated to engine \"{}\"", engineType);
         return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, pageable));
+                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, pageable),
+                                 this);
     }
 
     /**
@@ -249,7 +253,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all datasets extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATASETS, engineType, headers, queryParams, pageable).withExtra(extra));
+                .build(SearchType.DATASETS, engineType, headers, queryParams, pageable).withExtra(extra), this);
     }
 
     /**
@@ -265,7 +269,7 @@ public class SearchEngineController {
         LOGGER.debug("Search dataset property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, null)
-                        .withPropertyName(propertyName).withMaxCount(maxCount));
+                        .withPropertyName(propertyName).withMaxCount(maxCount), this);
     }
 
     /**
@@ -277,8 +281,9 @@ public class SearchEngineController {
             @Valid @PathVariable(SearchEngineMappings.URN) OaisUniformResourceName urn,
             @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataset \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, null, null)
-                .withUrn(urn));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, null, null).withUrn(urn),
+                                 this);
     }
 
     // Dataobject mappings
@@ -293,7 +298,8 @@ public class SearchEngineController {
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all dataobjects delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams,
-                                                              pageable));
+                                                              pageable),
+                                          this);
     }
 
     /**
@@ -308,7 +314,7 @@ public class SearchEngineController {
         LOGGER.debug("Search all dataobjects extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withExtra(extra));
+                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withExtra(extra), this);
     }
 
     /**
@@ -325,7 +331,7 @@ public class SearchEngineController {
                      engineType);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyName(propertyName).withMaxCount(maxCount));
+                        .withPropertyName(propertyName).withMaxCount(maxCount), this);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS)
@@ -337,7 +343,7 @@ public class SearchEngineController {
         LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyNames(propertyNames).withBoundCalculation());
+                        .withPropertyNames(propertyNames).withBoundCalculation(), this);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES)
@@ -349,7 +355,7 @@ public class SearchEngineController {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100));
+                        .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100), this);
         return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(result.getBody()));
     }
 
@@ -363,7 +369,7 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataobject \"{}\" delegated to engine \"{}\"", urn.toString(), engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, null, null)
-                .withUrn(urn));
+                .withUrn(urn), this);
     }
 
     // Search dataobjects on a single dataset mapping
@@ -383,7 +389,7 @@ public class SearchEngineController {
                      engineType);
         OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withDatasetUrn(urn));
+                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withDatasetUrn(urn), this);
     }
 
     /**
@@ -403,7 +409,7 @@ public class SearchEngineController {
         OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
-                        .withDatasetUrn(urn).withExtra(extra));
+                        .withDatasetUrn(urn).withExtra(extra), this);
     }
 
     /**
@@ -422,7 +428,7 @@ public class SearchEngineController {
         OaisUniformResourceName urn = OaisUniformResourceName.fromString(datasetUrn);
         return dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
+                        .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount), this);
     }
 
     // Search on dataobjects returning datasets
@@ -438,7 +444,8 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search datasets with dataobject criterions delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS_RETURN_DATASETS, engineType,
-                                                              headers, queryParams, pageable));
+                                                              headers, queryParams, pageable),
+                                          this);
     }
 
     /**
@@ -449,8 +456,8 @@ public class SearchEngineController {
      * @param context
      * @return {@link Link}s
      */
-    public static List<Link> buildPaginationLinks(IResourceService resourceService, PageImpl<?> page,
-            SearchContext context) {
+    @Override
+    public List<Link> buildPaginationLinks(IResourceService resourceService, PageImpl<?> page, SearchContext context) {
         List<Link> links = new ArrayList<>();
         // Build previous link
         if (page.hasPrevious()) {
@@ -475,7 +482,8 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
+    @Override
+    public Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
             int pageNumber, LinkRelation rel) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.putAll(context.getQueryParams());
@@ -490,7 +498,8 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildPaginationLink(IResourceService resourceService, SearchContext context, LinkRelation rel) {
+    @Override
+    public Link buildPaginationLink(IResourceService resourceService, SearchContext context, LinkRelation rel) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
                     .buildLinkWithParams(SearchEngineController.class, getMethod(context), rel,
@@ -514,7 +523,8 @@ public class SearchEngineController {
      * Return a contextual link
      * @return {@link Link}, may be null.
      */
-    public static Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
+    @Override
+    public Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
             String extra) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService
@@ -562,8 +572,8 @@ public class SearchEngineController {
     /**
      * Build contextual entity links according to search context and entity type
      */
-    public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
-            EntityFeature entity) {
+    @Override
+    public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityFeature entity) {
         if (entity != null) {
             return buildEntityLinks(resourceService, context, entity.getEntityType(),
                                     OaisUniformResourceName.build(entity.getId()));
@@ -575,8 +585,9 @@ public class SearchEngineController {
     /**
      * Build contextual entity links according to search context and entity type
      */
-    public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
-            EntityType entityType, OaisUniformResourceName id) {
+    @Override
+    public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityType entityType,
+            OaisUniformResourceName id) {
         List<Link> links = new ArrayList<>();
 
         switch (entityType) {

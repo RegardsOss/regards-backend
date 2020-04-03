@@ -52,9 +52,9 @@ import fr.cnes.regards.modules.model.gson.helper.AttributeHelper;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
-import fr.cnes.regards.modules.search.rest.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.SearchException;
+import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 
 /**
  * Complex search controller. Handle complex searches on catalog with multiple search requests. Each request handles :

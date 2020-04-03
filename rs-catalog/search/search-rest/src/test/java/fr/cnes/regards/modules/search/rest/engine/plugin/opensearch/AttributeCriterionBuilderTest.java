@@ -11,7 +11,9 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.AttributeCriterionBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterOperator;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedCriterionOperator;
 
 public class AttributeCriterionBuilderTest {
 

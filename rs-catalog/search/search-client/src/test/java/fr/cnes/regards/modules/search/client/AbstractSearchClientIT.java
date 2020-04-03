@@ -48,14 +48,14 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
 
 /**
  * Abstract Integration Test for clients of the module.

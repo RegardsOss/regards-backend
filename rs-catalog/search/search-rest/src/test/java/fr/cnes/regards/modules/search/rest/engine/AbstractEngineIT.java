@@ -77,13 +77,13 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.EngineConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
 
 /**
  * Engine common methods

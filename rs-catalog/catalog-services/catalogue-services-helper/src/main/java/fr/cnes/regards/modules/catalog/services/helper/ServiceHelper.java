@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.catalog.services.helper;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,9 +34,8 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
-import fr.cnes.regards.modules.search.rest.engine.SearchEngineDispatcher;
+import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
 
 /**
  * Helper to handle catalog entities searches for all Catalogue service plugins.
@@ -49,19 +46,9 @@ import fr.cnes.regards.modules.search.rest.engine.SearchEngineDispatcher;
 public class ServiceHelper implements IServiceHelper {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceHelper.class);
-
-    /**
      * Service to search datas from the catalog.
      */
     private final ISearchService searchService;
-
-    /**
-     * Service to handle and parse open search queries.
-     */
-    private final IOpenSearchService openSearchService;
 
     @Autowired
     private SearchEngineDispatcher dispatcher;
@@ -72,11 +59,9 @@ public class ServiceHelper implements IServiceHelper {
      * @param openSearchService
      * @param tenantResolver
      */
-    public ServiceHelper(ISearchService searchService, IOpenSearchService openSearchService,
-            IRuntimeTenantResolver tenantResolver) {
+    public ServiceHelper(ISearchService searchService, IRuntimeTenantResolver tenantResolver) {
         super();
         this.searchService = searchService;
-        this.openSearchService = openSearchService;
     }
 
     @Override

@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -53,8 +54,8 @@ public class SearchEngineTest implements ISearchEngine<Object, Object, Object, L
     }
 
     @Override
-    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser)
-            throws ModuleException {
+    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
+            IEntityLinkBuilder linkBuilder) throws ModuleException {
         return new ResponseEntity<Object>(associatedDataset, HttpStatus.OK);
     }
 
@@ -64,7 +65,8 @@ public class SearchEngineTest implements ISearchEngine<Object, Object, Object, L
     }
 
     @Override
-    public ResponseEntity<Object> getEntity(SearchContext context) throws ModuleException {
+    public ResponseEntity<Object> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
+            throws ModuleException {
         return new ResponseEntity<Object>(associatedDataset, HttpStatus.OK);
     }
 

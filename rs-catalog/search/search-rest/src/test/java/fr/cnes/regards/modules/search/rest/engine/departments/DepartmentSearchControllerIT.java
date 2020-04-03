@@ -73,7 +73,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.AbstractEngineIT;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 
 /**
  * @author Marc Sordi
