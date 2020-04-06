@@ -158,7 +158,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     @Override
-    public void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message) {
+    public void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message,
+            Map<String, Object> headers) {
 
         LOGGER.debug("Broadcasting object {} to exchange {} with priority {}. Binded queue : {}.", message.getClass(),
                      exchangeName, priority, queueName.orElse("None"));
@@ -196,7 +197,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
             }
 
             // Send message
-            publishMessageByTenant(tenant, exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, message, priority);
+            publishMessageByTenant(tenant, exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, message, priority,
+                                   headers);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -292,7 +294,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
             // Publish
             publishMessageByTenant(tenant, exchangesByEvent.get(eventType.getName()),
-                                   routingKeysByEvent.get(eventType.getName()), event, priority);
+                                   routingKeysByEvent.get(eventType.getName()), event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
@@ -311,13 +313,17 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param routingKey routing key (really useful for direct exchange).
      * @param event the event to publish
      * @param priority the event priority
+     * @param headers additional headers
      */
     private final <T> void publishMessageByTenant(String tenant, String exchangeName, String routingKey, T event,
-            int priority) {
+            int priority, Map<String, Object> headers) {
 
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
+            if (headers != null) {
+                headers.forEach((k, v) -> messageProperties.setHeader(k, v));
+            }
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);
             return new Message(message.getBody(), messageProperties);

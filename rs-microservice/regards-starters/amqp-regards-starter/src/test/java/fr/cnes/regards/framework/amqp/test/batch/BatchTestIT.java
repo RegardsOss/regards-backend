@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
         "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
 public class BatchTestIT {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchTestIT.class);
 
     static final String PROJECT = "PROJECT";
@@ -152,7 +151,7 @@ public class BatchTestIT {
         }
 
         Thread.sleep(5000);
-        Assert.assertTrue(batchHandler.getFailsByTenant(BatchHandler.FAIL_TENANT) > 1);
+        Assert.assertTrue(batchHandler.getFailsByTenant(BatchHandler.FAIL_TENANT) == 0);
         Assert.assertTrue(batchHandler.getCountByTenant(BatchHandler.FAIL_TENANT) == 0);
     }
 

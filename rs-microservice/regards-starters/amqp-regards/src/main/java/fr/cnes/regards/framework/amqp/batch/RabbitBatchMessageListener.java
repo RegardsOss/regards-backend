@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -76,15 +77,18 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final ITenantResolver tenantResolver;
+
     private final String microserviceName;
 
     public RabbitBatchMessageListener(String microserviceName, IInstancePublisher instancePublisher,
-            IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver, MessageConverter messageConverter,
-            IBatchHandler<?> batchHandler) {
+            IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver, ITenantResolver tenantResolver,
+            MessageConverter messageConverter, IBatchHandler<?> batchHandler) {
         this.microserviceName = microserviceName;
         this.instancePublisher = instancePublisher;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.tenantResolver = tenantResolver;
         this.messageConverter = messageConverter;
         this.batchHandler = batchHandler;
     }
@@ -122,10 +126,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             // Prepare message
             List<BatchMessage> validMessages = new ArrayList<>();
             for (BatchMessage message : convertedMessages.get(tenant)) {
-                if (invokeValidationMethod(tenant, message.getConverted())) {
+                if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
+                    handleInvalidMessage(tenant, message, channel, String.format("Unkown tenant %s", tenant));
+                } else if (invokeValidationMethod(tenant, message.getConverted())) {
                     validMessages.add(message);
                 } else {
-                    handleInvalidMessage(tenant, message, channel);
+                    handleInvalidMessage(tenant, message, channel, "See handler validation");
                 }
             }
 
@@ -143,6 +149,26 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             }
         }
     }
+
+    //    // FIXME
+    //    protected boolean checkValidationParameterType() {
+    //        Method[] allMethods = batchHandler.getClass().getDeclaredMethods();
+    //
+    //        for (Method m : allMethods) {
+    //            if (m.getName().equals(VALIDATE_SINGLE_METHOD_NAME)) {
+    //                // FIXME
+    //                Class<?>[] pType = m.getParameterTypes();
+    //                Type[] gpType = m.getGenericParameterTypes();
+    //                for (int i = 0; i < pType.length; i++) {
+    //                    LOGGER.info("{}: {}", "ParameterType", pType[i]);
+    //                    LOGGER.info("{}: {}", "GenericParameterType", gpType[i]);
+    //                }
+    //                break;
+    //            }
+    //        }
+    //        // FIXME
+    //        return false;
+    //    }
 
     protected boolean invokeValidationMethod(String tenant, Object message) {
         // Prepare arguments
@@ -223,10 +249,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         }
     }
 
-    private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel) {
+    private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, String details) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("Invalid message for handler %s : %s", this.getClass().getName(),
-                                            invalidMessage.toString());
+        String errorMessage = String.format("Invalid message for handler %s [%s] : %s", this.getClass().getName(),
+                                            details, invalidMessage.toString());
         LOGGER.error(errorMessage);
 
         // Notify instance

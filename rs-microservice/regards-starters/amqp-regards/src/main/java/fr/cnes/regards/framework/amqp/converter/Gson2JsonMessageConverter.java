@@ -66,8 +66,10 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
-        // Add wrapped type information for Gson deserialization
-        messageProperties.setHeader(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER, object.getClass().getName());
+        // Add wrapped type information for Gson deserialization if not already set
+        if (!messageProperties.getHeaders().containsKey(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER)) {
+            messageProperties.setHeader(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER, object.getClass().getName());
+        }
         return new Message(bytes, messageProperties);
     }
 

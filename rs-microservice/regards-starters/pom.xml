@@ -98,6 +98,7 @@
         <module>metric-regards-starter</module>
         <module>urn-regards</module>
         <module>amqp-regards-client</module>
+        <module>json-random-starter</module>
     </modules>
 
     <dependencies>

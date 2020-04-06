@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp.client;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -46,6 +47,8 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     private static final String ARG_PRIORITY = ARG_NS + "priority";
 
+    private static final String ARG_HEADERS = ARG_NS + "headers";
+
     private static final String ARG_JSON = ARG_NS + "json";
 
     @Value("${" + ARG_EXCHANGE_NAME + "}")
@@ -59,6 +62,9 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     @Value("${" + ARG_JSON + "}")
     private String jsonPathString;
+
+    @Value("#{${" + ARG_HEADERS + "}}")
+    Map<String, Object> headers;
 
     @Autowired
     private AmqpClientPublisher publisher;
@@ -79,6 +85,6 @@ public class AmqpClientApplication implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("EXECUTING : command line runner");
-        publisher.publish(exchangeName, queueName, priority, jsonPathString);
+        publisher.publish(exchangeName, queueName, priority, headers, jsonPathString);
     }
 }

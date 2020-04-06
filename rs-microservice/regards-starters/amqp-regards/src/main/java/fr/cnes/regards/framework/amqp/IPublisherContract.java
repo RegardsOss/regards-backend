@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.amqp;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -97,5 +98,6 @@ public interface IPublisherContract {
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
      */
-    void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message);
+    void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message,
+            Map<String, Object> headers);
 }
