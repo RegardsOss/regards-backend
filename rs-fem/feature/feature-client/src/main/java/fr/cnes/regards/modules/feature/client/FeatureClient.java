@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
@@ -69,6 +70,20 @@ public class FeatureClient {
         List<String> requestIds = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
             FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(urn, priorityLevel);
+            publisher.publish(event);
+            requestIds.add(event.getRequestId());
+        }
+        return requestIds;
+    }
+
+    /**
+     * @param features
+     * @param normal
+     */
+    public List<String> notifyFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
+        List<String> requestIds = Lists.newArrayList();
+        for (FeatureUniformResourceName urn : featureUrns) {
+            NotificationRequestEvent event = NotificationRequestEvent.build(urn, priorityLevel);
             publisher.publish(event);
             requestIds.add(event.getRequestId());
         }
