@@ -68,8 +68,6 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
-    // FIXME why?
-    //    @NotNull(message = "Feature properties mustn't be null")
     protected P properties;
 
     public AbstractFeature() {
