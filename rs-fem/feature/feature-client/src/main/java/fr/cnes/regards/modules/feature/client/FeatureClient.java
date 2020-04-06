@@ -46,7 +46,7 @@ public class FeatureClient {
     private IPublisher publisher;
 
     /**
-     * Sends {@link FeatureUpdateRequestEvent} to fem manager to handle update of {@link Feature}s
+     * Sends {@link FeatureUpdateRequestEvent} to fem manager to handle {@link Feature}s update.
      * @param features {@link Feature}s to patch
      * @param priorityLevel
      * @return update request identifiers
@@ -63,8 +63,9 @@ public class FeatureClient {
     }
 
     /**
-     * @param features
-     * @param normal
+     * Sends {@link FeatureDeletionRequestEvent} to fem manager to handle {@link Feature}s deletion
+     * @param featureUrns Urn of {@link Feature}s to delete
+     * @param priorityLevel {@link PriorityLevel}
      */
     public List<String> deleteFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
         List<String> requestIds = Lists.newArrayList();
@@ -77,8 +78,9 @@ public class FeatureClient {
     }
 
     /**
-     * @param features
-     * @param normal
+     * Sends {@link NotificationRequestEvent} to fem manager to handle {@link Feature}s notification.
+     * @param featureUrns Urn of {@link Feature}s to notify
+     * @param priorityLevel {@link PriorityLevel}
      */
     public List<String> notifyFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
         List<String> requestIds = Lists.newArrayList();
