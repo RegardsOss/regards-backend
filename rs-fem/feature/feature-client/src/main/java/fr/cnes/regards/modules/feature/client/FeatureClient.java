@@ -28,7 +28,9 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * BUS Message client for Fem
@@ -53,6 +55,20 @@ public class FeatureClient {
         for (Feature feature : features) {
             FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent.build(FeatureMetadata.build(priorityLevel),
                                                                               feature);
+            publisher.publish(event);
+            requestIds.add(event.getRequestId());
+        }
+        return requestIds;
+    }
+
+    /**
+     * @param features
+     * @param normal
+     */
+    public List<String> deleteFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
+        List<String> requestIds = Lists.newArrayList();
+        for (FeatureUniformResourceName urn : featureUrns) {
+            FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(urn, priorityLevel);
             publisher.publish(event);
             requestIds.add(event.getRequestId());
         }
