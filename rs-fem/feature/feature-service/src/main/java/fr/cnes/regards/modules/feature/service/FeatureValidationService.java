@@ -101,7 +101,7 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         }
 
         // Try validating properties according to data model
-        if (feature.getModel() != null) { // If model is null, error already detected before!
+        if ((feature.getModel() != null) && (feature.getProperties() != null)) { // If model is null, error already detected before!
             errors.addAllErrors(validate(feature.getModel(), feature, mode, objectName));
         }
 
