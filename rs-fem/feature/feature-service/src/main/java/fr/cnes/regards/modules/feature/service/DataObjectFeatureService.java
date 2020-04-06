@@ -48,7 +48,13 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
 
     @Override
     public Page<FeatureEntityDto> findAll(String model, Pageable pageable, OffsetDateTime date) {
-        Page<FeatureEntity> entities = this.featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
+        Page<FeatureEntity> entities;
+        if (date == null) {
+            entities = featureRepo.findByModel(model, pageable);
+        } else {
+            entities = featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
+        }
+
         List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
                 .collect(Collectors.toList());
         return new PageImpl<FeatureEntityDto>(elements, pageable, entities.getTotalElements());

@@ -84,8 +84,8 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ResourceAccess(description = "Get features according last update date")
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Model used to filter feature") @RequestParam("model") String model,
-            @Parameter(
-                    description = "Last update date used to filter features") @RequestParam("lastUpdateDate") OffsetDateTime lastUpdateDate,
+            @Parameter(description = "Last update date used to filter features") @RequestParam(value = "lastUpdateDate",
+                    required = false) OffsetDateTime lastUpdateDate,
             Pageable page, PagedResourcesAssembler<FeatureEntityDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(model, page, lastUpdateDate), assembler),

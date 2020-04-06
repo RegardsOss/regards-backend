@@ -53,4 +53,6 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     List<IUrnVersionByProvider> findByProviderIdInOrderByVersionDesc(List<String> providerIds);
 
     Page<FeatureEntity> findByModelAndLastUpdateAfter(String model, OffsetDateTime date, Pageable page);
+
+    Page<FeatureEntity> findByModel(String model, Pageable page);
 }
