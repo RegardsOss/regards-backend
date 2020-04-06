@@ -39,7 +39,7 @@ public class InstanceSubscriber extends AbstractSubscriber implements IInstanceS
             MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
             IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
         super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler, microserviceName, instancePublisher,
-              publisher, runtimeTenantResolver);
+              publisher, runtimeTenantResolver, null);
     }
 
     @Override

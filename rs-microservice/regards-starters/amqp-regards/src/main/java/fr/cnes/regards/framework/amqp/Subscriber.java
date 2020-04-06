@@ -57,7 +57,7 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
             String microserviceName, IInstancePublisher instancePublisher, IPublisher publisher,
             IRuntimeTenantResolver runtimeTenantResolver) {
         super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler, microserviceName, instancePublisher,
-              publisher, runtimeTenantResolver);
+              publisher, runtimeTenantResolver, pTenantResolver);
         tenantResolver = pTenantResolver;
     }
 

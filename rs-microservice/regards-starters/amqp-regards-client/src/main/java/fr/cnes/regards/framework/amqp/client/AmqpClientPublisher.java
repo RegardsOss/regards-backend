@@ -53,7 +53,8 @@ public class AmqpClientPublisher {
     /**
      * Publish a single message loaded from specified JSON file
      */
-    public void publish(String exchangeName, Optional<String> queueName, Integer priority, String jsonPathString) {
+    public void publish(String exchangeName, Optional<String> queueName, Integer priority, Map<String, Object> headers,
+            String jsonPathString) {
 
         Path path = Paths.get(jsonPathString);
         if (!Files.exists(path)) {
@@ -63,22 +64,23 @@ public class AmqpClientPublisher {
         }
 
         if (Files.isDirectory(path)) {
-            doPublishAll(exchangeName, queueName, priority, path);
+            doPublishAll(exchangeName, queueName, priority, headers, path);
         } else {
-            doPublish(exchangeName, queueName, priority, path);
+            doPublish(exchangeName, queueName, priority, headers, path);
         }
     }
 
     /**
      * Publish all messages load from specified directory.
      */
-    private void doPublishAll(String exchangeName, Optional<String> queueName, Integer priority, Path jsonPath) {
+    private void doPublishAll(String exchangeName, Optional<String> queueName, Integer priority,
+            Map<String, Object> headers, Path jsonPath) {
 
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.json");
 
         try (Stream<Path> walk = Files.walk(jsonPath)) {
             walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p)).forEach(p -> {
-                doPublish(exchangeName, queueName, priority, p);
+                doPublish(exchangeName, queueName, priority, headers, p);
             });
 
             //            List<String> result = walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p))
@@ -93,13 +95,14 @@ public class AmqpClientPublisher {
 
     }
 
-    private void doPublish(String exchangeName, Optional<String> queueName, Integer priority, Path jsonPath) {
+    private void doPublish(String exchangeName, Optional<String> queueName, Integer priority,
+            Map<String, Object> headers, Path jsonPath) {
         try {
             LOGGER.info("Loading JSON from {}", jsonPath);
             // Load JSON message
             Map<String, Object> message = mapper.readValue(jsonPath.toFile(), Map.class);
             // Broadcast
-            publisher.broadcast(exchangeName, queueName, priority, message);
+            publisher.broadcast(exchangeName, queueName, priority, message, headers);
         } catch (IOException e) {
             String error = String.format("Cannot read json from path %s", jsonPath);
             LOGGER.error(error, e);

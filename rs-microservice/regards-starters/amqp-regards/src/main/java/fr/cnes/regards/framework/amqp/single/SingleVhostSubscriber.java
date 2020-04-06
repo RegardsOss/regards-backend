@@ -52,7 +52,7 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
             String microserviceName, IInstancePublisher instancePublisher, IPublisher publisher,
             IRuntimeTenantResolver runtimeTenantResolver) {
         super(virtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler, microserviceName, instancePublisher,
-              publisher, runtimeTenantResolver);
+              publisher, runtimeTenantResolver, tenantResolver);
         this.tenantResolver = tenantResolver;
     }
 

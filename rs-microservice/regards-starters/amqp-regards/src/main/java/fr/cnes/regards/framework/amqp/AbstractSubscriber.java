@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Common subscriber methods
@@ -112,9 +113,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final ITenantResolver tenantResolver;
+
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
             MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
-            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
+            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
+            ITenantResolver tenantResolver) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
@@ -126,6 +130,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.instancePublisher = instancePublisher;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.tenantResolver = tenantResolver;
     }
 
     @Override
@@ -324,7 +329,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             container.setPrefetchCount(batchHandler.getBatchSize());
             container.setReceiveTimeout(batchHandler.getReceiveTimeout());
             MessageListener batchListener = new RabbitBatchMessageListener(microserviceName, instancePublisher,
-                    publisher, runtimeTenantResolver, messageConverter, batchHandler);
+                    publisher, runtimeTenantResolver, tenantResolver, messageConverter, batchHandler);
             container.setMessageListener(batchListener);
         } else {
             container.setChannelTransacted(true);
