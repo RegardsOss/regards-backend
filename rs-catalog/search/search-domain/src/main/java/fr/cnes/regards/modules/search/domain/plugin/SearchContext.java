@@ -34,16 +34,15 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Search context for search engine.<br/>
  * Use {@link #build(SearchType, String, HttpHeaders, MultiValueMap, Pageable)} to initialize a new context.<br/>
- * Additional optional properties can be set using {@link #withDatasetUrn(OaisUniformResourceName)},
+ * Additional optional properties can be set using {@link #withDatasetUrn(UniformResourceName)},
  * {@link #withExtra(String)},
- * {@link #withUrn(OaisUniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
+ * {@link #withUrn(UniformResourceName)}, {@link #withPropertyName(String)}, {@link #withMaxCount(Integer)},
  * {@link #withDataTypes(List)}.
  *
  * @author Marc Sordi
@@ -149,7 +148,7 @@ public class SearchContext {
         return Optional.ofNullable(datasetUrn);
     }
 
-    public void setDatasetUrn(OaisUniformResourceName datasetUrn) {
+    public void setDatasetUrn(UniformResourceName datasetUrn) {
         this.datasetUrn = datasetUrn;
     }
 
