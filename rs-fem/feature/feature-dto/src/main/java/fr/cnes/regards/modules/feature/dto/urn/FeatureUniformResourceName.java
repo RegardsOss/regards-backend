@@ -23,9 +23,9 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Convert;
 
-import fr.cnes.regards.framework.oais.validator.RegardsOaisUrn;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  *
  * @author Kevin Marchois
  */
-@RegardsOaisUrn
+@RegardsUrn
 @Convert(converter = FeatureUrnConverter.class)
 public class FeatureUniformResourceName extends UniformResourceName {
 
