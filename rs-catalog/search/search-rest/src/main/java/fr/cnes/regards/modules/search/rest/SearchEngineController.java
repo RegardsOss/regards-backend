@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.LinkRelation;
@@ -123,6 +125,9 @@ public class SearchEngineController implements IEntityLinkBuilder {
 
     @Autowired
     private IAttributeHelper attributeHelper;
+
+    @Autowired
+    private IResourceService resourceService;
 
     // Search on all entities
 
@@ -349,14 +354,15 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES)
     @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<Set<AttributeModel>> searchDataobjectsAttributes(
+    public ResponseEntity<Set<EntityModel<AttributeModel>>> searchDataobjectsAttributes(
             @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
             @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
         ResponseEntity<List<String>> result = dispatcher
                 .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
                         .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100), this);
-        return ResponseEntity.ok(attributeHelper.getAllCommonAttributes(result.getBody()));
+        Set<AttributeModel> attrs = attributeHelper.getAllCommonAttributes(result.getBody());
+        return ResponseEntity.ok(attrs.stream().map(a -> resourceService.toResource(a)).collect(Collectors.toSet()));
     }
 
     /**
