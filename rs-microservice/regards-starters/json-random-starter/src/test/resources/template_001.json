@@ -1,0 +1,10 @@
+{
+    "requestId": "{{uuid()}}",
+    "requestDate": "{{ldt()}}",
+    "metadata": {
+        "sessionOwner": "{{string()}}",
+        "session": "20200331",
+        "override": false,
+        "priority": "NORMAL"
+    }
+}

@@ -16,14 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
-public class RandomLong {
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-    private RandomLong() {
-    }
+public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
 
-    public static Long random(Long leftLimit, Long rightLimit) {
-        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+    protected final FunctionDescriptor fd;
+
+    public AbstractRandomGenerator(FunctionDescriptor fd) {
+        this.fd = fd;
     }
 }

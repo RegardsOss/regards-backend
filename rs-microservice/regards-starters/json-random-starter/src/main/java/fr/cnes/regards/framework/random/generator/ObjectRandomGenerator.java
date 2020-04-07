@@ -16,16 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 
-public class RandomDouble {
+public class ObjectRandomGenerator extends AbstractRandomGenerator<Object> {
 
-    private RandomDouble() {
+    Map<String, RandomGenerator<?>> generators = new HashMap<>();
+
+    public ObjectRandomGenerator() {
+        super(null);
     }
 
-    public static Double random(Double leftLimit, Double rightLimit) {
-        return leftLimit + (new Random().nextDouble() * (rightLimit - leftLimit));
+    @Override
+    public Object random() {
+        // FIXME
+        return null;
     }
+
+    public Map<String, RandomGenerator<?>> getGenerators() {
+        return generators;
+    }
+
+    public void setGenerators(Map<String, RandomGenerator<?>> generators) {
+        this.generators = generators;
+    }
+
 }

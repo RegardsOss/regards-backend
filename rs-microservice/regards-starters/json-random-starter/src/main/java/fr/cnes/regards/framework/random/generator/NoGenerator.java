@@ -16,20 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
-import org.apache.commons.lang3.RandomStringUtils;
+public class NoGenerator extends AbstractRandomGenerator<Object> {
 
-public class RandomString {
+    private final Object value;
 
-    private RandomString() {
+    public NoGenerator(Object value) {
+        super(null);
+        this.value = value;
     }
 
-    public static String randomAlphabetic(int minLengthInclusive, int maxLengthExclusive) {
-        return RandomStringUtils.randomAlphabetic(minLengthInclusive, maxLengthExclusive);
-    }
-
-    public static String randomAlphanumeric(int minLengthInclusive, int maxLengthExclusive) {
-        return RandomStringUtils.randomAlphanumeric(minLengthInclusive, maxLengthExclusive);
+    @Override
+    public Object random() {
+        return value;
     }
 }

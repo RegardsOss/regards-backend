@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.random;
 
-import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,33 +25,33 @@ public class RandomTests {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomTests.class);
 
-    @Test
-    public void testInteger() {
-        Integer leftLimit = 10;
-        Integer rightLimit = 20;
-        Integer val = RandomInteger.random(leftLimit, rightLimit);
-        LOGGER.info("Integer value : {}", val);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
-    }
-
-    @Test
-    public void testDouble() {
-        Double leftLimit = 10D;
-        Double rightLimit = 20D;
-        Double val = RandomDouble.random(leftLimit, rightLimit);
-        LOGGER.info("Double value : {}", val);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
-    }
-
-    @Test
-    public void testLong() {
-        Long leftLimit = 10L;
-        Long rightLimit = 20L;
-        Long val = RandomLong.random(leftLimit, rightLimit);
-        LOGGER.info("Long value : {}", val);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
-        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
-    }
+    //    @Test
+    //    public void testInteger() {
+    //        Integer leftLimit = 10;
+    //        Integer rightLimit = 20;
+    //        Integer val = RandomInteger.random(leftLimit, rightLimit);
+    //        LOGGER.info("Integer value : {}", val);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
+    //    }
+    //
+    //    @Test
+    //    public void testDouble() {
+    //        Double leftLimit = 10D;
+    //        Double rightLimit = 20D;
+    //        Double val = RandomDouble.random(leftLimit, rightLimit);
+    //        LOGGER.info("Double value : {}", val);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
+    //    }
+    //
+    //    @Test
+    //    public void testLong() {
+    //        Long leftLimit = 10L;
+    //        Long rightLimit = 20L;
+    //        Long val = RandomLong.random(leftLimit, rightLimit);
+    //        LOGGER.info("Long value : {}", val);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, leftLimit), val >= leftLimit);
+    //        Assert.assertTrue(String.format("%n should be greater than %s", val, rightLimit), val < rightLimit);
+    //    }
 }

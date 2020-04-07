@@ -16,16 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
 import java.util.Random;
 
-public class RandomFloat {
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-    private RandomFloat() {
+public class RandomBoolean extends AbstractRandomGenerator<Boolean> {
+
+    private final Random random = new Random();
+
+    public RandomBoolean(FunctionDescriptor fd) {
+        super(fd);
     }
 
-    public static Float random(Float leftLimit, Float rightLimit) {
-        return leftLimit + (new Random().nextFloat() * (rightLimit - leftLimit));
+    @Override
+    public Boolean random() {
+        return random.nextBoolean();
     }
 }

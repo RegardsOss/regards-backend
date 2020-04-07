@@ -18,14 +18,21 @@
  */
 package fr.cnes.regards.framework.random;
 
-import java.util.Random;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class RandomInteger {
+import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
 
-    private RandomInteger() {
-    }
+public class FunctionParserTests {
 
-    public static Integer random(Integer leftLimit, Integer rightLimit) {
-        return leftLimit + (new Random().nextInt(rightLimit - leftLimit));
+    private static final Logger LOGGER = LoggerFactory.getLogger(FunctionParserTests.class);
+
+    @Test
+    public void testInteger() {
+        FunctionDescriptorParser.parse("");
+        FunctionDescriptorParser.parse("{{integer(3,12)}}");
+        FunctionDescriptorParser.parse("{{float()}}");
+        FunctionDescriptorParser.parse("{{float(0,'2,0')}}");
     }
 }

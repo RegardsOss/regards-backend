@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,27 +24,31 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomLocalDateTime {
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
+
+public class RandomLocalDateTime extends AbstractRandomGenerator<LocalDateTime> {
 
     private static final ZoneOffset REF_ZONE_OFFSET = ZoneOffset.UTC;
 
     private static final ZoneId REF_ZONE_ID = ZoneId.of("UTC");
 
-    private RandomLocalDateTime() {
+    public RandomLocalDateTime(FunctionDescriptor fd) {
+        super(fd);
     }
 
-    public static LocalDateTime random() {
+    @Override
+    public LocalDateTime random() {
         return random(LocalDateTime.ofEpochSecond(0L, 0, REF_ZONE_OFFSET), LocalDateTime.now());
     }
 
-    public static LocalDateTime random(LocalDateTime startInclusive, LocalDateTime endExclusive) {
+    public LocalDateTime random(LocalDateTime startInclusive, LocalDateTime endExclusive) {
         LocalDateTime ldt = LocalDateTime
                 .ofInstant(between(startInclusive.toInstant(REF_ZONE_OFFSET), endExclusive.toInstant(REF_ZONE_OFFSET)),
                            REF_ZONE_ID);
         return ldt;
     }
 
-    private static Instant between(Instant startInclusive, Instant endExclusive) {
+    private Instant between(Instant startInclusive, Instant endExclusive) {
         long startSeconds = startInclusive.getEpochSecond();
         long endSeconds = endExclusive.getEpochSecond();
         long random = ThreadLocalRandom.current().nextLong(startSeconds, endSeconds);
