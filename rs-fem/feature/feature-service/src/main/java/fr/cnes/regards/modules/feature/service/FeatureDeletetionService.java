@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -217,6 +218,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
                                                                   FeatureManagementAction.DELETION.name()))
                     .collect(Collectors.toList()));
         }
+        // Notify catalog for feature deleted
+        featuresWithoutFles.forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
+
         // delete all FeatureDeletioRequest concerned
         this.deletionRepo.deleteByIdIn(requests.stream().filter(fdr -> !haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
                 .map(fdr -> fdr.getId()).collect(Collectors.toSet()));

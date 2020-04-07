@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
@@ -134,6 +135,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         toDelete.stream().forEach(feature -> publisher.publish(NotificationActionEvent
                 .build(gson.toJsonTree(feature.getFeature()), FeatureManagementAction.DELETION.name())));
         this.featureRepo.deleteAll(toDelete);
+
+        // Notify catalog for feature deleted
+        toDelete.forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
 
         // delete useless FeatureDeletionRequest
         this.fdrRepo.deleteAll(request);
