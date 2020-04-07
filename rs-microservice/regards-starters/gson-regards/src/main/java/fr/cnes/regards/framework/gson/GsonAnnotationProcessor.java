@@ -58,7 +58,7 @@ public final class GsonAnnotationProcessor {
 
         // Initialize reflection tool
         Reflections reflections;
-        if (reflectionPackages == null || reflectionPackages.isEmpty()) {
+        if ((reflectionPackages == null) || reflectionPackages.isEmpty()) {
             String defaultPackage = "fr.cnes.regards";
             LOGGER.info("System will look for GSON adapters and factories in default package: {}", defaultPackage);
             reflections = new Reflections(defaultPackage);
@@ -133,6 +133,7 @@ public final class GsonAnnotationProcessor {
                 if (registerSubtypes(reflections, typeAdapterFactory, gsonable)) {
                     // Only register type with sub types
                     builder.registerTypeAdapterFactory(typeAdapterFactory);
+                    LOGGER.info("GSON polymorphic type adapter factory registered : {}", typeAdapterFactory.getClass());
                 }
             }
         }
@@ -150,7 +151,7 @@ public final class GsonAnnotationProcessor {
 
         final Set<?> subTypes = reflections.getSubTypesOf(baseType);
 
-        if (subTypes == null || subTypes.isEmpty()) {
+        if ((subTypes == null) || subTypes.isEmpty()) {
             // Skip registration
             LOGGER.warn("Skip registration of \"{}\". No sub type found!", baseType);
             return false;
@@ -208,6 +209,7 @@ public final class GsonAnnotationProcessor {
                 try {
                     TypeAdapterFactory factory = factoryClass.newInstance();
                     builder.registerTypeAdapterFactory(factory);
+                    LOGGER.info("GSON type adapter factory registered : {}", factory.getClass());
                 } catch (InstantiationException | IllegalAccessException e) {
                     String format = "Factory %s cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, factoryClass);
@@ -251,6 +253,7 @@ public final class GsonAnnotationProcessor {
                 try {
                     TypeAdapter<?> adapter = typeAdapterClass.newInstance();
                     builder.registerTypeAdapter(annotation.adapted(), adapter);
+                    LOGGER.info("GSON type adapter registered for type {}", annotation.adapted());
                 } catch (InstantiationException | IllegalAccessException e) {
                     String format = "Factory %s cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, typeAdapterClass);
