@@ -21,6 +21,10 @@ package fr.cnes.regards.modules.feature.dto;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -35,6 +39,8 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @param <ID> String or {@link FeatureUniformResourceName} according to the context
  */
 public class RequestInfo<ID> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestInfo.class);
 
     /**
      * Mapping between feature id or URN and request id
@@ -57,14 +63,23 @@ public class RequestInfo<ID> {
     }
 
     public void addGrantedRequest(ID id, String requestId) {
+        LOGGER.info("Granted request with id {} and request id {}", id, requestId);
         granted.put(id, requestId);
     }
 
     public void addDeniedRequest(ID id, String reason) {
+        LOGGER.info("Denied request {} because \"{}\"", id, reason);
         denied.put(id, reason);
     }
 
     public void addDeniedRequest(ID id, Iterable<String> reasons) {
+        String aggregatedReasons = "Unknown reason";
+        if (reasons != null) {
+            StringJoiner joiner = new StringJoiner(", ");
+            reasons.iterator().forEachRemaining(reason -> joiner.add(reason));
+            aggregatedReasons = joiner.toString();
+        }
+        LOGGER.error("Denied request {} because \"{}\"", id, aggregatedReasons);
         denied.putAll(id, reasons);
     }
 
