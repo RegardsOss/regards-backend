@@ -40,9 +40,9 @@ import org.springframework.web.client.HttpServerErrorException;
 import feign.Response;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
@@ -92,7 +92,7 @@ public class CatalogDownloadController {
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
             @PathVariable(CHECKSUM_PATH_PARAM) String checksum) throws ModuleException, IOException {
-        OaisUniformResourceName urn = OaisUniformResourceName.fromString(aipId);
+        UniformResourceName urn = UniformResourceName.fromString(aipId);
         if (this.searchService.hasAccess(urn)) {
             FeignSecurityManager.asSystem();
             try {

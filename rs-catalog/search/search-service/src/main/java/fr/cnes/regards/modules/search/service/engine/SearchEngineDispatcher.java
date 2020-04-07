@@ -35,7 +35,6 @@ import org.springframework.validation.Validator;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
@@ -183,9 +182,9 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
      */
     @Override
     public ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException {
-        OaisUniformResourceName datasetUrn = null;
+        UniformResourceName datasetUrn = null;
         if (searchRequest.getDatasetUrn() != null) {
-            datasetUrn = OaisUniformResourceName.fromString(searchRequest.getDatasetUrn());
+            datasetUrn = UniformResourceName.fromString(searchRequest.getDatasetUrn());
         }
         ISearchEngine<?, ?, ?, ?> searchEngine = this.getSearchEngine(Optional.ofNullable(datasetUrn),
                                                                       searchRequest.getEngineType());
@@ -195,7 +194,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
                                                     SearchEngineMappings.getJsonHeaders(),
                                                     searchRequest.getSearchParameters(), PageRequest.of(0, 1));
         if (searchRequest.getDatasetUrn() != null) {
-            context = context.withDatasetUrn(OaisUniformResourceName.fromString(searchRequest.getDatasetUrn()));
+            context = context.withDatasetUrn(UniformResourceName.fromString(searchRequest.getDatasetUrn()));
         }
         ICriterion reqCrit = searchEngine.parse(context);
 

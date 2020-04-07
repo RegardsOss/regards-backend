@@ -50,10 +50,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -297,9 +297,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
         indexerService.saveEntity(getDefaultTenant(), solarSystem);
-        indexerService
-                .saveBulkEntities(getDefaultTenant(),
-                                  createPlanets(planetModel, OaisUniformResourceName.build(solarSystem.getIpId())));
+        indexerService.saveBulkEntities(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
 
         Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
         indexerService.saveEntity(getDefaultTenant(), kepler90System);
@@ -412,7 +410,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return solarSystem;
     }
 
-    protected List<DataObject> createPlanets(Model planetModel, OaisUniformResourceName dataset) {
+    protected List<DataObject> createPlanets(Model planetModel, UniformResourceName dataset) {
         // Create planets
         List<DataObject> planets = new ArrayList<>();
         planets.add(createMercury(planetModel));

@@ -41,11 +41,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.Iterables;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -90,7 +90,7 @@ public class AccessRightController {
 
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
     @ResourceAccess(description = "Allows to know if the user can download an entity", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Boolean> hasAccess(@Valid @PathVariable OaisUniformResourceName urn) throws ModuleException {
+    public ResponseEntity<Boolean> hasAccess(@Valid @PathVariable UniformResourceName urn) throws ModuleException {
         AbstractEntity<?> entity = searchService.get(urn);
         if (entity instanceof DataObject) {
             return ResponseEntity.ok(((DataObject) entity).getFiles().containsKey(DataType.RAWDATA));
@@ -100,24 +100,23 @@ public class AccessRightController {
 
     @RequestMapping(method = RequestMethod.POST, value = HAS_ACCESS_MAPPING)
     @ResourceAccess(description = "Allows to know if the user can download entities", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Set<OaisUniformResourceName>> hasAccess(
-            @RequestBody Collection<OaisUniformResourceName> inUrns) throws ModuleException {
+    public ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns)
+            throws ModuleException {
         if (inUrns.isEmpty()) {
             return ResponseEntity.ok(Collections.emptySet());
         }
-        Set<OaisUniformResourceName> urnsWithAccess = new HashSet<>();
+        Set<UniformResourceName> urnsWithAccess = new HashSet<>();
         // ElasticSearch cannot manage more than 1024 criterions clauses at once. There is one clause per IP_ID plus
         // or clauses plus some depending on user access => create partitions of 1 000
-        Iterable<List<OaisUniformResourceName>> urnLists = Iterables.partition(inUrns, 1_000);
-        for (List<OaisUniformResourceName> urns : urnLists) {
+        Iterable<List<UniformResourceName>> urnLists = Iterables.partition(inUrns, 1_000);
+        for (List<UniformResourceName> urns : urnLists) {
             ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
                     .toArray(n -> new ICriterion[n]));
             FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
                                                               PageRequest.of(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream()
                     .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA))
-                    .map(dataObject -> OaisUniformResourceName.build(dataObject.getIpId()))
-                    .collect(Collectors.toSet()));
+                    .map(dataObject -> dataObject.getIpId()).collect(Collectors.toSet()));
         }
         return ResponseEntity.ok(urnsWithAccess);
     }
