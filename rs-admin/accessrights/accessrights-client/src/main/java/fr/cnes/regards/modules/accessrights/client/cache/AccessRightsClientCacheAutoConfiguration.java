@@ -41,14 +41,15 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @EnableCaching
 public class AccessRightsClientCacheAutoConfiguration {
 
-    @Bean(name = RolesHierarchyKeyGenerator.CACHE_NAME)
+    @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager(RolesHierarchyKeyGenerator.CACHE_NAME);
+        return new ConcurrentMapCacheManager();
     }
 
     @Bean(RolesHierarchyKeyGenerator.KEY_GENERATOR)
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IRolesHierarchyKeyGenerator rolesHierarchyKeyGenerator(IAuthenticationResolver oauthResolver, IRuntimeTenantResolver resolver) {
+    IRolesHierarchyKeyGenerator rolesHierarchyKeyGenerator(IAuthenticationResolver oauthResolver,
+            IRuntimeTenantResolver resolver) {
         return new RolesHierarchyKeyGenerator(oauthResolver, resolver);
     }
 
