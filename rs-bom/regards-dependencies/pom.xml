@@ -69,6 +69,7 @@
 		<oais.starter.version>${regards.version}</oais.starter.version>
 		<encryption.starter.version>${regards.version}</encryption.starter.version>
 		<metric.starter.version>${regards.version}</metric.starter.version>
+		<random.starter.version>${regards.version}</random.starter.version>
 
         <!-- Bootstrap -->
 		<config.bootstrap.version>${regards.version}</config.bootstrap.version>
@@ -245,6 +246,11 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>amqp-regards-client</artifactId>
+				<version>${amqp.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>amqp-regards</artifactId>
 				<version>${amqp.starter.version}</version>
 			</dependency>
@@ -313,6 +319,11 @@
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>hateoas-regards</artifactId>
 				<version>${hateoas.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>json-random-starter</artifactId>
+				<version>${random.starter.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
