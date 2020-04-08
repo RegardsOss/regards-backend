@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
-public class NoGenerator extends AbstractRandomGenerator<Object> {
+import java.time.OffsetDateTime;
 
-    private final Object value;
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-    public NoGenerator(Object value) {
-        super(null);
-        this.value = value;
+public class NowGenerator extends AbstractRandomGenerator<OffsetDateTime> {
+
+    public NowGenerator(FunctionDescriptor fd) {
+        super(fd);
     }
 
     @Override
-    public Object random() {
-        return value;
+    public OffsetDateTime random() {
+        return OffsetDateTime.now();
     }
 }

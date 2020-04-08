@@ -1,10 +1,17 @@
 {
     "requestId": "{{uuid()}}",
-    "requestDate": "{{ldt()}}",
+    "requestDate": "{{odt()}}",
     "metadata": {
         "sessionOwner": "{{string()}}",
         "session": "20200331",
         "override": false,
         "priority": "NORMAL"
+    },
+    "feature": {
+        "properties": {
+            "system": {
+                "filesize": "{{integer()}}"
+            }
+        }
     }
 }

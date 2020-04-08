@@ -18,32 +18,35 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
-public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
+public class SequenceGenerator extends AbstractRandomGenerator<String> {
 
-    Map<String, RandomGenerator<?>> generators = new HashMap<>();
+    private static String USAGE = "Function {} only support an optional format as for String.format";
 
-    public ObjectRandomGenerator() {
-        super(null);
+    private Integer current = 0;
+
+    private String format = "%d";
+
+    public SequenceGenerator(FunctionDescriptor fd) {
+        super(fd);
     }
 
     @Override
-    public Map<String, Object> random() {
-        Map<String, Object> embedded = new HashMap<>();
-        for (Entry<String, RandomGenerator<?>> entry : generators.entrySet()) {
-            embedded.put(entry.getKey(), entry.getValue().random());
+    public void parseParameters() {
+        switch (fd.getParameterSize()) {
+            case 0:
+                break;
+            case 1:
+                format = fd.getParameter(0);
+                break;
+            default:
+                throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
         }
-        return embedded;
     }
 
-    public Map<String, RandomGenerator<?>> getGenerators() {
-        return generators;
-    }
-
-    public void addGenerator(String key, RandomGenerator<?> generator) {
-        this.generators.put(key, generator);
+    @Override
+    public String random() {
+        return String.format(format, current++);
     }
 }

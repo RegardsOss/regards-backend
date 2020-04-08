@@ -21,12 +21,14 @@ package fr.cnes.regards.framework.random.function;
 public enum FunctionDescriptorType {
 
     BOOLEAN("boolean"),
-    LOCAL_DATE_TIME("ldt"),
+    OFFSET_DATE_TIME("odt"),
     DOUBLE("double"),
     ENUM("enum"),
     FLOAT("float"),
     INTEGER("integer"),
     LONG("long"),
+    NOW("now"),
+    SEQUENCE("seq"),
     STRING("string"),
     UUID("uuid");
 

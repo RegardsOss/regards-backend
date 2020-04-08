@@ -23,13 +23,20 @@ import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
 
 public interface RandomGenerator<T> {
 
+    default void parseParameters() {
+        // Step to parse generator parameters from function descriptor is any
+    }
+
+    /**
+     * Main function to generate a random value according to template specification
+     */
     T random();
 
     static RandomGenerator<?> of(Object value) {
         // Parse function
         FunctionDescriptor fd = FunctionDescriptorParser.parse(value);
         if (fd == null) {
-            return new NoGenerator(value);
+            return new NoopGenerator(value);
         }
 
         // Get random generator
@@ -38,8 +45,8 @@ public interface RandomGenerator<T> {
             case BOOLEAN:
                 rg = new RandomBoolean(fd);
                 break;
-            case LOCAL_DATE_TIME:
-                rg = new RandomLocalDateTime(fd);
+            case OFFSET_DATE_TIME:
+                rg = new RandomOffsetDateTime(fd);
                 break;
             case DOUBLE:
                 rg = new RandomDouble(fd);
@@ -56,6 +63,12 @@ public interface RandomGenerator<T> {
             case LONG:
                 rg = new RandomLong(fd);
                 break;
+            case NOW:
+                rg = new NowGenerator(fd);
+                break;
+            case SEQUENCE:
+                rg = new SequenceGenerator(fd);
+                break;
             case STRING:
                 rg = new RandomString(fd);
                 break;
@@ -65,6 +78,7 @@ public interface RandomGenerator<T> {
             default:
                 throw new IllegalArgumentException(String.format("Unsupported function %s", fd.getType()));
         }
+        rg.parseParameters();
         return rg;
     }
 }

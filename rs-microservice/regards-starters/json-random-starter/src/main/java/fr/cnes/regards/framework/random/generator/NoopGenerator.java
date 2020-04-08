@@ -16,31 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.random;
+package fr.cnes.regards.framework.random.generator;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+public class NoopGenerator extends AbstractRandomGenerator<Object> {
 
-import org.junit.Test;
+    private final Object value;
 
-public class GeneratorTest {
-
-    private static Generator GENERATOR = new Generator();
-
-    private static Path BASE = Paths.get("src", "test", "resources");
-
-    @Test
-    public void generate() {
-        GENERATOR.generate(BASE.resolve("template_001.json"), 1);
+    public NoopGenerator(Object value) {
+        super(null);
+        this.value = value;
     }
 
-    @Test
-    public void generate2() {
-        GENERATOR.generate(BASE.resolve("template_002.json"), 10);
-    }
-
-    @Test
-    public void generateGeode() {
-        GENERATOR.generate(BASE.resolve("2338-template.json"), 2);
+    @Override
+    public Object random() {
+        return value;
     }
 }

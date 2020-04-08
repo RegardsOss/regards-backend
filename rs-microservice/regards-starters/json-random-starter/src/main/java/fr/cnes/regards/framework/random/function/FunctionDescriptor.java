@@ -25,7 +25,7 @@ public class FunctionDescriptor {
 
     private FunctionDescriptorType type;
 
-    private Map<Integer, Object> parameters = new HashMap<>();
+    private Map<Integer, String> parameters = new HashMap<>();
 
     public FunctionDescriptor(FunctionDescriptorType type) {
         this.type = type;
@@ -39,20 +39,24 @@ public class FunctionDescriptor {
         this.type = type;
     }
 
-    public Map<Integer, Object> getParameters() {
+    public Map<Integer, String> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<Integer, Object> parameters) {
+    public void setParameters(Map<Integer, String> parameters) {
         this.parameters = parameters;
     }
 
-    public void addParameter(Integer position, Object value) {
+    public void addParameter(Integer position, String value) {
         this.parameters.put(position, value);
     }
 
-    public Object getParameter(Integer position) {
+    public String getParameter(Integer position) {
         return this.parameters.get(position);
+    }
+
+    public int getParameterSize() {
+        return this.parameters.size();
     }
 
     @Override

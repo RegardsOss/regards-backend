@@ -24,15 +24,42 @@ import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
 public class RandomInteger extends AbstractRandomGenerator<Integer> {
 
+    private static String USAGE = "Function {} only support 0 or 2 arguments";
+
     private static Random random = new Random();
+
+    private Integer leftLimit;
+
+    private Integer rightLimit;
 
     public RandomInteger(FunctionDescriptor fd) {
         super(fd);
     }
 
     @Override
+    public void parseParameters() {
+        switch (fd.getParameterSize()) {
+            case 0:
+                break;
+            case 2:
+                leftLimit = Integer.valueOf(fd.getParameter(0));
+                rightLimit = Integer.valueOf(fd.getParameter(1));
+                break;
+            default:
+                throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
+        }
+    }
+
+    @Override
     public Integer random() {
-        return random.nextInt();
+        switch (fd.getParameterSize()) {
+            case 0:
+                return random.nextInt();
+            case 2:
+                return random(leftLimit, rightLimit);
+            default:
+                throw new IllegalArgumentException(USAGE);
+        }
     }
 
     public Integer random(Integer leftLimit, Integer rightLimit) {

@@ -1,14 +1,14 @@
 {
-    "requestId": "TEST:REQUEST:2321",
-    "requestDate": "2020-03-17T12:24:05.995Z",
+    "requestId": "{{uuid()}}",
+    "requestDate": "{{odt()}}",
     "metadata": {
         "sessionOwner": "CHRONOS",
-        "session": "20200331",
+        "session": "{{enum(LUNDI,MARDI,MERCREDI,JEUDI,VENDREDI)}}",
         "override": false,
         "priority": "NORMAL"
     },
     "feature": {
-        "id": "TEST:2321",
+        "id": "{{seq('FEATURE:TEST:%05d')}}",
         "type": "Feature",
         "entityType": "DATA",
         "model": "GEODE001",
@@ -21,16 +21,16 @@
         },
         "properties": {
             "system": {
-                "filesize": 2321,
-                "ingestion_date": "2020-04-03T00:00:00Z",
-                "change_date": "2020-04-03T00:00:00Z",
+                "filesize": "{{integer(2000,10000)}}",
+                "ingestion_date": "{{now()}}",
+                "change_date": "{{now()}}",
                 "gpfs_url": "file://home/geode/test.tar",
                 "filename": "test.tar",
-                "extension": "tar"
+                "extension": "{{enum(tar,nc,shp,zip,tgz,xml)}}"
             },
             "data": {
                 "type": "L0A_LR_Packet",
-                "production_date": "2020-03-03T23:00:00Z",
+                "production_date": "{{odt(2010-01-01,2020-01-01)}}",
                 "utc_start_date": "2020-03-03T23:00:00Z",
                 "utc_end_date": "2020-03-03T23:00:00Z",
                 "tai_start_date": "2020-03-03T23:00:00Z",
@@ -39,16 +39,16 @@
             },
             "swot": {
                 "crid": "crid",
-                "product_counter": 22,
-                "station": "KUX",
+                "product_counter": "{{integer(1,99)}}",
+                "station": "{{enum(KUX,IVK)}}",
                 "day_date": "2020-03-03T00:00:00Z",
-                "cycle_number": 23,
+                "cycle_number": "{{integer(1,25)}}",
                 "pass_number": 125,
                 "tile_number": 25,
-                "tile_side": "Full",
-                "file_identifier": "Basic",
+                "tile_side": "{{enum(Full,Left,Right}}",
+                "file_identifier": "{{enum(Basic,WindWave,Expert,Unsmoothed}}",
                 "apid": "0001",
-                "granule_type": "Cycle",
+                "granule_type": "{{enum(Downlink unit,Cycle,Half Orbit,Tile,Full-swath scene,Bassin-cycle,Continent-pass,Daily}}",
                 "continent_id": [
                     1,
                     2
