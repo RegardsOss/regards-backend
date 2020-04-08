@@ -62,6 +62,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>json-random-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

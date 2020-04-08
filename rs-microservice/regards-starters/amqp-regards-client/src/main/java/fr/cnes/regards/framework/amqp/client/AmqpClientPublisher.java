@@ -24,26 +24,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.random.Generator;
 
 @Service
-@Transactional
 @SuppressWarnings("unchecked")
 public class AmqpClientPublisher {
 
     private static Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
+
+    private final static String TEMPLATE_REGEXP = "^.*-template.json";
+
+    private final static Pattern TEMPLATE_PATTERN = Pattern.compile(TEMPLATE_REGEXP);
+
+    private final static Integer BATCH_SIZE = 1000;
 
     @Autowired
     private IPublisher publisher;
@@ -54,7 +63,7 @@ public class AmqpClientPublisher {
      * Publish a single message loaded from specified JSON file
      */
     public void publish(String exchangeName, Optional<String> queueName, Integer priority, Map<String, Object> headers,
-            String jsonPathString) {
+            String jsonPathString, Integer repeat) {
 
         Path path = Paths.get(jsonPathString);
         if (!Files.exists(path)) {
@@ -66,7 +75,35 @@ public class AmqpClientPublisher {
         if (Files.isDirectory(path)) {
             doPublishAll(exchangeName, queueName, priority, headers, path);
         } else {
-            doPublish(exchangeName, queueName, priority, headers, path);
+            Matcher matcher = TEMPLATE_PATTERN.matcher(jsonPathString);
+            // Check if it is a template
+            if (matcher.matches()) {
+                LOGGER.info("Handling JSON template");
+                doPublishWithTemplate(exchangeName, queueName, priority, headers, path, repeat);
+            } else {
+                doPublish(exchangeName, queueName, priority, headers, path);
+            }
+        }
+    }
+
+    /**
+     * Publish all messages generated from specified template.
+     */
+    private void doPublishWithTemplate(String exchangeName, Optional<String> queueName, Integer priority,
+            Map<String, Object> headers, Path templatePath, Integer repeat) {
+        // Generate messages
+        Generator generator = new Generator();
+
+        Integer remaining = repeat;
+        while (remaining > 0) {
+            Integer batchSize = remaining >= BATCH_SIZE ? BATCH_SIZE : remaining;
+            remaining = remaining - batchSize;
+            // Generate batch
+            List<Map<String, Object>> messages = generator.generate(templatePath, batchSize);
+            List<Object> oMessages = new ArrayList<>();
+            messages.forEach(m -> oMessages.add(m));
+            // Broadcast
+            publisher.broadcastAll(exchangeName, queueName, priority, oMessages, headers);
         }
     }
 
@@ -82,10 +119,6 @@ public class AmqpClientPublisher {
             walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p)).forEach(p -> {
                 doPublish(exchangeName, queueName, priority, headers, p);
             });
-
-            //            List<String> result = walk.filter(Files::isRegularFile).filter(p -> matcher.matches(p))
-            //                    .map(p -> p.toString()).collect(Collectors.toList());
-            //            result.forEach(LOGGER::info);
 
         } catch (IOException e) {
             String error = String.format("Error inspecting directory : %s", jsonPath);

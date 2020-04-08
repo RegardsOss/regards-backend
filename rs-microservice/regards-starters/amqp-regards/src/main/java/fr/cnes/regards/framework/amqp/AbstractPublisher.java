@@ -202,7 +202,13 @@ public abstract class AbstractPublisher implements IPublisherContract {
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
+    }
 
+    @Override
+    @Transactional
+    public void broadcastAll(String exchangeName, Optional<String> queueName, int priority, List<Object> messages,
+            Map<String, Object> headers) {
+        messages.forEach(message -> broadcast(exchangeName, queueName, priority, message, headers));
     }
 
     /**

@@ -45,10 +45,10 @@
                 "cycle_number": "{{integer(1,25)}}",
                 "pass_number": 125,
                 "tile_number": 25,
-                "tile_side": "{{enum(Full,Left,Right}}",
-                "file_identifier": "{{enum(Basic,WindWave,Expert,Unsmoothed}}",
+                "tile_side": "{{enum(Full,Left,Right)}}",
+                "file_identifier": "{{enum(Basic,WindWave,Expert,Unsmoothed)}}",
                 "apid": "0001",
-                "granule_type": "{{enum(Downlink unit,Cycle,Half Orbit,Tile,Full-swath scene,Bassin-cycle,Continent-pass,Daily}}",
+                "granule_type": "{{enum(Downlink unit,Cycle,Half Orbit,Tile,Full-swath scene,Bassin-cycle,Continent-pass,Daily)}}",
                 "continent_id": [
                     1,
                     2

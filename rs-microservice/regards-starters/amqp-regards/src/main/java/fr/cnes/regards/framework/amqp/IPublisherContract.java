@@ -100,4 +100,10 @@ public interface IPublisherContract {
      */
     void broadcast(String exchangeName, Optional<String> queueName, int priority, Object message,
             Map<String, Object> headers);
+
+    /**
+     * Broadcast message to specified exchange optionally creating a binded queue.
+     */
+    void broadcastAll(String exchangeName, Optional<String> queueName, int priority, List<Object> messages,
+            Map<String, Object> headers);
 }

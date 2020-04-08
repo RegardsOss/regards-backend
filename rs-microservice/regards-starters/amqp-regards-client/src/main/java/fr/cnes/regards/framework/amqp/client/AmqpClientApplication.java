@@ -51,11 +51,13 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     private static final String ARG_JSON = ARG_NS + "json";
 
+    private static final String ARG_REPEAT = ARG_NS + "repeat";
+
     @Value("${" + ARG_EXCHANGE_NAME + "}")
     private String exchangeName;
 
     @Value("${" + ARG_QUEUE_NAME + ":}")
-    private Optional<String> queueName;
+    private String queueName;
 
     @Value("${" + ARG_PRIORITY + ":0}")
     private Integer priority;
@@ -65,6 +67,12 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     @Value("#{${" + ARG_HEADERS + "}}")
     Map<String, Object> headers;
+
+    /**
+     * In case of template, generation number
+     */
+    @Value("#{${" + ARG_REPEAT + ":10}}")
+    private Integer repeat;
 
     @Autowired
     private AmqpClientPublisher publisher;
@@ -85,6 +93,10 @@ public class AmqpClientApplication implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         LOGGER.info("EXECUTING : command line runner");
-        publisher.publish(exchangeName, queueName, priority, headers, jsonPathString);
+        Optional<String> queue = Optional.empty();
+        if ((queueName != null) && !queueName.isEmpty()) {
+            queue = Optional.of(queueName);
+        }
+        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, repeat);
     }
 }
