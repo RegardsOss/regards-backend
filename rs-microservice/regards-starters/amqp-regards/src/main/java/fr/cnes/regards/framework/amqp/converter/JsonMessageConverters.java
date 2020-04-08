@@ -46,6 +46,11 @@ public class JsonMessageConverters implements MessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageConverters.class);
 
+    /**
+     * Use {@link AmqpConstants#REGARDS_CONVERTER_HEADER} instead.
+     * Will be remove in V1.2
+     */
+    @Deprecated
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
@@ -121,7 +126,7 @@ public class JsonMessageConverters implements MessageConverter {
             JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
             MessageConverter converter = selectConverter(jmc);
             // Inject converter selector
-            messageProperties.setHeader(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
+            messageProperties.setHeader(AmqpConstants.REGARDS_CONVERTER_HEADER, jmc);
             return converter;
         } else {
             return selectConverter(messageProperties);
@@ -131,7 +136,11 @@ public class JsonMessageConverters implements MessageConverter {
 
     private MessageConverter selectConverter(MessageProperties messageProperties) throws MessageConversionException {
 
-        Object converterType = messageProperties.getHeader(CONVERTER_TYPE_HEADER);
+        Object converterType = messageProperties.getHeader(AmqpConstants.REGARDS_CONVERTER_HEADER);
+        if (converterType == null) {
+            // Compatibility
+            converterType = messageProperties.getHeader(CONVERTER_TYPE_HEADER);
+        }
         if (converterType == null) {
             String message = "Cannot determine JSON converter type, falling back to Jackson";
             LOGGER.trace(message);

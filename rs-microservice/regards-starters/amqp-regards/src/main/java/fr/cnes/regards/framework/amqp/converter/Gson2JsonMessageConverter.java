@@ -35,6 +35,7 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
@@ -50,6 +51,11 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static final String CONVERSION_ERROR = "Cannot convert incoming message : %s";
 
+    /**
+     * Use {@link AmqpConstants#REGARDS_TYPE_HEADER} instead.
+     * Will be remove in V1.2
+     */
+    @Deprecated
     private static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
@@ -67,8 +73,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
         // Add wrapped type information for Gson deserialization if not already set
-        if (!messageProperties.getHeaders().containsKey(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER)) {
-            messageProperties.setHeader(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER, object.getClass().getName());
+        if (!messageProperties.getHeaders().containsKey(AmqpConstants.REGARDS_TYPE_HEADER)) {
+            messageProperties.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, object.getClass().getName());
         }
         return new Message(bytes, messageProperties);
     }
@@ -99,7 +105,12 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static Type createTypeToken(Message message) throws MessageConversionException {
         try {
-            Class<?> eventType = Class.forName((String) message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER));
+            Object typeHeader = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TYPE_HEADER);
+            if (typeHeader == null) {
+                // Compatibility
+                typeHeader = message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER);
+            }
+            Class<?> eventType = Class.forName((String) typeHeader);
             if (RabbitVersion.isVersion1_1(message)) {
                 return TypeToken.of(eventType).getType();
             } else if (RabbitVersion.isVersion1(message)) {
