@@ -113,4 +113,8 @@ public interface IIngestRequestService {
      * Handle remote reference error
      */
     void handleRemoteReferenceError(Set<RequestInfo> requests);
+
+    void ignore(IngestRequest request);
+
+    void waitVersioningMode(IngestRequest request);
 }

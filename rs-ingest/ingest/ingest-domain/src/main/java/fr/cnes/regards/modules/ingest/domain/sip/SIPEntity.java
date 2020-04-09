@@ -105,6 +105,9 @@ public class SIPEntity extends AbstractOAISEntity {
     @Type(type = "jsonb")
     private SIP sip;
 
+    @Column
+    private boolean last = false;
+
     public String getSipId() {
         return sipId;
     }
@@ -148,6 +151,14 @@ public class SIPEntity extends AbstractOAISEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isLast() {
+        return last;
+    }
+
+    public void setLast(boolean last) {
+        this.last = last;
     }
 
     @Override

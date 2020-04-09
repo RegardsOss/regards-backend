@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,23 +29,23 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.EventType;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
 /**
- * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP, UniformResourceName, UniformResourceName, String)}.
+ * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIPEntity, String, fr.cnes.regards.framework.urn.EntityType)} (SIP, UniformResourceName, UniformResourceName, String)}.
  *
  * @author Marc Sordi
  * @author Sébastien Binda
@@ -55,6 +56,9 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private IAIPLightRepository aipLightRepository;
 
     public GenerationStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
@@ -70,16 +74,15 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
 
         // Retrieve SIP URN from internal identifier
         OaisUniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();
-        // Compute AIP URN from SIP one
-        OaisUniformResourceName aipId = new OaisUniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
-                sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
-        List<AIP> aips = generation.generate(sipEntity, aipId, sipId, sipEntity.getSip().getId());
+        List<AIP> aips = generation.generate(sipEntity, sipId.getTenant(), sipId.getEntityType());
         // Add version to AIP
         for (AIP aip : aips) {
-            aip.setVersion(sipEntity.getVersion());
+            aip.setVersion(aip.getId().getVersion());
             aip.withEvent(EventType.SUBMISSION.toString(),
-                          String.format("AIP created for SIP %s.", sipEntity.getProviderId()));
+                          String.format("AIP created from SIP %s(version %s).",
+                                        sipEntity.getProviderId(),
+                                        sipId.getVersion()));
         }
 
         // Validate
@@ -90,23 +93,36 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
 
     private void validateAips(List<AIP> aips) throws ProcessingStepException {
         // Validate all elements of the flow item
-        Errors errors;
+        Errors validationErrors;
+        Multimap<String, Integer> versionsByProviderId = HashMultimap.create();
         for (AIP aip : aips) {
-            errors = new MapBindingResult(new HashMap<>(), AIP.class.getName());
-            validator.validate(aip, errors);
-            if (errors.hasErrors()) {
-                ErrorTranslator.getErrors(errors).forEach(e -> {
-                    addError(e);
-                    LOGGER.error(e);
+            // first handle issues with this aip
+            validationErrors = new MapBindingResult(new HashMap<>(), AIP.class.getName());
+            validator.validate(aip, validationErrors);
+            // now lets handle issues with all aips generated
+            String providerId = aip.getProviderId();
+            aipLightRepository.findAllByProviderId(providerId)
+                    .forEach(aipLight -> versionsByProviderId.put(providerId, aipLight.getVersion()));
+            if (!versionsByProviderId.put(providerId, aip.getVersion())) {
+                String error = String
+                        .format("Version %s already exists for the providerId %s.", aip.getVersion(), providerId);
+                validationErrors.rejectValue("version", error);
+            }
+            if (validationErrors.hasErrors()) {
+                ErrorTranslator.getErrors(validationErrors).forEach(e -> {
+                    String error = String.format("AIP %s has validation issues: %s", aip.getId().toString(), e);
+                    addError(error);
+                    LOGGER.error(error);
                 });
-                throw new ProcessingStepException(String.format("Validation error for AIP %s from SIP %s", aip.getId(),
-                                                                job.getCurrentEntity().getProviderId()));
             }
         }
+        throw new ProcessingStepException(String.format("Validation errors for AIPs generated from SIP %s: %s",
+                                                        job.getCurrentEntity().getProviderId(),
+                                                        errors.stream().collect(Collectors.joining(", "))));
     }
 
     @Override
     protected void doAfterError(SIPEntity sip) {
-        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"{}\"", sip.getSip().getId()));
+        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\"", sip.getSip().getId()));
     }
 }

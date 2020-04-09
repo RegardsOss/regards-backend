@@ -26,6 +26,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -71,4 +74,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      */
     long countByState(AIPState sipState);
 
+    @Modifying
+    @Query(value = "UPDATE AIPEntity SET last = :last WHERE id = :id")
+    int updateLast(@Param("id") Long id, @Param("last") boolean last);
 }

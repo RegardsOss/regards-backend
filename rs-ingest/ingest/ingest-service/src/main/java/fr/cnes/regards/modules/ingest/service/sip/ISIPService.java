@@ -81,4 +81,6 @@ public interface ISIPService {
      * Get next version of this SIP
      */
     Integer getNextVersion(SIP sip);
+
+    SIPEntity getLatestSip(String providerId);
 }

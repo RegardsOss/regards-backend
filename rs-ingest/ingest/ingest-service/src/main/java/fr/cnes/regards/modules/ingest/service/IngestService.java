@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -41,7 +42,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -71,9 +71,9 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 @MultitenantTransactional
 public class IngestService implements IIngestService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
-
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
 
     @Autowired
     private IngestConfigurationProperties confProperties;
@@ -91,35 +91,76 @@ public class IngestService implements IIngestService {
     private IIngestRequestService ingestRequestService;
 
     /**
+     * Middleware method extracted for test simulation and also used by operational code.
+     * Transform a SIP collection to a SIP flow item collection
+     */
+    public static Collection<IngestRequestFlowItem> sipToFlow(SIPCollection sips) {
+        Collection<IngestRequestFlowItem> items = new ArrayList<>();
+        if (sips != null) {
+            IngestMetadataDto metadata = sips.getMetadata();
+            for (SIP sip : sips.getFeatures()) {
+                items.add(IngestRequestFlowItem.build(metadata, sip));
+            }
+        }
+        return items;
+    }
+
+    /**
      * Validate, save and publish a new request
      * @param item request to manage
      */
-    private IngestRequest registerIngestRequest(IngestRequestFlowItem item, InternalRequestState state) {
+    private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
+        return registerIngestRequest(item.getRequestId(),
+                                     item.getSip(),
+                                     metadataMapper.dtoToMetadata(item.getMetadata()),
+                                     RequestInfoDto.build(item.getMetadata().getSessionOwner(),
+                                                          item.getMetadata().getSession()),
+                                     new HashSet<>(),
+                                     item.getSip().getId());
+    }
 
-        // Validate all elements of the flow item
-        Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
-        validator.validate(item, errors);
+    /**
+     * Validate, save and publish a new request
+     * @param requestId
+     * @param sip sip to manage
+     * @param ingestMetadata related ingest metadata
+     * @param info synchronous feedback
+     * @param grantedRequests collection of granted requests to populate
+     * @return
+     */
+    private IngestRequest registerIngestRequest(String requestId, SIP sip, IngestMetadata ingestMetadata,
+            RequestInfoDto info, Collection<IngestRequest> grantedRequests, String sipId) {
+        // Validate SIP
+        Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
+        validator.validate(sip, errors);
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
-            // Publish DENIED request (do not persist it in DB)
-            ingestRequestService.handleRequestDenied(IngestRequest
-                    .build(item.getRequestId(), metadataMapper.dtoToMetadata(item.getMetadata()),
-                           InternalRequestState.ERROR, IngestRequestStep.LOCAL_DENIED, null, errs));
-            if (LOGGER.isDebugEnabled()) {
-                StringJoiner joiner = new StringJoiner(", ");
-                errs.forEach(err -> joiner.add(err));
-                LOGGER.debug("Ingest request {} rejected for following reason(s) : {}", item.getRequestId(),
-                             joiner.toString());
-            }
+            // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
+            ingestRequestService.handleRequestDenied(IngestRequest.build(requestId,
+                                                                         ingestMetadata,
+                                                                         InternalRequestState.ERROR,
+                                                                         IngestRequestStep.LOCAL_DENIED,
+                                                                         sip,
+                                                                         errs));
+            StringJoiner joiner = new StringJoiner(", ");
+            errs.forEach(joiner::add);
+            LOGGER.debug("Ingest request ({}) rejected for following reason(s) : {}",
+                         requestId == null ? "per REST" : requestId,
+                         joiner.toString());
+            // Trace denied request
+            info.addDeniedRequest(sipId, joiner.toString());
+
             return null;
         }
 
-        // Save granted ingest request
-        IngestRequest request = IngestRequest.build(item.getRequestId(),
-                                                    metadataMapper.dtoToMetadata(item.getMetadata()), state,
-                                                    IngestRequestStep.LOCAL_SCHEDULED, item.getSip());
+        // Save granted ingest request, versioning mode is being handled later
+        IngestRequest request = IngestRequest
+                .build(requestId, ingestMetadata, InternalRequestState.CREATED, IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
-        // return granted request
+        // Trace granted request
+        info.addGrantedRequest(sip.getId(), request.getRequestId());
+        // Add to granted request collection
+        grantedRequests.add(request);
         return request;
     }
 
@@ -129,7 +170,7 @@ public class IngestService implements IIngestService {
         ListMultimap<String, IngestRequest> requestPerChain = ArrayListMultimap.create();
         for (IngestRequestFlowItem item : items) {
             // Validate and transform to request
-            IngestRequest ingestRequest = registerIngestRequest(item, InternalRequestState.RUNNING);
+            IngestRequest ingestRequest = registerIngestRequest(item);
             if (ingestRequest != null) {
                 requestPerChain.put(ingestRequest.getMetadata().getIngestChain(), ingestRequest);
             }
@@ -145,9 +186,9 @@ public class IngestService implements IIngestService {
 
         // Check submission limit / If there are more features than configurated bulk max size, reject request!
         if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
-            throw new EntityInvalidException(
-                    String.format("Invalid request due to ingest configuration max bulk size set to %s.",
-                                  confProperties.getMaxBulkSize()));
+            throw new EntityInvalidException(String.format(
+                    "Invalid request due to ingest configuration max bulk size set to %s.",
+                    confProperties.getMaxBulkSize()));
         }
 
         // Validate and transform ingest metadata
@@ -155,14 +196,15 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
+        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(),
+                                                   ingestMetadata.getSession(),
                                                    "SIP Collection ingestion scheduled");
 
         int count = 1;
         for (SIP sip : sips.getFeatures()) {
             String sipId = sip.getId() != null ? sip.getId() : "SIP n°" + count;
             // Validate and transform to request
-            registerIngestRequest(sip, ingestMetadata, info, grantedRequests, sipId);
+            registerIngestRequest(null, sip, ingestMetadata, info, grantedRequests, sipId);
             count++;
         }
 
@@ -191,57 +233,6 @@ public class IngestService implements IIngestService {
         }
 
         return metadataMapper.dtoToMetadata(dto);
-    }
-
-    /**
-     * Validate, save and publish a new request
-     * @param sip sip to manage
-     * @param ingestMetadata related ingest metadata
-     * @param info synchronous feedback
-     * @param grantedRequests collection of granted requests to populate
-     */
-    private void registerIngestRequest(SIP sip, IngestMetadata ingestMetadata, RequestInfoDto info,
-            Collection<IngestRequest> grantedRequests, String sipId) {
-        // Validate SIP
-        Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
-        validator.validate(sip, errors);
-        if (errors.hasErrors()) {
-            Set<String> errs = ErrorTranslator.getErrors(errors);
-            // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(ingestMetadata, InternalRequestState.ERROR,
-                                                                         IngestRequestStep.LOCAL_DENIED, sip, errs));
-            StringJoiner joiner = new StringJoiner(", ");
-            errs.forEach(err -> joiner.add(err));
-            LOGGER.debug("SIP ingestion request rejected for following reason(s) : {}", joiner.toString());
-            // Trace denied request
-            info.addDeniedRequest(sipId, joiner.toString());
-
-            return;
-        }
-
-        // Save granted ingest request
-        IngestRequest request = IngestRequest.build(ingestMetadata, InternalRequestState.CREATED,
-                                                    IngestRequestStep.LOCAL_SCHEDULED, sip);
-        ingestRequestService.handleRequestGranted(request);
-        // Trace granted request
-        info.addGrantedRequest(sip.getId(), request.getRequestId());
-        // Add to granted request collection
-        grantedRequests.add(request);
-    }
-
-    /**
-     * Middleware method extracted for test simulation and also used by operational code.
-     * Transform a SIP collection to a SIP flow item collection
-     */
-    public static Collection<IngestRequestFlowItem> sipToFlow(SIPCollection sips) {
-        Collection<IngestRequestFlowItem> items = new ArrayList<>();
-        if (sips != null) {
-            IngestMetadataDto metadata = sips.getMetadata();
-            for (SIP sip : sips.getFeatures()) {
-                items.add(IngestRequestFlowItem.build(metadata, sip));
-            }
-        }
-        return items;
     }
 
     @Override

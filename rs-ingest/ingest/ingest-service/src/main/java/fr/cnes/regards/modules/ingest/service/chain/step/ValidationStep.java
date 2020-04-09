@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,15 +56,17 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
         LOGGER.debug("Validating SIP \"{}\"", sip.getId());
         PluginConfiguration conf = ingestChain.getValidationPlugin();
         ISipValidation validation = this.getStepPlugin(conf.getBusinessId());
-        Errors errors = new MapBindingResult(new HashMap<>(), sip.getId());
-        validation.validate(sip, errors);
+        Errors validationErrors = new MapBindingResult(new HashMap<>(), sip.getId());
+        validation.validate(sip, validationErrors);
 
-        if (errors.hasErrors()) {
-            for (String error : ErrorTranslator.getErrors(errors)) {
+        if (validationErrors.hasErrors()) {
+            for (String error : ErrorTranslator.getErrors(validationErrors)) {
                 LOGGER.error("SIP \"{}\" validation error : {}", sip.getId(), error);
                 addError(error);
             }
-            throw new ProcessingStepException(String.format("Invalid SIP \"%s\"", sip.getId()));
+            throw new ProcessingStepException(String.format("Invalid SIP \"%s\": %s",
+                                                            sip.getId(),
+                                                            errors.stream().collect(Collectors.joining(", "))));
         }
 
         // On success

@@ -119,4 +119,9 @@ public class SIPService implements ISIPService {
     public Integer getNextVersion(SIP sip) {
         return sipRepository.getNextVersion(sip.getId());
     }
+
+    @Override
+    public SIPEntity getLatestSip(String providerId) {
+        return sipRepository.findByProviderIdAndLast(providerId, true);
+    }
 }

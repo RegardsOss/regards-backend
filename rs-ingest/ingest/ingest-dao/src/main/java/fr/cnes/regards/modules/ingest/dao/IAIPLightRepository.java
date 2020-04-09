@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -41,4 +43,11 @@ public interface IAIPLightRepository extends JpaRepository<AIPEntityLight, Long>
      */
     Page<AIPEntityLight> findAll(Specification<AIPEntityLight> aipEntitySpecification, Pageable pageable);
 
+    Set<AIPEntityLight> findAllByProviderId(String providerId);
+
+    default AIPEntityLight findLast(String providerId) {
+        return findByProviderIdAndLast(providerId, true);
+    }
+
+    AIPEntityLight findByProviderIdAndLast(String providerId, boolean last);
 }
