@@ -67,9 +67,9 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator {
      */
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        String key = target.getClass().getSimpleName() + "_" + method.getName() + "_" + tenantResolver.getTenant() + "_"
+        String key = "RolesHierarchyKeyGenerator_" + method.getName() + "_" + tenantResolver.getTenant() + "_"
                 + authResolver.getRole() + "_" + StringUtils.arrayToDelimitedString(params, "_");
-        LOGGER.info("Generated key {} for cache {} ", key, CACHE_NAME);
+        LOGGER.debug("Generated key {} for cache {} ", key, CACHE_NAME);
         return key;
     }
 
@@ -79,7 +79,7 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator {
     @Override
     @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public void cleanCache() {
-        LOGGER.info("Cleaning {} cache", CACHE_NAME);
+        LOGGER.debug("Cleaning {} cache", CACHE_NAME);
     }
 
 }
