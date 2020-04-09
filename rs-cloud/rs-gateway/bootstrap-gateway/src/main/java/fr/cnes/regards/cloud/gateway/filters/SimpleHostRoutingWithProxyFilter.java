@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import com.google.common.collect.Lists;
-import com.netflix.zuul.context.RequestContext;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +33,10 @@ import org.springframework.cloud.netflix.zuul.filters.route.SimpleHostRoutingFil
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
+import com.google.common.collect.Lists;
+import com.netflix.zuul.context.RequestContext;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
 
 /**
  * @author sbinda
@@ -47,6 +48,7 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
 
     @Autowired
     private HttpClient httpClient;
+
     public static final String HEADER_HOST = "Host";
 
     /**
@@ -56,8 +58,8 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
      * @param httpClientFactory
      */
     public SimpleHostRoutingWithProxyFilter(ProxyRequestHelper helper, ZuulProperties properties,
-                                            ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-                                            ApacheHttpClientFactory httpClientFactory) {
+            ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
+            ApacheHttpClientFactory httpClientFactory) {
         super(helper, properties, connectionManagerFactory, httpClientFactory);
         // TODO : Les paramètres ne sont pas reportés dans la requête proxyfiée !!!!!!!
     }
@@ -82,19 +84,21 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
         RequestContext context = RequestContext.getCurrentContext();
         ConcurrentMap<String, List<String>> newParameterMap = new ConcurrentHashMap<>();
 
-        String[] parameters = ctx.getRouteHost().getQuery().split("&");
-        for (int i = 0; i < parameters.length; i++) {
-            String[] keyValues = parameters[i].split("=");
-            if (keyValues.length == 2) {
-                String authenticatedKey = keyValues[0];
-                String authenticatedValue = "";
-                if (keyValues[1] != null) {
-                    authenticatedValue = keyValues[1];
+        if ((ctx.getRouteHost() != null) && (ctx.getRouteHost().getQuery() != null)) {
+            String[] parameters = ctx.getRouteHost().getQuery().split("&");
+            for (String parameter : parameters) {
+                String[] keyValues = parameter.split("=");
+                if (keyValues.length == 2) {
+                    String authenticatedKey = keyValues[0];
+                    String authenticatedValue = "";
+                    if (keyValues[1] != null) {
+                        authenticatedValue = keyValues[1];
+                    }
+                    if (newParameterMap.containsKey(keyValues[0])) {
+                        newParameterMap.get(keyValues[0]).add(keyValues[1]);
+                    }
+                    newParameterMap.put(authenticatedKey, Lists.newArrayList(authenticatedValue));
                 }
-                if (newParameterMap.containsKey(keyValues[0])) {
-                    newParameterMap.get(keyValues[0]).add(keyValues[1]);
-                }
-                newParameterMap.put(authenticatedKey, Lists.newArrayList(authenticatedValue));
             }
         }
         context.setRequestQueryParams(newParameterMap);
