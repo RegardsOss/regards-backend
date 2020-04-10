@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import plugin.IFeatureFactoryPlugin;
 
 /**
  * Default plugin notification sender
@@ -38,13 +39,13 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTest
-        implements IFeatureCreationRequestEventGenerator {
+        implements IFeatureFactoryPlugin {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
-    public Feature createFeatureRequestEvent(FeatureReferenceRequest reference) {
+    public Feature createFeature(FeatureReferenceRequest reference) {
         String model = mockModelClient("feature_model_01.xml", cps, factory, runtimeTenantResolver.getTenant(),
                                        modelAttrAssocClientMock);
         Feature toAdd = Feature.build("id " + reference.getLocation(), null,

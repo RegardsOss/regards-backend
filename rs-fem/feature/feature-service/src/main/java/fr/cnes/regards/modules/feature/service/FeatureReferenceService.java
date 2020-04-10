@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
-import fr.cnes.regards.modules.feature.service.plugin.IFeatureCreationRequestEventGenerator;
+import plugin.IFeatureFactoryPlugin;
 
 /**
  * Feature reference service management
@@ -239,7 +239,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         if (!plugin.isPresent()) {
             return null;
         }
-        Feature feature = ((IFeatureCreationRequestEventGenerator) plugin.get()).createFeatureRequestEvent(request);
+        Feature feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
         FeatureMetadataEntity metadata = request.getMetadata();
         StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
         array = metadata.getStorages().toArray(array);
