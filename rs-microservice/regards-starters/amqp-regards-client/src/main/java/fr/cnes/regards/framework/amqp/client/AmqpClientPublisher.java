@@ -93,17 +93,19 @@ public class AmqpClientPublisher {
             Map<String, Object> headers, Path templatePath, Integer repeat) {
         // Generate messages
         Generator generator = new Generator();
+        generator.initGenerators(templatePath);
 
         Integer remaining = repeat;
         while (remaining > 0) {
             Integer batchSize = remaining >= BATCH_SIZE ? BATCH_SIZE : remaining;
             remaining = remaining - batchSize;
             // Generate batch
-            List<Map<String, Object>> messages = generator.generate(templatePath, batchSize);
+            List<Map<String, Object>> messages = generator.generate(batchSize);
             List<Object> oMessages = new ArrayList<>();
             messages.forEach(m -> oMessages.add(m));
             // Broadcast
             publisher.broadcastAll(exchangeName, queueName, priority, oMessages, headers);
+            LOGGER.info("Batch of {} messages sended. Remaining {}.", batchSize, remaining);
         }
     }
 
