@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
+import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
@@ -65,7 +66,6 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
-import plugin.IFeatureFactoryPlugin;
 
 /**
  * Feature reference service management
