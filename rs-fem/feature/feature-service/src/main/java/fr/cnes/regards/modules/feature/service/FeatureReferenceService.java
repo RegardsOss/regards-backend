@@ -43,6 +43,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -218,7 +219,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
                             .build(request.getRequestId(), null, null, RequestState.ERROR,
                                    Sets.newHashSet("No plugin founded for this request reference")));
                 }
-            } catch (NotAvailablePluginConfigurationException e) {
+            } catch (NotAvailablePluginConfigurationException | ModuleException e) {
                 request.setState(RequestState.ERROR);
                 LOGGER.error("Creation of FeatureCreationRequestEvent fail from plugin generator", e);
             }
@@ -234,18 +235,24 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
     }
 
     private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
-            throws NotAvailablePluginConfigurationException {
+            throws NotAvailablePluginConfigurationException, ModuleException {
         Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getPluginBusinessId());
         if (!plugin.isPresent()) {
             return null;
         }
-        Feature feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
-        FeatureMetadataEntity metadata = request.getMetadata();
-        StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
-        array = metadata.getStorages().toArray(array);
-        return FeatureCreationRequestEvent.build(request.getRequestId(), FeatureCreationSessionMetadata
-                .build(metadata.getSessionOwner(), metadata.getSession(), request.getPriority(), false, array),
-                                                 feature);
+        Feature feature;
+        try {
+            feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
+            FeatureMetadataEntity metadata = request.getMetadata();
+            StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
+            array = metadata.getStorages().toArray(array);
+            return FeatureCreationRequestEvent.build(request.getRequestId(), FeatureCreationSessionMetadata
+                    .build(metadata.getSessionOwner(), metadata.getSession(), request.getPriority(), false, array),
+                                                     feature);
+        } catch (ModuleException e) {
+            throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
+        }
+
     }
 
 }

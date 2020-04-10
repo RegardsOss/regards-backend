@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.domain.plugin;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
@@ -37,6 +38,6 @@ public interface IFeatureFactoryPlugin {
      * @param reference {@link FeatureReferenceRequest} data source to generate a {@link Feature}
      * @return generated {@link FeatureCreationRequest}
      */
-    Feature createFeature(FeatureReferenceRequest reference);
+    Feature createFeature(FeatureReferenceRequest reference) throws ModuleException;
 
 }
