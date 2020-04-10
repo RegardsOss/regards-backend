@@ -21,10 +21,13 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
@@ -51,7 +54,17 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
         }
 
         List<AIP> aips = new ArrayList<>();
-        aips.add(AIP.build(sip.getSip(), aipId, Optional.of(sipId), providerId, sip.getVersion()));
+        String providerId = sip.getProviderId();
+        Integer version = sip.getVersion();
+        aips.add(AIP.build(sip.getSip(),
+                           new OaisUniformResourceName(OAISIdentifier.AIP,
+                                                       entityType,
+                                                       tenant,
+                                                       UUID.fromString(providerId),
+                                                       version),
+                           Optional.of(sip.getSipIdUrn()),
+                           providerId,
+                           version));
         return aips;
     }
 

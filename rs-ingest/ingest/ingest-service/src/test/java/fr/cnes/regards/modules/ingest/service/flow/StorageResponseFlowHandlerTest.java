@@ -162,7 +162,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
                                                                          null, null, MediaType.APPLICATION_JSON, null),
                                           FileLocationDTO.build(storage, storedUrl), owners),
                            null));
-            IngestRequest request = IngestRequest.build(IngestMetadata
+            IngestRequest request = IngestRequest.build(null, IngestMetadata
                     .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
                                                         InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT,
                                                         sip);

@@ -203,7 +203,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         aipUpdateRequestRepository.saveAll(updateRequest);
 
         ingestRequestRepository
-                .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+                .save(IngestRequest.build(null, mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
                                           IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
@@ -297,7 +297,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        IngestRequest ingestRequest = IngestRequest.build(IngestMetadata
+        IngestRequest ingestRequest = IngestRequest.build(null, IngestMetadata
                 .build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(), StorageMetadata.build("RAS")),
                                                           InternalRequestState.ERROR, IngestRequestStep.LOCAL_SCHEDULED,
                                                           aipEntity.getSip().getSip());

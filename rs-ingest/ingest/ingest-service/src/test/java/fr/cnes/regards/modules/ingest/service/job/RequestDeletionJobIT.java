@@ -189,7 +189,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
         aipUpdateRequestRepository.saveAll(updateRequest);
 
         ingestRequestRepository
-                .save(IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+                .save(IngestRequest.build(null, mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
                                           IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());

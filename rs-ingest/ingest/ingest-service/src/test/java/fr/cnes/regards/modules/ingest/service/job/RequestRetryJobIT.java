@@ -192,7 +192,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        IngestRequest ir = IngestRequest.build(mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
+        IngestRequest ir = IngestRequest.build(null, mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
                                                IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip());
         ir.setAips(aips);
         ingestRequestRepository.save(ir);

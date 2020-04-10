@@ -142,7 +142,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
 
     private IngestRequest createIngestRequest(AIPEntity aipEntity) {
         IngestRequest ingestRequest = IngestRequest
-                .build(IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(),
+                .build(null, IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(),
                                             StorageMetadata.build("RAS")),
                        InternalRequestState.CREATED, IngestRequestStep.LOCAL_SCHEDULED, aipEntity.getSip().getSip());
         ingestRequest.setAips(Lists.newArrayList(aipEntity));
