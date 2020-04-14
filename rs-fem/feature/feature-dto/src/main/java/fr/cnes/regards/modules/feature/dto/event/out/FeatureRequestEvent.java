@@ -56,8 +56,8 @@ public class FeatureRequestEvent implements ISubscribable {
 
     private Set<String> errors;
 
-    public static FeatureRequestEvent build(String requestId, String id, @Nullable FeatureUniformResourceName urn,
-            RequestState state) {
+    public static FeatureRequestEvent build(String requestId, @Nullable String id,
+            @Nullable FeatureUniformResourceName urn, RequestState state) {
         return build(requestId, id, urn, state, null);
     }
 
