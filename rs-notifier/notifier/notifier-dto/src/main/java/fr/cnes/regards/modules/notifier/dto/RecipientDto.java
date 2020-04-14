@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.reguards.modules.notifier.dto;
+package fr.cnes.regards.modules.notifier.dto;
 
 import javax.validation.constraints.NotNull;
-
-import org.dom4j.rule.Rule;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
- * Dto for a {@link Rule}
+ * Dto for a {@link Recipient}
  * @author Kevin Marchois
  *
  */
-public class RuleDto {
+public class RecipientDto {
 
     private Long id;
 
-    @NotNull
-    private PluginConfiguration pluginConf;
+    private long ruleId;
 
     @NotNull
-    private boolean enabled = true;
+    private PluginConfiguration pluginConf;
 
     public Long getId() {
         return id;
@@ -55,20 +52,19 @@ public class RuleDto {
         this.pluginConf = pluginConf;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public long getRuleId() {
+        return ruleId;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void setRuleId(long ruleId) {
+        this.ruleId = ruleId;
     }
 
-    public static RuleDto build(Long id, PluginConfiguration pluginConf, boolean enabled) {
-        RuleDto rule = new RuleDto();
-        rule.setId(id);
-        rule.setPluginConf(pluginConf);
-        rule.setEnabled(enabled);
+    public static RecipientDto build(Long id, PluginConfiguration pluginConf) {
+        RecipientDto recipient = new RecipientDto();
+        recipient.setId(id);
+        recipient.setPluginConf(pluginConf);
 
-        return rule;
+        return recipient;
     }
 }

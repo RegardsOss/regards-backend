@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.notifier.dao.IRecipientRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
+import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 
 /**
  * Implementation of recipient service

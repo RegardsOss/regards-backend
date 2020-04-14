@@ -30,7 +30,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
+import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 
 /**
  * @author kevin

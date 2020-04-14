@@ -61,12 +61,12 @@ import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
 import fr.cnes.regards.modules.notifier.service.cache.AbstractCacheableRule;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
-import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Service for checking {@link Rule} applied to {@link JsonElement} for notification sending

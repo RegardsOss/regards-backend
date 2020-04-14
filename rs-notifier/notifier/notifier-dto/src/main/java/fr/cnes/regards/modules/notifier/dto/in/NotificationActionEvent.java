@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.reguards.modules.notifier.dto.out;
+package fr.cnes.regards.modules.notifier.dto.in;
+
+import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonElement;
 
@@ -26,14 +28,17 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * @author kevin
+ * An event contain a JSON element plus an action
+ * @author Kevin Marchois
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class NotificationEvent implements ISubscribable {
+public class NotificationActionEvent implements ISubscribable {
 
+    @NotNull(message = "JSON element is required")
     private JsonElement element;
 
+    @NotNull(message = "Notification action is required")
     private String action;
 
     public JsonElement getElement() {
@@ -52,8 +57,8 @@ public class NotificationEvent implements ISubscribable {
         this.action = action;
     }
 
-    public static NotificationEvent build(JsonElement element, String action) {
-        NotificationEvent toCreate = new NotificationEvent();
+    public static NotificationActionEvent build(JsonElement element, String action) {
+        NotificationActionEvent toCreate = new NotificationActionEvent();
         toCreate.setAction(action);
         toCreate.setElement(element);
         return toCreate;

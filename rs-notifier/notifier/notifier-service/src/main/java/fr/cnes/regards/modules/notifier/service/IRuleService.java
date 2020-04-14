@@ -25,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.reguards.modules.notifier.dto.RuleDto;
+import fr.cnes.regards.modules.notifier.dto.RuleDto;
 
 /**
  * @author kevin

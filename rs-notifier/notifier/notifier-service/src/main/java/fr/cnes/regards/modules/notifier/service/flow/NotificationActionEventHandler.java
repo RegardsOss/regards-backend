@@ -32,8 +32,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
-import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Handler to handle {@link NotificationEvent} events

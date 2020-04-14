@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Notification service interface

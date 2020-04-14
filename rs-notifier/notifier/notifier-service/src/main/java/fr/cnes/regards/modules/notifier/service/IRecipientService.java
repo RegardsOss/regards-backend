@@ -25,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Recipient;
-import fr.cnes.reguards.modules.notifier.dto.RecipientDto;
+import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 
 /**
  * Service for {@link Recipient} manipulation
