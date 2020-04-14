@@ -176,7 +176,6 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null,
                           item.getFeature() != null ? item.getFeature().getUrn() : null,
                           FeatureUpdateState.UPDATE_REQUEST_DENIED);
-            return;
         }
 
         // Validate feature according to the data model
