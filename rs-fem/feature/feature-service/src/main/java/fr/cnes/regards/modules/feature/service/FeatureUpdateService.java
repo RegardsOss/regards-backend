@@ -167,7 +167,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         }
 
         // Validate feature according to the data model
-        errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
+        // Validate feature according to the data model
+        validationService.validate(item.getFeature(), ValidationMode.PATCH).getFieldErrors().stream()
+                .forEach(error -> errors.reject(error.getField(), error.getCodes(), error.getDefaultMessage()));
 
         if (errors.hasErrors()) {
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(),

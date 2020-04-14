@@ -196,7 +196,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         }
 
         // Validate feature according to the data model
-        errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.CREATION));
+        validationService.validate(item.getFeature(), ValidationMode.CREATION).getFieldErrors().stream()
+                .forEach(error -> errors.reject(error.getField(), error.getCodes(), error.getDefaultMessage()));
 
         if (errors.hasErrors()) {
             LOGGER.error("Error during feature {} validation {}", item.getFeature().getId(), errors.toString());
