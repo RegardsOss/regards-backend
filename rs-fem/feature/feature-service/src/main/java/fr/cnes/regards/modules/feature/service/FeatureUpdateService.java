@@ -35,7 +35,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -79,9 +78,6 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 public class FeatureUpdateService extends AbstractFeatureService implements IFeatureUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateService.class);
-
-    @Autowired
-    private Validator validator;
 
     @Autowired
     private IPublisher publisher;
@@ -158,8 +154,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
             RequestInfo<FeatureUniformResourceName> requestInfo, Set<String> existingRequestIds) {
 
         // Validate event
-        Errors errors = new MapBindingResult(new HashMap<>(), FeatureUpdateRequestEvent.class.getName());
-        validator.validate(item, errors);
+        Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
@@ -167,9 +162,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         }
 
         // Validate feature according to the data model
-        // Validate feature according to the data model
-        validationService.validate(item.getFeature(), ValidationMode.PATCH).getFieldErrors().stream()
-                .forEach(error -> errors.reject(error.getField(), error.getCodes(), error.getDefaultMessage()));
+        errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
 
         if (errors.hasErrors()) {
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(),

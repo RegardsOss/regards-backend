@@ -39,7 +39,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -122,9 +121,6 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     private IFeatureValidationService validationService;
 
     @Autowired
-    private Validator validator;
-
-    @Autowired
     private IStorageClient storageClient;
 
     @Autowired
@@ -187,17 +183,15 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             Set<String> existingRequestIds) {
 
         // Validate event
-        Errors errors = new MapBindingResult(new HashMap<>(), FeatureCreationRequestEvent.class.getName());
+        Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
 
-        validator.validate(item, errors);
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
         // Validate feature according to the data model
-        validationService.validate(item.getFeature(), ValidationMode.CREATION).getFieldErrors().stream()
-                .forEach(error -> errors.reject(error.getField(), error.getCodes(), error.getDefaultMessage()));
+        errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.CREATION));
 
         if (errors.hasErrors()) {
             LOGGER.error("Error during feature {} validation {}", item.getFeature().getId(), errors.toString());
