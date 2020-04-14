@@ -51,7 +51,7 @@ public class AmqpClientApplication implements ApplicationRunner {
 
     private static final String ARG_JSON = ARG_NS + "json";
 
-    private static final String ARG_REPEAT = ARG_NS + "repeat";
+    private static final String ARG_ITERATIONS = ARG_NS + "iterations";
 
     @Value("${" + ARG_EXCHANGE_NAME + "}")
     private String exchangeName;
@@ -71,8 +71,8 @@ public class AmqpClientApplication implements ApplicationRunner {
     /**
      * In case of template, generation number
      */
-    @Value("#{${" + ARG_REPEAT + ":10}}")
-    private Integer repeat;
+    @Value("#{${" + ARG_ITERATIONS + ":10}}")
+    private Integer iterarions;
 
     @Autowired
     private AmqpClientPublisher publisher;
@@ -97,6 +97,6 @@ public class AmqpClientApplication implements ApplicationRunner {
         if ((queueName != null) && !queueName.isEmpty()) {
             queue = Optional.of(queueName);
         }
-        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, repeat);
+        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, iterarions);
     }
 }

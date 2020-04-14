@@ -63,7 +63,7 @@ public class AmqpClientPublisher {
      * Publish a single message loaded from specified JSON file
      */
     public void publish(String exchangeName, Optional<String> queueName, Integer priority, Map<String, Object> headers,
-            String jsonPathString, Integer repeat) {
+            String jsonPathString, Integer iterations) {
 
         Path path = Paths.get(jsonPathString);
         if (!Files.exists(path)) {
@@ -79,7 +79,7 @@ public class AmqpClientPublisher {
             // Check if it is a template
             if (matcher.matches()) {
                 LOGGER.info("Handling JSON template");
-                doPublishWithTemplate(exchangeName, queueName, priority, headers, path, repeat);
+                doPublishWithTemplate(exchangeName, queueName, priority, headers, path, iterations);
             } else {
                 doPublish(exchangeName, queueName, priority, headers, path);
             }
@@ -90,12 +90,12 @@ public class AmqpClientPublisher {
      * Publish all messages generated from specified template.
      */
     private void doPublishWithTemplate(String exchangeName, Optional<String> queueName, Integer priority,
-            Map<String, Object> headers, Path templatePath, Integer repeat) {
+            Map<String, Object> headers, Path templatePath, Integer iterations) {
         // Generate messages
         Generator generator = new Generator();
         generator.initGenerators(templatePath);
 
-        Integer remaining = repeat;
+        Integer remaining = iterations;
         while (remaining > 0) {
             Integer batchSize = remaining >= BATCH_SIZE ? BATCH_SIZE : remaining;
             remaining = remaining - batchSize;
