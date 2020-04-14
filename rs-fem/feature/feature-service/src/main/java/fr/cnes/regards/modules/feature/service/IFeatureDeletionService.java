@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
+import java.util.Set;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -49,4 +50,9 @@ public interface IFeatureDeletionService {
      * Process batch of requests during job
      */
     void processRequests(List<FeatureDeletionRequest> requests);
+
+    /**
+     * Process batch of successful storage request
+     */
+    void processStorageRequests(Set<String> groupIds);
 }

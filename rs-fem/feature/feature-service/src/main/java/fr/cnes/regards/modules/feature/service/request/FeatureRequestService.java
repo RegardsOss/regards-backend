@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,11 +30,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
@@ -44,6 +39,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
@@ -62,13 +58,13 @@ public class FeatureRequestService implements IFeatureRequestService {
     private IFeatureDeletionRequestRepository fdrRepo;
 
     @Autowired
-    private IFeatureEntityRepository featureRepo;
-
-    @Autowired
     private IPublisher publisher;
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private IFeatureDeletionService featureDeletionService;
 
     @Autowired
     private Gson gson;
@@ -123,24 +119,7 @@ public class FeatureRequestService implements IFeatureRequestService {
 
     @Override
     public void handleDeletionSuccess(Set<String> groupIds) {
-        Set<FeatureDeletionRequest> request = this.fdrRepo.findByGroupIdIn(groupIds);
-
-        // publish success notification for all request id
-        request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(item.getRequestId(), null, item.getUrn(), RequestState.SUCCESS, null)));
-
-        // delete all FeatureEntity with the same urn of a FeatureDeletionRequest plus notify
-        List<FeatureEntity> toDelete = this.featureRepo
-                .findByUrnIn(request.stream().map(fdr -> fdr.getUrn()).collect(Collectors.toList()));
-        toDelete.stream().forEach(feature -> publisher.publish(NotificationActionEvent
-                .build(gson.toJsonTree(feature.getFeature()), FeatureManagementAction.DELETION.name())));
-        this.featureRepo.deleteAll(toDelete);
-
-        // Notify catalog for feature deleted
-        toDelete.forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
-
-        // delete useless FeatureDeletionRequest
-        this.fdrRepo.deleteAll(request);
+        featureDeletionService.processStorageRequests(groupIds);
     }
 
     @Override
