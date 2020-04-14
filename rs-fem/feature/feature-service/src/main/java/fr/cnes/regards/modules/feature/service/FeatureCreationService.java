@@ -194,19 +194,10 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
-        if (errors.hasErrors()) {
-            LOGGER.error("Error during creation event {} validation : {}", item.getRequestId(), errors.toString());
-            requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
-            // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
-                                                        item.getFeature() != null ? item.getFeature().getId() : null,
-                                                        null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
-            metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
-                          FeatureCreationState.CREATION_REQUEST_DENIED);
-        }
 
         // Validate feature according to the data model
-        errors = validationService.validate(item.getFeature(), ValidationMode.CREATION);
+        validationService.validate(item.getFeature(), ValidationMode.CREATION).getFieldErrors().stream()
+                .forEach(error -> errors.reject(error.getField(), error.getCodes(), error.getDefaultMessage()));
 
         if (errors.hasErrors()) {
             LOGGER.error("Error during feature {} validation {}", item.getFeature().getId(), errors.toString());
