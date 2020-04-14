@@ -250,26 +250,31 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
     }
 
     private void manageRequestsWithoutFile(Map<FeatureDeletionRequest, FeatureEntity> requestsWithoutFiles) {
+        sendFeedbacksAndClean(requestsWithoutFiles);
+    }
+
+    private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests) {
         // Delete all features without files and related requests
-        this.featureRepo.deleteAll(requestsWithoutFiles.values());
-        this.deletionRepo.deleteByIdIn(requestsWithoutFiles.keySet().stream().map(fdr -> fdr.getId())
-                .collect(Collectors.toSet()));
+        this.featureRepo.deleteAll(sucessfullRequests.values());
+        this.deletionRepo
+                .deleteByIdIn(sucessfullRequests.keySet().stream().map(fdr -> fdr.getId()).collect(Collectors.toSet()));
 
         // PROPAGATE to NOTIFIER
-        if (!requestsWithoutFiles.values().isEmpty()) {
-            publisher.publish(requestsWithoutFiles.values().stream()
+        if (!sucessfullRequests.values().isEmpty()) {
+            publisher.publish(sucessfullRequests.values().stream()
                     .map(feature -> NotificationActionEvent.build(gson.toJsonTree(feature.getFeature()),
                                                                   FeatureManagementAction.DELETION.name()))
                     .collect(Collectors.toList()));
         }
 
         // PROPAGATE to CATALOG
-        requestsWithoutFiles.values()
+        sucessfullRequests.values()
                 .forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
+
         // Feedbacks for deleted features
-        Map<FeatureUniformResourceName, FeatureDeletionRequest> requestByUrn = requestsWithoutFiles.keySet().stream()
+        Map<FeatureUniformResourceName, FeatureDeletionRequest> requestByUrn = sucessfullRequests.keySet().stream()
                 .collect(Collectors.toMap(FeatureDeletionRequest::getUrn, Function.identity()));
-        for (FeatureEntity entity : requestsWithoutFiles.values()) {
+        for (FeatureEntity entity : sucessfullRequests.values()) {
             FeatureDeletionRequest fdr = requestByUrn.get(entity.getUrn());
             // Publish successful request
             publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), entity.getProviderId(), fdr.getUrn(),
@@ -305,4 +310,20 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         return fdr;
     }
 
+    @Override
+    public void processStorageRequests(Set<String> groupIds) {
+        Set<FeatureDeletionRequest> requests = this.deletionRepo.findByGroupIdIn(groupIds);
+
+        // Retrieve features
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
+                .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList())).stream()
+                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+
+        Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests = new HashMap<>();
+        for (FeatureDeletionRequest fdr : requests) {
+            sucessfullRequests.put(fdr, featureByUrn.get(fdr.getUrn()));
+        }
+
+        sendFeedbacksAndClean(sucessfullRequests);
+    }
 }
