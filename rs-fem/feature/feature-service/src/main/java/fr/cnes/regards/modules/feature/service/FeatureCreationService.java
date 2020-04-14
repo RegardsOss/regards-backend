@@ -84,10 +84,10 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationSta
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Feature service management
