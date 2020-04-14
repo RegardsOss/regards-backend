@@ -166,20 +166,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
-        if (errors.hasErrors()) {
-            // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
-                                                        item.getFeature() != null ? item.getFeature().getId() : null,
-                                                        item.getFeature() != null ? item.getFeature().getUrn() : null,
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
-            requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
-            metrics.count(item.getFeature() != null ? item.getFeature().getId() : null,
-                          item.getFeature() != null ? item.getFeature().getUrn() : null,
-                          FeatureUpdateState.UPDATE_REQUEST_DENIED);
-        }
-
         // Validate feature according to the data model
-        errors = validationService.validate(item.getFeature(), ValidationMode.PATCH);
+        errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
 
         if (errors.hasErrors()) {
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
