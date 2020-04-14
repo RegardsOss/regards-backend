@@ -66,9 +66,9 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.reguards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * @author Kevin Marchois
@@ -197,22 +197,48 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
 
     @Override
     public void processRequests(List<FeatureDeletionRequest> requests) {
+
+        // Retrieve features
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList())).stream()
                 .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
-        Set<FeatureDeletionRequest> requestsWithFiles = requests.stream()
-                .filter(fdr -> haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
-                .map(fdr -> publishFiles(fdr, featureByUrn.get(fdr.getUrn()))).collect(Collectors.toSet());
+
+        // Prepare feedback map
+        Map<String, FeatureEntity> featureById = new HashMap<>();
+        for (FeatureDeletionRequest fdr : requests) {
+            // Feature may be null if already deleted!
+            featureById.put(fdr.getRequestId(), featureByUrn.get(fdr.getUrn()));
+        }
+
+        // Dispatch requests with or without files
+        Set<FeatureDeletionRequest> requestsWithFiles = new HashSet<>();
+        Set<FeatureEntity> featuresWithoutFiles = new HashSet<>();
+        for (FeatureDeletionRequest fdr : requests) {
+            if (haveFiles(fdr, featureByUrn.get(fdr.getUrn()))) {
+                // Request file deletion
+                publishFiles(fdr, featureByUrn.get(fdr.getUrn()));
+                requestsWithFiles.add(fdr);
+            } else {
+                featuresWithoutFiles.add(featureByUrn.get(fdr.getUrn()));
+            }
+        }
+
+        // Save all features with files
         this.deletionRepo.saveAll(requestsWithFiles);
-        // delete all FeatureEntity concerned
-        Set<FeatureEntity> featuresWithoutFles = requests.stream()
-                .filter(fdr -> !haveFiles(fdr, featureByUrn.get(fdr.getUrn())))
-                .map(fdr -> featureByUrn.get(fdr.getUrn())).collect(Collectors.toSet());
-        this.featureRepo.deleteAll(featuresWithoutFles);
+        // Delete all features without files
+        this.featureRepo.deleteAll(featuresWithoutFiles);
+
+        // Feedback for deleted features
+        for (FeatureEntity entity : featuresWithoutFiles) {
+            // Publish successful request
+            // FIXME
+            //            publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getProviderId(),
+            //                                                        request.getFeature().getUrn(), RequestState.SUCCESS));
+        }
 
         // notify feature deletion for feature  without files
-        if (!featuresWithoutFles.isEmpty()) {
-            publisher.publish(featuresWithoutFles.stream()
+        if (!featuresWithoutFiles.isEmpty()) {
+            publisher.publish(featuresWithoutFiles.stream()
                     .map(feature -> NotificationActionEvent.build(gson.toJsonTree(feature.getFeature()),
                                                                   FeatureManagementAction.DELETION.name()))
                     .collect(Collectors.toList()));

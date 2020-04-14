@@ -45,7 +45,7 @@ public class FeatureMetadata {
     private List<StorageMetadata> storages = new ArrayList<>();
 
     @NotNull(message = MISSING_PRIORITY_LEVEL)
-    private PriorityLevel priority;
+    private PriorityLevel priority = PriorityLevel.NORMAL;;
 
     public List<StorageMetadata> getStorages() {
         return storages;
@@ -68,7 +68,7 @@ public class FeatureMetadata {
     }
 
     /**
-    
+
      * Build feature metadata
      * @param storages storage metadata
      */

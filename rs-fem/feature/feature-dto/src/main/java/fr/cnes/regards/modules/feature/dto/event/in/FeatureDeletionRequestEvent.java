@@ -47,7 +47,7 @@ public class FeatureDeletionRequestEvent extends AbstractRequestEvent implements
     private FeatureUniformResourceName urn;
 
     @NotNull(message = "Priority level is required")
-    private PriorityLevel priority;
+    private PriorityLevel priority = PriorityLevel.NORMAL;
 
     public PriorityLevel getPriority() {
         return priority;
