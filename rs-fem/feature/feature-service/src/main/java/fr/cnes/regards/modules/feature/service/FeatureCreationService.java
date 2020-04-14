@@ -203,7 +203,6 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                         null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
                           FeatureCreationState.CREATION_REQUEST_DENIED);
-            return;
         }
 
         // Validate feature according to the data model
