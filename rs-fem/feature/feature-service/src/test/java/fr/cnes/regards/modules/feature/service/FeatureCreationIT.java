@@ -211,7 +211,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     }
 
     @Test
-    public void testRegisterScheduleProcessWithErros() {
+    public void testRegisterScheduleProcessWithErrors() {
         List<Feature> features = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             features.add(Feature.build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)), null, "model"));
@@ -223,7 +223,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
         assertEquals(0, infos.getGranted().size());
-        assertEquals(properties.getMaxBulkSize().intValue() * 2, infos.getDenied().keySet().size());
+        assertEquals(properties.getMaxBulkSize().intValue() * 2, infos.getDenied().size());
     }
 
     /**
