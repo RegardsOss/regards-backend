@@ -223,7 +223,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
         assertEquals(0, infos.getGranted().size());
-        assertEquals(properties.getMaxBulkSize().intValue(), infos.getDenied().size());
+        assertEquals(properties.getMaxBulkSize().intValue(), infos.getDenied().keySet().size());
     }
 
     /**
