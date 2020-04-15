@@ -349,7 +349,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
      * Publish all contained files inside the {@link FeatureCreationRequest} to
      * storage
      *
-     * @param fcr
+     * @param fcr currently createing feature
      * @return
      */
     private FeatureCreationRequest publishFiles(FeatureCreationRequest fcr) {
