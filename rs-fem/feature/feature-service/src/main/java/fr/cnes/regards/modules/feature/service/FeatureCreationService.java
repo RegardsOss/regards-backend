@@ -194,7 +194,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.CREATION));
 
         if (errors.hasErrors()) {
-            LOGGER.error("Error during feature {} validation {}", item.getFeature().getId(), errors.toString());
+            LOGGER.error("Error during feature {} validation the following errors have been founded{}",
+                         item.getFeature().getId(), errors.toString());
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
