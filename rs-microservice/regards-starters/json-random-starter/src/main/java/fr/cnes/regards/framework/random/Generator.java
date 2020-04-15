@@ -39,43 +39,67 @@ public class Generator {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> generate(Path templatePath, Integer number) {
-        // Generated messages
-        List<Map<String, Object>> messages = new ArrayList<>();
+    private ObjectRandomGenerator root;
 
+    /**
+     * Initialize generators and generate the message batch.
+     */
+    public List<Map<String, Object>> generate(Path templatePath, Integer number) {
+        // Initialize generators
+        initGenerators(templatePath);
+        // Generate messages
+        return generate(number);
+    }
+
+    /**
+     * Initialize generators from specified template. You have to call {@link #generate(Integer)} to generate message with these generators.
+     */
+    public void initGenerators(Path templatePath) {
         try {
             LOGGER.info("Loading JSON template from {}", templatePath);
             // Load JSON template
+            @SuppressWarnings("unchecked")
             Map<String, Object> template = mapper.readValue(templatePath.toFile(), Map.class);
             // Initialize generators
-            ObjectRandomGenerator root = new ObjectRandomGenerator();
-            prepareGenerators(template, root);
-            // Generate messages
-            for (int i = 0; i < number; i++) {
-                messages.add(root.random());
-            }
+            root = new ObjectRandomGenerator();
+            doInitGenerators(template, root);
         } catch (IOException e) {
             String error = String.format("Cannot read json template from path %s", templatePath);
             LOGGER.error(error, e);
             throw new IllegalArgumentException(error);
         }
-
-        return messages;
     }
 
     @SuppressWarnings("unchecked")
-    private void prepareGenerators(Map<String, Object> template, ObjectRandomGenerator generator) {
+    private void doInitGenerators(Map<String, Object> template, ObjectRandomGenerator generator) {
         for (Entry<String, Object> entry : template.entrySet()) {
             if (Map.class.isAssignableFrom(entry.getValue().getClass())) {
                 // Propagate
                 ObjectRandomGenerator org = new ObjectRandomGenerator();
-                prepareGenerators((Map<String, Object>) entry.getValue(), org);
+                doInitGenerators((Map<String, Object>) entry.getValue(), org);
                 generator.addGenerator(entry.getKey(), org);
             } else {
                 // Initialize generator
                 generator.addGenerator(entry.getKey(), RandomGenerator.of(entry.getValue()));
             }
         }
+    }
+
+    /**
+     * Generate a message batch based on generators previously initialized calling {@link #initGenerators(Path)}
+     */
+    public List<Map<String, Object>> generate(Integer number) {
+        // Assert generators are ready!
+        if (root == null) {
+            throw new UnsupportedOperationException(
+                    "Generators not ready! Call initGenerators before calling this method!");
+        }
+
+        // Generated messages
+        List<Map<String, Object>> messages = new ArrayList<>();
+        for (int i = 0; i < number; i++) {
+            messages.add(root.random());
+        }
+        return messages;
     }
 }
