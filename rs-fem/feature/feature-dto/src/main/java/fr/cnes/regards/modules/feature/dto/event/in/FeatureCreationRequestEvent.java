@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.feature.dto.event.in;
 
 import java.time.OffsetDateTime;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -40,7 +39,6 @@ import fr.cnes.regards.modules.feature.dto.validation.ValidFeatureEvent;
 @ValidFeatureEvent
 public class FeatureCreationRequestEvent extends AbstractCreationRequestEvent implements ISubscribable {
 
-    @Valid
     @NotNull(message = "Feature is required")
     private Feature feature;
 

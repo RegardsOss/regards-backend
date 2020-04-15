@@ -39,6 +39,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -138,6 +139,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private Validator validator;
+
     @Override
     public RequestInfo<String> registerRequests(List<FeatureCreationRequestEvent> events) {
 
@@ -184,6 +188,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
+        validator.validate(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
