@@ -95,6 +95,9 @@ public final class GsonCustomizer {
     private static void addTypeAdapters(GsonBuilder builder, Optional<GsonProperties> properties) {
         if (properties.isPresent()) {
             GsonAnnotationProcessor.process(builder, properties.get().getScanPrefix());
+            if (properties.get().getPrettyPrint().equals(Boolean.TRUE)) {
+                builder.setPrettyPrinting();
+            }
         }
     }
 
