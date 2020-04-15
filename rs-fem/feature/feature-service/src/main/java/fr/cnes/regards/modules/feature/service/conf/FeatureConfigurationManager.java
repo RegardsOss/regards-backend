@@ -19,15 +19,24 @@
 package fr.cnes.regards.modules.feature.service.conf;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 
 /**
  * Configuration manager for current module
@@ -36,17 +45,47 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 @Component
 public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
+    @Autowired
+    private IPluginService pluginService;
+
     @Override
-    public Set<String> importConfiguration(ModuleConfiguration configuration) {
+    protected Set<String> importConfiguration(ModuleConfiguration configuration) {
+
         Set<String> importErrors = new HashSet<>();
-        // FIXME Nothing to do?
+        Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
+
+        // First create connections
+        for (PluginConfiguration plgConf : configurations) {
+            try {
+                pluginService.savePluginConfiguration(plgConf);
+            } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
+                importErrors.add(e.getMessage());
+            }
+        }
+
         return importErrors;
     }
 
     @Override
-    public ModuleConfiguration exportConfiguration() {
-        List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
-        // FIXME Nothing to do?
-        return ModuleConfiguration.build(info, configuration);
+    public ModuleConfiguration exportConfiguration() throws ModuleException {
+        List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
+        // export connections
+        for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
+            // All connection should be active
+            PluginConfiguration exportedConf = pluginService.prepareForExport(factory);
+            exportedConf.setIsActive(true);
+            configurations.add(ModuleConfigurationItem.build(exportedConf));
+        }
+        return ModuleConfiguration.build(info, configurations);
+    }
+
+    /**
+     * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
+     * @param items {@link ModuleConfigurationItem}s
+     * @return  {@link PluginConfiguration}s
+     */
+    private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
+                .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
     }
 }
