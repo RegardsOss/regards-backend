@@ -150,7 +150,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
     /**
      * Test creation of properties.getMaxBulkSize() features one will be invalid test that this
-     * one will not be sored in databse
+     * one will not be sored in database
      *
      * @throws InterruptedException
      */
