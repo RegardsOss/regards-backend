@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -54,7 +55,12 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
         // First create connections
         for (PluginConfiguration plgConf : configurations) {
             try {
-                PluginConfiguration existingOne = pluginService.getPluginConfiguration(plgConf.getBusinessId());
+                PluginConfiguration existingOne = null;
+                try {
+                    existingOne = pluginService.getPluginConfiguration(plgConf.getBusinessId());
+                } catch (EntityNotFoundException e) { // NOSONAR
+                    // Nothing to do plugin configuration does not exists.
+                }
                 if (existingOne != null) {
                     existingOne.setLabel(plgConf.getLabel());
                     existingOne.setParameters(plgConf.getParameters());
