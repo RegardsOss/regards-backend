@@ -157,7 +157,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
-                .build(item.getMetadata().getSession(), item.getMetadata().getSessionOwner(),
+                .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
                        item.getMetadata().getStorages(), false);
         grantedRequests.add(FeatureReferenceRequest
                 .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, metadata,
