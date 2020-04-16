@@ -40,26 +40,25 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
     @NotNull(message = "Url is required")
     private String location;
 
-    @NotNull(message = "Plugin id is required")
-    private String pluginBusinessId;
+    @NotNull(message = "Feature factory identified by a plugin business identifier is required")
+    private String factory;
 
     @Valid
     @NotNull(message = "Feature metadata is required")
     private FeatureSessionMetadata metadata;
 
-    public static FeatureReferenceRequestEvent build(FeatureSessionMetadata metadata, String location,
-            String pluginBusinessId) {
-        return build(metadata, location, OffsetDateTime.now().minusSeconds(1), pluginBusinessId);
+    public static FeatureReferenceRequestEvent build(FeatureSessionMetadata metadata, String location, String factory) {
+        return build(metadata, location, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
     public static FeatureReferenceRequestEvent build(FeatureSessionMetadata metadata, String location,
-            OffsetDateTime requestDate, String pluginBusinessId) {
+            OffsetDateTime requestDate, String factory) {
         FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
         event.setLocation(location);
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);
         event.setRequestDate(requestDate);
-        event.setPluginBusinessId(pluginBusinessId);
+        event.setFactory(factory);
         return event;
     }
 
@@ -71,12 +70,12 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
         this.location = location;
     }
 
-    public String getPluginBusinessId() {
-        return pluginBusinessId;
+    public String getFactory() {
+        return factory;
     }
 
-    public void setPluginBusinessId(String pluginBusinessId) {
-        this.pluginBusinessId = pluginBusinessId;
+    public void setFactory(String factory) {
+        this.factory = factory;
     }
 
     public FeatureSessionMetadata getMetadata() {
