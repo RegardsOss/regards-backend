@@ -28,12 +28,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -57,8 +54,15 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
         // First create connections
         for (PluginConfiguration plgConf : configurations) {
             try {
-                pluginService.savePluginConfiguration(plgConf);
-            } catch (EntityInvalidException | EncryptionException | EntityNotFoundException e) {
+                PluginConfiguration existingOne = pluginService.getPluginConfiguration(plgConf.getBusinessId());
+                if (existingOne != null) {
+                    existingOne.setLabel(plgConf.getLabel());
+                    existingOne.setParameters(plgConf.getParameters());
+                    pluginService.updatePluginConfiguration(existingOne);
+                } else {
+                    pluginService.savePluginConfiguration(plgConf);
+                }
+            } catch (ModuleException e) {
                 importErrors.add(e.getMessage());
             }
         }
