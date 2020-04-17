@@ -139,6 +139,14 @@ public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest 
         Assert.assertEquals(1, created.get().getRecipientsBusinessIds().size());
         Assert.assertEquals(2, recipientService.getRecipients(Sets.newHashSet(recipient1bid, recipient2bid)).size());
 
+        // Try delete a recipient associated to an existing rule
+        recipientService.deleteRecipient(recipient1bid);
+        recipientService.deleteRecipient(recipient2bid);
+        created = ruleService.getRule(rulebid);
+        Assert.assertTrue(created.isPresent());
+        Assert.assertEquals(0, created.get().getRecipientsBusinessIds().size());
+        Assert.assertEquals(0, recipientService.getRecipients().size());
+
     }
 
 }

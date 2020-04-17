@@ -45,5 +45,8 @@ public interface IRuleRepository extends JpaRepository<Rule, Long> {
     @EntityGraph(attributePaths = { "rulePlugin", "recipients" })
     public Optional<Rule> findByRulePluginBusinessId(String businessId);
 
+    @EntityGraph(attributePaths = { "recipients" })
+    public Set<Rule> findByRecipientsBusinessId(String businessId);
+
     public void deleteByRulePluginBusinessId(String businessId);
 }

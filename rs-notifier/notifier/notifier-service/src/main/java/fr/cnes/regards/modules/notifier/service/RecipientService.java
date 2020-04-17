@@ -34,6 +34,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
+import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
@@ -47,6 +49,9 @@ public class RecipientService implements IRecipientService {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private IRuleRepository ruleRepo;
 
     @Override
     public Set<PluginConfiguration> getRecipients() {
@@ -82,6 +87,12 @@ public class RecipientService implements IRecipientService {
 
     @Override
     public void deleteRecipient(String id) throws ModuleException {
+        // Check  if a rule is associated to the recipient first
+        for (Rule rule : ruleRepo.findByRecipientsBusinessId(id)) {
+            // Remove  recipient to delete
+            rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
+                    .collect(Collectors.toSet()));
+        }
         pluginService.deletePluginConfiguration(id);
     }
 }
