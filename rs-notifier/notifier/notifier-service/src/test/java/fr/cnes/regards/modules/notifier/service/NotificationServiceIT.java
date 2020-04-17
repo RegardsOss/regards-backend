@@ -36,6 +36,7 @@ import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
@@ -97,9 +98,10 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     /**
      * test process method it should work
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
-    public void testProcess() throws InterruptedException {
+    public void testProcess() throws InterruptedException, ModuleException {
 
         // JobInfo created for test only we don't need a job start in this test
         JobInfo job = new JobInfo(false);
@@ -132,9 +134,10 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
     /**
      * In that test one the the fake RecipientSender will fail
+     * @throws ModuleException
      */
     @Test
-    public void testProcessWithFail() {
+    public void testProcessWithFail() throws ModuleException {
         // JobInfo created for test only we don't need a job start in this test
         JobInfo job = new JobInfo(false);
         job.setId(UUID.randomUUID());

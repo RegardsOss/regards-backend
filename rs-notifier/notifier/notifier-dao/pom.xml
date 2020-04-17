@@ -36,5 +36,15 @@
 			<groupId>fr.cnes.regards.modules.notifier</groupId>
 			<artifactId>notifier-domain</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+			<artifactId>jobs-dao</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

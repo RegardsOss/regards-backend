@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
@@ -37,6 +39,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
+import fr.cnes.regards.modules.notifier.service.IRuleService;
 
 /**
  * Configuration manager for current module
@@ -50,13 +55,17 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IRuleService ruleService;
+
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
+        Set<RuleRecipientsAssociation> rules = getRulesRecipientsAssoc(configuration.getConfiguration());
 
-        // First create connections
+        // import plugin configurations
         for (PluginConfiguration plgConf : configurations) {
             try {
                 PluginConfiguration existingOne = null;
@@ -79,19 +88,36 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
             }
         }
 
+        // Now import rule recipients associations
+        for (RuleRecipientsAssociation rule : rules) {
+            try {
+                PluginConfiguration ruleConf = pluginService.getPluginConfiguration(rule.getRuleId());
+                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, rule.getRecipientIds()));
+            } catch (ModuleException e) {
+                importErrors.add(e.getMessage());
+            }
+        }
+
         return importErrors;
     }
 
     @Override
     public ModuleConfiguration exportConfiguration() throws ModuleException {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
-        // export connections
+
+        // export Recipients
         for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
             // All connection should be active
             PluginConfiguration exportedConf = pluginService.prepareForExport(factory);
             exportedConf.setIsActive(true);
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
+
+        // Export rule recipient associations
+        Page<RuleDTO> rules = ruleService.getRules(PageRequest.of(0, 100_000));
+        configurations.addAll(rules.getContent().stream()
+                .map(r -> ModuleConfigurationItem.build(toRuleRecipientsAssoc(r))).collect(Collectors.toSet()));
+
         return ModuleConfiguration.build(info, configurations);
     }
 
@@ -103,5 +129,15 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
         return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
                 .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+    }
+
+    private Set<RuleRecipientsAssociation> getRulesRecipientsAssoc(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream().filter(i -> RuleRecipientsAssociation.class.isAssignableFrom(i.getKey()))
+                .map(i -> (RuleRecipientsAssociation) i.getTypedValue()).collect(Collectors.toSet());
+    }
+
+    private RuleRecipientsAssociation toRuleRecipientsAssoc(RuleDTO rule) {
+        return RuleRecipientsAssociation.build(rule.getRulePluginConfiguration().getBusinessId(),
+                                               rule.getRecipientsBusinessIds());
     }
 }

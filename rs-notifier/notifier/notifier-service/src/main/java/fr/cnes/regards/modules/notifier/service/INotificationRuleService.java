@@ -24,7 +24,6 @@ import java.util.UUID;
 import org.springframework.data.util.Pair;
 
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;

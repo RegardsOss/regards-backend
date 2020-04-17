@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.dao;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -39,5 +40,10 @@ public interface IRuleRepository extends JpaRepository<Rule, Long> {
      * @return a set of {@link Rule}
      */
     @EntityGraph(attributePaths = { "rulePlugin", "recipients" })
-    public Set<Rule> findByEnableTrue();
+    public Set<Rule> findByRulePluginActiveTrue();
+
+    @EntityGraph(attributePaths = { "rulePlugin", "recipients" })
+    public Optional<Rule> findByRulePluginBusinessId(String businessId);
+
+    public void deleteByRulePluginBusinessId(String businessId);
 }
