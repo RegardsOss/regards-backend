@@ -147,6 +147,10 @@ public class UIPluginDefinitionService
             plugin = UIPluginDefinition.build("enumerated-criteria",
                     "/plugins/criterion/enumerated/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
+
+            plugin = UIPluginDefinition.build("data-with-picture-only",
+                    "/plugins/criterion/data-with-picture-only/plugin.js", UIPluginTypesEnum.CRITERIA);
+            repository.save(plugin);
         }
     }
 
