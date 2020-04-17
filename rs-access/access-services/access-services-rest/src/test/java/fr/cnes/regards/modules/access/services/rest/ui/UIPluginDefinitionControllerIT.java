@@ -28,8 +28,8 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
@@ -62,10 +62,8 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     }
 
     private UIPluginDefinition createPlugin(final UIPluginTypesEnum pType) {
-        final UIPluginDefinition plugin = new UIPluginDefinition();
-        plugin.setName("PluginTest");
-        plugin.setType(pType);
-        plugin.setSourcePath("plugins/test/bundle.js");
+        final UIPluginDefinition plugin = UIPluginDefinition.build("PluginTest",
+                "plugins/test/bundle.js", pType);
         if (UIPluginTypesEnum.SERVICE.equals(pType)) {
             plugin.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
             plugin.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));

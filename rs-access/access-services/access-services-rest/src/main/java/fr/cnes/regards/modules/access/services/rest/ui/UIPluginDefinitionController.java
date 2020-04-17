@@ -26,8 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -88,7 +88,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<UIPluginDefinition>> retrievePlugin(@PathVariable("pluginId") final Long pluginId)
+    public HttpEntity<EntityModel<UIPluginDefinition>> retrievePlugin(@PathVariable("pluginId") final Long pluginId)
             throws EntityNotFoundException {
         final UIPluginDefinition plugin = service.retrievePlugin(pluginId);
         return new ResponseEntity<>(toResource(plugin), HttpStatus.OK);
@@ -106,10 +106,10 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugins", role = DefaultRole.PUBLIC)
-    public HttpEntity<PagedResources<Resource<UIPluginDefinition>>> retrievePlugins(
+    public HttpEntity<PagedModel<EntityModel<UIPluginDefinition>>> retrievePlugins(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             @RequestParam(value = "type", required = false) final UIPluginTypesEnum type,
-            final PagedResourcesAssembler<UIPluginDefinition> assembler) throws EntityInvalidException {
+            final PagedResourcesAssembler<UIPluginDefinition> assembler) {
 
         final Page<UIPluginDefinition> plugins;
         if (type != null) {
@@ -117,7 +117,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
         } else {
             plugins = service.retrievePlugins(pageable);
         }
-        final PagedResources<Resource<UIPluginDefinition>> resources = toPagedResources(plugins, assembler);
+        final PagedModel<EntityModel<UIPluginDefinition>> resources = toPagedResources(plugins, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
@@ -131,10 +131,10 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM plugin", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<UIPluginDefinition>> savePlugin(@Valid @RequestBody final UIPluginDefinition inPlugin)
+    public HttpEntity<EntityModel<UIPluginDefinition>> savePlugin(@Valid @RequestBody final UIPluginDefinition inPlugin)
             throws EntityInvalidException {
         final UIPluginDefinition plugin = service.savePlugin(inPlugin);
-        final Resource<UIPluginDefinition> resource = toResource(plugin);
+        final EntityModel<UIPluginDefinition> resource = toResource(plugin);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -152,14 +152,14 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<UIPluginDefinition>> updatePlugin(@PathVariable("pluginId") final Long pluginId,
+    public HttpEntity<EntityModel<UIPluginDefinition>> updatePlugin(@PathVariable("pluginId") final Long pluginId,
             @Valid @RequestBody final UIPluginDefinition inPlugin) throws EntityException {
 
         if (!inPlugin.getId().equals(pluginId)) {
-            throw new EntityInvalidException("Invalide application identifier for plugin");
+            throw new EntityInvalidException("Invalid application identifier for plugin");
         }
         final UIPluginDefinition plugin = service.updatePlugin(inPlugin);
-        final Resource<UIPluginDefinition> resource = toResource(plugin);
+        final EntityModel<UIPluginDefinition> resource = toResource(plugin);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -176,15 +176,15 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete a plugin", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> deletePlugin(@PathVariable("pluginId") final Long pluginId)
+    public HttpEntity<EntityModel<Void>> deletePlugin(@PathVariable("pluginId") final Long pluginId)
             throws ModuleException {
         service.deletePlugin(pluginId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    public Resource<UIPluginDefinition> toResource(final UIPluginDefinition element, final Object... extras) {
-        final Resource<UIPluginDefinition> resource = resourceService.toResource(element);
+    public EntityModel<UIPluginDefinition> toResource(final UIPluginDefinition element, final Object... extras) {
+        final EntityModel<UIPluginDefinition> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrievePlugin", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePlugin", LinkRels.UPDATE,

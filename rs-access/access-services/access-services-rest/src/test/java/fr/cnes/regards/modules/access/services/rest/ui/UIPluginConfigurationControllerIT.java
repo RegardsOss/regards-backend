@@ -31,8 +31,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.model.domain.Model;
 
 /**
  *
@@ -85,10 +85,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     }
 
     private UIPluginDefinition createPlugin(final UIPluginTypesEnum pType) {
-        final UIPluginDefinition plugin = new UIPluginDefinition();
-        plugin.setName("PluginTest");
-        plugin.setType(pType);
-        plugin.setSourcePath("plugins/test/bundle.js");
+        final UIPluginDefinition plugin = UIPluginDefinition.build("PluginTest",
+                "plugins/test/bundle.js", pType);
         if (UIPluginTypesEnum.SERVICE.equals(pType)) {
             plugin.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
             plugin.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));
@@ -210,7 +208,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
 
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
-                           customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
+                           customizer().expectStatusOk()
+                                   .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
                                    .expectValue(JSON_PATH_CONTENT + ".conf", conf.getConf())
                                    .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
                                                 conf.getLinkedToAllEntities().booleanValue()),

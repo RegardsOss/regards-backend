@@ -1,9 +1,10 @@
 package fr.cnes.regards.modules.configuration.rest;
 
+import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,9 +23,8 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
-import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
+import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 
 /**
  * REST controller for the microservice Access
@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
  *
  */
 @RestController
-@RequestMapping(UIConfigurationController.CONFIGURATION_PATH)
+@RequestMapping("/configuration")
 public class UIConfigurationController implements IResourceController<ConfigurationDTO> {
 
     public static final String CONFIGURATION_PATH = "/configuration";
@@ -57,14 +57,15 @@ public class UIConfigurationController implements IResourceController<Configurat
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<ConfigurationDTO>> retrieveConfiguration(
+    public HttpEntity<EntityModel<ConfigurationDTO>> retrieveConfiguration(
             @PathVariable("applicationId") final String applicationId) {
+        String conf;
         try {
-            String conf = configurationService.retrieveConfiguration(applicationId);
-            final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
+            conf = configurationService.retrieveConfiguration(applicationId);
+            final EntityModel<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf),
+                                                                      new Object[] { applicationId });
             return new ResponseEntity<>(resource, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            // this is to be compliant with what front expect
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
@@ -79,10 +80,11 @@ public class UIConfigurationController implements IResourceController<Configurat
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a Configuration", role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<ConfigurationDTO>> addConfiguration(
+    public HttpEntity<EntityModel<ConfigurationDTO>> addConfiguration(
             @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd) {
         final String conf = configurationService.addConfiguration(toAdd.getConfiguration(), applicationId);
-        final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
+        final EntityModel<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf),
+                                                                  new Object[] { applicationId });
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -96,36 +98,28 @@ public class UIConfigurationController implements IResourceController<Configurat
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update a Configuration", role = DefaultRole.ADMIN)
-    public HttpEntity<Resource<ConfigurationDTO>> updateConfiguration(
+    public HttpEntity<EntityModel<ConfigurationDTO>> updateConfiguration(
             @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd) {
+        String conf;
         try {
-            String conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
-            final Resource<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf), applicationId);
+            conf = configurationService.updateConfiguration(toAdd.getConfiguration(), applicationId);
+            final EntityModel<ConfigurationDTO> resource = toResource(new ConfigurationDTO(conf),
+                                                                      new Object[] { applicationId });
             return new ResponseEntity<>(resource, HttpStatus.OK);
         } catch (EntityNotFoundException e) {
-            // this is to be compliant with what front expect
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
 
     @Override
-    public Resource<ConfigurationDTO> toResource(final ConfigurationDTO element, final Object... extras) {
-        final Resource<ConfigurationDTO> resource = resourceService.toResource(element);
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveConfiguration",
-                                LinkRels.SELF,
+    public EntityModel<ConfigurationDTO> toResource(final ConfigurationDTO element, final Object... extras) {
+        final EntityModel<ConfigurationDTO> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveConfiguration", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "addConfiguration",
-                                LinkRels.CREATE,
+        resourceService.addLink(resource, this.getClass(), "addConfiguration", LinkRels.CREATE,
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])),
                                 MethodParamFactory.build(ConfigurationDTO.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "updateConfiguration",
-                                LinkRels.UPDATE,
+        resourceService.addLink(resource, this.getClass(), "updateConfiguration", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, String.valueOf(extras[0])),
                                 MethodParamFactory.build(ConfigurationDTO.class));
         return resource;

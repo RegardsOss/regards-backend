@@ -27,7 +27,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -45,12 +45,10 @@ public class UiPluginDefinitionRepositoryTest extends AbstractDaoTransactionalTe
 
     @Test
     public void save() throws MalformedURLException {
-        UIPluginDefinition uiPluginDefinition = new UIPluginDefinition();
+        UIPluginDefinition uiPluginDefinition = UIPluginDefinition.build("My Cool Plugin",
+                "the/source/path", UIPluginTypesEnum.SERVICE);
         uiPluginDefinition.setId(0L);
         uiPluginDefinition.setIconUrl("http://wwww.google.com");
-        uiPluginDefinition.setName("My Cool Plugin");
-        uiPluginDefinition.setSourcePath("the/source/path");
-        uiPluginDefinition.setType(UIPluginTypesEnum.SERVICE);
         uiPluginDefinition.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));
         uiPluginDefinition.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
         repository.save(uiPluginDefinition);

@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -40,10 +40,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
@@ -172,7 +172,7 @@ public class AccessSearchController {
     }
 
     private void encodePlus(MultiValueMap<String, String> allParams) {
-        allParams.forEach((param,values)->values.replaceAll(value->value.replaceAll("\\+", "%2B")));
+        allParams.forEach((param, values) -> values.replaceAll(value -> value.replaceAll("\\+", "%2B")));
     }
 
     /**
@@ -221,7 +221,7 @@ public class AccessSearchController {
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
         // @formatter:off
-        List<Resource<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
+        List<EntityModel<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
             .filter(jsonElement -> !jsonElement.isJsonNull())
             .map(JsonElement::getAsString) // Convert elements of the stream to strings
             .filter(UniformResourceName::isValidUrn) // Only keep URNs

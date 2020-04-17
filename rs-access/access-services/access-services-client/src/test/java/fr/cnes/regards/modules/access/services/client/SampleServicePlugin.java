@@ -30,9 +30,10 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * SampleServicePlugin
@@ -100,9 +101,9 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(String pOpenSearchQuery, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
             HttpServletResponse response) {
-        return apply(pOpenSearchQuery, response);
+        return apply("query", response);
     }
 
     @Override

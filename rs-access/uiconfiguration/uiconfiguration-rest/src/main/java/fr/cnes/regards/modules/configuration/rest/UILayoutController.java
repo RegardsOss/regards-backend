@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.configuration.rest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.configuration.service.IUILayoutService;
 public class UILayoutController implements IResourceController<UILayout> {
 
     @Autowired
-    private IUILayoutService layoutService;
+    private IUILayoutService UILayoutService;
 
     @Autowired
     private IResourceService resourceService;
@@ -69,12 +69,12 @@ public class UILayoutController implements IResourceController<UILayout> {
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
+    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<UILayout>> retrieveLayout(@PathVariable("applicationId") final String applicationId)
+    public HttpEntity<EntityModel<UILayout>> retrieveUILayout(@PathVariable("applicationId") final String applicationId)
             throws EntityNotFoundException {
-        final UILayout UILayout = layoutService.retrieveLayout(applicationId);
-        final Resource<UILayout> resource = toResource(UILayout);
+        final UILayout UILayout = UILayoutService.retrieveLayout(applicationId);
+        final EntityModel<UILayout> resource = toResource(UILayout);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -89,21 +89,21 @@ public class UILayoutController implements IResourceController<UILayout> {
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
+    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<UILayout>> updateLayout(@PathVariable("applicationId") final String applicationId,
+    public HttpEntity<EntityModel<UILayout>> updateUILayout(@PathVariable("applicationId") final String applicationId,
             @Valid @RequestBody final UILayout UILayout) throws EntityException {
-        final UILayout updated = layoutService.updateLayout(UILayout);
-        final Resource<UILayout> resource = toResource(updated);
+        final UILayout updated = UILayoutService.updateLayout(UILayout);
+        final EntityModel<UILayout> resource = toResource(updated);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public Resource<UILayout> toResource(final UILayout element, final Object... extras) {
-        final Resource<UILayout> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveLayout", LinkRels.SELF,
+    public EntityModel<UILayout> toResource(final UILayout element, final Object... extras) {
+        final EntityModel<UILayout> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveUILayout", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getApplicationId()));
-        resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE,
+        resourceService.addLink(resource, this.getClass(), "updateUILayout", LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, element.getApplicationId()),
                                 MethodParamFactory.build(UILayout.class));
         return resource;

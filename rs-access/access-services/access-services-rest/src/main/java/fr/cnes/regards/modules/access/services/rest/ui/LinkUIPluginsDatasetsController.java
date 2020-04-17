@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.access.services.rest.ui;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -65,10 +65,10 @@ public class LinkUIPluginsDatasetsController {
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset",
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
-    public ResponseEntity<Resource<LinkUIPluginsDatasets>> retrieveLink(
+    public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> retrieveLink(
             @PathVariable("datasetId") final String datasetId) throws EntityNotFoundException {
         final LinkUIPluginsDatasets link = linkService.retrieveLink(datasetId);
-        Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
+        EntityModel<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -76,11 +76,11 @@ public class LinkUIPluginsDatasetsController {
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset",
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
-    public ResponseEntity<Resource<LinkUIPluginsDatasets>> updateLink(
+    public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> updateLink(
             @PathVariable("datasetId") final String datasetId, @RequestBody final LinkUIPluginsDatasets updatedLink)
             throws EntityException {
         final LinkUIPluginsDatasets link = linkService.updateLink(datasetId, updatedLink);
-        Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
+        EntityModel<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
