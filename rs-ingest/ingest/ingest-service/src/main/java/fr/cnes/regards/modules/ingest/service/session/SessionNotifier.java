@@ -44,6 +44,10 @@ public class SessionNotifier {
 
     public static final String PRODUCT_META_STORE_ERROR = "products_meta_store_error";
 
+    public static final String PRODUCT_IGNORED = "products_ignored";
+
+    public static final String PRODUCT_WAITING_VERSIONING_MODE = "products_waiting_versioning_mode";
+
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionNotifier.class);
 
@@ -133,6 +137,27 @@ public class SessionNotifier {
     public void decrementProductStoreError(IngestRequest request) {
         sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
                                   SessionNotificationState.ERROR, request.getAips().size());
+    }
+
+    public void incrementProductIgnored(IngestRequest request) {
+        if (request.getState() == InternalRequestState.IGNORED) {
+            sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_IGNORED,
+                                      SessionNotificationState.OK, 1);
+        }
+    }
+
+    public void incrementProductWaitingVersioningMode(IngestRequest request) {
+        if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
+            sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_WAITING_VERSIONING_MODE,
+                                      SessionNotificationState.OK, 1);
+        }
+    }
+
+    public void decrementProductWaitingVersioningMode(IngestRequest request) {
+        if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
+            sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_WAITING_VERSIONING_MODE,
+                                      SessionNotificationState.OK, 1);
+        }
     }
 
     // AIP storage

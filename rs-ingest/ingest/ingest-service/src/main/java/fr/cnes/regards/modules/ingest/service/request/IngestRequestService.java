@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
@@ -55,6 +57,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
@@ -229,7 +232,7 @@ public class IngestRequestService implements IIngestRequestService {
     public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
         // first lets find out which SIP is the last
         SIPEntity latestSip = sipService.getLatestSip(sipEntity.getProviderId());
-        if(latestSip == null) {
+        if (latestSip == null) {
             sipEntity.setLast(true);
         } else {
             if (latestSip.getVersion() < sipEntity.getVersion()) {
@@ -456,14 +459,29 @@ public class IngestRequestService implements IIngestRequestService {
     public void ignore(IngestRequest request) {
         request.setState(InternalRequestState.IGNORED);
         ingestRequestRepository.save(request);
-        //TODO: notify session
+        sessionNotifier.incrementProductIgnored(request);
     }
 
     @Override
     public void waitVersioningMode(IngestRequest request) {
         request.setState(InternalRequestState.WAITING_VERSIONING_MODE);
         ingestRequestRepository.save(request);
-        //TODO: notify session
+        sessionNotifier.incrementProductWaitingVersioningMode(request);
+    }
+
+    @Override
+    public void fromWaitingTo(Collection<IngestRequest> requests, VersioningMode versioningMode) {
+        MultiValueMap<String, IngestRequest> ingestRequestToSchedulePerChain = new LinkedMultiValueMap<>();
+        for (IngestRequest request : requests) {
+            request.setState(InternalRequestState.CREATED);
+            request.getMetadata().setVersioningMode(versioningMode);
+            handleRequestGranted(request);
+            sessionNotifier.decrementProductWaitingVersioningMode(request);
+            ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
+        }
+        ingestRequestToSchedulePerChain.keySet().forEach(chain -> scheduleIngestProcessingJobByChain(chain,
+                                                                                                     ingestRequestToSchedulePerChain
+                                                                                                             .get(chain)));
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {

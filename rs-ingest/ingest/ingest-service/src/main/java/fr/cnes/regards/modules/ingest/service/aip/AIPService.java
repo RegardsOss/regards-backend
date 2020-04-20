@@ -181,6 +181,7 @@ public class AIPService implements IAIPService {
             }
             // In case versioning mode is IGNORE or MANUAL, we do not even reach this point in code
             // In case versioning mode is INC_VERSION, then we have nothing particular to do
+            // But in case it is REPLACE...
             if (aipEntity.isLast() && versioningMode == VersioningMode.REPLACE) {
                 OAISDeletionPayloadDto deletionPayload = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
                 deletionPayload.withAipId(latest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE);

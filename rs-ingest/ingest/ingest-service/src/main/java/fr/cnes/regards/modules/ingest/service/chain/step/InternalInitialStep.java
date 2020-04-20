@@ -79,32 +79,45 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
         // Is SIP already ingested?
         if (sipService.isAlreadyIngested(checksum)) {
             throw throwProcessingStepException(String.format("The SIP \"%s\" already exists and there is no difference "
-                                                                     + "between this one and the stored one.", sip.getId()));
+                                                                     + "between this one and the stored one.",
+                                                             sip.getId()));
         }
 
+        // Manage version
+        Integer version = sipService.getNextVersion(sip);
         // handle versioning mode
         VersioningMode versioningMode = request.getMetadata().getVersioningMode();
         switch (versioningMode) {
             case IGNORE:
-                // In this case, lets break generation right now with proper message
-                ingestRequestService.ignore(request);
-                throw throwProcessingStepException(String.format("Sip %s is not generated because this is not the first version "
-                                              + "and versioning mode ask to ignore this one.", sip.getId()));
+                // In this case, lets break generation, only if it is not the first one, with proper message
+                if (version != 1) {
+                    ingestRequestService.ignore(request);
+                    throw new ProcessingStepException(String.format(
+                            "Sip %s is not generated because this is not the first version "
+                                    + "and versioning mode ask to ignore this one.",
+                            sip.getId()));
+                }
+                break;
             case MANUAL:
-                // In this case, lets break generation right now with proper message
-                ingestRequestService.waitVersioningMode(request);
-                throw throwProcessingStepException(String.format("Sip %s is not generated because this is not the first version "
-                                              + "and versioning mode ask for manual decision.", sip.getId()));
+                // In this case, lets break generation, only if it is not the first one, with proper message
+                if (version != 1) {
+                    ingestRequestService.waitVersioningMode(request);
+                    throw new ProcessingStepException(String.format(
+                            "Sip %s is not generated because this is not the first version "
+                                    + "and versioning mode ask for manual decision.",
+                            sip.getId()));
+                }
+                break;
             case INC_VERSION:
             case REPLACE:
                 // in these cases, there is nothing to do right now
                 break;
             default:
-                throw throwProcessingStepException(String.format("This versioning mode is not recognized by the system: %s", versioningMode));
+                throw throwProcessingStepException(String.format(
+                        "This versioning mode is not recognized by the system: %s",
+                        versioningMode));
         }
 
-        // Manage version
-        Integer version = sipService.getNextVersion(sip);
         SIPEntity entity = SIPEntity
                 .build(runtimeTenantResolver.getTenant(), request.getMetadata(), sip, version, SIPState.INGESTED);
         entity.setChecksum(checksum);
@@ -113,8 +126,11 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
     @Override
     protected void doAfterError(IngestRequest request) {
-        handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails",
-                                         request.getSip().getId()));
+        if (request.getState() != InternalRequestState.WAITING_VERSIONING_MODE
+                && request.getState() != InternalRequestState.IGNORED) {
+            handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails",
+                                             request.getSip().getId()));
+        }
     }
 
 }

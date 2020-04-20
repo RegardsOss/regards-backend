@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -132,11 +133,21 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
             List<String> categories) {
+        publishSIPEvent(sip, storages, session, sessionOwner, categories, null);
+    }
+
+    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner,
+            List<String> categories, VersioningMode versioningMode) {
+        this.publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories, versioningMode);
+    }
+
+    protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
+            List<String> categories, VersioningMode versioningMode) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                        Sets.newHashSet(categories), null, storagesMeta);
+                                                        Sets.newHashSet(categories), versioningMode, storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
 
