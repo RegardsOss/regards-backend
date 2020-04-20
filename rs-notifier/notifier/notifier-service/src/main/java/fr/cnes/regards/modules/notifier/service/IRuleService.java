@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -56,4 +57,9 @@ public interface IRuleService {
      * @param id
      */
     public Optional<RuleDTO> getRule(String id);
+
+    /**
+     * Delete all existing rules configured
+     */
+    public void deleteAll(Collection<String> deletionErrors);
 }

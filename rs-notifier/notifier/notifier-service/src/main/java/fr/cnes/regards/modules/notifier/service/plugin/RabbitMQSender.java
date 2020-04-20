@@ -36,9 +36,12 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
  * @author Kevin Marchois
  *
  */
-@Plugin(author = "REGARDS Team", description = "Default recipient sender", id = "RabbitMQSender", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team", description = "Default recipient sender", id = RabbitMQSender.PLUGIN_ID,
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class RabbitMQSender implements IRecipientNotifier {
+
+    public static final String PLUGIN_ID = "RabbitMQSender";
 
     @Autowired
     private IPublisher publisher;

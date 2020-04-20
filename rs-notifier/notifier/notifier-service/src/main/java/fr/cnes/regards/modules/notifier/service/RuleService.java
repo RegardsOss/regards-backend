@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -46,6 +50,8 @@ import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 @Service
 @MultitenantTransactional
 public class RuleService implements IRuleService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleService.class);
 
     @Autowired
     private IRuleRepository ruleRepo;
@@ -92,6 +98,25 @@ public class RuleService implements IRuleService {
     public void deleteRule(String businessId) throws ModuleException {
         ruleRepo.deleteByRulePluginBusinessId(businessId);
         pluginService.deletePluginConfiguration(businessId);
+    }
+
+    @Override
+    public void deleteAll(Collection<String> deletionErrors) {
+        List<Rule> rules = ruleRepo.findAll();
+        Set<String> confToDelete = rules.stream().map(Rule::getRulePlugin).map(PluginConfiguration::getBusinessId)
+                .collect(Collectors.toSet());
+        // Delete  rule associations
+        ruleRepo.deleteAll();
+        // Delete associated plugin configurations
+        for (String conf : confToDelete) {
+            try {
+                pluginService.deletePluginConfiguration(conf);
+            } catch (ModuleException e) {
+                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
     }
 
     private RuleDTO toRuleDTO(Rule rule) {

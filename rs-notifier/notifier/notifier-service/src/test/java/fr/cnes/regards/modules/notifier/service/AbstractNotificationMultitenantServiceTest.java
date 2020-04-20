@@ -70,6 +70,7 @@ import fr.cnes.regards.modules.notifier.plugin.RecipientSender8;
 import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.flow.NotificationActionEventHandler;
+import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 
 public abstract class AbstractNotificationMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -208,7 +209,11 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         recipientPlugin.setBusinessId(fail ? "failRecipient" : "testRecipient");
         recipientPlugin.setVersion("1.0.0");
         recipientPlugin.setLabel("test recipient");
-        recipientPlugin.setPluginId(fail ? "fail" : "DefaultRecipientSender");
+        recipientPlugin.setPluginId(fail ? "fail" : RabbitMQSender.PLUGIN_ID);
+        param = IPluginParam.build("exchange", "regards.notifier.exchange-tu");
+        recipientPlugin.getParameters().add(param);
+        param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
+        recipientPlugin.getParameters().add(param);
         recipientService.createOrUpdateRecipient(recipientPlugin);
         recipients.add(recipientPlugin.getBusinessId());
 

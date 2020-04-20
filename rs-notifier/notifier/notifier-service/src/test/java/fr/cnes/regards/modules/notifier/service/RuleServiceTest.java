@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -27,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationManager;
+import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 
 /**
  * @author sbinda
@@ -44,9 +45,6 @@ import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationMa
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=rules", "regards.amqp.enabled=false",
         "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
 public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest {
-
-    @Autowired
-    private Gson gson;
 
     @Autowired
     private NotificationConfigurationManager manager;
@@ -73,13 +71,21 @@ public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest 
         recipientPlugin.setBusinessId(recipient1bid);
         recipientPlugin.setVersion("1.0.0");
         recipientPlugin.setLabel("recipient1");
-        recipientPlugin.setPluginId("DefaultRecipientSender");
+        recipientPlugin.setPluginId(RabbitMQSender.PLUGIN_ID);
+        param = IPluginParam.build("exchange", "regards.notifier.exchange-tu");
+        recipientPlugin.getParameters().add(param);
+        param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
+        recipientPlugin.getParameters().add(param);
         recipientService.createOrUpdateRecipient(recipientPlugin);
         PluginConfiguration recipientPlugin2 = new PluginConfiguration();
         recipientPlugin2.setBusinessId(recipient2bid);
         recipientPlugin2.setVersion("1.0.0");
         recipientPlugin2.setLabel("recipient2");
-        recipientPlugin2.setPluginId("DefaultRecipientSender");
+        recipientPlugin2.setPluginId(RabbitMQSender.PLUGIN_ID);
+        param = IPluginParam.build("exchange", "regards.notifier.exchange-tu");
+        recipientPlugin2.getParameters().add(param);
+        param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
+        recipientPlugin2.getParameters().add(param);
         recipientService.createOrUpdateRecipient(recipientPlugin2);
         Assert.assertEquals(1, recipientService.getRecipients(Sets.newHashSet(recipient1bid)).size());
         Assert.assertEquals(1, recipientService.getRecipients(Sets.newHashSet(recipient2bid)).size());
@@ -146,6 +152,9 @@ public class RuleServiceTest extends AbstractNotificationMultitenantServiceTest 
         Assert.assertTrue(created.isPresent());
         Assert.assertEquals(0, created.get().getRecipientsBusinessIds().size());
         Assert.assertEquals(0, recipientService.getRecipients().size());
+
+        ruleService.deleteAll(new ArrayList<>());
+        recipientService.deleteAll(new ArrayList<>());
 
     }
 

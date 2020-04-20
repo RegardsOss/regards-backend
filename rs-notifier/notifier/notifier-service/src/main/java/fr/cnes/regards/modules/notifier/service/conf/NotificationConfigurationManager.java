@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.dto.conf.NotifierConfigurationCleaner;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
+import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
 
 /**
@@ -58,12 +61,22 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     @Autowired
     private IRuleService ruleService;
 
+    @Autowired
+    private IRecipientService recipientService;
+
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
         Set<RuleRecipientsAssociation> rules = getRulesRecipientsAssoc(configuration.getConfiguration());
+        Optional<NotifierConfigurationCleaner> cleaner = getCleaner(configuration.getConfiguration());
+        if (cleaner.isPresent() && cleaner.get().isClean()) {
+            // Delete all existing rules
+            ruleService.deleteAll(importErrors);
+            // Delete  all  existing  senders
+            recipientService.deleteAll(importErrors);
+        }
 
         // import plugin configurations
         for (PluginConfiguration plgConf : configurations) {
@@ -105,6 +118,10 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     public ModuleConfiguration exportConfiguration() throws ModuleException {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
 
+        // Export as clean previous conf default
+        NotifierConfigurationCleaner cleaner = NotifierConfigurationCleaner.build(true);
+        configurations.add(ModuleConfigurationItem.build(cleaner));
+
         // export Recipients
         for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
             // All connection should be active
@@ -139,5 +156,11 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     private RuleRecipientsAssociation toRuleRecipientsAssoc(RuleDTO rule) {
         return RuleRecipientsAssociation.build(rule.getRulePluginConfiguration().getBusinessId(),
                                                rule.getRecipientsBusinessIds());
+    }
+
+    private Optional<NotifierConfigurationCleaner> getCleaner(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream().filter(i -> NotifierConfigurationCleaner.class.isAssignableFrom(i.getKey()))
+                .map(i -> (NotifierConfigurationCleaner) i.getTypedValue()).findFirst();
+
     }
 }
