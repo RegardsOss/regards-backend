@@ -229,12 +229,16 @@ public class IngestRequestService implements IIngestRequestService {
     public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
         // first lets find out which SIP is the last
         SIPEntity latestSip = sipService.getLatestSip(sipEntity.getProviderId());
-        if (latestSip.getVersion() < sipEntity.getVersion()) {
-            latestSip.setLast(false);
-            sipService.save(latestSip);
+        if(latestSip == null) {
             sipEntity.setLast(true);
         } else {
-            sipEntity.setLast(false);
+            if (latestSip.getVersion() < sipEntity.getVersion()) {
+                latestSip.setLast(false);
+                sipService.save(latestSip);
+                sipEntity.setLast(true);
+            } else {
+                sipEntity.setLast(false);
+            }
         }
         // Save SIP entity
         sipEntity = sipService.save(sipEntity);

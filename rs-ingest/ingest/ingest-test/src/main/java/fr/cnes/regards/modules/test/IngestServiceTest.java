@@ -172,8 +172,8 @@ public class IngestServiceTest {
             }
             sipCount = newCount;
             if (timerStop(expectedSips, end, sipCount, String
-                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                            expectedSips, sipState != null ? sipState.toString() : "ALL_STATUS", sipCount,
+                    .format("Timeout after waiting %s ms for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                            timeout, expectedSips, sipState != null ? sipState.toString() : "ALL_STATUS", sipCount,
                             totalCount))) {
                 break;
             }

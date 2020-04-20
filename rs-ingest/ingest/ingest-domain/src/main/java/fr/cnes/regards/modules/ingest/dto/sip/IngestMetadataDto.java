@@ -18,16 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.util.Assert;
+
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 
 /**
  * Extra information useful for SIP submission.<br/>
@@ -63,6 +66,52 @@ public class IngestMetadataDto {
     @NotNull(message = IngestValidationMessages.MISSING_CATEGORIES)
     private Set<String> categories;
 
+    @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
+    private VersioningMode versioningMode;
+
+    /**
+     * Build ingest metadata
+     * @param sessionOwner Owner of the session
+     * @param session session
+     * @param ingestChain ingest processing chain name
+     * @param storages storage metadata
+     */
+    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
+            Set<String> categories, StorageMetadata... storages) {
+        return IngestMetadataDto.build(sessionOwner, session, ingestChain, categories, null, Arrays.asList(storages));
+    }
+
+    /**
+     * Build ingest metadata
+     * @param sessionOwner Owner of the session
+     * @param session session
+     * @param ingestChain ingest processing chain name
+     * @param versioningMode
+     * @param storages storage metadata
+     */
+    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
+            Set<String> categories, VersioningMode versioningMode, List<StorageMetadata> storages) {
+        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
+        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
+        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
+        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
+        IngestMetadataDto m = new IngestMetadataDto();
+        m.setIngestChain(ingestChain);
+        m.setSessionOwner(sessionOwner);
+        m.setSession(session);
+        m.setCategories(categories);
+        m.setStorages(storages);
+        m.setVersioningMode(versioningMode == null ? VersioningMode.INC_VERSION : versioningMode);
+        return m;
+    }
+
+    public VersioningMode getVersioningMode() {
+        return versioningMode;
+    }
+
+    public void setVersioningMode(VersioningMode versioningMode) {
+        this.versioningMode = versioningMode;
+    }
 
     public String getSessionOwner() {
         return sessionOwner;
@@ -102,41 +151,5 @@ public class IngestMetadataDto {
 
     public void setCategories(Set<String> categories) {
         this.categories = categories;
-    }
-
-    /**
-
-     * Build ingest metadata
-     * @param sessionOwner Owner of the session
-     * @param session session
-     * @param ingestChain ingest processing chain name
-     * @param storages storage metadata
-     */
-    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain, Set<String> categories,
-            StorageMetadata... storages) {
-        return IngestMetadataDto.build(sessionOwner, session, ingestChain, categories, Arrays.asList(storages));
-    }
-
-
-    /**
-     * Build ingest metadata
-     * @param sessionOwner Owner of the session
-     * @param session session
-     * @param ingestChain ingest processing chain name
-     * @param storages storage metadata
-     */
-    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain, Set<String> categories,
-            List<StorageMetadata> storages) {
-        Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
-        Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
-        Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
-        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
-        IngestMetadataDto m = new IngestMetadataDto();
-        m.setIngestChain(ingestChain);
-        m.setSessionOwner(sessionOwner);
-        m.setSession(session);
-        m.setCategories(categories);
-        m.setStorages(storages);
-        return m;
     }
 }

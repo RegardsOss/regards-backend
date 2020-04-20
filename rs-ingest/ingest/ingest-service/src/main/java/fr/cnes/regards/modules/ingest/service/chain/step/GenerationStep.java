@@ -116,9 +116,11 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
                 });
             }
         }
-        throw new ProcessingStepException(String.format("Validation errors for AIPs generated from SIP %s: %s",
-                                                        job.getCurrentEntity().getProviderId(),
-                                                        errors.stream().collect(Collectors.joining(", "))));
+        if (!errors.isEmpty()) {
+            throw new ProcessingStepException(String.format("Validation errors for AIPs generated from SIP %s: %s",
+                                                            job.getCurrentEntity().getProviderId(),
+                                                            errors.stream().collect(Collectors.joining(", "))));
+        }
     }
 
     @Override

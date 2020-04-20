@@ -136,7 +136,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                        Sets.newHashSet(categories), storagesMeta);
+                                                        Sets.newHashSet(categories), null, storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
 

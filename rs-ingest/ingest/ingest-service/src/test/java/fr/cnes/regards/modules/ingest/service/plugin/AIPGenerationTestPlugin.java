@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,16 +53,16 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
         }
 
         List<AIP> aips = new ArrayList<>();
-        String providerId = sip.getProviderId();
+        OaisUniformResourceName sipIdUrn = sip.getSipIdUrn();
         Integer version = sip.getVersion();
         aips.add(AIP.build(sip.getSip(),
                            new OaisUniformResourceName(OAISIdentifier.AIP,
                                                        entityType,
                                                        tenant,
-                                                       UUID.fromString(providerId),
+                                                       sipIdUrn.getEntityId(),
                                                        version),
-                           Optional.of(sip.getSipIdUrn()),
-                           providerId,
+                           Optional.of(sipIdUrn),
+                           sip.getProviderId(),
                            version));
         return aips;
     }

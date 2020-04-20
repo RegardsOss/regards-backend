@@ -21,12 +21,8 @@ package fr.cnes.regards.modules.ingest.service.chain.plugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -48,16 +44,16 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
     public List<AIP> generate(SIPEntity sip, String tenant, EntityType entityType) {
         List<AIP> aips = new ArrayList<>();
         // in this case we just use SIP providerId as there is only one AIP generated, no need to tweak it
-        String providerId = sip.getProviderId();
         Integer version = sip.getVersion();
+        OaisUniformResourceName sipIdUrn = sip.getSipIdUrn();
         aips.add(AIP.build(sip.getSip(),
                            new OaisUniformResourceName(OAISIdentifier.AIP,
                                                        entityType,
                                                        tenant,
-                                                       UUID.fromString(providerId),
+                                                       sipIdUrn.getEntityId(),
                                                        version),
-                           Optional.of(sip.getSipIdUrn()),
-                           providerId,
+                           Optional.of(sipIdUrn),
+                           sip.getProviderId(),
                            version));
         return aips;
     }
