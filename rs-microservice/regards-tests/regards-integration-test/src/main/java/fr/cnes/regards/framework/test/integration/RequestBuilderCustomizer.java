@@ -157,6 +157,15 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Allows to perform Delete request with body
+     */
+    protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, Object content,
+            String errorMsg, Object... urlVariables) {
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, content, urlTemplate, urlVariables),
+                              errorMsg);
+    }
+
+    /**
      * Allows to perform PUT request
      */
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
