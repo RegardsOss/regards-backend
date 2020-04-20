@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.client;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,14 +53,14 @@ public class FeatureClient {
      * @return update request identifiers
      */
     public List<String> updateFeatures(List<Feature> features, PriorityLevel priorityLevel) {
-        List<String> requestIds = Lists.newArrayList();
+        List<FeatureUpdateRequestEvent> events = Lists.newArrayList();
         for (Feature feature : features) {
             FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent.build(FeatureMetadata.build(priorityLevel),
                                                                               feature);
-            publisher.publish(event);
-            requestIds.add(event.getRequestId());
+            events.add(event);
         }
-        return requestIds;
+        publisher.publish(events);
+        return events.stream().map(FeatureUpdateRequestEvent::getRequestId).collect(Collectors.toList());
     }
 
     /**
@@ -68,13 +69,13 @@ public class FeatureClient {
      * @param priorityLevel {@link PriorityLevel}
      */
     public List<String> deleteFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
-        List<String> requestIds = Lists.newArrayList();
+        List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
             FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(urn, priorityLevel);
-            publisher.publish(event);
-            requestIds.add(event.getRequestId());
+            events.add(event);
         }
-        return requestIds;
+        publisher.publish(events);
+        return events.stream().map(FeatureDeletionRequestEvent::getRequestId).collect(Collectors.toList());
     }
 
     /**
@@ -83,13 +84,13 @@ public class FeatureClient {
      * @param priorityLevel {@link PriorityLevel}
      */
     public List<String> notifyFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
-        List<String> requestIds = Lists.newArrayList();
+        List<NotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
             NotificationRequestEvent event = NotificationRequestEvent.build(urn, priorityLevel);
-            publisher.publish(event);
-            requestIds.add(event.getRequestId());
+            events.add(event);
         }
-        return requestIds;
+        publisher.publish(events);
+        return events.stream().map(NotificationRequestEvent::getRequestId).collect(Collectors.toList());
     }
 
 }
