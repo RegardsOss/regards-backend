@@ -303,13 +303,11 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 // FIXME does not manage storage metadata at the moment
 
                 // notify update feature without files
-                publisher.publish(NotificationActionEvent.build(gson.toJsonTree(request.getFeature()),
+                publisher.publish(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
                                                                 FeatureManagementAction.UPDATE.name()));
                 // Publish request success
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), entity.getProviderId(),
                                                             entity.getUrn(), RequestState.SUCCESS));
-
-                // FIXME notify entire feature for notification manager
 
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
