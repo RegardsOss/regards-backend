@@ -14,7 +14,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -54,9 +53,6 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private StorageClientMock storageClient;
-
-    @Autowired
-    private IOAISDeletionRequestRepository deletionRequestRepository;
 
     @SpyBean
     private SessionNotifier sessionNotifier;
@@ -389,7 +385,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
             Set<Predicate> predicates = Sets.newHashSet();
             predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request), VersioningMode.INC_VERSION));
+        }).ifPresent(request -> ingestRequestService
+                .fromWaitingTo(Lists.newArrayList(request), VersioningMode.INC_VERSION));
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
@@ -427,6 +424,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
                             AIPState.STORED,
                             aips[0].getState());
+        // check session notifier
+        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
     }
 
     @Test
@@ -437,7 +436,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
             Set<Predicate> predicates = Sets.newHashSet();
             predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request), VersioningMode.REPLACE));
+        }).ifPresent(request -> ingestRequestService
+                .fromWaitingTo(Lists.newArrayList(request), VersioningMode.REPLACE));
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
         ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
@@ -477,6 +477,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
                             AIPState.DELETED,
                             aips[0].getState());
+        // check session notifier
+        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
     }
 
     @Test
@@ -515,5 +517,7 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals("There should be one request in IGNORED state",
                             1,
                             ingestRequestRepository.countByState(InternalRequestState.IGNORED));
+        // check session notifier
+        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
     }
 }
