@@ -21,8 +21,11 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -55,4 +58,11 @@ public interface IFeatureDeletionService {
      * Process batch of successful storage request
      */
     void processStorageRequests(Set<String> groupIds);
+
+    /**
+     * Register {@link FeatureDeletionRequest} from a {@link FeatureDeletionCollection}
+     * @param collection
+     * @return {@link RequestInfo} contain {@link FeatureUniformResourceName} of granted/denied features
+     */
+    RequestInfo<FeatureUniformResourceName> registerRequests(@Valid FeatureDeletionCollection collection);
 }

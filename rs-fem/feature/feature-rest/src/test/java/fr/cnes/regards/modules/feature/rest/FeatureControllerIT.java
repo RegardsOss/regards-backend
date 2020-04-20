@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.internal.util.collections.Sets;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.validation.MapBindingResult;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -26,12 +29,17 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
@@ -108,6 +116,29 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     }
 
     @Test
+    public void testCreateFeatureReferenceRequest() throws Exception {
+
+        FeatureReferenceCollection collection = new FeatureReferenceCollection();
+        collection.addAll(Lists.newArrayList(""));
+        collection.setPluginBusinessId("PluginName");
+        // we will mock validation plugin and consider the feature is valid
+        Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
+                .thenReturn(new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName()));
+        collection.setMetadata(FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false,
+                                                                    StorageMetadata.build("id ")));
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        runtimeTenantResolver.forceTenant(this.getDefaultTenant());
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        documentFeatureReferenceCollectionRequestBody(requestBuilderCustomizer);
+
+        performDefaultPost(FeatureController.PATH_FEATURES + FeatureController.REFERENCE_PATH, collection,
+                           requestBuilderCustomizer, FEATURE_CREATION_REQUEST_ERROR)
+                                   .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
     public void testCreateValidFeatureUpdateRequest() throws Exception {
         Feature feature = initValidUpdateFeature();
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
@@ -161,6 +192,25 @@ public class FeatureControllerIT extends AbstractFeatureIT {
 
     }
 
+    @Test
+    public void testCreateFeatureDeletionRequest() throws Exception {
+
+        FeatureDeletionCollection collection = new FeatureDeletionCollection();
+        collection.addAll(Sets.newSet(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
+                                                                       "tenant", UUID.randomUUID(), 1)));
+        collection.setPriority(PriorityLevel.HIGH);
+
+        MapBindingResult errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
+        // we will mock validation plugin and consider the feature is unvalid
+        Mockito.when(validationMock.validate(Mockito.any(), Mockito.any())).thenReturn(errors);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        documentFeatureDeletionCollectionRequestBody(requestBuilderCustomizer);
+
+        performDefaultDelete(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+                             FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
+    }
+
     private void documentFeatureCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer,
             boolean isUpdate) {
         ConstrainedFields fields = new ConstrainedFields(FeatureUpdateCollection.class);
@@ -198,6 +248,38 @@ public class FeatureControllerIT extends AbstractFeatureIT {
             lfd.add(fields.withPath("features[].files[].attributes.algorithm", "Algorith for checksum computation"));
             lfd.add(fields.withPath("features[].files[].attributes.checksum", "Checksum"));
         }
+
+        requestBuilderCustomizer.document(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
+    }
+
+    private void documentFeatureReferenceCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer) {
+        ConstrainedFields fields = new ConstrainedFields(FeatureReferenceCollection.class);
+
+        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+
+        lfd.add(fields.withPath("pluginBusinessId", "Plugin business ID"));
+        lfd.add(fields.withPath("locations", "Location of feature files"));
+
+        lfd.add(fields.withPath("metadata.override", "If we want to override previous version"));
+        lfd.add(fields.withPath("metadata.session", "The session name"));
+        lfd.add(fields.withPath("metadata.sessionOwner", "The session owner"));
+        lfd.add(fields.withPath("metadata.storages", "Target storages"));
+        lfd.add(fields.withPath("metadata.storages[].pluginBusinessId", "Storage identifier"));
+
+        requestBuilderCustomizer.document(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
+    }
+
+    private void documentFeatureDeletionCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer) {
+        ConstrainedFields fields = new ConstrainedFields(FeatureDeletionCollection.class);
+
+        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+
+        lfd.add(fields.withPath("featuresUrns", "List of urns to delete"));
+        lfd.add(fields.withPath("priority", "Priotity of the request"));
 
         requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)

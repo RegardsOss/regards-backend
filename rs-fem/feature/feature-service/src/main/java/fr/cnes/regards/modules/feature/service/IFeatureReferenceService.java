@@ -20,8 +20,11 @@ package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 
@@ -48,4 +51,11 @@ public interface IFeatureReferenceService {
      * We will call referenced plugin to obtain a {@link Feature} and publish it to create it
      */
     void processRequests(List<FeatureReferenceRequest> requests);
+
+    /**
+     * Register {@link FeatureReferenceRequest} from a {@link FeatureReferenceCollection}
+     * @param collection
+     * @return {@link RequestInfo} contain request ids of granted/denied features
+     */
+    RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection);
 }
