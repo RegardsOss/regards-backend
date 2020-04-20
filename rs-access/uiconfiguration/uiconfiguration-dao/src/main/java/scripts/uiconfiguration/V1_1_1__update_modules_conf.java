@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author Raphaël Mechali
  */
-public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb: nom OK?
+public class V1_1_1__update_modules_conf extends BaseJavaMigration {
 
     /**
      * Class logger
@@ -53,13 +53,16 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
      * @param updater       configuration updater
      * @return new configuration as string
      */
-    private static String withParsedMap(String configuration, Function<Map<String, Object>, Map<String, Object>> updater) {
+    public static String withParsedMap(String configuration, Function<Map<String, Object>, Map<String, Object>> updater) {
         Gson gson = new Gson();
         Map<String, Object> configurationAsMap = gson.fromJson(configuration, Map.class);
         // Update configuration
         Map<String, Object> updated = updater.apply(configurationAsMap);
         // serialize map after update
-        return gson.toJson(updated);
+        String newConfiguration = gson.toJson(updated);
+        // replace curiously handled numbers in GSon... (otherwise integers become float)
+        String correctedOutput = newConfiguration.replaceAll("\\.0", "");
+        return correctedOutput;
     }
 
     /**
@@ -68,7 +71,7 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
      * @param initialConfiguration initial configuration
      * @return updated configuration as map
      */
-    private static Map<String, Object> updateSearchGraphConfiguration(Map<String, Object> initialConfiguration) {
+    public static Map<String, Object> updateSearchGraphConfiguration(Map<String, Object> initialConfiguration) {
         // perform inner update, by reference, on search result part
         updateSearchResultsConfiguration((Map<String, Object>) initialConfiguration.get("searchResult"));
         return initialConfiguration;
@@ -80,7 +83,7 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
      * @param initialConfiguration initial configuration
      * @return updated configuration as map
      */
-    private static Map<String, Object> updateSearchResultsConfiguration(Map<String, Object> initialConfiguration) {
+    public static Map<String, Object> updateSearchResultsConfiguration(Map<String, Object> initialConfiguration) {
         // Append new key for criteria groups in search results
         initialConfiguration.put("criteriaGroups", new String[0]);
         return initialConfiguration; // return initial configuration (updated by reference)
@@ -92,7 +95,7 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
      * @param initialConfiguration initial configuration
      * @return updated configuration as map
      */
-    private static Map<String, Object> updateSearchFormConfiguration(Map<String, Object> initialConfiguration) {
+    public static Map<String, Object> updateSearchFormConfiguration(Map<String, Object> initialConfiguration) {
         // transform search form into new search results: remove upper levels and convert old search-form
         // criteria into new search-results criteria (in an untitled root criterion group)
         Map<String, Object> searchResultsConfiguration = (Map<String, Object>) initialConfiguration.get("searchResult");
@@ -119,18 +122,17 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
         Map<String, Object> newConfiguration = new HashMap<>();
         newConfiguration.put("pluginId", initialConfiguration.get("pluginId"));
         newConfiguration.put("active", initialConfiguration.get("active"));
-        newConfiguration.put("conf", initialConfiguration.get("pluginId"));
+        newConfiguration.put("conf", initialConfiguration.get("conf"));
         // Add a label indicating to configure criteria
         Map<String, Object> criterionLabel = new HashMap<>();
-        criterionLabel.put("en", "<Label undefined>"); // TODO Seb pas didee pour faire mieux. c'est acceptable?
-        criterionLabel.put("fr", "<Libellé indéfini>");
+        criterionLabel.put("en", "Label undefined");
+        criterionLabel.put("fr", "Libellé indéfini");
         newConfiguration.put("label", criterionLabel);
         return newConfiguration;
     }
 
     @Override
     public void migrate(Context context) throws Exception {
-
         try (Statement select = context.getConnection().createStatement()) {
             try (ResultSet rows = select.executeQuery("SELECT id, type, conf FROM t_ui_module ORDER BY id")) {
                 while (rows.next()) {
@@ -157,11 +159,11 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration { // TODO seb
                     }
                     if (updatedConf != null) {
                         LOG.info(String.format("Updating module %s from type %s to type %s", id, type, newType));
-                        // TODO seb: la requete te plait?
-                        String sqlRequest = String.format("UPDATE t_ui_module SET conf= %s, type= %s WHERE id= %s", updatedConf, newType, id);
+                        String sqlRequest = "UPDATE t_ui_module SET conf= (), type= () WHERE id= ()";
                         try (PreparedStatement preparedStatement = context.getConnection().prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
-                            preparedStatement.setInt(2, id);
+                            preparedStatement.setString(2, newType);
+                            preparedStatement.setInt(3, id);
                             preparedStatement.executeUpdate();
                         }
                     }
