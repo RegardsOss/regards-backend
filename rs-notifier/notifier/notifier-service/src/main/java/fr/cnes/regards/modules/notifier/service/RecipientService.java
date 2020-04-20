@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +48,8 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 @Service
 @MultitenantTransactional
 public class RecipientService implements IRecipientService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientService.class);
 
     @Autowired
     private IPluginService pluginService;
@@ -94,5 +98,18 @@ public class RecipientService implements IRecipientService {
                     .collect(Collectors.toSet()));
         }
         pluginService.deletePluginConfiguration(id);
+    }
+
+    @Override
+    public void deleteAll(Collection<String> deletionErrors) {
+        for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
+            try {
+                pluginService.deletePluginConfiguration(conf.getBusinessId());
+            } catch (ModuleException e) {
+                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
     }
 }

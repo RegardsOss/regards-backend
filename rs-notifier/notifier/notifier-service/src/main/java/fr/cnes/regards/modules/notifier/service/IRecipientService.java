@@ -25,6 +25,7 @@ import javax.validation.Valid;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
  * Service for {@link Recipient} manipulation
@@ -51,4 +52,10 @@ public interface IRecipientService {
      * @throws ModuleException
      */
     public void deleteRecipient(String id) throws ModuleException;
+
+    /**
+     * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
+     * @param deletionErrors
+     */
+    public void deleteAll(Collection<String> deletionErrors);
 }
