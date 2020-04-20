@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.google.gson.JsonElement;
 
@@ -42,7 +41,7 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 public class RecipientSenderTestFail implements IRecipientNotifier {
 
     // if if fail = true the send will deliberaly fail
-    @Value("${notifier.test.fail:true}")
+    @PluginParameter(label = "If the plugin must fail", name = "fail")
     private boolean isFail;
 
     @PluginParameter(label = "RabbitMQ exchange name", name = "exchange")
