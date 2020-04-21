@@ -66,6 +66,8 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 
 /**
  *
@@ -154,6 +156,10 @@ public class AcquisitionProcessingChain {
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
+
+    @Column(name = "versioning_mode")
+    @Enumerated(EnumType.STRING)
+    private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
     /**
      * The {@link List} of files to build a product
@@ -333,5 +339,13 @@ public class AcquisitionProcessingChain {
 
     public void setLastProductAcquisitionJobInfo(JobInfo lastProductAcquisitionJobInfo) {
         this.lastProductAcquisitionJobInfo = lastProductAcquisitionJobInfo;
+    }
+
+    public VersioningMode getVersioningMode() {
+        return versioningMode;
+    }
+
+    public void setVersioningMode(VersioningMode versioningMode) {
+        this.versioningMode = versioningMode;
     }
 }
