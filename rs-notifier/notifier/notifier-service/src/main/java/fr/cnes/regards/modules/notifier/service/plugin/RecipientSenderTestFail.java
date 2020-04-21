@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.google.gson.JsonElement;
 
@@ -34,16 +33,17 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
  * Fail sender to test notification resending after an error occured during the first tie
- * @author kevin
+ * @author KEvin Marchois
  *
  */
-@Plugin(author = "REGARDS Team", description = "Fail recipient sender", id = "TestSendFail", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team", description = "Fail recipient sender for test purporse", id = "TestSendFail",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class RecipientSenderTestFail implements IRecipientNotifier {
 
     // if if fail = true the send will deliberaly fail
-    @Value("${notifier.test.fail:true}")
-    private boolean isFail;
+    @PluginParameter(label = "If the plugin must fail", name = "fail")
+    private boolean fail;
 
     @PluginParameter(label = "RabbitMQ exchange name", name = "exchange")
     private String exchange;
@@ -56,7 +56,7 @@ public class RecipientSenderTestFail implements IRecipientNotifier {
 
     @Override
     public boolean send(JsonElement element, String action) {
-        if (isFail) {
+        if (fail) {
             return false;
         }
         this.publisher.broadcast(exchange, Optional.ofNullable(queueName), 0, NotificationEvent.build(element, action),
