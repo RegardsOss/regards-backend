@@ -61,6 +61,9 @@ public class RecipientService implements IRecipientService {
     @Autowired
     private IRecipientErrorRepository recipientErrorRepo;
 
+    @Autowired
+    private INotificationRuleService notifService;
+
     @Override
     public Set<PluginConfiguration> getRecipients() {
         return getRecipients(null);
@@ -86,11 +89,17 @@ public class RecipientService implements IRecipientService {
     @Override
     public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration recipientPluginConf)
             throws ModuleException {
+        PluginConfiguration result;
         if (recipientPluginConf.getId() == null) {
-            return pluginService.savePluginConfiguration(recipientPluginConf);
+            result = pluginService.savePluginConfiguration(recipientPluginConf);
         } else {
-            return pluginService.updatePluginConfiguration(recipientPluginConf);
+            result = pluginService.updatePluginConfiguration(recipientPluginConf);
         }
+        // Clean cache
+        notifService.cleanCache();
+
+        return result;
+
     }
 
     @Override
@@ -104,6 +113,9 @@ public class RecipientService implements IRecipientService {
         // Delete associated errors
         recipientErrorRepo.deleteByRecipientBusinessId(id);
         pluginService.deletePluginConfiguration(id);
+
+        // Clean cache
+        notifService.cleanCache();
     }
 
     @Override
@@ -117,6 +129,7 @@ public class RecipientService implements IRecipientService {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-
+        // Clean cache
+        notifService.cleanCache();
     }
 }

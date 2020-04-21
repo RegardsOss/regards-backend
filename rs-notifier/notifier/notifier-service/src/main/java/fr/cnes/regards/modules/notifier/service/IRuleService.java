@@ -47,7 +47,7 @@ public interface IRuleService {
     public RuleDTO createOrUpdateRule(@Valid RuleDTO toCreate) throws ModuleException;
 
     /**
-     * Delete a {@link Rule} by its id
+     * Delete a {@link Rule} by its id.  <br/>
      * @param id
      * @throws ModuleException
      */

@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.conf.NotifierConfigurationCleaner;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
+import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
 
@@ -54,6 +55,9 @@ import fr.cnes.regards.modules.notifier.service.IRuleService;
 public class NotificationConfigurationManager extends AbstractModuleManager<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationConfigurationManager.class);
+
+    @Autowired
+    private INotificationRuleService notifService;
 
     @Autowired
     private IPluginService pluginService;
@@ -71,6 +75,10 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
         Set<RuleRecipientsAssociation> rules = getRulesRecipientsAssoc(configuration.getConfiguration());
         Optional<NotifierConfigurationCleaner> cleaner = getCleaner(configuration.getConfiguration());
+
+        // Clear cache
+        notifService.cleanCache();
+        // Clea old confif needed
         if (cleaner.isPresent() && cleaner.get().isClean()) {
             // Delete all existing rules
             ruleService.deleteAll(importErrors);

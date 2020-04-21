@@ -51,6 +51,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -102,6 +103,9 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Handle a {@link NotificationAction} and check if it matches with enabled {@link Rule} in that case
@@ -283,6 +287,11 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
                          System.currentTimeMillis() - scheduleStart);
         }
         return requestIds.size();
+    }
+
+    @Override
+    public void cleanCache() {
+        this.cleanTenantCache(tenantResolver.getTenant());
     }
 
 }

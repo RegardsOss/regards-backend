@@ -62,6 +62,9 @@ public class RuleService implements IRuleService {
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private INotificationRuleService notifService;
+
     @Override
     public Page<RuleDTO> getRules(Pageable page) {
         Page<Rule> rules = ruleRepo.findAll(page);
@@ -91,6 +94,8 @@ public class RuleService implements IRuleService {
             PluginConfiguration pluginConf = pluginService.savePluginConfiguration(dto.getRulePluginConfiguration());
             toSave = Rule.build(pluginConf, recipients);
         }
+        // Clean cache
+        notifService.cleanCache();
         return toRuleDTO(ruleRepo.save(toSave));
     }
 
@@ -98,6 +103,7 @@ public class RuleService implements IRuleService {
     public void deleteRule(String businessId) throws ModuleException {
         ruleRepo.deleteByRulePluginBusinessId(businessId);
         pluginService.deletePluginConfiguration(businessId);
+        notifService.cleanCache();
     }
 
     @Override
@@ -116,7 +122,7 @@ public class RuleService implements IRuleService {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-
+        notifService.cleanCache();
     }
 
     private RuleDTO toRuleDTO(Rule rule) {
