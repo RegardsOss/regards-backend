@@ -33,11 +33,12 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
  * Fail sender to test notification resending after an error occured during the first tie
- * @author kevin
+ * @author KEvin Marchois
  *
  */
-@Plugin(author = "REGARDS Team", description = "Fail recipient sender", id = "TestSendFail", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team", description = "Fail recipient sender for test purporse", id = "TestSendFail",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class RecipientSenderTestFail implements IRecipientNotifier {
 
     // if if fail = true the send will deliberaly fail
