@@ -43,7 +43,7 @@ public class RecipientSenderTestFail implements IRecipientNotifier {
 
     // if if fail = true the send will deliberaly fail
     @PluginParameter(label = "If the plugin must fail", name = "fail")
-    private boolean isFail;
+    private boolean fail;
 
     @PluginParameter(label = "RabbitMQ exchange name", name = "exchange")
     private String exchange;
@@ -56,7 +56,7 @@ public class RecipientSenderTestFail implements IRecipientNotifier {
 
     @Override
     public boolean send(JsonElement element, String action) {
-        if (isFail) {
+        if (fail) {
             return false;
         }
         this.publisher.broadcast(exchange, Optional.ofNullable(queueName), 0, NotificationEvent.build(element, action),
