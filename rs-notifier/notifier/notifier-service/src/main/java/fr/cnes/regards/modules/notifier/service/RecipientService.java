@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
@@ -56,6 +57,9 @@ public class RecipientService implements IRecipientService {
 
     @Autowired
     private IRuleRepository ruleRepo;
+
+    @Autowired
+    private IRecipientErrorRepository recipientErrorRepo;
 
     @Override
     public Set<PluginConfiguration> getRecipients() {
@@ -97,6 +101,8 @@ public class RecipientService implements IRecipientService {
             rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
                     .collect(Collectors.toSet()));
         }
+        // Delete associated errors
+        recipientErrorRepo.deleteByRecipientBusinessId(id);
         pluginService.deletePluginConfiguration(id);
     }
 
@@ -104,6 +110,7 @@ public class RecipientService implements IRecipientService {
     public void deleteAll(Collection<String> deletionErrors) {
         for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
             try {
+                recipientErrorRepo.deleteByRecipientBusinessId(conf.getBusinessId());
                 pluginService.deletePluginConfiguration(conf.getBusinessId());
             } catch (ModuleException e) {
                 deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
