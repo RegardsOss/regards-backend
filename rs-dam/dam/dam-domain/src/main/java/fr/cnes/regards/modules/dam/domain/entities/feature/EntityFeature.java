@@ -51,6 +51,8 @@ import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
  */
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
 
+    protected String virtualId;
+
     /**
      * Submission information package provider identifier
      */
@@ -81,6 +83,8 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
     @Transient
     @GsonIgnore
     private Map<String, IProperty<?>> propertyMap = null;
+
+    private boolean last = false;
 
     public EntityFeature(UniformResourceName id, String providerId, EntityType entityType, String label) {
         Assert.notNull(entityType, "Entity type is required");
@@ -192,4 +196,23 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
         propertyMap = Maps.uniqueIndex(this.properties, IProperty::getName);
     }
 
+    public boolean isLast() {
+        return last;
+    }
+
+    public void setLast(boolean last) {
+        this.last = last;
+    }
+
+    public String getVirtualId() {
+        return virtualId;
+    }
+
+    public void setVirtualId() {
+        this.virtualId = id.toString().replace("V\\d{1,3}", "LAST");
+    }
+
+    public void removeVirtualId() {
+        this.virtualId = null;
+    }
 }

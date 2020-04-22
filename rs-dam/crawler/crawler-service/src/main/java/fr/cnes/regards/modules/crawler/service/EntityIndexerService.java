@@ -242,6 +242,12 @@ public class EntityIndexerService implements IEntityIndexerService {
                     }
                 }
             }
+            // Lets handle virtual_id here
+            if(entity.isLast()) {
+                entity.setVirtualId();
+            } else {
+                entity.removeVirtualId();
+            }
             // Then save entity
             LOGGER.debug("Saving entity {}", entity);
             // If lastUpdateDate is provided, this means that update comes from an ingestion, in this case all data
