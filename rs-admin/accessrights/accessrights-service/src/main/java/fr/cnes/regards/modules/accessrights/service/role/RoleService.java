@@ -589,7 +589,8 @@ public class RoleService implements IRoleService {
             currentRole = retrieveRole(securityRole);
             return isHierarchicallyInferior(providedRole, currentRole);
         } catch (EntityNotFoundException e) {
-            LOGGER.error("Failed to compare the current role {} with {}, as one of them does not exist", roleName, securityRole, e);
+            LOGGER.error("Failed to compare the current role {} with {}, as one of them does not exist", securityRole,
+                         roleName, e);
             throw e;
         }
     }

@@ -158,7 +158,7 @@ public interface IRolesClient { // NOSONAR
      * @throws EntityNotFoundException if some role does not exists
      */
     @Cacheable(cacheNames = RolesHierarchyKeyGenerator.CACHE_NAME,
-            keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR)
+            keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException;

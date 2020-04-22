@@ -27,6 +27,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.client.cache.AccessRightsClientCacheAutoConfiguration;
+import fr.cnes.regards.modules.accessrights.client.cache.IRolesHierarchyKeyGenerator;
 
 /**
  * @author Sébastien Binda
@@ -38,6 +39,9 @@ public class RolesClientCacheTest {
 
     @Autowired
     IRolesClient client;
+
+    @Autowired
+    IRolesHierarchyKeyGenerator keyGenerator;
 
     @Autowired
     MockCounter counter;
@@ -59,6 +63,13 @@ public class RolesClientCacheTest {
         client.shouldAccessToResourceRequiring("another");
 
         Assert.assertEquals(2, counter.getCount());
+
+        keyGenerator.cleanCache();
+
+        client.shouldAccessToResourceRequiring("another");
+        client.shouldAccessToResourceRequiring("another");
+
+        Assert.assertEquals(3, counter.getCount());
     }
 
 }
