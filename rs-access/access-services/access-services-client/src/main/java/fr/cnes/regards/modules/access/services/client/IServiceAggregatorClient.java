@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.access.services.client.cache.ServiceAggregatorCacheAutoConfiguration;
 import fr.cnes.regards.modules.access.services.client.cache.ServiceAggregatorKeyGenerator;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -61,7 +60,7 @@ public interface IServiceAggregatorClient {
      * @return the list of services configured for the given dataset and the given scope
      */
     @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR,
-            sync = true, cacheManager = ServiceAggregatorCacheAutoConfiguration.CACHE_MANAGER)
+            sync = true)
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
