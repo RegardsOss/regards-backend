@@ -41,7 +41,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @EnableCaching
 public class AccessRightsClientCacheAutoConfiguration {
 
-    @Bean
+    public static final String CACHE_MANAGER = "AccessRightsClientCacheManager";
+
+    @Bean(CACHE_MANAGER)
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager();
     }

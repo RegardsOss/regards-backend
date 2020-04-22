@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.client.cache.AccessRightsClientCacheAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.cache.RolesHierarchyKeyGenerator;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
@@ -158,7 +159,8 @@ public interface IRolesClient { // NOSONAR
      * @throws EntityNotFoundException if some role does not exists
      */
     @Cacheable(cacheNames = RolesHierarchyKeyGenerator.CACHE_NAME,
-            keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true)
+            keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true,
+            cacheManager = AccessRightsClientCacheAutoConfiguration.CACHE_MANAGER)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException;
