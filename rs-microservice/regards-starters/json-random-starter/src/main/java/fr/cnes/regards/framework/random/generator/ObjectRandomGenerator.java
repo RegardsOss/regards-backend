@@ -24,7 +24,14 @@ import java.util.Map.Entry;
 
 public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
 
-    Map<String, RandomGenerator<?>> generators = new HashMap<>();
+    private final Map<String, RandomGenerator<?>> generators = new HashMap<>();
+
+    private final Map<String, RandomGenerator<?>> dependentGenerators = new HashMap<>();
+
+    /**
+     * Work in progress object
+     */
+    private Map<String, Object> embedded;
 
     public ObjectRandomGenerator() {
         super(null);
@@ -32,9 +39,23 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
 
     @Override
     public Map<String, Object> random() {
-        Map<String, Object> embedded = new HashMap<>();
+        embedded = new HashMap<>();
         for (Entry<String, RandomGenerator<?>> entry : generators.entrySet()) {
             embedded.put(entry.getKey(), entry.getValue().random());
+        }
+        return embedded;
+    }
+
+    @Override
+    public Map<String, Object> randomWithContext(Map<String, Object> context) {
+        for (Entry<String, RandomGenerator<?>> entry : dependentGenerators.entrySet()) {
+            embedded.put(entry.getKey(), entry.getValue().randomWithContext(context));
+        }
+        // Propagate to embedded objects
+        for (Entry<String, RandomGenerator<?>> entry : generators.entrySet()) {
+            if (ObjectRandomGenerator.class.isAssignableFrom(entry.getValue().getClass())) {
+                entry.getValue().randomWithContext(context);
+            }
         }
         return embedded;
     }
@@ -44,6 +65,10 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
     }
 
     public void addGenerator(String key, RandomGenerator<?> generator) {
-        this.generators.put(key, generator);
+        if (generator.getDependentProperties().isPresent()) {
+            this.dependentGenerators.put(key, generator);
+        } else {
+            this.generators.put(key, generator);
+        }
     }
 }

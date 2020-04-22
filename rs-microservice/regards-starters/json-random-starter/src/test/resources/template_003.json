@@ -1,0 +1,10 @@
+{
+    "id" : {
+        "id":"{{uuid()}}"
+    },
+    "integer":"{{integer()}}",
+    "integerBounded":"{{integer(100,200)}}",
+    "generated" : {
+        "urn":"{{urn('URN:FEATURE:DATA:geode:%s:V1',id)}}"
+    }
+}

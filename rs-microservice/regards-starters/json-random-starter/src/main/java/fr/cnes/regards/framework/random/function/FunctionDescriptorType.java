@@ -30,6 +30,7 @@ public enum FunctionDescriptorType {
     NOW("now"),
     SEQUENCE("seq"),
     STRING("string"),
+    URN("urn"),
     UUID("uuid");
 
     private String functionName;
@@ -45,5 +46,10 @@ public enum FunctionDescriptorType {
             }
         }
         throw new IllegalArgumentException(String.format("Unknow function %s", functionName));
+    }
+
+    @Override
+    public String toString() {
+        return this.functionName;
     }
 }

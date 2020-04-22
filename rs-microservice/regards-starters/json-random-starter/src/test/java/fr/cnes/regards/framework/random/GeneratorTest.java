@@ -20,27 +20,60 @@ package fr.cnes.regards.framework.random;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class GeneratorTest {
 
-    private static Generator GENERATOR = new Generator();
+    private Generator generator;
 
     private static Path BASE = Paths.get("src", "test", "resources");
 
-    @Test
-    public void generate() {
-        GENERATOR.generate(BASE.resolve("template_001.json"), 1);
+    @Before
+    public void init() {
+        generator = new Generator();
     }
 
     @Test
-    public void generate2() {
-        GENERATOR.generate(BASE.resolve("template_002.json"), 10);
+    public void generate() {
+        generator.generate(BASE.resolve("template_001.json"), 1);
+    }
+
+    @Test
+    public void integerWithOrWithoutBounds() {
+        generator.generate(BASE.resolve("template_002.json"), 10);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void badDependencyPath() {
+        generator.generate(BASE.resolve("template_003.json"), 1);
+    }
+
+    @Test
+    public void dependencyPath() {
+        generator.generate(BASE.resolve("template_004.json"), 1);
     }
 
     @Test
     public void generateGeode() {
-        GENERATOR.generate(BASE.resolve("2338-template.json"), 2);
+        generator.generate(BASE.resolve("2338-template.json"), 2);
+    }
+
+    @Test
+    public void generateUrnFromId() {
+        generator.generate(BASE.resolve("idAndUrn.json"), 1);
+    }
+
+    @Test
+    public void generateUrnFromId2() {
+        List<Map<String, Object>> results = generator.generate(BASE.resolve("idAndUrn2.json"), 1);
+        Assert.assertTrue(!results.isEmpty());
+
+        Map<String, Object> generated = results.get(0);
+        Assert.assertEquals("URN:FEATURE:DATA:geode:45ba5149-f8e1-3955-8124-1dee76ceb727:V1", generated.get("urn"));
     }
 }

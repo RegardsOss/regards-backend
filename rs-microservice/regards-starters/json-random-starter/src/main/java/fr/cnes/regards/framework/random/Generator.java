@@ -98,7 +98,9 @@ public class Generator {
         // Generated messages
         List<Map<String, Object>> messages = new ArrayList<>();
         for (int i = 0; i < number; i++) {
-            messages.add(root.random());
+            // First pass generation generates independent values
+            // Second pass uses generated values!
+            messages.add(root.randomWithContext(root.random()));
         }
         return messages;
     }
