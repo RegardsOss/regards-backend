@@ -74,7 +74,8 @@ public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGener
      * Clear cache
      */
     @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true,
+            cacheManager = ServiceAggregatorCacheAutoConfiguration.CACHE_MANAGER)
     public void cleanCache() {
         // FIXME clean only keys for current tenant
         LOGGER.debug("Cleaning {} cache", CACHE_NAME);

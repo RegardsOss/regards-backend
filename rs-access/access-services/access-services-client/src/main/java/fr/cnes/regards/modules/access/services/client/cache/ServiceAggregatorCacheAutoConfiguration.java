@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.client.cache;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -42,8 +41,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @EnableCaching
 public class ServiceAggregatorCacheAutoConfiguration {
 
-    @Bean
-    @ConditionalOnMissingBean
+    public static final String CACHE_MANAGER = "ServiceAggregatorCacheManager";
+
+    @Bean(ServiceAggregatorCacheAutoConfiguration.CACHE_MANAGER)
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager();
     }
