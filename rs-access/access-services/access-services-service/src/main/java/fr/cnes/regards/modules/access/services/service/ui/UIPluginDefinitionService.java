@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
@@ -44,6 +46,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.access.services.domain.event.EventType;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 
@@ -64,6 +68,9 @@ public class UIPluginDefinitionService
 
     @Value("${regards.access.multitenant:true}")
     private boolean isMultitenentMicroservice;
+
+    @Autowired
+    private IPublisher publisher;
 
     /**
      * Runtime tenant resolver
@@ -120,32 +127,32 @@ public class UIPluginDefinitionService
         final List<UIPluginDefinition> plugins = repository.findAll();
         if (plugins.isEmpty()) {
             // Create string plugin
-            UIPluginDefinition plugin = UIPluginDefinition.build("string-criteria",
-                    "/plugins/criterion/string/plugin.js", UIPluginTypesEnum.CRITERIA);
+            UIPluginDefinition plugin = UIPluginDefinition
+                    .build("string-criteria", "/plugins/criterion/string/plugin.js", UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("full-text-criteria",
-                    "/plugins/criterion/full-text/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("full-text-criteria", "/plugins/criterion/full-text/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("numerical-criteria",
-                    "/plugins/criterion/numerical/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("numerical-criteria", "/plugins/criterion/numerical/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("two-numerical-criteria",
-                    "/plugins/criterion/two-numerical/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("two-numerical-criteria", "/plugins/criterion/two-numerical/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("temporal-criteria",
-                    "/plugins/criterion/temporal/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("temporal-criteria", "/plugins/criterion/temporal/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("two-temporal-criteria",
-                    "/plugins/criterion/two-temporal/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("two-temporal-criteria", "/plugins/criterion/two-temporal/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
 
-            plugin = UIPluginDefinition.build("enumerated-criteria",
-                    "/plugins/criterion/enumerated/plugin.js", UIPluginTypesEnum.CRITERIA);
+            plugin = UIPluginDefinition.build("enumerated-criteria", "/plugins/criterion/enumerated/plugin.js",
+                                              UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
         }
     }
@@ -170,7 +177,9 @@ public class UIPluginDefinitionService
 
     @Override
     public UIPluginDefinition savePlugin(final UIPluginDefinition pPlugin) throws EntityInvalidException {
-        return repository.save(pPlugin);
+        UIPluginDefinition pluginDef = repository.save(pPlugin);
+        publisher.publish(UIPluginDefinitionEvent.build(pluginDef, EventType.CREATE));
+        return pluginDef;
     }
 
     @Override
@@ -179,7 +188,9 @@ public class UIPluginDefinitionService
         if (!repository.existsById(pPlugin.getId())) {
             throw new EntityNotFoundException(pPlugin.getId(), UIPluginDefinition.class);
         }
-        return repository.save(pPlugin);
+        UIPluginDefinition pluginDef = repository.save(pPlugin);
+        publisher.publish(UIPluginDefinitionEvent.build(pluginDef, EventType.UPDATE));
+        return pluginDef;
     }
 
     @Override
@@ -192,6 +203,7 @@ public class UIPluginDefinitionService
         if (pluginConfigurationRepository.hasPluginConfigurations(oPluginDef.get())) {
             throw new EntityNotEmptyException(pluginId, UIPluginDefinition.class);
         }
+        publisher.publish(UIPluginDefinitionEvent.build(oPluginDef.get(), EventType.DELETE));
         repository.deleteById(pluginId);
     }
 

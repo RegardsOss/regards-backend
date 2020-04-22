@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 
@@ -59,6 +60,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
         subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());
         subscriber.subscribeTo(PluginConfEvent.class, new PluginConfEventHandler());
+        subscriber.subscribeTo(UIPluginDefinitionEvent.class, new UIPluginDefinitionEventHandler());
     }
 
     /**
@@ -113,6 +115,14 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<UIPluginConfigurationEvent> wrapper) {
+            keyGenerator.cleanCache();
+        }
+    }
+
+    private class UIPluginDefinitionEventHandler implements IHandler<UIPluginDefinitionEvent> {
+
+        @Override
+        public void handle(TenantWrapper<UIPluginDefinitionEvent> wrapper) {
             keyGenerator.cleanCache();
         }
     }

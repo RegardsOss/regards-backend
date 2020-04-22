@@ -58,8 +58,8 @@ public class ServiceAggregatorCacheAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ServiceAggregatorClientEventHandler serviceAggregatorEventHandler(ISubscriber subscriber,
-            IServiceAggregatorKeyGenerator rolesKeyGen) {
-        return new ServiceAggregatorClientEventHandler(subscriber, rolesKeyGen);
+            IServiceAggregatorKeyGenerator keyGen) {
+        return new ServiceAggregatorClientEventHandler(subscriber, keyGen);
     }
 
 }
