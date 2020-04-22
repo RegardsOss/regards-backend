@@ -49,9 +49,12 @@ public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGener
 
     private final IRuntimeTenantResolver tenantResolver;
 
+    private final IAuthenticationResolver authResolver;
+
     public ServiceAggregatorKeyGenerator(IAuthenticationResolver authResolver, IRuntimeTenantResolver tenantResolver) {
         super();
         this.tenantResolver = tenantResolver;
+        this.authResolver = authResolver;
     }
 
     @PostConstruct
@@ -64,8 +67,8 @@ public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGener
      */
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        String key = KEY_GENERATOR + method.getName() + "_" + tenantResolver.getTenant() + "_"
-                + StringUtils.arrayToDelimitedString(params, "_");
+        String key = KEY_GENERATOR + method.getName() + "_" + tenantResolver.getTenant() + "_" + authResolver.getRole()
+                + "_" + StringUtils.arrayToDelimitedString(params, "_");
         LOGGER.debug("Generated key {} for cache {} ", key, CACHE_NAME);
         return key;
     }
