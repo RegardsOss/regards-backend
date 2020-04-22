@@ -77,8 +77,7 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator {
      * Clear cache
      */
     @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true,
-            cacheManager = AccessRightsClientCacheAutoConfiguration.CACHE_MANAGER)
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public void cleanCache() {
         LOGGER.debug("Cleaning {} cache", CACHE_NAME);
     }
