@@ -50,8 +50,6 @@ public interface IServiceAggregatorClient {
      */
     Logger LOGGER = LoggerFactory.getLogger(IServiceAggregatorClient.class);
 
-    String CACHE_NAME = "servicesAggregated";
-
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      * @param datasetIpId the id of the Dataset
@@ -59,8 +57,8 @@ public interface IServiceAggregatorClient {
      * @param pApplicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
-    @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR,
-            sync = true)
+    @Cacheable(value = ServiceAggregatorKeyGenerator.CACHE_NAME,
+            keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR, sync = true)
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
             @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
