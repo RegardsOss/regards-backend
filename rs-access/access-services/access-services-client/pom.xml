@@ -59,6 +59,10 @@
 			<artifactId>feign-regards-starter</artifactId>
             <scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>authentication-regards</artifactId>
+		</dependency>
 		<!-- Module domain -->
         <dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
