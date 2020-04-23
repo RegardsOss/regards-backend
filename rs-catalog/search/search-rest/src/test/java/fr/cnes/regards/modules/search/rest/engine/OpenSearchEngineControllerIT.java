@@ -171,7 +171,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
 
@@ -192,7 +192,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("début", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
 
@@ -204,7 +204,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                 String.format("(TimePeriod.startDate:[%s TO %s])",
                                               startDateValue.format(DateTimeFormatter.ISO_DATE_TIME),
                                               stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME)));
-        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
