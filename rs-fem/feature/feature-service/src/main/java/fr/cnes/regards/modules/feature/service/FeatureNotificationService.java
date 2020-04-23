@@ -148,6 +148,9 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.GRANTED,
                                                     null));
         notificationsRequest.add(request);
+
+        // Add new request id to existing ones
+        existingRequestIds.add(request.getRequestId());
     }
 
     @Override
