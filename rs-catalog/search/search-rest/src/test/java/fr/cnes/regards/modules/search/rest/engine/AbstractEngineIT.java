@@ -517,6 +517,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
+        planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
+                                                 IProperty.buildDate(STOP_DATE, stopDateValue)));
         return planet;
     }
 
