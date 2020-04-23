@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
+import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.feature.service.IFeatureReferenceService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 
@@ -58,6 +59,8 @@ public class FeatureTaskScheduler {
 
     private static final String LOCK_REQUEST_REFERENCE = "Reference_Request";
 
+    private static final String LOCK_REQUEST_NOTIFICATION = "Notification_Request";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -81,6 +84,9 @@ public class FeatureTaskScheduler {
 
     @Autowired
     private IFeatureCopyService featureCopyService;
+
+    @Autowired
+    private IFeatureNotificationService featureNotificationService;
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
             fixedDelayString = "${regards.feature.request.update.scheduling.delay:1000}")
@@ -209,6 +215,34 @@ public class FeatureTaskScheduler {
                         LOGGER.trace("RELEASING OBTAINED LOCK FOR TENANT {} IN SCHEDULE COPY REQUESTS", tenant);
                         lockService.releaseLock(LOCK_REQUEST_COPY, this);
                         LOGGER.trace("LOCK RELEASED FOR TENANT {} IN SCHEDULE COPY REQUESTS", tenant);
+                    }
+                }
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
+            fixedDelayString = "${regards.feature.request.notification.scheduling.delay:1000}")
+    public void scheduleNotificationRequests() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                LOGGER.trace("LOCKING FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
+                if (lockService.obtainLockOrSkip(LOCK_REQUEST_NOTIFICATION, this, 60)) {
+                    LOGGER.trace("LOCK OBTAINED FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
+                    try {
+                        long start = System.currentTimeMillis();
+                        int nb = this.featureNotificationService.scheduleRequests();
+                        if (nb != 0) {
+                            LOGGER.info("{} copy request(s) scheduled in {} ms", nb,
+                                        System.currentTimeMillis() - start);
+                        }
+                    } finally {
+                        LOGGER.trace("RELEASING OBTAINED LOCK FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
+                        lockService.releaseLock(LOCK_REQUEST_NOTIFICATION, this);
+                        LOGGER.trace("LOCK RELEASED FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
                     }
                 }
             } finally {

@@ -106,12 +106,12 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         Set<String> existingRequestIds = this.notificationRequestRepo.findRequestId();
 
         events.forEach(item -> prepareNotificationRequest(item, notificationsRequest, existingRequestIds));
-        LOGGER.trace("------------->>> {} deletion requests prepared in {} ms", notificationsRequest.size(),
+        LOGGER.trace("------------->>> {} Notification requests prepared in {} ms", notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureDeletionRequest from a list of
         notificationRequestRepo.saveAll(notificationsRequest);
-        LOGGER.debug("------------->>> {} deletion requests registered in {} ms", notificationsRequest.size(),
+        LOGGER.debug("------------->>> {} Notification requests registered in {} ms", notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
         return notificationsRequest.size();
     }
@@ -180,7 +180,7 @@ public class FeatureNotificationService implements IFeatureNotificationService {
                     jobParameters, authResolver.getUser(), NotificationRequestJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.debug("------------->>> {} deletion requests scheduled in {} ms", requestsToSchedule.size(),
+            LOGGER.debug("------------->>> {} Notification requests scheduled in {} ms", requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
             return requestsToSchedule.size();
         }
