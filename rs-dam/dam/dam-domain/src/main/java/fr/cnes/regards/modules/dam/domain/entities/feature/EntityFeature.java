@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
  */
 public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, UniformResourceName> {
 
-    protected String virtualId;
+    protected UniformResourceName virtualId;
 
     /**
      * Submission information package provider identifier
@@ -204,12 +204,12 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
         this.last = last;
     }
 
-    public String getVirtualId() {
+    public UniformResourceName getVirtualId() {
         return virtualId;
     }
 
     public void setVirtualId() {
-        this.virtualId = id.toString().replace("V\\d{1,3}", "LAST");
+        this.virtualId = id.toLast();
     }
 
     public void removeVirtualId() {

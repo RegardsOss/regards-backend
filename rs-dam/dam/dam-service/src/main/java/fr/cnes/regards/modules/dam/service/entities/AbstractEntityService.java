@@ -368,7 +368,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Set IpId
         if (entity.getIpId() == null) {
             entity.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.valueOf(entity.getType()),
-                    runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1));
+                    runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1, null, null));
         }
 
         // IpIds of entities that will need an AMQP event publishing

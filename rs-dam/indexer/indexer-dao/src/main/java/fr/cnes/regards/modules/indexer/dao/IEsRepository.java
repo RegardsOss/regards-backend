@@ -188,6 +188,8 @@ public interface IEsRepository {
      */
     <T extends IIndexable> T get(String index, String docType, String docId, Class<T> clazz);
 
+    <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId, Class<? extends IIndexable> clazz);
+
     /**
      * Utility method to avoid using Class<T> and passing directly id and type
      * @param index index

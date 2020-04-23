@@ -88,7 +88,7 @@ public class GeometryTest {
 
     private DataObject createDataObject(String label, IGeometry shape) {
         DataObject object = new DataObject(model, TENANT, label, label);
-        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1));
+        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1, null, null));
         object.setNormalizedGeometry(GeoHelper.normalize(shape));
         object.setWgs84(GeoHelper.normalize(shape));
         return object;

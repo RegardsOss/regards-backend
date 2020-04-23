@@ -448,7 +448,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
         feature.setLast(last);
     }
 
-    public String getVirtualId() {
+    public UniformResourceName getVirtualId() {
         return feature.getVirtualId();
     }
 

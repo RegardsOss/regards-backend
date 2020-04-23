@@ -168,6 +168,7 @@ import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -705,6 +706,16 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
+    public <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId,
+            Class<? extends IIndexable> clazz) {
+        // use search0
+        SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
+        searchKey.setSearchIndex(tenant);
+        ICriterion virtualIdCrit = ICriterion.eq("feature.virtualId", virtualId);
+        return (T) search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
+    }
+
+    @Override
     public boolean delete(String index, String type, String id) {
         DeleteRequest request = new DeleteRequest(index.toLowerCase(), TYPE, id);
         try {
@@ -1037,6 +1048,7 @@ public class EsRepository implements IEsRepository {
     @SuppressWarnings("unchecked")
     private <T extends IIndexable> FacetPage<T> search0(SearchKey<T, T> searchKey, Pageable pageRequest,
             ICriterion criterion, Map<String, FacetType> facetsMap) {
+        ICriterion finalCriterion = criterion.accept(new VersioningSearchVisitor(this));
         String index = searchKey.getSearchIndex();
         try {
             final List<T> results = new ArrayList<>();
@@ -1054,7 +1066,7 @@ public class EsRepository implements IEsRepository {
             Object[] lastSearchAfterSortValues = null;
             // If page starts over index 10 000, advance with searchAfter just before last request
             if (pageRequest.getOffset() >= MAX_RESULT_WINDOW) {
-                lastSearchAfterSortValues = advanceWithSearchAfter(criterion, searchKey, pageRequest, index, sort);
+                lastSearchAfterSortValues = advanceWithSearchAfter(finalCriterion, searchKey, pageRequest, index, sort);
             }
 
             final Object[] finalLastSearchAfterSortValues = lastSearchAfterSortValues;
@@ -1074,7 +1086,7 @@ public class EsRepository implements IEsRepository {
                 }
             };
 
-            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, criterion, pageRequest,
+            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, finalCriterion, pageRequest,
                                                                                      lastSearchAfterCustomizer, sort,
                                                                                      facetsMap);
             SearchResponse response = responseNFacets.v1();

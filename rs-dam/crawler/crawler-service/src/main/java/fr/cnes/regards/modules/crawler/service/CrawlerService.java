@@ -131,7 +131,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
      */
     private static OaisUniformResourceName buildIpId(String tenant, String providerId, Long datasourceId) {
         return new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATA, tenant,
-                UUID.nameUUIDFromBytes((datasourceId + "$$" + providerId).getBytes()), 1);
+                UUID.nameUUIDFromBytes((datasourceId + "$$" + providerId).getBytes()), 1, null, null);
     }
 
     @Override

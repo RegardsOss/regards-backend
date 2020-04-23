@@ -44,7 +44,7 @@ public class DatasetFeature extends EntityFeature {
     }
 
     public DatasetFeature(String tenant, String providerId, String label) {
-        super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, tenant, UUID.randomUUID(), 1),
+        super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, tenant, UUID.randomUUID(), 1, null, null),
               providerId, EntityType.DATASET, label);
     }
 

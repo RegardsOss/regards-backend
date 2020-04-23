@@ -269,7 +269,7 @@ public class AstroTest {
     private DataObject createDataObject(IGeometry shape, IGeometry shapeWgs84, String label) {
         System.out.println("Saving " + label);
         DataObject object = new DataObject(model, TENANT, label, label);
-        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1));
+        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1, null, null));
         object.setNormalizedGeometry(GeoHelper.normalize(shape));
         object.getFeature().setCrs(Crs.ASTRO.toString());
         object.setWgs84(GeoHelper.normalize(shapeWgs84));
