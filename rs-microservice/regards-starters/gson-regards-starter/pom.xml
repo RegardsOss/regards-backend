@@ -60,6 +60,12 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards</artifactId>
         </dependency>
+        <dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+  		</dependency>
         <!-- little trick for tests in jpa-regards-data, will that work? -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
