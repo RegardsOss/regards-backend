@@ -18,15 +18,26 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
 
+    /**
+     * If a key is prefixed by {@link #KEYS_TO_REMOVE_PREFIX},
+     * generator will removed it after second pass generation
+     * and just before returning generated object.
+     */
+    private static final String KEYS_TO_REMOVE_PREFIX = "#";
+
     private final Map<String, RandomGenerator<?>> generators = new HashMap<>();
 
     private final Map<String, RandomGenerator<?>> dependentGenerators = new HashMap<>();
+
+    private final List<String> keysToRemove = new ArrayList<>();
 
     /**
      * Work in progress object
@@ -57,11 +68,10 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
                 entry.getValue().randomWithContext(context);
             }
         }
-        return embedded;
-    }
+        // Manage keys to remove
+        keysToRemove.forEach(key -> embedded.remove(key));
 
-    public Map<String, RandomGenerator<?>> getGenerators() {
-        return generators;
+        return embedded;
     }
 
     public void addGenerator(String key, RandomGenerator<?> generator) {
@@ -69,6 +79,10 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
             this.dependentGenerators.put(key, generator);
         } else {
             this.generators.put(key, generator);
+        }
+        // Manage keys to remove
+        if (key.startsWith(KEYS_TO_REMOVE_PREFIX)) {
+            keysToRemove.add(key);
         }
     }
 }

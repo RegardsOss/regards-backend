@@ -69,6 +69,11 @@ public class GeneratorTest {
     }
 
     @Test
+    public void deleteByUrn() {
+        generator.generate(BASE.resolve("deleteByUrn.json"), 1);
+    }
+
+    @Test
     public void generateUrnFromId2() {
         List<Map<String, Object>> results = generator.generate(BASE.resolve("idAndUrn2.json"), 1);
         Assert.assertTrue(!results.isEmpty());
