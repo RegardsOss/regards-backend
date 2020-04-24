@@ -57,7 +57,7 @@ request_date timestamp not null, request_id varchar(36) not null, step varchar(5
 urn varchar(132) not null, priority numeric not null, state varchar(50) not null, primary key (id));
 
 create index idx_notification_request_urn on t_notification_request (urn);
-alter table t_notification_request add constraint uk_notification_request_id unique (urn);
+alter table t_notification_request add constraint uk_notification_request_id unique (request_id);
 create sequence seq_notification_request start 1 increment 50;
 
 -- Reference request
