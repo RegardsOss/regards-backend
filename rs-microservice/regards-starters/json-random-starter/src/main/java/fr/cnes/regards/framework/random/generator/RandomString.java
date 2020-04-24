@@ -26,7 +26,7 @@ public class RandomString extends AbstractRandomGenerator<String> {
 
     private static String USAGE = "Function {} only support 0 or 2 arguments";
 
-    private Integer minLengthInclusive = 0;
+    private Integer minLengthInclusive = 10;
 
     private Integer maxLengthExclusive = 20;
 
