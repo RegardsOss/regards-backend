@@ -65,17 +65,18 @@ public class FeatureUpdateRequestEvent extends AbstractRequestEvent implements I
         this.metadata = metadata;
     }
 
-    public static FeatureUpdateRequestEvent build(FeatureMetadata metadata, Feature feature) {
-        return build(metadata, feature, OffsetDateTime.now());
+    public static FeatureUpdateRequestEvent build(String requestOwner, FeatureMetadata metadata, Feature feature) {
+        return build(requestOwner, metadata, feature, OffsetDateTime.now());
     }
 
-    public static FeatureUpdateRequestEvent build(FeatureMetadata metadata, Feature feature,
+    public static FeatureUpdateRequestEvent build(String requestOwner, FeatureMetadata metadata, Feature feature,
             OffsetDateTime requestDate) {
         FeatureUpdateRequestEvent event = new FeatureUpdateRequestEvent();
         event.setFeature(feature);
         event.setRequestId(generateRequestId());
         event.setRequestDate(requestDate);
         event.setMetadata(metadata);
+        event.setRequestOwner(requestOwner);
         return event;
     }
 }

@@ -60,11 +60,11 @@ public class FeatureCopyRequest extends AbstractRequest {
     @Column(name = "checksum", nullable = false)
     private String checksum;
 
-    public static FeatureCopyRequest build(String requestId, OffsetDateTime requestDate, FeatureRequestStep step,
-            PriorityLevel priority, FeatureUniformResourceName urn, String storage, RequestState state,
-            String checksum) {
+    public static FeatureCopyRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, String storage,
+            RequestState state, String checksum) {
         FeatureCopyRequest request = new FeatureCopyRequest();
-        request.with(requestId, requestDate, priority, state, step);
+        request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setStep(step);
         request.setUrn(urn);
         request.setPriority(priority);

@@ -58,11 +58,11 @@ public class FeatureUpdateRequest extends AbstractFeatureUpdateRequest {
     @Type(type = "jsonb")
     private Feature feature;
 
-    public static FeatureUpdateRequest build(String requestId, OffsetDateTime requestDate, RequestState state,
-            Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
+    public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            RequestState state, Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
         Assert.notNull(feature, "Feature is required");
         FeatureUpdateRequest request = new FeatureUpdateRequest();
-        request.with(requestId, requestDate, state, step, priority, errors);
+        request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setProviderId(feature.getId());
         request.setUrn(feature.getUrn());
         request.setFeature(feature);

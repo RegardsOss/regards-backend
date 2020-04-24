@@ -80,7 +80,7 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
             String id = String.format(PROVIDER_ID_FORMAT, i);
             Feature feature = Feature.build(id, refs.get(id), IGeometry.unlocated(), EntityType.DATA, modelName);
             GeodeProperties.addGeodeUpdateProperties(feature);
-            events.add(FeatureUpdateRequestEvent.build(metadata, feature, requestDate));
+            events.add(FeatureUpdateRequestEvent.build("test", metadata, feature, requestDate));
 
             if (bulk == properties.getMaxBulkSize()) {
                 saveEvents(events);
@@ -135,7 +135,7 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
             GeodeProperties.addGeodeProperties(feature);
             // Keep track of urn for further update
             urns.put(feature.getId(), feature.getUrn());
-            refEntities.add(FeatureEntity.build("sessionOwner", "session", feature, null, "model"));
+            refEntities.add(FeatureEntity.build("sessionOwner", "session", "owner", feature, null, "model"));
 
             if (bulk == properties.getMaxBulkSize()) {
                 featureRepo.saveAll(refEntities);

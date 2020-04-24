@@ -85,7 +85,7 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
-            publisher.publish(FeatureCreationRequestEvent.build(metadata, feature));
+            publisher.publish(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
         }
 
         // Wait for feature creation
@@ -104,7 +104,8 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                                                       IProperty.buildBoolean("valid", Boolean.FALSE),
                                                       IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
             publisher.publish(FeatureUpdateRequestEvent
-                    .build(FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), feature, requestDate));
+                    .build("sessionOwner", FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), feature,
+                           requestDate));
         }
 
         // Wait for feature update

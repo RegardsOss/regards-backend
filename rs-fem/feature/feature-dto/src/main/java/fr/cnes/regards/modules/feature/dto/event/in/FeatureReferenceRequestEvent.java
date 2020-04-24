@@ -47,18 +47,20 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
     @NotNull(message = "Feature metadata is required")
     private FeatureSessionMetadata metadata;
 
-    public static FeatureReferenceRequestEvent build(FeatureSessionMetadata metadata, String location, String factory) {
-        return build(metadata, location, OffsetDateTime.now().minusSeconds(1), factory);
+    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureSessionMetadata metadata,
+            String location, String factory) {
+        return build(requestOwner, metadata, location, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
-    public static FeatureReferenceRequestEvent build(FeatureSessionMetadata metadata, String location,
-            OffsetDateTime requestDate, String factory) {
+    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureSessionMetadata metadata,
+            String location, OffsetDateTime requestDate, String factory) {
         FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
         event.setLocation(location);
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);
         event.setRequestDate(requestDate);
         event.setFactory(factory);
+        event.setRequestOwner(requestOwner);
         return event;
     }
 

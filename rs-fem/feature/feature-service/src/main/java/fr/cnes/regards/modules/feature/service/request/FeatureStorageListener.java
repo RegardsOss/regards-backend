@@ -70,11 +70,11 @@ public class FeatureStorageListener implements IStorageRequestListener {
         for (RequestInfo info : requests) {
             for (RequestResultInfoDTO result : info.getSuccessRequests()) {
                 copies.addAll(result.getRequestOwners().stream()
-                        .map(owner -> FeatureCopyRequest.build(UUID.randomUUID().toString(), OffsetDateTime.now(),
-                                                               FeatureRequestStep.LOCAL_DELAYED, PriorityLevel.NORMAL,
-                                                               FeatureUniformResourceName.fromString(owner),
-                                                               result.getRequestStorePath(), RequestState.GRANTED,
-                                                               result.getRequestChecksum()))
+                        .map(owner -> FeatureCopyRequest
+                                .build(UUID.randomUUID().toString(), owner, OffsetDateTime.now(),
+                                       FeatureRequestStep.LOCAL_DELAYED, PriorityLevel.NORMAL,
+                                       FeatureUniformResourceName.fromString(owner), result.getRequestStorePath(),
+                                       RequestState.GRANTED, result.getRequestChecksum()))
                         .collect(Collectors.toSet()));
             }
         }

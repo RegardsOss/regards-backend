@@ -38,6 +38,9 @@ public abstract class AbstractRequestEvent {
     @NotNull(message = "Request time is required")
     private OffsetDateTime requestDate;
 
+    @NotNull(message = "Request owner is required")
+    private String requestOwner;
+
     /**
      * Generate a request ID
      */
@@ -60,4 +63,13 @@ public abstract class AbstractRequestEvent {
     public void setRequestDate(OffsetDateTime requestDate) {
         this.requestDate = requestDate;
     }
+
+    public String getRequestOwner() {
+        return requestOwner;
+    }
+
+    public void setRequestOwner(String requestOwner) {
+        this.requestOwner = requestOwner;
+    }
+
 }

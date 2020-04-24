@@ -44,6 +44,8 @@ public abstract class AbstractRequest {
 
     protected static final String COLUMN_REQUEST_ID = "request_id";
 
+    protected static final String COLUMN_REQUEST_OWNER = "request_owner";
+
     protected static final String COLUMN_REQUEST_TIME = "request_date";
 
     protected static final String COLUMN_REGISTRATION_DATE = "registration_date";
@@ -58,6 +60,9 @@ public abstract class AbstractRequest {
 
     @Column(name = COLUMN_REQUEST_ID, length = 36, nullable = false, updatable = false)
     private String requestId;
+
+    @Column(name = COLUMN_REQUEST_OWNER, length = 128, nullable = false, updatable = false)
+    private String requestOwner;
 
     @NotNull(message = "Feature request state is required")
     @Enumerated(EnumType.STRING)
@@ -92,15 +97,17 @@ public abstract class AbstractRequest {
     private PriorityLevel priority;
 
     @SuppressWarnings("unchecked")
-    protected <T extends AbstractRequest> T with(String requestId, OffsetDateTime requestDate, PriorityLevel priority,
-            RequestState state, FeatureRequestStep step) {
+    protected <T extends AbstractRequest> T with(String requestId, String requestOwner, OffsetDateTime requestDate,
+            PriorityLevel priority, RequestState state, FeatureRequestStep step) {
         Assert.notNull(requestId, "Request id is required");
         Assert.notNull(requestDate, "Request date is required");
         Assert.notNull(priority, "Request priority is required");
         Assert.notNull(state, "Request state is required");
         Assert.notNull(step, "Request step is required");
+        Assert.notNull(requestOwner, "Request owner is required");
 
         this.requestId = requestId;
+        this.requestOwner = requestOwner;
         this.requestDate = requestDate;
         this.registrationDate = OffsetDateTime.now();
         this.priority = priority;
@@ -155,6 +162,14 @@ public abstract class AbstractRequest {
 
     public void setState(RequestState state) {
         this.state = state;
+    }
+
+    public String getRequestOwner() {
+        return requestOwner;
+    }
+
+    public void setRequestOwner(String requestOwner) {
+        this.requestOwner = requestOwner;
     }
 
 }

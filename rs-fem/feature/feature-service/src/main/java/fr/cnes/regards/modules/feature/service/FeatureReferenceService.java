@@ -148,12 +148,13 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
             requestInfo.addDeniedRequest(null, ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, null, RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, null, RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
+                                                    RequestState.GRANTED, null));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
@@ -216,7 +217,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
                 } else {
                     request.setState(RequestState.ERROR);
                     publisher.publish(FeatureRequestEvent
-                            .build(request.getRequestId(), null, null, RequestState.ERROR,
+                            .build(request.getRequestId(), request.getRequestOwner(), null, null, RequestState.ERROR,
                                    Sets.newHashSet("No plugin founded for this request reference")));
                 }
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {

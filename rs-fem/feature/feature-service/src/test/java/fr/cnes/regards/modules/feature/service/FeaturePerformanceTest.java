@@ -55,7 +55,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
     private static final Integer NB_FEATURES = 5_000;
 
     // Expected performance : 10_000 features/min
-    private static final long DURATION = NB_FEATURES * 10;// i set 7 because someties jenkins VM sucks
+    private static final long DURATION = NB_FEATURES * 20;// i set 7 because someties jenkins VM sucks
 
     @Autowired
     private IFeatureCreationService featureService;
@@ -89,7 +89,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
             String id = String.format(format, i);
             Feature feature = Feature.build(id, null, IGeometry.unlocated(), EntityType.DATA, modelName);
             GeodeProperties.addGeodeProperties(feature);
-            events.add(FeatureCreationRequestEvent.build(metadata, feature));
+            events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 
             if (bulk == properties.getMaxBulkSize()) {
                 saveEvents(events);

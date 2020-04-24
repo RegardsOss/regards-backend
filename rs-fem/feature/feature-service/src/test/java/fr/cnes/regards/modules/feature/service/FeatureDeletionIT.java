@@ -65,11 +65,13 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
      */
     @Test
     public void testDeletionWithoutFiles() throws InterruptedException {
+        String deletionOwner = "deleter";
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(false, properties.getMaxBulkSize());
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
+                                                                           properties.getMaxBulkSize());
 
         this.featureDeletionService.registerRequests(events);
 
@@ -103,13 +105,16 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testDeletionWithFiles() throws InterruptedException {
 
+        String deletionOwner = "deleter";
+
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
 
         long featureNumberInDatabase;
         int cpt = 0;
 
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(true, properties.getMaxBulkSize());
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
+                                                                           properties.getMaxBulkSize());
 
         this.featureDeletionService.registerRequests(events);
 
@@ -147,10 +152,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testFeaturePriority() throws InterruptedException {
 
+        String deletionOwner = "deleter";
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(false, properties.getMaxBulkSize()
-                + (properties.getMaxBulkSize() / 2));
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
+                                                                           properties.getMaxBulkSize()
+                                                                                   + (properties.getMaxBulkSize() / 2));
 
         this.featureDeletionService.registerRequests(events);
 

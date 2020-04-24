@@ -226,7 +226,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     private void initData(RequestInfo info) {
         String model = "model";
         FeatureCreationRequest fcr = FeatureCreationRequest
-                .build("id1", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(),
+                .build("id1", "owner", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(),
                        Feature.build("id1",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "lol",
                                                                       UUID.randomUUID(), 1),
@@ -236,7 +236,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         fcr.setGroupId(info.getGroupId());
 
         FeatureEntity feature = FeatureEntity
-                .build("owner", "session",
+                .build("owner", "session", "owner",
                        Feature.build("id2",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),

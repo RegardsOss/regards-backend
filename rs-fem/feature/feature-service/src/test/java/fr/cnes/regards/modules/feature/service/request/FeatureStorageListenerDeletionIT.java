@@ -103,9 +103,11 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
     }
 
     private void prepareData() throws InterruptedException {
+        String deletionOwner = "deleter";
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(true, properties.getMaxBulkSize());
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
+                                                                           properties.getMaxBulkSize());
 
         this.featureDeletionService.registerRequests(events);
 

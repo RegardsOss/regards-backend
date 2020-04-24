@@ -43,6 +43,11 @@ public class FeatureRequestEvent implements ISubscribable {
     private String requestId;
 
     /**
+     * Owner of the request
+     */
+    private String requestOwner;
+
+    /**
      * The feature id
      */
     private String id;
@@ -56,12 +61,12 @@ public class FeatureRequestEvent implements ISubscribable {
 
     private Set<String> errors;
 
-    public static FeatureRequestEvent build(String requestId, @Nullable String id,
+    public static FeatureRequestEvent build(String requestId, String requestOwner, @Nullable String id,
             @Nullable FeatureUniformResourceName urn, RequestState state) {
-        return build(requestId, id, urn, state, null);
+        return build(requestId, requestOwner, id, urn, state, null);
     }
 
-    public static FeatureRequestEvent build(String requestId, @Nullable String id,
+    public static FeatureRequestEvent build(String requestId, String requestOwner, @Nullable String id,
             @Nullable FeatureUniformResourceName urn, RequestState state, Set<String> errors) {
         FeatureRequestEvent event = new FeatureRequestEvent();
         event.setRequestId(requestId);
@@ -69,7 +74,7 @@ public class FeatureRequestEvent implements ISubscribable {
         event.setUrn(urn);
         event.setState(state);
         event.setErrors(errors);
-
+        event.setRequestOwner(requestOwner);
         return event;
     }
 
@@ -111,6 +116,14 @@ public class FeatureRequestEvent implements ISubscribable {
 
     public void setUrn(FeatureUniformResourceName urn) {
         this.urn = urn;
+    }
+
+    public String getRequestOwner() {
+        return requestOwner;
+    }
+
+    public void setRequestOwner(String requestOwner) {
+        this.requestOwner = requestOwner;
     }
 
 }

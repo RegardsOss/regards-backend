@@ -168,7 +168,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         // Build events to reuse event registration code
         List<FeatureCreationRequestEvent> toTreat = new ArrayList<FeatureCreationRequestEvent>();
         for (Feature feature : collection.getFeatures()) {
-            toTreat.add(FeatureCreationRequestEvent.build(collection.getMetadata(), feature));
+            toTreat.add(FeatureCreationRequestEvent.build(collection.getMetadata().getSessionOwner(),
+                                                          collection.getMetadata(), feature));
         }
         return registerRequests(toTreat);
     }
@@ -202,7 +203,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             LOGGER.error("Error during feature {} validation the following errors have been founded{}",
                          item.getFeature().getId(), errors.toString());
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
+            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
@@ -215,10 +216,10 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 .build(md.getSession(), md.getSessionOwner(), item.getMetadata().getStorages(),
                        item.getMetadata().isOverride());
         FeatureCreationRequest request = FeatureCreationRequest
-                .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, null, item.getFeature(),
-                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority());
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
+                       item.getFeature(), metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority());
         //         Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.GRANTED, null));
 
@@ -316,8 +317,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 // Register request
                 requestsWithoutFiles.add(request);
                 // Publish successful request
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getProviderId(),
-                                                            request.getFeature().getUrn(), RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
+                                                            request.getProviderId(), request.getFeature().getUrn(),
+                                                            RequestState.SUCCESS));
 
                 // if a previous version exists we will publish a FeatureDeletionRequest to delete it
                 if ((request.getFeatureEntity().getPreviousVersionUrn() != null)
@@ -328,7 +330,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                     "A duplicated feature has been detected", NotificationLevel.ERROR,
                                     DefaultRole.ADMIN);
                     publisher.publish(FeatureDeletionRequestEvent
-                            .build(request.getFeatureEntity().getPreviousVersionUrn(), PriorityLevel.NORMAL));
+                            .build(request.getMetadata().getSessionOwner(),
+                                   request.getFeatureEntity().getPreviousVersionUrn(), PriorityLevel.NORMAL));
                 }
             }
         }
@@ -409,8 +412,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                         runtimeTenantResolver.getTenant(), uuid,
                                                         computeNextVersion(previousVersion)));
 
-        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSession(), fcr.getMetadata().getSessionOwner(),
-                                                    feature, previousUrn, fcr.getFeature().getModel());
+        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(), fcr.getMetadata().getSession(),
+                                                    fcr.getRequestOwner(), feature, previousUrn,
+                                                    fcr.getFeature().getModel());
         created.setVersion(feature.getUrn().getVersion());
         fcr.setFeatureEntity(created);
 

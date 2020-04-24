@@ -63,10 +63,11 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Convert(converter = FeatureUrnConverter.class)
     private FeatureUniformResourceName urn;
 
-    public static FeatureDeletionRequest build(String requestId, OffsetDateTime requestDate, RequestState state,
-            Set<String> errors, FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn) {
+    public static FeatureDeletionRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            RequestState state, Set<String> errors, FeatureRequestStep step, PriorityLevel priority,
+            FeatureUniformResourceName urn) {
         FeatureDeletionRequest request = new FeatureDeletionRequest();
-        request.with(requestId, requestDate, state, step, priority, errors);
+        request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setUrn(urn);
         request.setPriority(priority);
 

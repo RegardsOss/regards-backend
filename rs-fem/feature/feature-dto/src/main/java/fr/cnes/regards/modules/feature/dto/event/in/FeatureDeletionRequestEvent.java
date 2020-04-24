@@ -65,12 +65,14 @@ public class FeatureDeletionRequestEvent extends AbstractRequestEvent implements
         this.urn = urn;
     }
 
-    public static FeatureDeletionRequestEvent build(FeatureUniformResourceName urn, PriorityLevel level) {
+    public static FeatureDeletionRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
+            PriorityLevel level) {
         FeatureDeletionRequestEvent event = new FeatureDeletionRequestEvent();
         event.setUrn(urn);
         event.setRequestDate(OffsetDateTime.now().minusSeconds(1));
         event.setRequestId(generateRequestId());
         event.setPriority(level);
+        event.setRequestOwner(requestOwner);
 
         return event;
     }

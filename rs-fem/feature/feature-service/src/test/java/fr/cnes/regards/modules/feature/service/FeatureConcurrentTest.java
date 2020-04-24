@@ -40,8 +40,9 @@ public class FeatureConcurrentTest extends AbstractFeatureMultitenantServiceTest
     public void createConcurrentFeatures() throws InterruptedException {
 
         // Register creation requests
+        String owner = "sessionOwner";
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
+                .build(owner, "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);
@@ -54,19 +55,19 @@ public class FeatureConcurrentTest extends AbstractFeatureMultitenantServiceTest
         IGeometry firstPosition = IGeometry.point(0, 0);
         Feature feature = Feature.build("SAME ID", null, firstPosition, EntityType.DATA, modelName);
         GeodeProperties.addGeodeProperties(feature);
-        events.add(FeatureCreationRequestEvent.build(metadata, feature, requestDate));
+        events.add(FeatureCreationRequestEvent.build(owner, metadata, feature, requestDate));
 
         // Second feature with same id
         IGeometry secondPosition = IGeometry.point(10, 10);
         feature = Feature.build("SAME ID", null, secondPosition, EntityType.DATA, modelName);
         GeodeProperties.addGeodeProperties(feature);
-        events.add(FeatureCreationRequestEvent.build(metadata, feature, requestDate.minusSeconds(1)));
+        events.add(FeatureCreationRequestEvent.build(owner, metadata, feature, requestDate.minusSeconds(1)));
 
         // Third feature with same id
         IGeometry thirdPosition = IGeometry.point(22, 22);
         feature = Feature.build("SAME ID", null, thirdPosition, EntityType.DATA, modelName);
         GeodeProperties.addGeodeProperties(feature);
-        events.add(FeatureCreationRequestEvent.build(metadata, feature, requestDate.minusSeconds(2)));
+        events.add(FeatureCreationRequestEvent.build(owner, metadata, feature, requestDate.minusSeconds(2)));
 
         saveEvents(events);
 

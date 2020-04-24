@@ -59,6 +59,9 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
     protected String model;
 
     @Valid
+    protected FeatureHistory history;
+
+    @Valid
     protected List<FeatureFile> files = new ArrayList<FeatureFile>();
 
     public FeatureUniformResourceName getUrn() {
@@ -95,6 +98,14 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
 
     public boolean hasFiles() {
         return (this.files != null) && !this.files.isEmpty();
+    }
+
+    public FeatureHistory getHistory() {
+        return history;
+    }
+
+    public void setHistory(FeatureHistory history) {
+        this.history = history;
     }
 
     @Override

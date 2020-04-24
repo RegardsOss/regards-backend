@@ -136,17 +136,18 @@ public class FeatureNotificationService implements IFeatureNotificationService {
 
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded NotificationRequestEvent validation {}", errors.toString());
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher
+                    .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                                                       RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
 
-        NotificationRequest request = NotificationRequest.build(item.getRequestId(), item.getRequestDate(),
-                                                                FeatureRequestStep.LOCAL_DELAYED, item.getPriority(),
-                                                                item.getUrn(), RequestState.GRANTED);
+        NotificationRequest request = NotificationRequest
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
+                       FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn(), RequestState.GRANTED);
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.GRANTED,
-                                                    null));
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                                                    RequestState.GRANTED, null));
         notificationsRequest.add(request);
 
         // Add new request id to existing ones

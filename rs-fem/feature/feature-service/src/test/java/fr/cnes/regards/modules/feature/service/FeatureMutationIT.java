@@ -85,7 +85,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Register creation requests
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
-        events.add(FeatureCreationRequestEvent.build(metadata, feature));
+        events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
         featureCreationService.registerRequests(events);
 
         // Schedule creation job
@@ -106,8 +106,8 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Register update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
-        updateEvents.add(FeatureUpdateRequestEvent.build(FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()),
-                                                         updated));
+        updateEvents.add(FeatureUpdateRequestEvent
+                .build("TEST", FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), updated));
         featureUpdateService.registerRequests(updateEvents);
 
         // Schedule update job after retention delay

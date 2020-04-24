@@ -108,27 +108,27 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         FeatureEntity updatingByScheduler = super.featureRepo.findAll().get(1);
         FeatureEntity toDelete = super.featureRepo.findAll().get(2);
 
-        FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent.build(toDelete.getUrn(),
-                                                                                               PriorityLevel.NORMAL);
+        FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent
+                .build("TEST", toDelete.getUrn(), PriorityLevel.NORMAL);
         this.featureDeletionService.registerRequests(Lists.list(featureDeletionRequest));
         this.featureDeletionService.scheduleRequests();
 
         // prepare and save update request
-        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build("1", OffsetDateTime.now(), RequestState.GRANTED, null,
-                                                               toUpdate.getFeature(), PriorityLevel.NORMAL,
+        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build("1", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+                                                               null, toUpdate.getFeature(), PriorityLevel.NORMAL,
                                                                FeatureRequestStep.LOCAL_DELAYED);
 
-        FeatureUpdateRequest fur2 = FeatureUpdateRequest.build("2", OffsetDateTime.now(), RequestState.GRANTED, null,
-                                                               updatingByScheduler.getFeature(), PriorityLevel.NORMAL,
-                                                               FeatureRequestStep.LOCAL_SCHEDULED);
+        FeatureUpdateRequest fur2 = FeatureUpdateRequest
+                .build("2", "owner", OffsetDateTime.now(), RequestState.GRANTED, null, updatingByScheduler.getFeature(),
+                       PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_SCHEDULED);
 
         //this update cannot be scheduled because fur2 is already scheduled and on the same feature
-        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build("3", OffsetDateTime.now(), RequestState.GRANTED, null,
-                                                               updatingByScheduler.getFeature(), PriorityLevel.NORMAL,
-                                                               FeatureRequestStep.LOCAL_DELAYED);
+        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build("3", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+                                                               null, updatingByScheduler.getFeature(),
+                                                               PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_DELAYED);
 
-        FeatureUpdateRequest fur4 = FeatureUpdateRequest.build("4", OffsetDateTime.now(), RequestState.GRANTED, null,
-                                                               toDelete.getFeature(), PriorityLevel.NORMAL,
+        FeatureUpdateRequest fur4 = FeatureUpdateRequest.build("4", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+                                                               null, toDelete.getFeature(), PriorityLevel.NORMAL,
                                                                FeatureRequestStep.LOCAL_DELAYED);
 
         // create a deletion request
@@ -194,7 +194,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         }
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
         updateEvents = events.stream()
-                .map(event -> FeatureUpdateRequestEvent.build(event.getMetadata(), event.getFeature()))
+                .map(event -> FeatureUpdateRequestEvent.build("test", event.getMetadata(), event.getFeature()))
                 .collect(Collectors.toList());
 
         // we will set all priority to low for the (properties.getMaxBulkSize() / 2) last event

@@ -62,14 +62,16 @@ public class NotificationRequestEvent extends AbstractRequestEvent implements IS
         this.priority = priority;
     }
 
-    public static NotificationRequestEvent build(FeatureUniformResourceName urn, PriorityLevel priority) {
-        return build(urn, OffsetDateTime.now().minusSeconds(1), priority);
+    public static NotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
+            PriorityLevel priority) {
+        return build(requestOwner, urn, OffsetDateTime.now().minusSeconds(1), priority);
     }
 
-    public static NotificationRequestEvent build(FeatureUniformResourceName urn, OffsetDateTime requestDate,
-            PriorityLevel priority) {
+    public static NotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
+            OffsetDateTime requestDate, PriorityLevel priority) {
         NotificationRequestEvent event = new NotificationRequestEvent();
         event.setRequestId(generateRequestId());
+        event.setRequestOwner(requestOwner);
         event.setRequestDate(requestDate);
         event.setPriority(priority);
         event.setUrn(urn);

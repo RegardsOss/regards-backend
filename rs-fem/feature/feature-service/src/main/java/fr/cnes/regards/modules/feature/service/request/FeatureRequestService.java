@@ -86,13 +86,14 @@ public class FeatureRequestService implements IFeatureRequestService {
      * @param item
      */
     private void publishSuccessAndDeleteOlderVersion(FeatureCreationRequest item) {
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.SUCCESS, null));
         publisher.publish(NotificationActionEvent.build(gson.toJsonTree(item.getFeature()),
                                                         FeatureManagementAction.CREATION.name()));
         if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
-            publisher.publish(FeatureDeletionRequestEvent.build(item.getFeatureEntity().getPreviousVersionUrn(),
+            publisher.publish(FeatureDeletionRequestEvent.build(item.getMetadata().getSessionOwner(),
+                                                                item.getFeatureEntity().getPreviousVersionUrn(),
                                                                 PriorityLevel.NORMAL));
             this.notificationClient
                     .notify(String.format("A FeatureEntity with the URN {} already exists for this feature",
@@ -107,9 +108,10 @@ public class FeatureRequestService implements IFeatureRequestService {
 
         // publish success notification for all request id
         request.stream()
-                .forEach(item -> publisher.publish(FeatureRequestEvent
-                        .build(item.getRequestId(), item.getFeature() != null ? item.getFeature().getId() : null, null,
-                               RequestState.ERROR, null)));
+                .forEach(item -> publisher
+                        .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
+                                                           item.getFeature() != null ? item.getFeature().getId() : null,
+                                                           null, RequestState.ERROR, null)));
         // set FeatureCreationRequest to error state
         request.stream().forEach(item -> item.setState(RequestState.ERROR));
 
@@ -128,7 +130,7 @@ public class FeatureRequestService implements IFeatureRequestService {
 
         // publish success notification for all request id
         request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(item.getRequestId(), null, item.getUrn(), RequestState.ERROR, null)));
+                .build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(), RequestState.ERROR, null)));
         // set FeatureDeletionRequest to error state
         request.stream().forEach(item -> item.setState(RequestState.ERROR));
 

@@ -82,11 +82,12 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                                                                                    EntityType.DATA, "tenant", 1));
         list.get(1).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                    EntityType.DATA, "tenant", 1));
-        FeatureEntity createdEntity = FeatureEntity.build("moi", "session", list.get(0).getFeature(), null,
+        FeatureEntity createdEntity = FeatureEntity.build("moi", "session", "creator", list.get(0).getFeature(), null,
                                                           list.get(0).getFeature().getModel());
-        FeatureEntity updatedEntity = FeatureEntity.build("moi", "session", list.get(1).getFeature(), null,
+        FeatureEntity updatedEntity = FeatureEntity.build("moi", "session", "creator", list.get(1).getFeature(), null,
                                                           list.get(1).getFeature().getModel());
         updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
+        updatedEntity.getHistory().setUpdatedBy("updater");
 
         createdEntity.setUrn(list.get(0).getFeature().getUrn());
         updatedEntity.setUrn(list.get(1).getFeature().getUrn());
@@ -95,8 +96,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.featureRepo.save(createdEntity);
         this.featureRepo.save(updatedEntity);
 
-        this.publisher.publish(NotificationRequestEvent.build(createdEntity.getUrn(), PriorityLevel.LOW));
-        this.publisher.publish(NotificationRequestEvent.build(updatedEntity.getUrn(), PriorityLevel.LOW));
+        this.publisher.publish(NotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
+        this.publisher.publish(NotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
 
         this.waitRequest(notificationRepo, 2, 30000);
         assertEquals(2, notificationService.scheduleRequests());
