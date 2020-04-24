@@ -3,6 +3,8 @@
  */
 package fr.cnes.regards.modules.notifier.rest;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -11,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -26,9 +27,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
-import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,11 +38,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 /**
  * REST interface for managing data {@link Recipient}
  * @author kevin marchois
+ * @author Sébastien Binda
  *
  */
 @RestController
 @RequestMapping(RecipientController.RECIPIENT)
-public class RecipientController implements IResourceController<RecipientDto> {
+public class RecipientController implements IResourceController<PluginConfiguration> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
 
@@ -66,10 +67,10 @@ public class RecipientController implements IResourceController<RecipientDto> {
     @RequestMapping(method = RequestMethod.GET)
     @Operation(summary = "List all recipient", description = "List all recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Recipients") })
-    public ResponseEntity<PagedModel<EntityModel<RecipientDto>>> getRecipients(
+    public ResponseEntity<List<EntityModel<PluginConfiguration>>> getRecipients(
             @Parameter(description = "Request page") Pageable page,
-            final PagedResourcesAssembler<RecipientDto> assembler) {
-        return ResponseEntity.ok(toPagedResources(this.recipientService.getRecipients(page), assembler));
+            final PagedResourcesAssembler<PluginConfiguration> assembler) {
+        return ResponseEntity.ok(toResources(recipientService.getRecipients()));
     }
 
     /**
@@ -80,11 +81,11 @@ public class RecipientController implements IResourceController<RecipientDto> {
     @RequestMapping(method = RequestMethod.POST)
     @Operation(summary = "Create a recipient", description = "Create a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
-    public ResponseEntity<EntityModel<RecipientDto>> createRecipient(
-            @Parameter(description = "Recipient to create") @Valid @RequestBody RecipientDto toCreate) {
+    public ResponseEntity<EntityModel<PluginConfiguration>> createRecipient(
+            @Parameter(description = "Recipient to create") @Valid @RequestBody PluginConfiguration toCreate) {
         Assert.isNull(toCreate.getId(), "Its a creation id must be null!");
         try {
-            return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toCreate)));
+            return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toCreate)));
         } catch (ModuleException e) {
             LOGGER.error("Impossible! how can it throwed for a creation", e);
             return null;
@@ -100,38 +101,40 @@ public class RecipientController implements IResourceController<RecipientDto> {
     @RequestMapping(method = RequestMethod.PUT)
     @Operation(summary = "Update a recipient", description = "Update a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Recipient") })
-    public ResponseEntity<EntityModel<RecipientDto>> updateRecipient(
-            @Parameter(description = "Recipient to update") @Valid @RequestBody RecipientDto toUpdate)
+    public ResponseEntity<EntityModel<PluginConfiguration>> updateRecipient(
+            @Parameter(description = "Recipient to update") @Valid @RequestBody PluginConfiguration toUpdate)
             throws ModuleException {
         Assert.notNull(toUpdate.getId(), "Its a validation id must not be null!");
-        return ResponseEntity.ok(toResource(this.recipientService.createOrUpdateRecipient(toUpdate)));
+        return ResponseEntity.ok(toResource(recipientService.createOrUpdateRecipient(toUpdate)));
     }
 
     /**
      * Delete a {@link Recipient}
+     * @throws ModuleException
      */
     @ResourceAccess(description = "Delete a recipient")
     @RequestMapping(path = ID, method = RequestMethod.DELETE)
     @Operation(summary = "Delete a recipient", description = "Delete a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(
-            @Parameter(description = "Recipient to delete id") @PathVariable("id") Long id) {
-        this.recipientService.deleteRecipient(id);
+            @Parameter(description = "Recipient to delete id") @PathVariable("businessId") String businessId)
+            throws ModuleException {
+        recipientService.deleteRecipient(businessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
-    public EntityModel<RecipientDto> toResource(RecipientDto element, Object... extras) {
+    public EntityModel<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
 
-        EntityModel<RecipientDto> resource = resourceService.toResource(element);
+        EntityModel<PluginConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getRecipients", LinkRels.SELF,
                                 MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource, this.getClass(), "createRecipient", LinkRels.CREATE,
-                                MethodParamFactory.build(RecipientDto.class, element));
+                                MethodParamFactory.build(PluginConfiguration.class, element));
         resourceService.addLink(resource, this.getClass(), "updateRecipient", LinkRels.UPDATE,
-                                MethodParamFactory.build(RecipientDto.class, element));
+                                MethodParamFactory.build(PluginConfiguration.class, element));
         resourceService.addLink(resource, this.getClass(), "deleteRecipient", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, element.getId()));
+                                MethodParamFactory.build(String.class, element.getBusinessId()));
         return resource;
     }
 }

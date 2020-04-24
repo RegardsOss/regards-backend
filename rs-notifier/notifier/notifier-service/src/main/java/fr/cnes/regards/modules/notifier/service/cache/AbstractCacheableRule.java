@@ -66,7 +66,7 @@ public abstract class AbstractCacheableRule {
 
                 @Override
                 public Set<Rule> load(String key) throws Exception {
-                    return ruleRepo.findByEnableTrue();
+                    return ruleRepo.findByRulePluginActiveTrue();
                 }
 
             });

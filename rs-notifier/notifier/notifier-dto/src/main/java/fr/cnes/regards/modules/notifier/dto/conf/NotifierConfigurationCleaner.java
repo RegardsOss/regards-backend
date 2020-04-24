@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,19 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.dao;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.notifier.domain.Recipient;
+package fr.cnes.regards.modules.notifier.dto.conf;
 
 /**
- * Repository to manipulate {@link Recipient}
- * @author Kevin Marchois
+ * @author sbinda
  *
  */
-@Repository
-public interface IRecipientRepository extends JpaRepository<Recipient, Long> {
+public class NotifierConfigurationCleaner {
+
+    private boolean clean = false;
+
+    public static NotifierConfigurationCleaner build(boolean clean) {
+        NotifierConfigurationCleaner c = new NotifierConfigurationCleaner();
+        c.clean = clean;
+        return c;
+    }
+
+    public boolean isClean() {
+        return clean;
+    }
+
+    public void setClean(boolean clean) {
+        this.clean = clean;
+    }
 
 }

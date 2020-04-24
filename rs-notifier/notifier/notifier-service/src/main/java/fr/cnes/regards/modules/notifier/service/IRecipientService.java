@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
+import java.util.Set;
+
 import javax.validation.Valid;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
-import fr.cnes.regards.modules.notifier.dto.RecipientDto;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
  * Service for {@link Recipient} manipulation
@@ -34,7 +34,9 @@ import fr.cnes.regards.modules.notifier.dto.RecipientDto;
  */
 public interface IRecipientService {
 
-    public Page<RecipientDto> getRecipients(Pageable page);
+    public Set<PluginConfiguration> getRecipients(Collection<String> businessId);
+
+    public Set<PluginConfiguration> getRecipients();
 
     /**
      * Create or update a {@link Recipient} from a {@link RecipientDto}
@@ -42,11 +44,18 @@ public interface IRecipientService {
      * @return {@link RecipientDto} from the created {@link Recipient}
      * @throws ModuleException if during an update id is unknow
      */
-    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto toCreate) throws ModuleException;
+    public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration toCreate) throws ModuleException;
 
     /**
      * Delete a {@link Recipient} by its id
      * @param id
+     * @throws ModuleException
      */
-    public void deleteRecipient(Long id);
+    public void deleteRecipient(String id) throws ModuleException;
+
+    /**
+     * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
+     * @param deletionErrors
+     */
+    public void deleteAll(Collection<String> deletionErrors);
 }

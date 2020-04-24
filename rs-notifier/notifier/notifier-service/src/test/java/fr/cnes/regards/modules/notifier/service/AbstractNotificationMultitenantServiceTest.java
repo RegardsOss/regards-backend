@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +34,7 @@ import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -45,6 +47,7 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -53,10 +56,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginPa
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
-import fr.cnes.regards.modules.notifier.dao.IRecipientRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
-import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.notifier.plugin.RecipientSender10;
 import fr.cnes.regards.modules.notifier.plugin.RecipientSender2;
@@ -69,6 +70,7 @@ import fr.cnes.regards.modules.notifier.plugin.RecipientSender8;
 import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.flow.NotificationActionEventHandler;
+import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 
 public abstract class AbstractNotificationMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -87,7 +89,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IRuleRepository ruleRepo;
 
     @Autowired
-    protected IRecipientRepository recipientRepo;
+    protected IRuleService ruleService;
 
     @Autowired
     protected IPluginConfigurationRepository pluginConfRepo;
@@ -103,6 +105,9 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     @Autowired
     protected NotificationRuleService notificationService;
+
+    @Autowired
+    protected IRecipientService recipientService;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
@@ -130,7 +135,6 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         RECIPIENT_FAIL = true;
         this.notificationService.cleanTenantCache(runtimeTenantResolver.getTenant());
         this.recipientErrorRepo.deleteAll();
-        this.recipientRepo.deleteAll();
         this.ruleRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
         this.notificationRepo.deleteAll();
@@ -184,8 +188,9 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
      * Init 1 rule and RECIPIENTS_PER_RULE {@link Recipient}, one of the {@link Recipient} will fail
      * if the param fail is set to true
      * @param fail
+     * @throws ModuleException
      */
-    protected void initPlugins(boolean fail) {
+    protected void initPlugins(boolean fail) throws ModuleException {
         // configuration of the rule plugin
         PluginConfiguration rulePlugin = new PluginConfiguration();
         rulePlugin.setBusinessId("testRule");
@@ -198,38 +203,32 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         param = IPluginParam.build("attributeValueToSeek", "TM");
         rulePlugin.getParameters().add(param);
 
-        rulePlugin = this.pluginConfRepo.save(rulePlugin);
-
+        Collection<String> recipients = Sets.newHashSet();
         // configuration of the default recipient sender plugin
         PluginConfiguration recipientPlugin = new PluginConfiguration();
         recipientPlugin.setBusinessId(fail ? "failRecipient" : "testRecipient");
         recipientPlugin.setVersion("1.0.0");
         recipientPlugin.setLabel("test recipient");
-        recipientPlugin.setPluginId(fail ? "fail" : "DefaultRecipientSender");
-        recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
-
-        Recipient recipient = new Recipient();
-        recipient.setRecipientPlugin(recipientPlugin);
-        recipient = this.recipientRepo.save(recipient);
-
-        Rule rule = Rule.build(null, rulePlugin, true);
-        rule.getRecipients().add(recipient);
+        recipientPlugin.setPluginId(fail ? "fail" : RabbitMQSender.PLUGIN_ID);
+        param = IPluginParam.build("exchange", "regards.notifier.exchange-tu");
+        recipientPlugin.getParameters().add(param);
+        param = IPluginParam.build("queueName", "regards.notifier.queue-tu");
+        recipientPlugin.getParameters().add(param);
+        recipientService.createOrUpdateRecipient(recipientPlugin);
+        recipients.add(recipientPlugin.getBusinessId());
 
         // configuration of the fake recipient sender (for test)
         for (int i = 1; i < RECIPIENTS_PER_RULE; i++) {
-            recipientPlugin = new PluginConfiguration();
-            recipientPlugin.setBusinessId("testRecipient" + (i + 1));
-            recipientPlugin.setVersion("1.0.0");
-            recipientPlugin.setLabel("test recipient");
-            recipientPlugin.setPluginId("RecipientSender" + (i + 1));
-            recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
-            recipient = new Recipient();
-            recipient.setRecipientPlugin(recipientPlugin);
-            this.recipientRepo.save(recipient);
-            rule.getRecipients().add(recipient);
+            PluginConfiguration rp = new PluginConfiguration();
+            rp.setBusinessId("testRecipient" + (i + 1));
+            rp.setVersion("1.0.0");
+            rp.setLabel("test recipient");
+            rp.setPluginId("RecipientSender" + (i + 1));
+            rp = recipientService.createOrUpdateRecipient(rp);
+            recipients.add(rp.getBusinessId());
         }
-        rule = this.ruleRepo.save(rule);
 
+        ruleService.createOrUpdateRule(RuleDTO.build(rulePlugin, recipients));
     }
 
     /**

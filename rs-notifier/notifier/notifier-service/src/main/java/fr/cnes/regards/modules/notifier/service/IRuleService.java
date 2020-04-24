@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -25,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.RuleDto;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 
 /**
  * @author kevin
@@ -33,7 +36,7 @@ import fr.cnes.regards.modules.notifier.dto.RuleDto;
  */
 public interface IRuleService {
 
-    public Page<RuleDto> getRules(Pageable page);
+    public Page<RuleDTO> getRules(Pageable page);
 
     /**
      * Create or update a {@link Rule} from a {@link RuleDto}
@@ -41,11 +44,22 @@ public interface IRuleService {
      * @return {@link RuleDto} from the created {@link Rule}
      * @throws ModuleException if during an update id is unknow
      */
-    public RuleDto createOrUpdateRule(@Valid RuleDto toCreate) throws ModuleException;
+    public RuleDTO createOrUpdateRule(@Valid RuleDTO toCreate) throws ModuleException;
 
     /**
-     * Delete a {@link Rule} by its id
+     * Delete a {@link Rule} by its id.  <br/>
+     * @param id
+     * @throws ModuleException
+     */
+    public void deleteRule(String id) throws ModuleException;
+
+    /**
      * @param id
      */
-    public void deleteRule(Long id);
+    public Optional<RuleDTO> getRule(String id);
+
+    /**
+     * Delete all existing rules configured
+     */
+    public void deleteAll(Collection<String> deletionErrors);
 }

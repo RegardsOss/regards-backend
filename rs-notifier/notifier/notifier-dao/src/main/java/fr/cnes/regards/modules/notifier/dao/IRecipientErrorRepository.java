@@ -35,4 +35,6 @@ import fr.cnes.regards.modules.notifier.domain.RecipientError;
 public interface IRecipientErrorRepository extends JpaRepository<RecipientError, Long> {
 
     public List<RecipientError> findByJobId(UUID jobId);
+
+    public long deleteByRecipientBusinessId(String recipientBusinessId);
 }

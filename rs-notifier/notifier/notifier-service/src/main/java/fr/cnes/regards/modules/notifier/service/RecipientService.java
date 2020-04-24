@@ -18,23 +18,28 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.notifier.dao.IRecipientRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.RecipientDto;
+import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 
 /**
  * Implementation of recipient service
@@ -45,39 +50,86 @@ import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 @MultitenantTransactional
 public class RecipientService implements IRecipientService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientService.class);
+
     @Autowired
-    private IRecipientRepository recipientRepo;
+    private IPluginService pluginService;
 
     @Autowired
     private IRuleRepository ruleRepo;
 
+    @Autowired
+    private IRecipientErrorRepository recipientErrorRepo;
+
+    @Autowired
+    private INotificationRuleService notifService;
+
     @Override
-    public Page<RecipientDto> getRecipients(Pageable page) {
-        Page<Recipient> recipients = recipientRepo.findAll(page);
-        return new PageImpl<>(
-                recipients.get().map(recipient -> RecipientDto.build(recipient.getId(), recipient.getRecipientPlugin()))
-                        .collect(Collectors.toList()));
+    public Set<PluginConfiguration> getRecipients() {
+        return getRecipients(null);
     }
 
     @Override
-    public RecipientDto createOrUpdateRecipient(@Valid RecipientDto dto) throws ModuleException {
-        Rule rule = this.ruleRepo.getOne(dto.getRuleId());
-        Recipient toSave = Recipient.build(dto);
-        if ((toSave.getId() != null) && (this.recipientRepo.existsById(toSave.getId()) == false)) {
-            throw new ModuleException(String.format("No Recipient found with id %d", toSave.getId()));
+    public Set<PluginConfiguration> getRecipients(Collection<String> businessIds) {
+        Set<PluginConfiguration> recipients = Sets.newHashSet();
+        if ((businessIds == null) || businessIds.isEmpty()) {
+            recipients.addAll(pluginService.getPluginConfigurationsByType(IRecipientNotifier.class));
+        } else {
+            recipients = businessIds.stream().map((id) -> {
+                try {
+                    return pluginService.getPluginConfiguration(id);
+                } catch (EntityNotFoundException e) {
+                    return null;
+                }
+            }).filter(conf -> conf != null).collect(Collectors.toSet());
         }
-        if (rule == null) {
-            throw new ModuleException(String.format("No Rule found with id %d", dto.getRuleId()));
-        }
-        Recipient result = this.recipientRepo.save(toSave);
-
-        rule.getRecipients().add(toSave);
-        return RecipientDto.build(result.getId(), result.getRecipientPlugin());
+        return recipients;
     }
 
     @Override
-    public void deleteRecipient(Long id) {
-        this.recipientRepo.deleteById(id);
+    public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration recipientPluginConf)
+            throws ModuleException {
+        PluginConfiguration result;
+        if (recipientPluginConf.getId() == null) {
+            result = pluginService.savePluginConfiguration(recipientPluginConf);
+        } else {
+            result = pluginService.updatePluginConfiguration(recipientPluginConf);
+        }
+        // Clean cache
+        notifService.cleanCache();
+
+        return result;
+
     }
 
+    @Override
+    public void deleteRecipient(String id) throws ModuleException {
+        // Check  if a rule is associated to the recipient first
+        for (Rule rule : ruleRepo.findByRecipientsBusinessId(id)) {
+            // Remove  recipient to delete
+            rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
+                    .collect(Collectors.toSet()));
+        }
+        // Delete associated errors
+        recipientErrorRepo.deleteByRecipientBusinessId(id);
+        pluginService.deletePluginConfiguration(id);
+
+        // Clean cache
+        notifService.cleanCache();
+    }
+
+    @Override
+    public void deleteAll(Collection<String> deletionErrors) {
+        for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
+            try {
+                recipientErrorRepo.deleteByRecipientBusinessId(conf.getBusinessId());
+                pluginService.deletePluginConfiguration(conf.getBusinessId());
+            } catch (ModuleException e) {
+                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        // Clean cache
+        notifService.cleanCache();
+    }
 }

@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
@@ -60,12 +60,10 @@ public class Rule {
     @JoinColumn(name = "rule_plugin_id", nullable = false, foreignKey = @ForeignKey(name = "fk_rule_plugin_id"))
     private PluginConfiguration rulePlugin;
 
-    @Column(name = "enable", nullable = false)
-    private boolean enable = true;
-
-    @OneToMany(cascade = { CascadeType.REMOVE }, orphanRemoval = true)
-    @JoinColumn(name = "rule_id", foreignKey = @ForeignKey(name = "fk_rule_id"))
-    private Set<Recipient> recipients = new HashSet<Recipient>();
+    @OneToMany
+    @JoinTable(name = "ta_rule_recipients", joinColumns = @JoinColumn(name = "rule_id"),
+            inverseJoinColumns = @JoinColumn(name = "recipient_id"))
+    private final Set<PluginConfiguration> recipients = new HashSet<PluginConfiguration>();
 
     public Long getId() {
         return id;
@@ -83,27 +81,19 @@ public class Rule {
         this.rulePlugin = rulePlugin;
     }
 
-    public boolean isEnable() {
-        return enable;
-    }
-
-    public void setEnable(boolean enable) {
-        this.enable = enable;
-    }
-
-    public Set<Recipient> getRecipients() {
+    public Set<PluginConfiguration> getRecipients() {
         return recipients;
     }
 
-    public void setRecipients(Set<Recipient> recipients) {
-        this.recipients = recipients;
+    public void setRecipients(Collection<PluginConfiguration> recipients) {
+        this.recipients.clear();
+        this.recipients.addAll(recipients);
     }
 
-    public static Rule build(Long id, PluginConfiguration pluginConf, boolean enabled) {
+    public static Rule build(PluginConfiguration pluginConf, Collection<PluginConfiguration> recipients) {
         Rule rule = new Rule();
         rule.setRulePlugin(pluginConf);
-        rule.setEnable(enabled);
-        rule.setId(id);
+        rule.recipients.addAll(recipients);
         return rule;
     }
 }

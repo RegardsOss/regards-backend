@@ -29,10 +29,10 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.JsonElement;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
@@ -52,9 +52,10 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
      * After the job fail we will restart ir then the {@link Recipient} should work
      * All {@link RecipientError} and {@link NotificationAction} must be deleted
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
-    public void testRestartAfterFailure() throws InterruptedException {
+    public void testRestartAfterFailure() throws InterruptedException, ModuleException {
 
         JsonElement element = initElement();
 

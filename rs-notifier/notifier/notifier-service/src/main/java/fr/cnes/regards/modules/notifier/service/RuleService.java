@@ -18,10 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,9 +36,11 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.RuleDto;
+import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 
 /**
  * Implementation for rule service
@@ -43,30 +51,83 @@ import fr.cnes.regards.modules.notifier.dto.RuleDto;
 @MultitenantTransactional
 public class RuleService implements IRuleService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleService.class);
+
     @Autowired
     private IRuleRepository ruleRepo;
 
+    @Autowired
+    private IRecipientService recipientService;
+
+    @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
+    private INotificationRuleService notifService;
+
     @Override
-    public Page<RuleDto> getRules(Pageable page) {
+    public Page<RuleDTO> getRules(Pageable page) {
         Page<Rule> rules = ruleRepo.findAll(page);
-        return new PageImpl<>(
-                rules.get().map(rule -> RuleDto.build(rule.getId(), rule.getRulePlugin(), rule.isEnable()))
-                        .collect(Collectors.toList()));
+        return new PageImpl<>(rules.get().map(this::toRuleDTO).collect(Collectors.toList()));
     }
 
     @Override
-    public RuleDto createOrUpdateRule(@Valid RuleDto dto) throws ModuleException {
-        Rule toSave = Rule.build(dto.getId(), dto.getPluginConf(), dto.isEnabled());
-        if ((toSave.getId() != null) && (this.ruleRepo.existsById(toSave.getId()) == false)) {
-            throw new ModuleException(String.format("No Rule found with id %d", toSave.getId()));
+    public Optional<RuleDTO> getRule(String businessId) {
+        Optional<Rule> rule = ruleRepo.findByRulePluginBusinessId(businessId);
+        if (rule.isPresent()) {
+            return Optional.of(this.toRuleDTO(rule.get()));
+        } else {
+            return Optional.empty();
         }
-        Rule result = this.ruleRepo.save(toSave);
-        return RuleDto.build(result.getId(), result.getRulePlugin(), dto.isEnabled());
     }
 
     @Override
-    public void deleteRule(Long id) {
-        this.ruleRepo.deleteById(id);
+    public RuleDTO createOrUpdateRule(@Valid RuleDTO dto) throws ModuleException {
+        Optional<Rule> oRule = ruleRepo.findByRulePluginBusinessId(dto.getId());
+        Set<PluginConfiguration> recipients = recipientService.getRecipients(dto.getRecipientsBusinessIds());
+        Rule toSave;
+        if (oRule.isPresent()) {
+            toSave = oRule.get();
+            toSave.setRulePlugin(pluginService.updatePluginConfiguration(dto.getRulePluginConfiguration()));
+            toSave.setRecipients(recipients);
+        } else {
+            PluginConfiguration pluginConf = pluginService.savePluginConfiguration(dto.getRulePluginConfiguration());
+            toSave = Rule.build(pluginConf, recipients);
+        }
+        // Clean cache
+        notifService.cleanCache();
+        return toRuleDTO(ruleRepo.save(toSave));
+    }
+
+    @Override
+    public void deleteRule(String businessId) throws ModuleException {
+        ruleRepo.deleteByRulePluginBusinessId(businessId);
+        pluginService.deletePluginConfiguration(businessId);
+        notifService.cleanCache();
+    }
+
+    @Override
+    public void deleteAll(Collection<String> deletionErrors) {
+        List<Rule> rules = ruleRepo.findAll();
+        Set<String> confToDelete = rules.stream().map(Rule::getRulePlugin).map(PluginConfiguration::getBusinessId)
+                .collect(Collectors.toSet());
+        // Delete  rule associations
+        ruleRepo.deleteAll();
+        // Delete associated plugin configurations
+        for (String conf : confToDelete) {
+            try {
+                pluginService.deletePluginConfiguration(conf);
+            } catch (ModuleException e) {
+                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        notifService.cleanCache();
+    }
+
+    private RuleDTO toRuleDTO(Rule rule) {
+        return RuleDTO.build(rule.getRulePlugin(), rule.getRecipients().stream().map(PluginConfiguration::getBusinessId)
+                .collect(Collectors.toSet()));
     }
 
 }

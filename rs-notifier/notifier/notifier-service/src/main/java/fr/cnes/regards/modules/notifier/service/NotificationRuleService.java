@@ -49,7 +49,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -57,7 +59,6 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
@@ -103,6 +104,9 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     @Autowired
     private INotificationClient notificationClient;
 
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
     /**
      * Handle a {@link NotificationAction} and check if it matches with enabled {@link Rule} in that case
      * send a notification to {@link Recipient}
@@ -114,7 +118,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @throws ExecutionException
      */
     private int handleNotificationRequest(NotificationAction notification,
-            ListMultimap<NotificationAction, Recipient> notificationsInErrors)
+            ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors)
             throws ExecutionException, ModuleException, NotAvailablePluginConfigurationException {
         int notificationNumber = 0;
         for (Rule rule : getRules()) {
@@ -123,7 +127,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
                 if (((IRuleMatcher) this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId()))
                         .match(notification.getElement())) {
 
-                    for (Recipient recipient : rule.getRecipients()) {
+                    for (PluginConfiguration recipient : rule.getRecipients()) {
                         if (notifyRecipient(notification.getElement(), recipient, notification.getAction())) {
                             notificationNumber++;
                         } else {
@@ -147,11 +151,11 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @param action  done on {@link JsonElement}
      * @return
      */
-    private boolean notifyRecipient(JsonElement toHandle, Recipient recipient, String action) {
+    private boolean notifyRecipient(JsonElement toHandle, PluginConfiguration recipient, String action) {
         try {
             // check that all send method of recipiens return true
-            return ((IRecipientNotifier) this.pluginService.getPlugin(recipient.getRecipientPlugin().getBusinessId()))
-                    .send(toHandle, action);
+            return ((IRecipientNotifier) this.pluginService.getPlugin(recipient.getBusinessId())).send(toHandle,
+                                                                                                       action);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error("Error while sending notification to receiver ", e);
             return false;
@@ -173,7 +177,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
         // if empty we send notifications according rules
         if (recipientErrros.isEmpty()) {
-            ListMultimap<NotificationAction, Recipient> notificationsInErrors = ArrayListMultimap.create();
+            ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors = ArrayListMultimap.create();
 
             for (NotificationAction notification : toHandles) {
                 startNotificationTreatmentTime = System.currentTimeMillis();
@@ -229,7 +233,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @param notificationsInErrors Map of failed {@link NotificationAction}=>{@link Recipient}
      * @param jobInfo current {@link JobInfo}
      */
-    private void saveRecipientErrors(ListMultimap<NotificationAction, Recipient> notificationsInErrors,
+    private void saveRecipientErrors(ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors,
             JobInfo jobInfo) {
         this.recipientErrorRepo.saveAll(notificationsInErrors.entries().stream()
                 .map(entry -> RecipientError.build(entry.getValue(), jobInfo, entry.getKey()))
@@ -283,6 +287,11 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
                          System.currentTimeMillis() - scheduleStart);
         }
         return requestIds.size();
+    }
+
+    @Override
+    public void cleanCache() {
+        this.cleanTenantCache(tenantResolver.getTenant());
     }
 
 }

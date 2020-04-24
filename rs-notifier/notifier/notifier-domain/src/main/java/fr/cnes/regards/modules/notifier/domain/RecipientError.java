@@ -30,6 +30,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * Entity to represent an error on a {@link Recipient} for in a {@link JobInfo}
@@ -48,7 +49,7 @@ public class RecipientError {
     @ManyToOne
     @NotNull(message = "Recipient is required")
     @JoinColumn(name = "recipient_id", nullable = false, foreignKey = @ForeignKey(name = "fk_recipient_id"))
-    private Recipient recipient;
+    private PluginConfiguration recipient;
 
     @ManyToOne
     @NotNull(message = "Ntofication is required")
@@ -65,11 +66,11 @@ public class RecipientError {
         return id;
     }
 
-    public Recipient getRecipient() {
+    public PluginConfiguration getRecipient() {
         return recipient;
     }
 
-    public void setRecipient(Recipient recipient) {
+    public void setRecipient(PluginConfiguration recipient) {
         this.recipient = recipient;
     }
 
@@ -89,7 +90,8 @@ public class RecipientError {
         this.notification = notification;
     }
 
-    public static RecipientError build(Recipient recipient, JobInfo jobInfo, NotificationAction notification) {
+    public static RecipientError build(PluginConfiguration recipient, JobInfo jobInfo,
+            NotificationAction notification) {
         RecipientError error = new RecipientError();
         error.setJob(jobInfo);
         error.setRecipient(recipient);

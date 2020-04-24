@@ -24,7 +24,6 @@ import java.util.UUID;
 import org.springframework.data.util.Pair;
 
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.Recipient;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
@@ -46,16 +45,21 @@ public interface INotificationRuleService {
      * @param jobInfoId job id will be saved in case of failed {@link Recipient}
      * @return pair of nbSended/nbErrors notifications
      */
-    public Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId);
+    Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId);
 
     /**
      * Register {@link NotificationActionEvent} to schedule notifications
      */
-    public void registerNotifications(List<NotificationActionEvent> events);
+    void registerNotifications(List<NotificationActionEvent> events);
 
     /**
      * Schedule a job to process a batch of {@link NotificationAction}<br/>
      * @return number of scheduled notification (0 if no request was scheduled)
      */
     int scheduleRequests();
+
+    /**
+     * Clean cache of rules. Need to be called after each configuration modification.
+     */
+    void cleanCache();
 }
