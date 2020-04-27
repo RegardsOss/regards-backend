@@ -47,7 +47,9 @@
     <!-- <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/> -->
    <!--  <logger name="org.hibernate.SQL" level="DEBUG"/> -->
     <!-- <logger name="fr.cnes.regards.modules.feature.service" level="TRACE" /> -->
-	<root level="INFO">
+    <logger name="fr.cnes.regards.modules.feature.service.task" level="INFO"/>
+    <logger name="fr.cnes.regards.modules.feature.service.flow" level="TRACE"/>
+	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 		<!-- <appender-ref ref="STASH" /> -->
 	</root>
