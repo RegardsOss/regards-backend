@@ -340,7 +340,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             // notify feature creation without files
             publisher.publish(requestsWithoutFiles.stream()
                     .map(request -> NotificationActionEvent.build(gson.toJsonTree(request.getFeature()),
-                                                                  FeatureManagementAction.CREATION.name()))
+                                                                  FeatureManagementAction.CREATED.name()))
                     .collect(Collectors.toList()));
         }
 

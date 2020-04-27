@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.feature.dto;
  *
  */
 public enum FeatureManagementAction {
-    CREATION,
-    UPDATE,
-    DELETION
+    CREATED,
+    UPDATED,
+    DELETED;
 }

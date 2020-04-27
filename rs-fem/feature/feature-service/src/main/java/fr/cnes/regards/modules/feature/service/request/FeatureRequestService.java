@@ -90,7 +90,7 @@ public class FeatureRequestService implements IFeatureRequestService {
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.SUCCESS, null));
         publisher.publish(NotificationActionEvent.build(gson.toJsonTree(item.getFeature()),
-                                                        FeatureManagementAction.CREATION.name()));
+                                                        FeatureManagementAction.CREATED.name()));
         if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
             publisher.publish(FeatureDeletionRequestEvent.build(item.getMetadata().getSessionOwner(),
                                                                 item.getFeatureEntity().getPreviousVersionUrn(),

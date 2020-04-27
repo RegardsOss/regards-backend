@@ -265,7 +265,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         if (!sucessfullRequests.values().isEmpty()) {
             publisher.publish(sucessfullRequests.values().stream()
                     .map(feature -> NotificationActionEvent.build(gson.toJsonTree(feature.getFeature()),
-                                                                  FeatureManagementAction.DELETION.name()))
+                                                                  FeatureManagementAction.DELETED.name()))
                     .collect(Collectors.toList()));
         }
 

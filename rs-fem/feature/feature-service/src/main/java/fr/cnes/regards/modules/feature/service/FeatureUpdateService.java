@@ -306,7 +306,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // notify update feature without files
                 publisher.publish(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.UPDATE.name()));
+                                                                FeatureManagementAction.UPDATED.name()));
                 // Publish request success
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
                                                             entity.getProviderId(), entity.getUrn(),
