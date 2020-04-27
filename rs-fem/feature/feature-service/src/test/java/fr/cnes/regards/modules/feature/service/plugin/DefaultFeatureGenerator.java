@@ -38,8 +38,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 @Plugin(author = "REGARDS Team", description = "Default recipient sender", id = "DefaultFeatureGenerator",
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTest
-        implements IFeatureFactoryPlugin {
+public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTest implements IFeatureFactoryPlugin {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -50,6 +49,7 @@ public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTe
                                        modelAttrAssocClientMock);
         Feature toAdd = Feature.build("id " + reference.getLocation(), null,
                                       IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model);
+        toAdd.withHistory("DefaultFeatureGenerator", null, null);
         toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
         toAdd.addProperty(IProperty.buildObject("file_characterization",
                                                 IProperty.buildBoolean("valid", Boolean.TRUE)));

@@ -218,7 +218,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
             } else if (haveFiles(fdr, entity)) {
                 requestsWithFiles.put(fdr, entity);
             } else {
-                entity.getHistory().setDeletedBy(fdr.getRequestOwner());
+                entity.getFeature().getHistory().setDeletedBy(fdr.getRequestOwner());
                 requestsWithoutFiles.put(fdr, entity);
             }
         }

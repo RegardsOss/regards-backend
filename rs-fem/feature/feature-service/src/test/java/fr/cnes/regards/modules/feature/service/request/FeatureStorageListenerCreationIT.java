@@ -226,21 +226,23 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     private void initData(RequestInfo info) {
         String model = "model";
         FeatureCreationRequest fcr = FeatureCreationRequest
-                .build("id1", "owner", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(),
-                       Feature.build("id1",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "lol",
-                                                                      UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
+                .build("id1", "owner", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(), Feature
+                        .build("id1",
+                               FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "lol",
+                                                                UUID.randomUUID(), 1),
+                               IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
+                        .withHistory("test"),
                        FeatureCreationMetadataEntity.build("owner", "session", Lists.emptyList(), true),
                        FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
         fcr.setGroupId(info.getGroupId());
 
         FeatureEntity feature = FeatureEntity
-                .build("owner", "session", "owner",
-                       Feature.build("id2",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                      "peps", UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
+                .build("owner", "session", Feature
+                        .build("id2",
+                               FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "peps",
+                                                                UUID.randomUUID(), 1),
+                               IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
+                        .withHistory("test"),
                        null, model);
         List<FeatureFile> filles = new ArrayList<>();
         filles.add(FeatureFile.build(

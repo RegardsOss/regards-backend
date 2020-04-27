@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
  */
 public class FeatureCreationCollection extends AbstractFeatureCollection<Feature> {
 
+    private String requestOwner;
+
     @Valid
     private FeatureCreationSessionMetadata metadata;
 
@@ -41,7 +43,7 @@ public class FeatureCreationCollection extends AbstractFeatureCollection<Feature
      * @param features collection of {@link Feature}
      * @return a {@link FeatureCreationCollection}
      */
-    public static FeatureCreationCollection build(FeatureCreationSessionMetadata metadata,
+    public static FeatureCreationCollection build(String requestOwner, FeatureCreationSessionMetadata metadata,
             Collection<Feature> features) {
         FeatureCreationCollection collection = new FeatureCreationCollection();
         collection.setMetadata(metadata);
@@ -55,5 +57,13 @@ public class FeatureCreationCollection extends AbstractFeatureCollection<Feature
 
     public void setMetadata(FeatureCreationSessionMetadata metadata) {
         this.metadata = metadata;
+    }
+
+    public String getRequestOwner() {
+        return requestOwner;
+    }
+
+    public void setRequestOwner(String requestOwner) {
+        this.requestOwner = requestOwner;
     }
 }

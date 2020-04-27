@@ -170,8 +170,25 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
         return feature;
     }
 
+    public Feature withHistory(String createdBy, @Nullable String updatedBy, @Nullable String deletedBy) {
+        this.setHistory(FeatureHistory.build(createdBy, updatedBy, deletedBy));
+        return this;
+    }
+
+    public Feature withHistory(String createdBy) {
+        this.setHistory(FeatureHistory.build(createdBy));
+        return this;
+    }
+
     public Feature withProperties(Set<IProperty<?>> properties) {
         this.setProperties(properties);
+        return this;
+    }
+
+    public Feature withUpdatedBy(String updatedBy) {
+        if (this.history != null) {
+            this.getHistory().setUpdatedBy(updatedBy);
+        }
         return this;
     }
 

@@ -83,12 +83,11 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                                                                                    EntityType.DATA, "tenant", 1));
         list.get(1).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                    EntityType.DATA, "tenant", 1));
-        FeatureEntity createdEntity = FeatureEntity.build("moi", "session", "creator", list.get(0).getFeature(), null,
+        FeatureEntity createdEntity = FeatureEntity.build("moi", "session", list.get(0).getFeature(), null,
                                                           list.get(0).getFeature().getModel());
-        FeatureEntity updatedEntity = FeatureEntity.build("moi", "session", "creator", list.get(1).getFeature(), null,
+        FeatureEntity updatedEntity = FeatureEntity.build("moi", "session", list.get(1).getFeature(), null,
                                                           list.get(1).getFeature().getModel());
         updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
-        updatedEntity.getHistory().setUpdatedBy("updater");
 
         createdEntity.setUrn(list.get(0).getFeature().getUrn());
         updatedEntity.setUrn(list.get(1).getFeature().getUrn());

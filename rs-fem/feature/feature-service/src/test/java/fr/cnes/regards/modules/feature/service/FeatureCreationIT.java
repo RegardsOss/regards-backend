@@ -201,7 +201,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build(FeatureCreationSessionMetadata
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
                 .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -218,7 +218,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build(FeatureCreationSessionMetadata
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
                 .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
