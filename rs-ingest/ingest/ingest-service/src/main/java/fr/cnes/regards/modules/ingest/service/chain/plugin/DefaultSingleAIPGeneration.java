@@ -51,7 +51,7 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
                                                        entityType,
                                                        tenant,
                                                        sipIdUrn.getEntityId(),
-                                                       version),
+                                                       version, null, null),
                            Optional.of(sipIdUrn),
                            sip.getProviderId(),
                            version));

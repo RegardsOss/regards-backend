@@ -73,7 +73,7 @@ public class IngestMetadata {
     private Set<StorageMetadata> storages;
 
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
-    @Column(name = "versioning_modes")
+    @Column(name = "versioning_mode")
     @Enumerated(EnumType.STRING)
     private VersioningMode versioningMode;
 

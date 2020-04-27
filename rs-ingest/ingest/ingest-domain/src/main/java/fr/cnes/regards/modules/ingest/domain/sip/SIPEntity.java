@@ -215,7 +215,7 @@ public class SIPEntity extends AbstractOAISEntity {
 
     public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version);
+        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version, null, null);
     }
 
 }
