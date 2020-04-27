@@ -62,12 +62,12 @@ public class FeatureCreationRequest extends AbstractFeatureCreationRequest {
     @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_id"))
     private FeatureEntity featureEntity;
 
-    public static FeatureCreationRequest build(String requestId, OffsetDateTime requestDate, RequestState state,
-            Set<String> errors, Feature feature, FeatureCreationMetadataEntity metadata, FeatureRequestStep step,
-            PriorityLevel priority) {
+    public static FeatureCreationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            RequestState state, Set<String> errors, Feature feature, FeatureCreationMetadataEntity metadata,
+            FeatureRequestStep step, PriorityLevel priority) {
         Assert.notNull(feature, "Feature is required");
         FeatureCreationRequest request = new FeatureCreationRequest();
-        request.with(requestId, requestDate, state, step, priority, errors);
+        request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setProviderId(feature.getId());
         request.setFeature(feature);
         request.setMetadata(metadata);

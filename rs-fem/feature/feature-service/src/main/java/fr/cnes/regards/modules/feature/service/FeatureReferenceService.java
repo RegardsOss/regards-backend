@@ -148,20 +148,21 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
             requestInfo.addDeniedRequest(null, ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, null, RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, null, RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
+                                                    RequestState.GRANTED, null));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
                 .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
                        item.getMetadata().getStorages(), false);
         grantedRequests.add(FeatureReferenceRequest
-                .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, metadata,
-                       FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
+                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
                        item.getFactory()));
         // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
         requestInfo.addGrantedRequest(null, item.getRequestId());
@@ -216,7 +217,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
                 } else {
                     request.setState(RequestState.ERROR);
                     publisher.publish(FeatureRequestEvent
-                            .build(request.getRequestId(), null, null, RequestState.ERROR,
+                            .build(request.getRequestId(), request.getRequestOwner(), null, null, RequestState.ERROR,
                                    Sets.newHashSet("No plugin founded for this request reference")));
                 }
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
@@ -243,6 +244,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         Feature feature;
         try {
             feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
+            feature.withHistory(request.getRequestOwner());
             FeatureMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);

@@ -77,7 +77,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Build feature to create
         String id = String.format("F%05d", 1);
-        Feature feature = Feature.build(id, null, IGeometry.unlocated(), EntityType.DATA, modelName);
+        Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
         feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
         feature.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.FALSE),
@@ -85,7 +85,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Register creation requests
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
-        events.add(FeatureCreationRequestEvent.build(metadata, feature));
+        events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
         featureCreationService.registerRequests(events);
 
         // Schedule creation job
@@ -98,16 +98,16 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
         FeatureEntity entity = featureRepo.findTop1VersionByProviderIdOrderByVersionAsc(id);
 
         // Build feature to update
-        Feature updated = Feature.build(id, entity.getFeature().getUrn(), IGeometry.unlocated(), EntityType.DATA,
-                                        modelName);
+        Feature updated = Feature.build(id, "owner", entity.getFeature().getUrn(), IGeometry.unlocated(),
+                                        EntityType.DATA, modelName);
         updated.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
                                                   IProperty.buildDate("invalidation_date", null)));
 
         // Register update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
-        updateEvents.add(FeatureUpdateRequestEvent.build(FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()),
-                                                         updated));
+        updateEvents.add(FeatureUpdateRequestEvent
+                .build("TEST", FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), updated));
         featureUpdateService.registerRequests(updateEvents);
 
         // Schedule update job after retention delay

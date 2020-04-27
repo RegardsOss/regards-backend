@@ -52,14 +52,15 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     private String groupId;
 
     @SuppressWarnings("unchecked")
-    protected <T extends AbstractFeatureRequest> T with(String requestId, OffsetDateTime requestDate,
-            RequestState state, FeatureRequestStep step, PriorityLevel priority, Set<String> errors) {
+    protected <T extends AbstractFeatureRequest> T with(String requestId, String requestOwner,
+            OffsetDateTime requestDate, RequestState state, FeatureRequestStep step, PriorityLevel priority,
+            Set<String> errors) {
         Assert.notNull(requestId, "Request id is required");
         Assert.notNull(requestDate, "Request date is required");
         Assert.notNull(state, "Request state is required");
         Assert.notNull(step, "Request step is required");
         Assert.notNull(priority, "Request priority is required");
-        super.with(requestId, requestDate, priority, state, step);
+        super.with(requestId, requestOwner, requestDate, priority, state, step);
         this.errors = errors;
         return (T) this;
     }

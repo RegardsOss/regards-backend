@@ -42,27 +42,30 @@ public class FeatureCreationRequestEvent extends AbstractCreationRequestEvent im
     @NotNull(message = "Feature is required")
     private Feature feature;
 
-    public static FeatureCreationRequestEvent build(FeatureCreationSessionMetadata metadata, Feature feature) {
-        return build(metadata, feature, OffsetDateTime.now().minusSeconds(1));
+    public static FeatureCreationRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
+            Feature feature) {
+        return build(requestOwner, metadata, feature, OffsetDateTime.now().minusSeconds(1));
     }
 
-    public static FeatureCreationRequestEvent build(FeatureCreationSessionMetadata metadata, Feature feature,
-            OffsetDateTime requestDate) {
+    public static FeatureCreationRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
+            Feature feature, OffsetDateTime requestDate) {
         FeatureCreationRequestEvent event = new FeatureCreationRequestEvent();
         event.setFeature(feature);
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);
         event.setRequestDate(requestDate);
+        event.setRequestOwner(requestOwner);
         return event;
     }
 
-    public static FeatureCreationRequestEvent build(String requestId, FeatureCreationSessionMetadata metadata,
-            Feature feature) {
+    public static FeatureCreationRequestEvent build(String requestOwner, String requestId,
+            FeatureCreationSessionMetadata metadata, Feature feature) {
         FeatureCreationRequestEvent event = new FeatureCreationRequestEvent();
         event.setFeature(feature);
         event.setRequestId(requestId);
         event.setMetadata(metadata);
         event.setRequestDate(OffsetDateTime.now().minusSeconds(1));
+        event.setRequestOwner(requestOwner);
         return event;
     }
 

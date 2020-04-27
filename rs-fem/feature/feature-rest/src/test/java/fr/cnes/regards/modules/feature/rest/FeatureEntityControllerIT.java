@@ -62,8 +62,8 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                                                                                  true);
         meta.setStorages(Lists.newArrayList(StorageMetadata.build("disk")));
         FeatureCreationRequest request = FeatureCreationRequest
-                .build(UUID.randomUUID().toString(), OffsetDateTime.now(), RequestState.GRANTED, null, featureToAdd,
-                       meta, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
+                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
+                       featureToAdd, meta, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
 
         featureService.processRequests(Lists.newArrayList(request));
 

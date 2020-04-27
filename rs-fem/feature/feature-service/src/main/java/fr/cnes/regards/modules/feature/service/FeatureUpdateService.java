@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.LightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -144,7 +145,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Build events to reuse event registration code
         List<FeatureUpdateRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : toHandle.getFeatures()) {
-            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getMetadata(), feature,
+            toTreat.add(FeatureUpdateRequestEvent.build("TEST", toHandle.getMetadata(), feature,
                                                         OffsetDateTime.now().minusSeconds(1)));
         }
         return registerRequests(toTreat);
@@ -170,7 +171,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
 
         if (errors.hasErrors()) {
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
+            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         item.getFeature() != null ? item.getFeature().getUrn() : null,
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
@@ -182,11 +183,11 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         // Manage granted request
         FeatureUpdateRequest request = FeatureUpdateRequest
-                .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, null, item.getFeature(),
-                       item.getMetadata().getPriority(), FeatureRequestStep.LOCAL_DELAYED);
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
+                       item.getFeature(), item.getMetadata().getPriority(), FeatureRequestStep.LOCAL_DELAYED);
 
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(),
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.GRANTED, null));
         // Add to granted request collection
@@ -283,13 +284,20 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 errorRequests.add(request);
 
                 // Publish request failure
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getProviderId(),
-                                                            request.getUrn(), request.getState(), request.getErrors()));
+                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
+                                                            request.getProviderId(), request.getUrn(),
+                                                            request.getState(), request.getErrors()));
 
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
 
                 entity.setLastUpdate(OffsetDateTime.now());
+                if (entity.getFeature().getHistory() != null) {
+                    entity.getFeature().getHistory().setUpdatedBy(request.getRequestOwner());
+                } else {
+                    entity.getFeature()
+                            .setHistory(FeatureHistory.build(request.getRequestOwner(), request.getRequestOwner()));
+                }
 
                 // Merge properties handling null property values to unset properties
                 IProperty.mergeProperties(entity.getFeature().getProperties(), patch.getProperties(),
@@ -304,10 +312,11 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // notify update feature without files
                 publisher.publish(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.UPDATE.name()));
+                                                                FeatureManagementAction.UPDATED.name()));
                 // Publish request success
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), entity.getProviderId(),
-                                                            entity.getUrn(), RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
+                                                            entity.getProviderId(), entity.getUrn(),
+                                                            RequestState.SUCCESS));
 
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);

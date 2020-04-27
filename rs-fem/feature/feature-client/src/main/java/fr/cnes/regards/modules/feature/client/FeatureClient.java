@@ -52,11 +52,11 @@ public class FeatureClient {
      * @param priorityLevel
      * @return update request identifiers
      */
-    public List<String> updateFeatures(List<Feature> features, PriorityLevel priorityLevel) {
+    public List<String> updateFeatures(String updateOwner, List<Feature> features, PriorityLevel priorityLevel) {
         List<FeatureUpdateRequestEvent> events = Lists.newArrayList();
         for (Feature feature : features) {
-            FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent.build(FeatureMetadata.build(priorityLevel),
-                                                                              feature);
+            FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent
+                    .build(updateOwner, FeatureMetadata.build(priorityLevel), feature);
             events.add(event);
         }
         publisher.publish(events);
@@ -68,10 +68,11 @@ public class FeatureClient {
      * @param featureUrns Urn of {@link Feature}s to delete
      * @param priorityLevel {@link PriorityLevel}
      */
-    public List<String> deleteFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
+    public List<String> deleteFeatures(String deletionOwner, List<FeatureUniformResourceName> featureUrns,
+            PriorityLevel priorityLevel) {
         List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
-            FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(urn, priorityLevel);
+            FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner, urn, priorityLevel);
             events.add(event);
         }
         publisher.publish(events);
@@ -83,10 +84,11 @@ public class FeatureClient {
      * @param featureUrns Urn of {@link Feature}s to notify
      * @param priorityLevel {@link PriorityLevel}
      */
-    public List<String> notifyFeatures(List<FeatureUniformResourceName> featureUrns, PriorityLevel priorityLevel) {
+    public List<String> notifyFeatures(String notificationOwner, List<FeatureUniformResourceName> featureUrns,
+            PriorityLevel priorityLevel) {
         List<NotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
-            NotificationRequestEvent event = NotificationRequestEvent.build(urn, priorityLevel);
+            NotificationRequestEvent event = NotificationRequestEvent.build(notificationOwner, urn, priorityLevel);
             events.add(event);
         }
         publisher.publish(events);

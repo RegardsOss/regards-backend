@@ -56,10 +56,10 @@ public class NotificationRequest extends AbstractRequest {
     @Convert(converter = FeatureUrnConverter.class)
     private FeatureUniformResourceName urn;
 
-    public static NotificationRequest build(String requestId, OffsetDateTime requestDate, FeatureRequestStep step,
-            PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
+    public static NotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
         NotificationRequest request = new NotificationRequest();
-        request.with(requestId, requestDate, priority, state, step);
+        request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setStep(step);
         request.setUrn(urn);
         request.setPriority(priority);

@@ -147,10 +147,10 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
         int bulk = 0;
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
-            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), null, IGeometry.unlocated(),
+            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), "owner", null, IGeometry.unlocated(),
                                             EntityType.DATA, modelName);
             GeodeProperties.addGeodeProperties(feature);
-            events.add(FeatureCreationRequestEvent.build(metadata, feature));
+            events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 
             if (bulk == PUBLISH_BULK_SIZE) {
                 publish(events, "creation", i, NB_FEATURES);
@@ -176,9 +176,9 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature.build(id, getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
             GeodeProperties.addGeodeUpdateProperties(feature);
-            uEvents.add(FeatureUpdateRequestEvent.build(featureMetadata, feature, requestDate));
+            uEvents.add(FeatureUpdateRequestEvent.build("TEST", featureMetadata, feature, requestDate));
 
             if (bulk == PUBLISH_BULK_SIZE) {
                 publish(uEvents, "update", i, NB_FEATURES);

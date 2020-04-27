@@ -146,17 +146,18 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
             LOGGER.debug("Error during founded FeatureDeletionRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher
+                    .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                                                       RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
 
         FeatureDeletionRequest request = FeatureDeletionRequest
-                .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, null,
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
                        FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.GRANTED,
-                                                    null));
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                                                    RequestState.GRANTED, null));
 
         // Add to granted request collection
         grantedRequests.add(request);
@@ -217,6 +218,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
             } else if (haveFiles(fdr, entity)) {
                 requestsWithFiles.put(fdr, entity);
             } else {
+                if ((entity.getFeature() != null) && (entity.getFeature().getHistory() != null)) {
+                    entity.getFeature().getHistory().setDeletedBy(fdr.getRequestOwner());
+                }
                 requestsWithoutFiles.put(fdr, entity);
             }
         }
@@ -233,8 +237,8 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
         for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
             // Send feedback
-            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), null, fdr.getUrn(), RequestState.SUCCESS,
-                                                        errors));
+            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(), null, fdr.getUrn(),
+                                                        RequestState.SUCCESS, errors));
         }
     }
 
@@ -263,7 +267,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         if (!sucessfullRequests.values().isEmpty()) {
             publisher.publish(sucessfullRequests.values().stream()
                     .map(feature -> NotificationActionEvent.build(gson.toJsonTree(feature.getFeature()),
-                                                                  FeatureManagementAction.DELETION.name()))
+                                                                  FeatureManagementAction.DELETED.name()))
                     .collect(Collectors.toList()));
         }
 
@@ -277,8 +281,8 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         for (FeatureEntity entity : sucessfullRequests.values()) {
             FeatureDeletionRequest fdr = requestByUrn.get(entity.getUrn());
             // Publish successful request
-            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), entity.getProviderId(), fdr.getUrn(),
-                                                        RequestState.SUCCESS));
+            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(),
+                                                        entity.getProviderId(), fdr.getUrn(), RequestState.SUCCESS));
         }
     }
 

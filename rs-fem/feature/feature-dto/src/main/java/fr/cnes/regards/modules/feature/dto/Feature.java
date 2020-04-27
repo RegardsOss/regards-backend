@@ -59,6 +59,9 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
     protected String model;
 
     @Valid
+    protected FeatureHistory history;
+
+    @Valid
     protected List<FeatureFile> files = new ArrayList<FeatureFile>();
 
     public FeatureUniformResourceName getUrn() {
@@ -95,6 +98,14 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
 
     public boolean hasFiles() {
         return (this.files != null) && !this.files.isEmpty();
+    }
+
+    public FeatureHistory getHistory() {
+        return history;
+    }
+
+    public void setHistory(FeatureHistory history) {
+        this.history = history;
     }
 
     @Override
@@ -147,7 +158,7 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
         return true;
     }
 
-    public static Feature build(String id, @Nullable FeatureUniformResourceName urn, IGeometry geometry,
+    public static Feature build(String id, String owner, @Nullable FeatureUniformResourceName urn, IGeometry geometry,
             EntityType entityType, String model) {
         Feature feature = new Feature();
         feature.setUrn(urn);
@@ -156,11 +167,29 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
         feature.setGeometry(geometry);
         feature.setId(id);
         feature.setProperties(new HashSet<>());
+        feature.setHistory(FeatureHistory.build(owner));
         return feature;
+    }
+
+    public Feature withHistory(String createdBy, @Nullable String updatedBy, @Nullable String deletedBy) {
+        this.setHistory(FeatureHistory.build(createdBy, updatedBy, deletedBy));
+        return this;
+    }
+
+    public Feature withHistory(String createdBy) {
+        this.setHistory(FeatureHistory.build(createdBy));
+        return this;
     }
 
     public Feature withProperties(Set<IProperty<?>> properties) {
         this.setProperties(properties);
+        return this;
+    }
+
+    public Feature withUpdatedBy(String updatedBy) {
+        if (this.history != null) {
+            this.getHistory().setUpdatedBy(updatedBy);
+        }
         return this;
     }
 

@@ -131,13 +131,13 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, null, RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), null, item.getUrn(), RequestState.GRANTED,
-                                                    null));
+        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                                                    RequestState.GRANTED, null));
 
         grantedRequests.add(item);
         requestInfo.addGrantedRequest(item.getUrn(), item.getRequestId());

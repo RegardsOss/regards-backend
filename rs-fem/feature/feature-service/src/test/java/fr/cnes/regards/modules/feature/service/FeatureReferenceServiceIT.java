@@ -86,9 +86,12 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            eventsToPublish.add(FeatureReferenceRequestEvent.build(FeatureSessionMetadata
-                    .build("bibi", "session", PriorityLevel.NORMAL, new StorageMetadata[0]), "dtc " + i,
-                                                                   "testFeatureGeneration"));
+            eventsToPublish
+                    .add(FeatureReferenceRequestEvent
+                            .build("bibi",
+                                   FeatureSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL,
+                                                                new StorageMetadata[0]),
+                                   "dtc " + i, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
@@ -110,9 +113,12 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            eventsToPublish.add(FeatureReferenceRequestEvent.build(FeatureSessionMetadata
-                    .build("bibi", "session", PriorityLevel.NORMAL, new StorageMetadata[0]), "dtc " + i,
-                                                                   "testFeatureGeneration"));
+            eventsToPublish
+                    .add(FeatureReferenceRequestEvent
+                            .build("bibi",
+                                   FeatureSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL,
+                                                                new StorageMetadata[0]),
+                                   "dtc " + i, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 

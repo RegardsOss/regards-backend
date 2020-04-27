@@ -292,14 +292,14 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                                      FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
                                                                  1024l, "MD5", "checksum"),
                                      FeatureFileLocation.build("www.google.com", "GPFS"));
-            featureToAdd = Feature
-                    .build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
+            featureToAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                         EntityType.DATA, model)
                     .withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             featureToAdd.addProperty(IProperty.buildObject("file_characterization",
                                                            IProperty.buildBoolean("valid", Boolean.TRUE)));
 
-            toAdd = FeatureCreationRequestEvent.build(FeatureCreationSessionMetadata
+            toAdd = FeatureCreationRequestEvent.build("owner", FeatureCreationSessionMetadata
                     .build("owner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true), featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
@@ -321,8 +321,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return factory;
     }
 
-    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(boolean prepareFeatureWithFiles,
-            Integer featureToCreateNumber) throws InterruptedException {
+    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner,
+            boolean prepareFeatureWithFiles, Integer featureToCreateNumber) throws InterruptedException {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         initFeatureCreationRequestEvent(events, featureToCreateNumber);
@@ -363,7 +363,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
         // preparation of the FeatureDeletionRequestEvent
         List<FeatureDeletionRequestEvent> deletionEvents = entityCreatedUrn.stream()
-                .map(urn -> FeatureDeletionRequestEvent.build(urn, PriorityLevel.NORMAL)).collect(Collectors.toList());
+                .map(urn -> FeatureDeletionRequestEvent.build(deletionOwner, urn, PriorityLevel.NORMAL))
+                .collect(Collectors.toList());
 
         // if we have more than a page of request can handle we will upgrade the priority level of the request out of the page
         if (deletionEvents.size() > properties.getMaxBulkSize()) {
