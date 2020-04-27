@@ -145,7 +145,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Build events to reuse event registration code
         List<FeatureUpdateRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : toHandle.getFeatures()) {
-            toTreat.add(FeatureUpdateRequestEvent.build("TEST", toHandle.getMetadata(), feature,
+            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(), toHandle.getMetadata(), feature,
                                                         OffsetDateTime.now().minusSeconds(1)));
         }
         return registerRequests(toTreat);

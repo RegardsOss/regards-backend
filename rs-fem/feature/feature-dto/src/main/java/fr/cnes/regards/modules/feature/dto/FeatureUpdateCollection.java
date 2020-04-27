@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.dto;
 import java.util.Collection;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 
@@ -32,6 +33,9 @@ import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
  */
 public class FeatureUpdateCollection extends AbstractFeatureCollection<Feature> {
 
+    @NotBlank(message = "Request owner is required")
+    private String requestOwner;
+
     @Valid
     private FeatureMetadata metadata;
 
@@ -41,10 +45,12 @@ public class FeatureUpdateCollection extends AbstractFeatureCollection<Feature> 
      * @param features collection of {@link Feature}
      * @return a {@link FeatureUpdateCollection}
      */
-    public static FeatureUpdateCollection build(FeatureMetadata metadata, Collection<Feature> features) {
+    public static FeatureUpdateCollection build(String requestOwner, FeatureMetadata metadata,
+            Collection<Feature> features) {
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.setMetadata(metadata);
         collection.addAll(features);
+        collection.setRequestOwner(requestOwner);
         return collection;
     }
 
@@ -55,4 +61,13 @@ public class FeatureUpdateCollection extends AbstractFeatureCollection<Feature> 
     public void setMetadata(FeatureMetadata metadata) {
         this.metadata = metadata;
     }
+
+    public String getRequestOwner() {
+        return requestOwner;
+    }
+
+    public void setRequestOwner(String requestOwner) {
+        this.requestOwner = requestOwner;
+    }
+
 }
