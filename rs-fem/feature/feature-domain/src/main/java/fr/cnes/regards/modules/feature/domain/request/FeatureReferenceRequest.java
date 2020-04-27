@@ -64,19 +64,15 @@ public class FeatureReferenceRequest extends AbstractRequest {
     @Column(name = "plugin_business_id", nullable = false)
     private String pluginBusinessId;
 
-    public static FeatureReferenceRequest build(String requestId, OffsetDateTime requestDate, RequestState state,
-            FeatureMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority, String location,
-            String pluginBusinessId) {
+    public static FeatureReferenceRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+            RequestState state, FeatureMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
+            String location, String pluginBusinessId) {
         FeatureReferenceRequest request = new FeatureReferenceRequest();
+        request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setMetadata(metadata);
-        request.setStep(step);
         request.setLocation(location);
         request.setPluginBusinessId(pluginBusinessId);
-        request.setPriority(priority);
-        request.setState(state);
-        request.setRequestId(requestId);
         request.setRegistrationDate(OffsetDateTime.now());
-        request.setRequestDate(requestDate);
 
         return request;
     }

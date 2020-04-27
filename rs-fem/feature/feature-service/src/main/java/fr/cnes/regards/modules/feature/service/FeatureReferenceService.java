@@ -161,8 +161,8 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
                 .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
                        item.getMetadata().getStorages(), false);
         grantedRequests.add(FeatureReferenceRequest
-                .build(item.getRequestId(), item.getRequestDate(), RequestState.GRANTED, metadata,
-                       FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
+                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
                        item.getFactory()));
         // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
         requestInfo.addGrantedRequest(null, item.getRequestId());
