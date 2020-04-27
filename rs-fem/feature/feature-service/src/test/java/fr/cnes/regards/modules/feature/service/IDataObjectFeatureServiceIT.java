@@ -60,7 +60,7 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
 
         FeatureEntity feature = FeatureEntity
                 .build("owner", "session",
-                       Feature.build("id2",
+                       Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
@@ -70,7 +70,7 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
 
         FeatureEntity featureUpdated = FeatureEntity
                 .build("owner", "session",
-                       Feature.build("id2",
+                       Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),

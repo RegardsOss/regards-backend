@@ -244,6 +244,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         Feature feature;
         try {
             feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
+            feature.withHistory(request.getRequestOwner());
             FeatureMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);

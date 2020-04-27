@@ -88,7 +88,7 @@ public class FeatureEntityTest extends AbstractDaoTest {
         List<FeatureEntity> entities = new ArrayList<>();
         for (int i = 1; i <= NB_FEATURES; i++) {
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, getURN(id), IGeometry.unlocated(), EntityType.DATA, model);
+            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, model);
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
@@ -114,7 +114,7 @@ public class FeatureEntityTest extends AbstractDaoTest {
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, getURN(id), IGeometry.unlocated(), EntityType.DATA, model);
+            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, model);
             addGeodeProperties(feature);
             entities.add(FeatureEntity.build("sessionOwner", "session", feature, null, model));
 

@@ -406,6 +406,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             FeatureUniformResourceName previousUrn) {
 
         Feature feature = fcr.getFeature();
+        feature.withHistory(fcr.getRequestOwner());
 
         UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
         feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(),

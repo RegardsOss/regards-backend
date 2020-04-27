@@ -63,8 +63,8 @@ public class FeatureValidationTest extends AbstractFeatureMultitenantServiceTest
                                            this.getDefaultTenant(), this.getModelAttrAssocClientMock());
 
         // Init feature without files and properties
-        Feature feature = Feature.build("id01", null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
-                                        modelName);
+        Feature feature = Feature.build("id01", "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                        EntityType.DATA, modelName);
 
         // Validate feature
         Errors errors = validationService.validate(feature, ValidationMode.CREATION);

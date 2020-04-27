@@ -47,9 +47,8 @@ public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTe
     public Feature createFeature(FeatureReferenceRequest reference) {
         String model = mockModelClient("feature_model_01.xml", cps, factory, runtimeTenantResolver.getTenant(),
                                        modelAttrAssocClientMock);
-        Feature toAdd = Feature.build("id " + reference.getLocation(), null,
+        Feature toAdd = Feature.build("id " + reference.getLocation(), "DefaultFeatureGenerator", null,
                                       IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model);
-        toAdd.withHistory("DefaultFeatureGenerator", null, null);
         toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
         toAdd.addProperty(IProperty.buildObject("file_characterization",
                                                 IProperty.buildBoolean("valid", Boolean.TRUE)));

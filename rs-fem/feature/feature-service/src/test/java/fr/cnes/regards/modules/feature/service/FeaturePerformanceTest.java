@@ -87,7 +87,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, null, IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 

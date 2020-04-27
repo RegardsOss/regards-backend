@@ -78,7 +78,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature.build(id, refs.get(id), IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", refs.get(id), IGeometry.unlocated(), EntityType.DATA,
+                                            modelName);
             GeodeProperties.addGeodeUpdateProperties(feature);
             events.add(FeatureUpdateRequestEvent.build("test", metadata, feature, requestDate));
 
@@ -128,7 +129,7 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature.build(id, null, IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
             UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
             feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(),
                                                             runtimeTenantResolver.getTenant(), uuid, 1));

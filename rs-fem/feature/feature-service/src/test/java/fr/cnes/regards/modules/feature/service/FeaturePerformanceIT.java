@@ -80,8 +80,8 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
 
         long creationStart = System.currentTimeMillis();
         for (int i = 1; i <= NB_FEATURES; i++) {
-            Feature feature = Feature.build(String.format(format, i), null, IGeometry.unlocated(), EntityType.DATA,
-                                            modelName);
+            Feature feature = Feature.build(String.format(format, i), "owner", null, IGeometry.unlocated(),
+                                            EntityType.DATA, modelName);
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
@@ -99,7 +99,7 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
         OffsetDateTime requestDate = OffsetDateTime.now();
         for (int i = 1; i <= NB_FEATURES; i++) {
             String id = String.format(format, i);
-            Feature feature = Feature.build(id, getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.FALSE),
                                                       IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
