@@ -422,6 +422,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             // Generate IpId only if datasource plugin hasn't yet generate it
             if (dataObject.getIpId().isRandomEntityId()) {
                 dataObject.setIpId(buildIpId(tenant, dataObject.getProviderId(), datasourceId));
+                dataObject.setVersion(dataObject.getIpId().getVersion());
             }
             // Manage geometries
             if (feature.getGeometry() != null) {

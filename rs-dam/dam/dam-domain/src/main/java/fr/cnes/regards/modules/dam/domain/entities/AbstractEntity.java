@@ -459,4 +459,12 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     public void removeVirtualId() {
         feature.removeVirtualId();
     }
+
+    public Integer getVersion() {
+        return feature.getVersion();
+    }
+
+    public void setVersion(Integer version) {
+        feature.setVersion(version);
+    }
 }

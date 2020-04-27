@@ -86,9 +86,12 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
 
     private boolean last = false;
 
+    private Integer version;
+
     public EntityFeature(UniformResourceName id, String providerId, EntityType entityType, String label) {
         Assert.notNull(entityType, "Entity type is required");
         this.id = id;
+        this.version = id.getVersion();
         this.providerId = providerId;
         this.entityType = entityType;
         this.label = label;
@@ -214,5 +217,13 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
 
     public void removeVirtualId() {
         this.virtualId = null;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.compress.utils.Lists;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +34,7 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -47,6 +47,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.plugins.TestDataAccessRightPlugin;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
@@ -88,6 +89,8 @@ import fr.cnes.regards.modules.model.service.IModelService;
 public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private static String TENANT = "entity_indexer";
+
+    private final List<DataObject> objects = Lists.newArrayList();
 
     @Autowired
     private IEsRepository esRepository;
@@ -158,8 +161,6 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private AccessRight ar3;
 
     private AccessRight ar4;
-
-    private final List<DataObject> objects = Lists.newArrayList();
 
     @Autowired
     private IPluginService pluginService;
@@ -260,7 +261,10 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     }
 
     private DataObject createObject(String id, String label) {
-        return new DataObject(model, TENANT, id, label);
+        DataObject dataObject = new DataObject(model, TENANT, id, label);
+        // for this test, lets assume that there is only 1 version of dataobjects
+        dataObject.setLast(true);
+        return dataObject;
     }
 
     @Test
@@ -272,18 +276,20 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         PluginConfiguration newPluginConf = createNewDataAccessPlugin();
         createOldDataAccessPlugin();
 
-        AccessRight ar = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.CUSTOM_ACCESS,
-                dataset, group1);
+        AccessRight ar = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED),
+                                         AccessLevel.CUSTOM_ACCESS,
+                                         dataset,
+                                         group1);
         ar.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar.setDataAccessPlugin(newPluginConf);
         ar = rightsService.createAccessRight(ar);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
 
-        @SuppressWarnings("rawtypes")
-        final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches
+                .onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
-        @SuppressWarnings("rawtypes")
-        Page<AbstractEntity> results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1"));
+        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
+                .search(searchKey, 100, ICriterion.contains("groups", "group1"));
         Assert.assertEquals(3, results.getTotalElements());
 
     }
@@ -297,11 +303,11 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // 2. Check that no DATA are associated to GROUP1 as no AccessRighrs are created.
         // -------------------------------------------------------------------------------
         runtimeTenantResolver.forceTenant(TENANT);
-        @SuppressWarnings("rawtypes")
-        final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches
+                .onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
-        @SuppressWarnings("rawtypes")
-        Page<AbstractEntity> results = searchService.search(searchKey, 100, ICriterion.all());
+        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
+                .search(searchKey, 100, ICriterion.all());
         Assert.assertEquals(objects.size(), results.getTotalElements());
         results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1"));
         Assert.assertEquals(0, results.getTotalElements());
@@ -326,8 +332,10 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         rightsService.createAccessRight(ar2);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be only in group1 and group2
-        results = searchService.search(searchKey, 100, ICriterion.and(ICriterion.contains("groups", "group1"),
-                                                                      ICriterion.contains("groups", "group2")));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.and(ICriterion.contains("groups", "group1"),
+                                                      ICriterion.contains("groups", "group2")));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -337,26 +345,32 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar = null;
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be only in group2
-        results = searchService.search(searchKey, 100, ICriterion
-                .and(ICriterion.not(ICriterion.contains("groups", "group1")), ICriterion.contains("groups", "group2")));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
+                                                      ICriterion.contains("groups", "group2")));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
         // 6. Create a third accessRight with filter and check that only one dataObject is associated to the new GROUP3
         // -------------------------------------------------------------------------------
-        ar3 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.CUSTOM_ACCESS, dataset,
-                group3);
+        ar3 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED),
+                              AccessLevel.CUSTOM_ACCESS,
+                              dataset,
+                              group3);
         ar3.setDataAccessPlugin(dataAccessPlugin);
         ar3.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         rightsService.createAccessRight(ar3);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be in group2 and only one (DO1) in group3
-        results = searchService.search(searchKey, 100,
+        results = searchService.search(searchKey,
+                                       100,
                                        ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
                                                       ICriterion.contains("groups", "group2"),
                                                       ICriterion.contains("groups", "group3")));
         Assert.assertEquals(1, results.getTotalElements());
-        results = searchService.search(searchKey, 100,
+        results = searchService.search(searchKey,
+                                       100,
                                        ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
                                                       ICriterion.contains("groups", "group2"),
                                                       ICriterion.not(ICriterion.contains("groups", "group3"))));
@@ -370,7 +384,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be in group2 and only one (DO1) in group3
-        results = searchService.search(searchKey, 100,
+        results = searchService.search(searchKey,
+                                       100,
                                        ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1")),
                                                       ICriterion.contains("groups", "group2"),
                                                       ICriterion.not(ICriterion.contains("groups", "group3"))));
@@ -395,15 +410,18 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         dataset2 = createDataset("dataset2", datasource);
         indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
-        ar4 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.FULL_ACCESS, dataset2,
-                group4);
+        ar4 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED),
+                              AccessLevel.FULL_ACCESS,
+                              dataset2,
+                              group4);
         ar4.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar4 = rightsService.createAccessRight(ar4);
         indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
         results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group4"));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
-        results = searchService.search(searchKey, 100,
+        results = searchService.search(searchKey,
+                                       100,
                                        ICriterion.and(ICriterion.contains("groups", "group4"),
                                                       ICriterion.contains("groups", "group3"),
                                                       ICriterion.contains("groups", "group2")));
@@ -418,6 +436,53 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3"));
         Assert.assertEquals(0, results.getTotalElements());
 
+    }
+
+    /**
+     * Two goals:
+     * -  test that if entities are tagged with ipId we can access them by looking for ipId or virtualId
+     * -  test that if entities are tagged with virtualId we can access them by looking for ipId or virtualId
+     * @throws ModuleException
+     */
+    @Test
+    public void testVirtualId() throws ModuleException {
+        // dataobjects have been tagged with dataset ipId (check init methods)
+        // so lets try to get them with tag ipId and virtualId to compare results
+        final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(TENANT);
+        Page<AbstractEntity> fromIpId = searchService
+                .search(searchKey, 100, ICriterion.contains("tags", dataset.getIpId().toString()));
+        Page<AbstractEntity> fromVirtualId = searchService
+                .search(searchKey, 100, ICriterion.contains("tags", dataset.getVirtualId().toString()));
+        Assert.assertEquals(fromIpId.getSize(), fromVirtualId.getSize());
+        Assert.assertTrue("results from ipId search should contains all results from virtualId search",
+                          fromIpId.getContent().containsAll(fromVirtualId.getContent()));
+        Assert.assertTrue("results from virtualId search should contains all results from IpId search",
+                          fromVirtualId.getContent().containsAll(fromIpId.getContent()));
+        // now lets add one dataobjet tagger with one of existing virtualId
+        DataObject taggedWithLatest = createObject("taggedWithLatest", "Tagged With Latest");
+
+        DataObject taggingWith = objects.get(0);
+        UniformResourceName virtualId = taggingWith.getVirtualId();
+        Assert.assertNotNull(virtualId);
+        taggedWithLatest.addTags(virtualId.toString());
+        indexerService.createDataObjects(TENANT,
+                                         datasource.getId(),
+                                         OffsetDateTime.now().minusDays(1),
+                                         Lists.newArrayList(taggedWithLatest),
+                                         "");
+        Page<AbstractEntity> taggedWithVirtualId = searchService
+                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
+        Assert.assertTrue("we should have the object we just created and tagged",
+                          taggedWithVirtualId.getContent().contains(taggedWithLatest));
+        taggedWithVirtualId = searchService
+                .search(searchKey, 100, ICriterion.contains("tags", taggingWith.getIpId().toString()));
+        Assert.assertTrue("we should have the object we just created and tagged with virtualId by looking for ipId",
+                          taggedWithVirtualId.getContent().contains(taggedWithLatest));
+
+        // Ok this is most likely not the right place but lets get by virtualId here, we already have all we need
+        Dataset datasetByVirtualId = searchService.get(dataset.getVirtualId());
+        Assert.assertEquals(dataset, datasetByVirtualId);
     }
 
 }

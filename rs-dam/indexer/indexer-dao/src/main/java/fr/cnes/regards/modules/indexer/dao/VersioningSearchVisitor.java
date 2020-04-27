@@ -47,7 +47,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
     @Override
     public ICriterion visitAndCriterion(AbstractMultiCriterion criterion) {
         List<ICriterion> newCriteria = new ArrayList<>();
-        for(ICriterion existingCriterion : criterion.getCriterions()) {
+        for (ICriterion existingCriterion : criterion.getCriterions()) {
             newCriteria.add(existingCriterion.accept(this));
         }
         return ICriterion.and(newCriteria);
@@ -56,7 +56,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
     @Override
     public ICriterion visitOrCriterion(AbstractMultiCriterion criterion) {
         List<ICriterion> newCriteria = new ArrayList<>();
-        for(ICriterion existingCriterion : criterion.getCriterions()) {
+        for (ICriterion existingCriterion : criterion.getCriterions()) {
             newCriteria.add(existingCriterion.accept(this));
         }
         return ICriterion.or(newCriteria);
@@ -98,16 +98,22 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                                                               urn.getEntityType().toString(),
                                                               critValue,
                                                               AbstractEntity.class);
-                return ICriterion
-                        .or(ICriterion.eq(attName, critValue), ICriterion.eq(attName, entity.getIpId().toString()));
+                if (entity != null) {
+                    return ICriterion
+                            .or(ICriterion.eq(attName, critValue), ICriterion.eq(attName, entity.getIpId().toString()));
+                } else {
+                    // we are looking for something that does not exists(anymore?) so we don't need to change the criterion
+                    return criterion;
+                }
             } else {
                 // this is a precise urn
                 AbstractEntity entity = esRepo
                         .get(urn.getTenant(), urn.getEntityType().toString(), critValue, AbstractEntity.class);
-                if (entity.isLast()) {
+                if (entity != null && entity.isLast()) {
                     return ICriterion.or(ICriterion.eq(attName, entity.getVirtualId().toString()),
                                          ICriterion.eq(attName, critValue));
                 } else {
+                    // we are looking for something that does not exists(anymore?) so we don't need to change the criterion
                     return criterion;
                 }
             }
