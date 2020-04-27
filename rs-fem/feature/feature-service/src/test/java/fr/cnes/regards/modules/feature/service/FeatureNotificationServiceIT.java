@@ -38,6 +38,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
@@ -105,10 +106,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         Mockito.verify(publisher).publish(recordsCaptor.capture());
         // the first publish message to be intercepted must be the creation of createdEntity
-        assertEquals("CREATION", recordsCaptor.getValue().get(0).getAction());
+        assertEquals(FeatureManagementAction.CREATED.name(), recordsCaptor.getValue().get(0).getAction());
         assertEquals(gson.toJson(createdEntity.getFeature()), recordsCaptor.getValue().get(0).getElement().toString());
         // the second message is the update of updatedEntity
-        assertEquals("UPDATE", recordsCaptor.getValue().get(1).getAction());
+        assertEquals(FeatureManagementAction.UPDATED.name(), recordsCaptor.getValue().get(1).getAction());
         assertEquals(gson.toJson(updatedEntity.getFeature()), recordsCaptor.getValue().get(1).getElement().toString());
 
     }
