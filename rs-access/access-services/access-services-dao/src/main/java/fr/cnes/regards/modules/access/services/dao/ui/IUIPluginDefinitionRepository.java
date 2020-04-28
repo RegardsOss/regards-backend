@@ -40,6 +40,6 @@ public interface IUIPluginDefinitionRepository extends JpaRepository<UIPluginDef
 
     Page<UIPluginDefinition> findByType(UIPluginTypesEnum type, Pageable pageable);
 
-    Optional<UIPluginDefinition> fineOneByName(String name);
+    Optional<UIPluginDefinition> findOneByName(String name);
 
 }

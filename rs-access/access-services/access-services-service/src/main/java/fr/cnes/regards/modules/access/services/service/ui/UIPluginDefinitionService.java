@@ -209,7 +209,7 @@ public class UIPluginDefinitionService
 
     @Override
     public Optional<UIPluginDefinition> retrievePlugin(String name) {
-        return this.repository.fineOneByName(name);
+        return this.repository.findOneByName(name);
     }
 
 }
