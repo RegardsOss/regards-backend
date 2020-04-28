@@ -30,6 +30,7 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -217,5 +218,4 @@ public class FeatureEntity {
     public void setModel(String model) {
         this.model = model;
     }
-
 }

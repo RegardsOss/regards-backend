@@ -272,8 +272,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         }
     }
 
-    protected void initFeatureCreationRequestEvent(List<FeatureCreationRequestEvent> events,
-            int featureNumberToCreate) {
+    protected void initFeatureCreationRequestEvent(List<FeatureCreationRequestEvent> events, int featureNumberToCreate,
+            boolean override) {
         FeatureCreationRequestEvent toAdd;
         Feature featureToAdd;
         FeatureFile file;
@@ -300,7 +300,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                                                            IProperty.buildBoolean("valid", Boolean.TRUE)));
 
             toAdd = FeatureCreationRequestEvent.build("owner", FeatureCreationSessionMetadata
-                    .build("owner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true), featureToAdd);
+                    .build("owner", "session", PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -325,7 +325,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             boolean prepareFeatureWithFiles, Integer featureToCreateNumber) throws InterruptedException {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        initFeatureCreationRequestEvent(events, featureToCreateNumber);
+        initFeatureCreationRequestEvent(events, featureToCreateNumber, true);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features

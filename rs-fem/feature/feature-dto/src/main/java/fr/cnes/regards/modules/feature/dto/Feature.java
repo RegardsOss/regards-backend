@@ -64,6 +64,8 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
     @Valid
     protected List<FeatureFile> files = new ArrayList<FeatureFile>();
 
+    private boolean last = false;
+
     public FeatureUniformResourceName getUrn() {
         return urn;
     }
@@ -190,5 +192,13 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
             this.properties = new HashSet<>();
         }
         this.properties.add(property);
+    }
+
+    public void setLast(boolean last) {
+        this.last = last;
+    }
+
+    public boolean isLast() {
+        return last;
     }
 }
