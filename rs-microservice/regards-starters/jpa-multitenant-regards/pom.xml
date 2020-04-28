@@ -81,13 +81,11 @@
         <dependency>
     		<groupId>net.javacrumbs.shedlock</groupId>
     		<artifactId>shedlock-spring</artifactId>
-    		<version>4.8.0</version>
-		</dependency>
+    		</dependency>
 		<dependency>
     		<groupId>net.javacrumbs.shedlock</groupId>
     		<artifactId>shedlock-provider-jdbc-template</artifactId>
-    		<version>4.8.0</version>
-		</dependency>
+    	</dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
