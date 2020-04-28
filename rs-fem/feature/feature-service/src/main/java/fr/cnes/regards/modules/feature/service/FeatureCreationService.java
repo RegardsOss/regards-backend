@@ -169,8 +169,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         // Build events to reuse event registration code
         List<FeatureCreationRequestEvent> toTreat = new ArrayList<FeatureCreationRequestEvent>();
         for (Feature feature : collection.getFeatures()) {
-            toTreat.add(FeatureCreationRequestEvent
-                                .build(collection.getMetadata().getSessionOwner(), collection.getMetadata(), feature));
+            toTreat.add(FeatureCreationRequestEvent.build(collection.getRequestOwner(), collection.getMetadata(),
+                                                          feature));
         }
         return registerRequests(toTreat);
     }
@@ -456,6 +456,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             FeatureUniformResourceName previousUrn) {
 
         Feature feature = fcr.getFeature();
+        feature.withHistory(fcr.getRequestOwner());
 
         UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
         feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
@@ -463,13 +464,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                         runtimeTenantResolver.getTenant(),
                                                         uuid,
                                                         computeNextVersion(previousVersion)));
-        feature.setLast(true);
-        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(),
-                                                    fcr.getMetadata().getSession(),
-                                                    fcr.getRequestOwner(),
-                                                    feature,
-                                                    previousUrn,
-                                                    fcr.getFeature().getModel());
+
+        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(), fcr.getMetadata().getSession(),
+                                                    feature, previousUrn, fcr.getFeature().getModel());
         created.setVersion(feature.getUrn().getVersion());
         fcr.setFeatureEntity(created);
 

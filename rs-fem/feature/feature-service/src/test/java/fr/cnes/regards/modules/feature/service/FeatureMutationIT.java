@@ -77,7 +77,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
 
         // Build feature to create
         String id = String.format("F%05d", 1);
-        Feature feature = Feature.build(id, null, IGeometry.unlocated(), EntityType.DATA, modelName);
+        Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
         feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
         feature.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.FALSE),
@@ -98,8 +98,8 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
         FeatureEntity entity = featureRepo.findTop1VersionByProviderIdOrderByVersionAsc(id);
 
         // Build feature to update
-        Feature updated = Feature.build(id, entity.getFeature().getUrn(), IGeometry.unlocated(), EntityType.DATA,
-                                        modelName);
+        Feature updated = Feature.build(id, "owner", entity.getFeature().getUrn(), IGeometry.unlocated(),
+                                        EntityType.DATA, modelName);
         updated.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
                                                   IProperty.buildDate("invalidation_date", null)));

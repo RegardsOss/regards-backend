@@ -59,8 +59,8 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
                                        modelAttrAssocClientMock);
 
         FeatureEntity feature = FeatureEntity
-                .build("owner", "session", "owner",
-                       Feature.build("id2",
+                .build("owner", "session",
+                       Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
@@ -69,8 +69,8 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
         this.featureRepo.save(feature);
 
         FeatureEntity featureUpdated = FeatureEntity
-                .build("owner", "session", "owner",
-                       Feature.build("id2",
+                .build("owner", "session",
+                       Feature.build("id2", "owner",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                       "peps", UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),

@@ -227,7 +227,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         String model = "model";
         FeatureCreationRequest fcr = FeatureCreationRequest
                 .build("id1", "owner", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(),
-                       Feature.build("id1",
+                       Feature.build("id1", "test",
                                      FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "lol",
                                                                       UUID.randomUUID(), 1),
                                      IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
@@ -236,11 +236,12 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         fcr.setGroupId(info.getGroupId());
 
         FeatureEntity feature = FeatureEntity
-                .build("owner", "session", "owner",
-                       Feature.build("id2",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                      "peps", UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
+                .build("owner", "session", Feature
+                        .build("id2", "test",
+                               FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "peps",
+                                                                UUID.randomUUID(), 1),
+                               IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
+                        .withHistory("test"),
                        null, model);
         List<FeatureFile> filles = new ArrayList<>();
         filles.add(FeatureFile.build(

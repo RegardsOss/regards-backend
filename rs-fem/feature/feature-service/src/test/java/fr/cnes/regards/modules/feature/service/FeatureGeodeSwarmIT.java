@@ -87,7 +87,7 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceTest {
         int bulk = 0;
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
-            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), null, IGeometry.unlocated(),
+            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), "owner", null, IGeometry.unlocated(),
                                             EntityType.DATA, modelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));

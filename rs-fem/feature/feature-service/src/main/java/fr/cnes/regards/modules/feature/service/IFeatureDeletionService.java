@@ -41,7 +41,7 @@ public interface IFeatureDeletionService {
 
     /**
      * Schedule a job to process a batch of requests<br/>
-     * Inside this list there is only one occurence of {@link FeatureDeletionRequestEvent} per {@link Feature} id
+     * Inside this list there is only one occurrence of {@link FeatureDeletionRequestEvent} per {@link Feature} id
      * @return true if at least one request has been scheduled
      */
     boolean scheduleRequests();

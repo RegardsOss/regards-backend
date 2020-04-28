@@ -126,8 +126,8 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        Feature feature = Feature.build("MyId", null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA,
-                                        model);
+        Feature feature = Feature.build("MyId", "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                        EntityType.DATA, model);
         feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
         feature.addProperty(IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", true)));
         feature.withFiles(FeatureFile.build(FeatureFileAttributes
@@ -141,7 +141,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        Feature feature = Feature.build("MyId",
+        Feature feature = Feature.build("MyId", "owner",
                                         FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
                                                                          "tenant", UUID.randomUUID(), 1),
                                         null, EntityType.DATA, model);

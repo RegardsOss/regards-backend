@@ -33,6 +33,16 @@ public class FeatureHistory {
 
     private String updatedBy;
 
+    private String deletedBy;
+
+    public static FeatureHistory build(String createdBy, String updatedBy, String deletedBy) {
+        FeatureHistory h = new FeatureHistory();
+        h.createdBy = createdBy;
+        h.updatedBy = updatedBy;
+        h.deletedBy = deletedBy;
+        return h;
+    }
+
     public static FeatureHistory build(String createdBy, String updatedBy) {
         FeatureHistory h = new FeatureHistory();
         h.createdBy = createdBy;
@@ -54,4 +64,15 @@ public class FeatureHistory {
         return updatedBy;
     }
 
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public void setDeletedBy(String deletedBy) {
+        this.deletedBy = deletedBy;
+    }
+
+    public String getDeletedBy() {
+        return this.deletedBy;
+    }
 }

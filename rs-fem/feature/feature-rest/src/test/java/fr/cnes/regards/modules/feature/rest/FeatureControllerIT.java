@@ -63,6 +63,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         Feature featureToAdd = initValidFeature();
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.add(featureToAdd);
+        collection.setRequestOwner("test");
         List<StorageMetadata> metadata = new ArrayList<StorageMetadata>();
         metadata.add(StorageMetadata.build("disk"));
         // we will mock validation plugin and consider the feature is valid
@@ -96,6 +97,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         metadata.add(StorageMetadata.build("disk"));
 
         collection.setMetadata(FeatureSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, metadata));
+        collection.setRequestOwner("test");
         MapBindingResult errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
         errors.reject("error code");
         // we will mock validation plugin and consider the feature is unvalid
@@ -116,6 +118,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         //        metadata.add(StorageMetadata.build("disk"));
 
         collection.setMetadata(FeatureMetadata.build(PriorityLevel.NORMAL, metadata));
+        collection.setRequestOwner("test");
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
                 .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
@@ -145,6 +148,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         metadata.add(StorageMetadata.build("disk"));
 
         collection.setMetadata(FeatureMetadata.build(PriorityLevel.NORMAL, metadata));
+        collection.setRequestOwner("test");
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
                 .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));

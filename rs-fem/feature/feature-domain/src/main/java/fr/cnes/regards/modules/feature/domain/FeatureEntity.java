@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -70,9 +69,6 @@ public class FeatureEntity {
     @Convert(converter = FeatureUrnConverter.class)
     private FeatureUniformResourceName previousVersionUrn;
 
-    @Embedded
-    private FeatureEntityHistory history;
-
     @Column(length = 128, name = "session_owner", nullable = false)
     private String sessionOwner;
 
@@ -106,14 +102,13 @@ public class FeatureEntity {
     @NotNull
     private String model;
 
-    public static FeatureEntity build(String sessionOwner, String session, String featureOwner, Feature feature,
+    public static FeatureEntity build(String sessionOwner, String session, Feature feature,
             FeatureUniformResourceName previousVersionUrn, String model) {
         FeatureEntity featureEntity = new FeatureEntity();
         featureEntity.setSessionOwner(sessionOwner);
         featureEntity.setSession(session);
         featureEntity.setFeature(feature);
         featureEntity.setLastUpdate(OffsetDateTime.now());
-        featureEntity.setHistory(FeatureEntityHistory.build(featureOwner));
         featureEntity.setProviderId(feature.getId());
         featureEntity.setUrn(feature.getUrn());
         featureEntity.setVersion(feature.getUrn().getVersion());
@@ -121,14 +116,6 @@ public class FeatureEntity {
         featureEntity.setCreationDate(featureEntity.getLastUpdate());
         featureEntity.setModel(model);
         return featureEntity;
-    }
-
-    public FeatureEntityHistory getHistory() {
-        return history;
-    }
-
-    public void setHistory(FeatureEntityHistory history) {
-        this.history = history;
     }
 
     public Long getId() {

@@ -292,8 +292,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                                      FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
                                                                  1024l, "MD5", "checksum"),
                                      FeatureFileLocation.build("www.google.com", "GPFS"));
-            featureToAdd = Feature
-                    .build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
+            featureToAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                         EntityType.DATA, model)
                     .withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             featureToAdd.addProperty(IProperty.buildObject("file_characterization",

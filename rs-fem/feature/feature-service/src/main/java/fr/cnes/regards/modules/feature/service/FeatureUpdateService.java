@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.LightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -144,7 +145,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Build events to reuse event registration code
         List<FeatureUpdateRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : toHandle.getFeatures()) {
-            toTreat.add(FeatureUpdateRequestEvent.build("TEST", toHandle.getMetadata(), feature,
+            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(), toHandle.getMetadata(), feature,
                                                         OffsetDateTime.now().minusSeconds(1)));
         }
         return registerRequests(toTreat);
@@ -291,7 +292,12 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
             } else {
 
                 entity.setLastUpdate(OffsetDateTime.now());
-                entity.getHistory().setUpdatedBy(request.getRequestOwner());
+                if (entity.getFeature().getHistory() != null) {
+                    entity.getFeature().getHistory().setUpdatedBy(request.getRequestOwner());
+                } else {
+                    entity.getFeature()
+                            .setHistory(FeatureHistory.build(request.getRequestOwner(), request.getRequestOwner()));
+                }
 
                 // Merge properties handling null property values to unset properties
                 IProperty.mergeProperties(entity.getFeature().getProperties(), patch.getProperties(),

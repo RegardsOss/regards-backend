@@ -228,7 +228,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            Feature toAdd = Feature.build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+            Feature toAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
                                           EntityType.DATA, model);
             features.add(toAdd);
             toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
@@ -237,7 +237,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build(FeatureCreationSessionMetadata
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
                 .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -250,11 +250,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testRegisterScheduleProcessWithErrors() {
         List<Feature> features = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            features.add(Feature.build("id" + i, null, IGeometry.point(IGeometry.position(10.0, 20.0)), null, "model"));
+            features.add(Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)), null,
+                                       "model"));
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build(FeatureCreationSessionMetadata
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
                 .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
