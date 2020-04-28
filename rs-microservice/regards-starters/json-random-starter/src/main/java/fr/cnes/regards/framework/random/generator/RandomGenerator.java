@@ -18,19 +18,41 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
 
 public interface RandomGenerator<T> {
 
     default void parseParameters() {
-        // Step to parse generator parameters from function descriptor is any
+        // Step to parse generator parameters from function descriptor if any
     }
 
     /**
-     * Main function to generate a random value according to template specification
+     * If the method return {@link Optional#empty()}, generator will call {@link #random()} method else {@link #randomWithContext(Map)}.
+     * @return list of dependent property paths the generator depends on.
      */
-    T random();
+    default Optional<List<String>> getDependentProperties() {
+        return Optional.empty();
+    }
+
+    /**
+     * Main function to generate a random value according to template specification as a FIRST PASS generation.
+     */
+    default T random() {
+        throw new UnsupportedOperationException("Random must be override for independent property generation");
+    }
+
+    /**
+     * Main function to generate a random value according to template specification and depending on another one as a SECOND PASS generation.
+     */
+    default T randomWithContext(Map<String, Object> context) {
+        throw new UnsupportedOperationException(
+                "Random with context must be overridden for dependent property generation");
+    }
 
     static RandomGenerator<?> of(Object value) {
         // Parse function
@@ -71,6 +93,9 @@ public interface RandomGenerator<T> {
                 break;
             case STRING:
                 rg = new RandomString(fd);
+                break;
+            case URN:
+                rg = new RandomUrn(fd);
                 break;
             case UUID:
                 rg = new RandomUuid(fd);

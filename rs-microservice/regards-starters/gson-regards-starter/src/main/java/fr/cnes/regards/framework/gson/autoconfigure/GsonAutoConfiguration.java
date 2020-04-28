@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.gson.autoconfigure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 
 import com.google.gson.Gson;
@@ -91,10 +93,16 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         return gsonBuilderFactory.newBuilder();
     }
 
-    @Bean
+    @Bean("gson")
+    @Primary
     @ConditionalOnMissingBean
     public Gson gson(GsonBuilder builder) {
         return builder.create();
+    }
+
+    @Bean("prettyGson")
+    public Gson prettyGson(GsonBuilder builder) {
+        return builder.create().newBuilder().setPrettyPrinting().create();
     }
 
     @Bean
@@ -105,9 +113,11 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Bean
     @ConditionalOnMissingBean
-    public GsonHttpMessageConverter gsonConverter(Gson gson) {
-        final GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
+    public GsonHttpMessageConverter gsonConverter(@Qualifier("gson") Gson gson,
+            @Qualifier("prettyGson") Gson prettyGson) {
+        final GsonHttpMessageConverterCustom gsonHttpMessageConverter = new GsonHttpMessageConverterCustom();
         gsonHttpMessageConverter.setGson(gson);
+        gsonHttpMessageConverter.setPrettyGson(prettyGson);
         return gsonHttpMessageConverter;
     }
 

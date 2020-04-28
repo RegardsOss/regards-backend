@@ -18,13 +18,31 @@
  */
 package fr.cnes.regards.framework.random.generator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
 
-    Map<String, RandomGenerator<?>> generators = new HashMap<>();
+    /**
+     * If a key is prefixed by {@link #KEYS_TO_REMOVE_PREFIX},
+     * generator will removed it after second pass generation
+     * and just before returning generated object.
+     */
+    private static final String KEYS_TO_REMOVE_PREFIX = "#";
+
+    private final Map<String, RandomGenerator<?>> generators = new HashMap<>();
+
+    private final Map<String, RandomGenerator<?>> dependentGenerators = new HashMap<>();
+
+    private final List<String> keysToRemove = new ArrayList<>();
+
+    /**
+     * Work in progress object
+     */
+    private Map<String, Object> embedded;
 
     public ObjectRandomGenerator() {
         super(null);
@@ -32,18 +50,39 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
 
     @Override
     public Map<String, Object> random() {
-        Map<String, Object> embedded = new HashMap<>();
+        embedded = new HashMap<>();
         for (Entry<String, RandomGenerator<?>> entry : generators.entrySet()) {
             embedded.put(entry.getKey(), entry.getValue().random());
         }
         return embedded;
     }
 
-    public Map<String, RandomGenerator<?>> getGenerators() {
-        return generators;
+    @Override
+    public Map<String, Object> randomWithContext(Map<String, Object> context) {
+        for (Entry<String, RandomGenerator<?>> entry : dependentGenerators.entrySet()) {
+            embedded.put(entry.getKey(), entry.getValue().randomWithContext(context));
+        }
+        // Propagate to embedded objects
+        for (Entry<String, RandomGenerator<?>> entry : generators.entrySet()) {
+            if (ObjectRandomGenerator.class.isAssignableFrom(entry.getValue().getClass())) {
+                entry.getValue().randomWithContext(context);
+            }
+        }
+        // Manage keys to remove
+        keysToRemove.forEach(key -> embedded.remove(key));
+
+        return embedded;
     }
 
     public void addGenerator(String key, RandomGenerator<?> generator) {
-        this.generators.put(key, generator);
+        if (generator.getDependentProperties().isPresent()) {
+            this.dependentGenerators.put(key, generator);
+        } else {
+            this.generators.put(key, generator);
+        }
+        // Manage keys to remove
+        if (key.startsWith(KEYS_TO_REMOVE_PREFIX)) {
+            keysToRemove.add(key);
+        }
     }
 }

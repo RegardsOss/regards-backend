@@ -99,7 +99,7 @@ public class JobService implements IJobService {
     @Value("${regards.jobs.slot.number:2}")
     private int timeSlotNumber;
 
-    @Value("${regards.jobs.completion.update.rate.ms:1000}")
+    @Value("${regards.jobs.completion.update.rate.ms:10000}")
     private int updateCompletionPeriod;
 
     @Autowired

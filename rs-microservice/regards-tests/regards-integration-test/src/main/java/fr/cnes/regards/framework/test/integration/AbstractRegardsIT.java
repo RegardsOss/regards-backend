@@ -153,6 +153,16 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     /**
+     * Allows to perform DELETE with body request with the security automatically handled
+     */
+    protected ResultActions performDefaultDelete(String urlTemplate, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return performPost(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST,
+                                                       getDefaultUserEmail(), getDefaultRole()),
+                           content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    /**
      * Allows to perform POST request without the security automatically handled
      */
     protected ResultActions performPost(String urlTemplate, String token, Object content,

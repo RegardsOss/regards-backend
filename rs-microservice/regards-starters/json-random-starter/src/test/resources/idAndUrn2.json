@@ -1,0 +1,4 @@
+{
+    "id":"FEATURE:MSI3:00798",
+    "urn":"{{urn('URN:FEATURE:DATA:geode:%s:V1',id)}}"
+}

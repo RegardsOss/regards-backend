@@ -24,13 +24,33 @@ import fr.cnes.regards.framework.random.function.FunctionDescriptor;
 
 public class RandomString extends AbstractRandomGenerator<String> {
 
+    private static String USAGE = "Function {} only support 0 or 2 arguments";
+
+    private Integer minLengthInclusive = 10;
+
+    private Integer maxLengthExclusive = 20;
+
     public RandomString(FunctionDescriptor fd) {
         super(fd);
     }
 
     @Override
+    public void parseParameters() {
+        switch (fd.getParameterSize()) {
+            case 0:
+                break;
+            case 2:
+                minLengthInclusive = Integer.valueOf(fd.getParameter(0));
+                maxLengthExclusive = Integer.valueOf(fd.getParameter(1));
+                break;
+            default:
+                throw new IllegalArgumentException(String.format(USAGE, fd.getType()));
+        }
+    }
+
+    @Override
     public String random() {
-        return randomAlphanumeric(0, 20);
+        return randomAlphanumeric(minLengthInclusive, maxLengthExclusive);
     }
 
     public String randomAlphabetic(int minLengthInclusive, int maxLengthExclusive) {

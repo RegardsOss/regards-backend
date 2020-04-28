@@ -77,6 +77,17 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>encryption-starter</artifactId>
         </dependency>
+        <!-- Schedlock -->       
+        <dependency>
+    		<groupId>net.javacrumbs.shedlock</groupId>
+    		<artifactId>shedlock-spring</artifactId>
+    		<version>4.8.0</version>
+		</dependency>
+		<dependency>
+    		<groupId>net.javacrumbs.shedlock</groupId>
+    		<artifactId>shedlock-provider-jdbc-template</artifactId>
+    		<version>4.8.0</version>
+		</dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

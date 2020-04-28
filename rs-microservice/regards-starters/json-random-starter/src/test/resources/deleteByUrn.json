@@ -1,0 +1,8 @@
+{
+    "#id":"{{uuid()}}",
+    "urn":"{{urn('URN:FEATURE:DATA:geode:%s:V1',#id)}}",
+    "nested": {
+        "#coco":"coco",
+        "hello":"{{urn('URN:FEATURE:DATA:geode:%s:V1',nested.#coco)}}"
+    }
+}
