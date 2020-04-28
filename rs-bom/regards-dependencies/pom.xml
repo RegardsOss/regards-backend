@@ -219,6 +219,7 @@
 		<org.hipparchus.version>1.3</org.hipparchus.version>
 		<org.geotools.version>19.1</org.geotools.version>
 		<org.mapstruct.version>1.3.0.Final</org.mapstruct.version>
+		<schedlock.version>4.8.0</schedlock.version>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>
@@ -1683,6 +1684,17 @@
 				<groupId>org.mapstruct</groupId>
 				<artifactId>mapstruct</artifactId>
 				<version>${org.mapstruct.version}</version>
+			</dependency>
+			<!-- Schedlock -->
+			<dependency>
+    			<groupId>net.javacrumbs.shedlock</groupId>
+    			<artifactId>shedlock-spring</artifactId>
+    			<version>${schedlock.version}</version>
+			</dependency>
+			<dependency>
+    			<groupId>net.javacrumbs.shedlock</groupId>
+    			<artifactId>shedlock-provider-jdbc-template</artifactId>
+    			<version>${schedlock.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
