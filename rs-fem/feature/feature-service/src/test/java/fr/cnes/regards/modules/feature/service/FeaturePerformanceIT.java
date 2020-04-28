@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 @Ignore
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
+        locations = { "classpath:regards_local.properties", "classpath:batch.properties",
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 //Clean all context (schedulers)
@@ -63,7 +63,7 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceIT.class);
 
-    private static final Integer NB_FEATURES = 10;
+    private static final Integer NB_FEATURES = 10_000;
 
     @Test
     public void createAndUpdateTest() throws InterruptedException {

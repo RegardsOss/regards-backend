@@ -86,6 +86,10 @@ public class FeatureTaskScheduler {
 
     private static final String INSTANCE_RANDOM_ID = "------------------------------> " + UUID.randomUUID().toString();
 
+    private static final String DEFAULT_INITIAL_DELAY = "30000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -186,8 +190,8 @@ public class FeatureTaskScheduler {
         notificationClient.notify(errorMessage, "Feature scheduling", NotificationLevel.ERROR, DefaultRole.ADMIN);
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.insert.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.insert.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleInsertRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -203,8 +207,8 @@ public class FeatureTaskScheduler {
         }
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.update.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.update.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -220,8 +224,8 @@ public class FeatureTaskScheduler {
         }
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.delete.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.delete.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleDeleteRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -237,8 +241,8 @@ public class FeatureTaskScheduler {
         }
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.reference.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.reference.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleReferenceRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -254,8 +258,8 @@ public class FeatureTaskScheduler {
         }
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.copy.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.copy.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleCopyRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
@@ -271,8 +275,9 @@ public class FeatureTaskScheduler {
         }
     }
 
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.feature.request.notification.scheduling.delay:5000}")
+    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.feature.request.notification.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY
+                    + "}")
     public void scheduleNotificationRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
