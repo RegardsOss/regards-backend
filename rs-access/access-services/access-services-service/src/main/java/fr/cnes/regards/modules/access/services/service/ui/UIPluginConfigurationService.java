@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -300,6 +301,11 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
         // Return only the active ones.
         return services.stream().filter(s -> s.getActive()).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Page<UIPluginConfiguration> retrievePluginConfigurations(PageRequest pageable) {
+        return this.repository.findAll(pageable);
     }
 
 }

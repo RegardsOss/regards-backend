@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,5 +39,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 public interface IUIPluginDefinitionRepository extends JpaRepository<UIPluginDefinition, Long> {
 
     Page<UIPluginDefinition> findByType(UIPluginTypesEnum type, Pageable pageable);
+
+    Optional<UIPluginDefinition> fineOneByName(String name);
 
 }

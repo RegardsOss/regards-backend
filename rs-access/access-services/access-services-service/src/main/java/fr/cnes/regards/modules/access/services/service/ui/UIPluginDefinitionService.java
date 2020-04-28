@@ -207,4 +207,9 @@ public class UIPluginDefinitionService
         repository.deleteById(pluginId);
     }
 
+    @Override
+    public Optional<UIPluginDefinition> retrievePlugin(String name) {
+        return this.repository.fineOneByName(name);
+    }
+
 }

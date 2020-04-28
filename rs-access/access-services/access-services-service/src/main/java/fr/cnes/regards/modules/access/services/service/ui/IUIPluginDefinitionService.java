@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -97,4 +99,11 @@ public interface IUIPluginDefinitionService {
      * @since 1.0-SNAPSHOT
      */
     void deletePlugin(Long pluginId) throws ModuleException;
+
+    /**
+     * Retrieve a plugin definition by its name
+     * @param name
+     * @return {@link UIPluginDefinition}
+     */
+    Optional<UIPluginDefinition> retrievePlugin(String name);
 }
