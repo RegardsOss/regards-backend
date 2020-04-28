@@ -53,6 +53,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.OpenSearchEngine;
 
 /**
  * Controller for {@link SearchEngineConfiguration}s CRUD
@@ -145,6 +146,35 @@ public class SearchEngineConfigurationController implements IResourceController<
                                     MethodParamFactory.build(HttpHeaders.class),
                                     MethodParamFactory.build(MultiValueMap.class),
                                     MethodParamFactory.build(Pageable.class));
+            resourceService.addLink(resource, SearchEngineController.class, "searchAllDataobjects",
+                                    LinkRelation.of("search-objects"),
+                                    MethodParamFactory.build(String.class, element.getConfiguration().getPluginId()),
+                                    MethodParamFactory.build(HttpHeaders.class),
+                                    MethodParamFactory.build(MultiValueMap.class),
+                                    MethodParamFactory.build(Pageable.class));
+            resourceService.addLink(resource, SearchEngineController.class, "searchAllDatasets",
+                                    LinkRelation.of("search-datasets"),
+                                    MethodParamFactory.build(String.class, element.getConfiguration().getPluginId()),
+                                    MethodParamFactory.build(HttpHeaders.class),
+                                    MethodParamFactory.build(MultiValueMap.class),
+                                    MethodParamFactory.build(Pageable.class));
+            resourceService.addLink(resource, SearchEngineController.class, "searchAllCollections",
+                                    LinkRelation.of("search-collections"),
+                                    MethodParamFactory.build(String.class, element.getConfiguration().getPluginId()),
+                                    MethodParamFactory.build(HttpHeaders.class),
+                                    MethodParamFactory.build(MultiValueMap.class),
+                                    MethodParamFactory.build(Pageable.class));
+            if (element.getConfiguration().getPluginId().equals(OpenSearchEngine.ENGINE_ID)) {
+                // Add description link
+                resourceService.addLink(resource, SearchEngineController.class, "searchAllDataobjectsExtra",
+                                        LinkRelation.of(OpenSearchEngine.EXTRA_DESCRIPTION),
+                                        MethodParamFactory.build(String.class,
+                                                                 element.getConfiguration().getPluginId()),
+                                        MethodParamFactory.build(String.class, OpenSearchEngine.EXTRA_DESCRIPTION),
+                                        MethodParamFactory.build(HttpHeaders.class),
+                                        MethodParamFactory.build(MultiValueMap.class),
+                                        MethodParamFactory.build(Pageable.class));
+            }
         } else {
             resourceService
                     .addLink(resource, SearchEngineController.class, "searchSingleDataset", LinkRelation.of("search"),
@@ -152,7 +182,20 @@ public class SearchEngineConfigurationController implements IResourceController<
                              MethodParamFactory.build(String.class, element.getDatasetUrn()),
                              MethodParamFactory.build(HttpHeaders.class), MethodParamFactory.build(MultiValueMap.class),
                              MethodParamFactory.build(Pageable.class));
+            if (element.getConfiguration().getPluginId().equals(OpenSearchEngine.ENGINE_ID)) {
+                // Add description link
+                resourceService.addLink(resource, SearchEngineController.class, "searchSingleDatasetExtra",
+                                        LinkRelation.of(OpenSearchEngine.EXTRA_DESCRIPTION),
+                                        MethodParamFactory.build(String.class,
+                                                                 element.getConfiguration().getPluginId()),
+                                        MethodParamFactory.build(String.class, element.getDatasetUrn()),
+                                        MethodParamFactory.build(String.class, OpenSearchEngine.EXTRA_DESCRIPTION),
+                                        MethodParamFactory.build(HttpHeaders.class),
+                                        MethodParamFactory.build(MultiValueMap.class),
+                                        MethodParamFactory.build(Pageable.class));
+            }
         }
+
         return resource;
     }
 

@@ -18,7 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 
@@ -29,6 +32,8 @@ import fr.cnes.regards.framework.geojson.Feature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.AttributeCriterionBuilder;
@@ -62,10 +67,24 @@ public class RegardsExtension extends AbstractExtension {
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
             Feature feature, String token) {
-        for (IProperty<?> property : entity.getProperties()) {
-            feature.addProperty(property.getName(), property.getValue());
-        }
         feature.addProperty("tags", entity.getTags());
+        // Report existing one
+        feature.getProperties().putAll(buildProperties(entity.getProperties()));
+    }
+
+    private Map<String, Object> buildProperties(Set<IProperty<?>> properties) {
+        Map<String, Object> nested = new HashMap<>();
+        if (properties != null) {
+            for (IProperty<?> property : properties) {
+                if (property.represents(PropertyType.OBJECT)) {
+                    ObjectProperty op = (ObjectProperty) property;
+                    nested.put(property.getName(), buildProperties(op.getValue()));
+                } else {
+                    nested.put(property.getName(), property.getValue());
+                }
+            }
+        }
+        return nested;
     }
 
     @Override
