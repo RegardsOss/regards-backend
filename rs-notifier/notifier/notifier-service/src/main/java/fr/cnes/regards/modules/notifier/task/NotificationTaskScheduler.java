@@ -71,7 +71,7 @@ public class NotificationTaskScheduler {
                         long start = System.currentTimeMillis();
                         int nb = this.notificationService.scheduleRequests();
                         if (nb != 0) {
-                            LOGGER.info("{} update request(s) scheduled in {} ms", nb,
+                            LOGGER.info("{} notification request(s) scheduled in {} ms", nb,
                                         System.currentTimeMillis() - start);
                         }
                     } finally {
