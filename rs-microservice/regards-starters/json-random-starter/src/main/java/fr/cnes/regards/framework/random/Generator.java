@@ -73,9 +73,10 @@ public class Generator {
     @SuppressWarnings("unchecked")
     private void doInitGenerators(Map<String, Object> template, ObjectRandomGenerator generator) {
         for (Entry<String, Object> entry : template.entrySet()) {
-            if (Map.class.isAssignableFrom(entry.getValue().getClass())) {
+            if ((entry.getValue() != null) && Map.class.isAssignableFrom(entry.getValue().getClass())) {
                 // Propagate
                 ObjectRandomGenerator org = new ObjectRandomGenerator();
+                LOGGER.trace("Initializing generator for {} with value {}", entry.getKey(), entry.getValue());
                 doInitGenerators((Map<String, Object>) entry.getValue(), org);
                 generator.addGenerator(entry.getKey(), org);
             } else {

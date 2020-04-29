@@ -34,13 +34,18 @@ public class FunctionDescriptorParser {
 
     private static final Pattern PARAM_ESCAPE_PATTERN = Pattern.compile("'(.*)'");
 
+    private static final String SKIPPING = "Skipping static value : {}";
+
     /**
      * Split on all comma characters unless it's in between single quotes
      */
     private static final String PARAM_SPLIT_REGEXP = ",(?=([^']*'[^']*')*[^']*$)";
 
     public static FunctionDescriptor parse(Object value) {
-
+        if (value == null) {
+            LOGGER.info(SKIPPING, value);
+            return null;
+        }
         if (String.class.isAssignableFrom(value.getClass())) {
 
             String function = (String) value;
@@ -51,8 +56,10 @@ public class FunctionDescriptorParser {
                 LOGGER.debug("{}", fd);
                 return fd;
             } else {
-                LOGGER.warn("Skipping malformed function {}", function);
+                LOGGER.info(SKIPPING, function);
             }
+        } else {
+            LOGGER.info(SKIPPING, value);
         }
         return null;
     }
