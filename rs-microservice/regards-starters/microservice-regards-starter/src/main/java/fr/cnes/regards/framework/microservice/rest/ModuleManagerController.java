@@ -170,7 +170,7 @@ public class ModuleManagerController {
                         if (manager.isApplicable(module)) {
                             Set<String> resetErrors = Sets.newHashSet();
                             if (module.isResetBeforeImport()) {
-                                resetErrors = manager.resetConfigurationAndLog();
+                                resetErrors = manager.resetConfiguration();
                             }
                             ModuleImportReport report = manager.importConfigurationAndLog(module);
                             report.getImportErrors().addAll(resetErrors);
