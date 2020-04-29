@@ -95,11 +95,8 @@ public class UiConfigurationManager extends AbstractModuleManager<Void> {
             configurations.add(ModuleConfigurationItem.build(theme));
         }
         for (Module module : moduleService.retrieveModules(PageRequest.of(0, 1_000))) {
-            // FIXME : Only module menu cannot be exported for now. As it is linked to other modules through database identifiers.
-            if (!module.getType().equals("menu")) {
-                module.setId(null);
-                configurations.add(ModuleConfigurationItem.build(module));
-            }
+            module.setId(null);
+            configurations.add(ModuleConfigurationItem.build(module));
         }
         return ModuleConfiguration.build(info, true, configurations);
     }
