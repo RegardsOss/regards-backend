@@ -38,11 +38,11 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 

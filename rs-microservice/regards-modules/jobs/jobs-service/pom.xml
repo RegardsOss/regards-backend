@@ -65,10 +65,6 @@
 			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
 			<artifactId>workspace-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
-		</dependency>
 		<!-- REGARDS starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
