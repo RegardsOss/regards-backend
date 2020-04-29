@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notifier.task;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +28,14 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Enable feature task scheduling
@@ -40,11 +46,19 @@ import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-public class NotificationTaskScheduler {
+public class NotificationTaskScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTaskScheduler.class);
 
-    private static final String LOCK_NOTIFICATION_REQUEST = "Notification_Request";
+    private static final String NOTIFICATION_LOCK = "notification";
+
+    private static final String NOTIFICATION_TITLE = "Notification scheduling";
+
+    private static final String NOTIFICATION_ACTIONS = "NOTIFICATION ACTIONS";
+
+    private static final String DEFAULT_INITIAL_DELAY = "30000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -53,33 +67,39 @@ public class NotificationTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private ILockService lockService;
-
-    @Autowired
     private INotificationRuleService notificationService;
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:30000}",
-            fixedDelayString = "${regards.notification.request.scheduling.delay:1000}")
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    private final Task notification_task = () -> {
+        LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
+        int nb = this.notificationService.scheduleRequests();
+        if (nb != 0) {
+            LOGGER.info("{} notification request(s) scheduled in {} ms", nb, System.currentTimeMillis() - start);
+        }
+    };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Scheduled(
+            initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY
+                    + "}",
+            fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                LOGGER.trace("LOCKING FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
-                if (lockService.obtainLockOrSkip(LOCK_NOTIFICATION_REQUEST, this, 60)) {
-                    LOGGER.trace("LOCK OBTAINED FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
-                    try {
-                        long start = System.currentTimeMillis();
-                        int nb = this.notificationService.scheduleRequests();
-                        if (nb != 0) {
-                            LOGGER.info("{} notification request(s) scheduled in {} ms", nb,
-                                        System.currentTimeMillis() - start);
-                        }
-                    } finally {
-                        LOGGER.trace("RELEASING OBTAINED LOCK FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
-                        lockService.releaseLock(LOCK_NOTIFICATION_REQUEST, this);
-                        LOGGER.trace("LOCK RELEASED FOR TENANT {} IN SCHEDULE NOTIFICATION REQUESTS", tenant);
-                    }
-                }
+                traceScheduling(tenant, NOTIFICATION_ACTIONS);
+                lockingTaskExecutors
+                        .executeWithLock(notification_task,
+                                         new LockConfiguration(NOTIFICATION_LOCK, Instant.now().plusSeconds(60)));
+            } catch (Throwable e) {
+                handleSchedulingError(NOTIFICATION_ACTIONS, NOTIFICATION_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
