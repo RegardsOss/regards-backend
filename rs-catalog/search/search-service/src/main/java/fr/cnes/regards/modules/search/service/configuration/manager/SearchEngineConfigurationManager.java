@@ -9,12 +9,15 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import fr.cnes.regards.modules.search.service.SearchEngineConfigurationService;
 
 /**
  * Search engine configuration manager.
@@ -27,6 +30,22 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineConfigurationService;
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        for (SearchEngineConfiguration conf : searchEngineConfigurationService.retrieveAllConfs()) {
+            if (!conf.getConfiguration().getBusinessId()
+                    .equals(SearchEngineConfigurationService.LEGACY_SEARCH_ENGINE_BUSINESS_ID)) {
+                try {
+                    searchEngineConfigurationService.deleteConf(conf.getId());
+                } catch (ModuleException e) {
+                    errors.add(e.getMessage());
+                }
+            }
+        }
+        return errors;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -62,6 +81,6 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
                 configurations.add(ModuleConfigurationItem.build(searchEngineConfiguration));
             }
         }
-        return ModuleConfiguration.build(info, configurations);
+        return ModuleConfiguration.build(info, true, configurations);
     }
 }
