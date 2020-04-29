@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +32,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -41,7 +42,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.conf.NotifierConfigurationCleaner;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 import fr.cnes.regards.modules.notifier.service.IRecipientService;
@@ -69,22 +69,22 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     private IRecipientService recipientService;
 
     @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        recipientService.deleteAll(errors);
+        ruleService.deleteAll(errors);
+        return errors;
+    }
+
+    @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
         Set<RuleRecipientsAssociation> rules = getRulesRecipientsAssoc(configuration.getConfiguration());
-        Optional<NotifierConfigurationCleaner> cleaner = getCleaner(configuration.getConfiguration());
 
         // Clear cache
         notifService.cleanCache();
-        // Clea old confif needed
-        if (cleaner.isPresent() && cleaner.get().isClean()) {
-            // Delete all existing rules
-            ruleService.deleteAll(importErrors);
-            // Delete  all  existing  senders
-            recipientService.deleteAll(importErrors);
-        }
 
         // import plugin configurations
         for (PluginConfiguration plgConf : configurations) {
@@ -126,10 +126,6 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     public ModuleConfiguration exportConfiguration() throws ModuleException {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
 
-        // Export as clean previous conf default
-        NotifierConfigurationCleaner cleaner = NotifierConfigurationCleaner.build(true);
-        configurations.add(ModuleConfigurationItem.build(cleaner));
-
         // export Recipients
         for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
             // All connection should be active
@@ -143,7 +139,7 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         configurations.addAll(rules.getContent().stream()
                 .map(r -> ModuleConfigurationItem.build(toRuleRecipientsAssoc(r))).collect(Collectors.toSet()));
 
-        return ModuleConfiguration.build(info, configurations);
+        return ModuleConfiguration.build(info, true, configurations);
     }
 
     /**
@@ -164,11 +160,5 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     private RuleRecipientsAssociation toRuleRecipientsAssoc(RuleDTO rule) {
         return RuleRecipientsAssociation.build(rule.getRulePluginConfiguration().getBusinessId(),
                                                rule.getRecipientsBusinessIds());
-    }
-
-    private Optional<NotifierConfigurationCleaner> getCleaner(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> NotifierConfigurationCleaner.class.isAssignableFrom(i.getKey()))
-                .map(i -> (NotifierConfigurationCleaner) i.getTypedValue()).findFirst();
-
     }
 }
