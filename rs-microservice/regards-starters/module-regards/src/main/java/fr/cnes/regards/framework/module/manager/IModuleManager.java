@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
@@ -79,5 +83,14 @@ public interface IModuleManager<S> {
      */
     default boolean isReadyImplemented() {
         return false;
+    }
+
+    /**
+     * Reset current module configuration
+     * @param module
+     * @return
+     */
+    default Set<String> resetConfiguration() {
+        return Sets.newHashSet();
     }
 }

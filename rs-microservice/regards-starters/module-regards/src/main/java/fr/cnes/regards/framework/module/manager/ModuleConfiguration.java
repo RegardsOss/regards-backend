@@ -28,6 +28,8 @@ public class ModuleConfiguration {
 
     private ModuleInformation module;
 
+    private boolean resetBeforeImport = false;
+
     private List<ModuleConfigurationItem<?>> configuration;
 
     public List<ModuleConfigurationItem<?>> getConfiguration() {
@@ -46,10 +48,24 @@ public class ModuleConfiguration {
         this.module = module;
     }
 
-    public static ModuleConfiguration build(ModuleInformation info, List<ModuleConfigurationItem<?>> configuration) {
+    public static ModuleConfiguration build(ModuleInformation info, boolean resetBeforeImport,
+            List<ModuleConfigurationItem<?>> configuration) {
         ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
         moduleConfiguration.setModule(info);
         moduleConfiguration.setConfiguration(configuration);
+        moduleConfiguration.setResetBeforeImport(resetBeforeImport);
         return moduleConfiguration;
+    }
+
+    public static ModuleConfiguration build(ModuleInformation info, List<ModuleConfigurationItem<?>> configuration) {
+        return ModuleConfiguration.build(info, false, configuration);
+    }
+
+    public boolean isResetBeforeImport() {
+        return resetBeforeImport;
+    }
+
+    public void setResetBeforeImport(boolean resetBeforeImport) {
+        this.resetBeforeImport = resetBeforeImport;
     }
 }
