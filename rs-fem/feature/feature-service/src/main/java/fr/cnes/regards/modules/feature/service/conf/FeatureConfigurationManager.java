@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -45,6 +47,19 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        for (PluginConfiguration p : pluginService.getAllPluginConfigurations()) {
+            try {
+                pluginService.deletePluginConfiguration(p.getBusinessId());
+            } catch (ModuleException e) {
+                errors.add(e.getMessage());
+            }
+        }
+        return errors;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -86,7 +101,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             exportedConf.setIsActive(true);
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
-        return ModuleConfiguration.build(info, configurations);
+        return ModuleConfiguration.build(info, true, configurations);
     }
 
     /**
