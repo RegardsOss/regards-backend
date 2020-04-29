@@ -1,6 +1,7 @@
 {
     "requestId": "{{uuid()}}",
     "requestDate": "{{odt()}}",
+    "requestOwner": null,
     "metadata": {
         "sessionOwner": "{{string()}}",
         "session": "20200331",
