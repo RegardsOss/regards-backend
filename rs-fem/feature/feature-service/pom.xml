@@ -83,10 +83,6 @@
             <artifactId>dam-dto</artifactId>
         </dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
