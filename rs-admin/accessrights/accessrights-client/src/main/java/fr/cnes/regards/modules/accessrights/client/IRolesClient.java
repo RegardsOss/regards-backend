@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.client.cache.RolesHierarchyKeyGenerator;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
@@ -155,6 +157,8 @@ public interface IRolesClient { // NOSONAR
      * @return true when the current role should have access to something requiring at least the provided role
      * @throws EntityNotFoundException if some role does not exists
      */
+    @Cacheable(cacheNames = RolesHierarchyKeyGenerator.CACHE_NAME,
+            keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException;

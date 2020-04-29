@@ -179,6 +179,16 @@ public class RoleServiceTest {
         Mockito.when(roleRepository.findByName(NAME)).thenReturn(Optional.of(rolePublic));
     }
 
+    @Test
+    public void roleHierarchyTest() throws EntityNotFoundException {
+
+        Mockito.when(roleRepository.findOneByName(DefaultRole.REGISTERED_USER.toString()))
+                .thenReturn(Optional.of(roleRegisteredUser));
+        Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
+        Assert.assertFalse("Registered user should be superior to admin",
+                           roleService.isCurrentRoleSuperiorTo(DefaultRole.ADMIN.toString()));
+    }
+
     /**
      * Check that the allows to retrieve roles.
      */
