@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
@@ -167,7 +168,12 @@ public class ModuleManagerController {
                 for (ModuleConfiguration module : microConfig.getModules()) {
                     for (IModuleManager<?> manager : managers) {
                         if (manager.isApplicable(module)) {
-                            importReports.add(manager.importConfigurationAndLog(module));
+                            Set<String> resetErrors = Sets.newHashSet();
+                            if (module.isResetBeforeImport()) {
+                                resetErrors = manager.resetConfigurationAndLog();
+                            }
+                            ModuleImportReport report = manager.importConfigurationAndLog(module);
+                            report.getImportErrors().addAll(resetErrors);
                         }
                     }
                 }
