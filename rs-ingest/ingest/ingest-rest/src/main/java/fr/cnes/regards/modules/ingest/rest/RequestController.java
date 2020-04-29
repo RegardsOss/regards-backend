@@ -144,7 +144,8 @@ public class RequestController implements IResourceController<RequestDto> {
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                 .contains(element.getState())) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE);
+            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                                    MethodParamFactory.build(SearchRequestsParameters.class));
         }
 
         return resource;
