@@ -174,6 +174,7 @@ public class ModuleManagerController {
                             }
                             ModuleImportReport report = manager.importConfigurationAndLog(module);
                             report.getImportErrors().addAll(resetErrors);
+                            importReports.add(report);
                         }
                     }
                 }
