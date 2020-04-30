@@ -195,13 +195,8 @@ public class FeatureNotificationService implements IFeatureNotificationService {
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList()));
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
         for (FeatureEntity entity : features) {
-            if (entity.getLastUpdate().equals(entity.getCreationDate())) {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.CREATED.toString()));
-            } else {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.UPDATED.toString()));
-            }
+            notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
+                                                            FeatureManagementAction.NOTIFIED.toString()));
         }
         publisher.publish(notifications);
 

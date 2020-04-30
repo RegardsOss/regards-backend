@@ -25,5 +25,6 @@ package fr.cnes.regards.modules.feature.dto;
 public enum FeatureManagementAction {
     CREATED,
     UPDATED,
-    DELETED;
+    DELETED,
+    NOTIFIED;
 }
