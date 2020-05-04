@@ -255,7 +255,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                             details, invalidMessage.toString());
         LOGGER.error(errorMessage);
 
-        // Notify instance
+        // Notify admin
         Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
         NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
                 "Message unwrapping failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));

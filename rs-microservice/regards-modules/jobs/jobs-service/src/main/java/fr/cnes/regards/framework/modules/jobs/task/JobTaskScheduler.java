@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.jobs.task;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +28,17 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
- * Enable feature task scheduling
+ * Enable job cleaning
  *
  * @author Marc SORDI
  *
@@ -40,11 +46,19 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-public class JobSchedulerCleaner {
+public class JobTaskScheduler extends AbstractTaskScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobSchedulerCleaner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobTaskScheduler.class);
 
-    private static final String LOCK_JOB_CLEAN = "Job_Clean";
+    private static final String NOTIFICATION_TITLE = "Job cleaning scheduling";
+
+    private static final String JOB_CLEAN_LOCK = "Job_Clean";
+
+    private static final String DEAD_JOB_CLEANING = "DEAD JOB CLEANING";
+
+    private static final String DEFAULT_INITIAL_DELAY = "30000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "600000";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -53,32 +67,36 @@ public class JobSchedulerCleaner {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private ILockService lockService;
-
-    @Autowired
     private IJobService jobService;
 
-    @Scheduled(initialDelayString = "${regards.job.cleaner.scheduling.initial.delay:10000}",
-            fixedDelayString = "${regards.job.cleaner.scheduling.delay:1000}")
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    private final Task clean_task = () -> {
+        LockAssert.assertLocked();
+        jobService.cleanDeadJobs();
+    };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Scheduled(initialDelayString = "${regards.job.cleaner.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.job.cleaner.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                LOGGER.trace("LOCKING FOR TENANT {} IN SCHEDULE JOB CLEANING", tenant);
-                if (lockService.obtainLockOrSkip(LOCK_JOB_CLEAN, this, 60)) {
-                    LOGGER.trace("LOCK OBTAINED FOR TENANT {} IN SCHEDULE JOB CLEANING", tenant);
-                    try {
-                        jobService.cleanDeadJobs();
-                    } finally {
-                        LOGGER.trace("RELEASING OBTAINED LOCK FOR TENANT {} IN SCHEDULE JOB CLEANING", tenant);
-                        lockService.releaseLock(LOCK_JOB_CLEAN, this);
-                        LOGGER.trace("LOCK RELEASED FOR TENANT {} IN SCHEDULE JOB CLEANING", tenant);
-                    }
-                }
+                traceScheduling(tenant, DEAD_JOB_CLEANING);
+                lockingTaskExecutors
+                        .executeWithLock(clean_task,
+                                         new LockConfiguration(JOB_CLEAN_LOCK, Instant.now().plusSeconds(60)));
+            } catch (Throwable e) {
+                handleSchedulingError(DEAD_JOB_CLEANING, NOTIFICATION_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
-
 }
