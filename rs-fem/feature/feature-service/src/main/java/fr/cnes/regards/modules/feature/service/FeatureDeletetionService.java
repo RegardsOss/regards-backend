@@ -339,7 +339,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         // Build events to reuse event registration code
         List<FeatureDeletionRequestEvent> toTreat = new ArrayList<>();
         for (FeatureUniformResourceName urn : collection.getFeaturesUrns()) {
-            toTreat.add(FeatureDeletionRequestEvent.build(urn, collection.getPriority()));
+            toTreat.add(FeatureDeletionRequestEvent.build(authResolver.getUser(), urn, collection.getPriority()));
         }
         return registerRequests(toTreat);
     }

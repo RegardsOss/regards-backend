@@ -54,7 +54,7 @@ public class FeatureReferenceRequest extends AbstractRequest {
     private Long id;
 
     @Embedded
-    private FeatureMetadataEntity metadata;
+    private FeatureCreationMetadataEntity metadata;
 
     @NotNull
     @Column(name = "location", nullable = false)
@@ -65,7 +65,7 @@ public class FeatureReferenceRequest extends AbstractRequest {
     private String pluginBusinessId;
 
     public static FeatureReferenceRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, FeatureMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
+            RequestState state, FeatureCreationMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
             String location, String pluginBusinessId) {
         FeatureReferenceRequest request = new FeatureReferenceRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
@@ -85,11 +85,11 @@ public class FeatureReferenceRequest extends AbstractRequest {
         this.id = id;
     }
 
-    public FeatureMetadataEntity getMetadata() {
+    public FeatureCreationMetadataEntity getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(FeatureMetadataEntity metadata) {
+    public void setMetadata(FeatureCreationMetadataEntity metadata) {
         this.metadata = metadata;
     }
 

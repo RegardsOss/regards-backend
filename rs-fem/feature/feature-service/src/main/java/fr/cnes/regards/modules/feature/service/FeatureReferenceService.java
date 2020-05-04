@@ -55,7 +55,6 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
 import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -162,7 +161,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
                 .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
-                       item.getMetadata().getStorages(), false);
+                       item.getMetadata().getStorages(), item.getMetadata().isOverride());
         grantedRequests.add(FeatureReferenceRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
                        metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
@@ -248,12 +247,14 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         try {
             feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
             feature.withHistory(request.getRequestOwner());
-            FeatureMetadataEntity metadata = request.getMetadata();
+            FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);
-            return FeatureCreationRequestEvent.build(request.getRequestId(), FeatureCreationSessionMetadata
-                    .build(metadata.getSessionOwner(), metadata.getSession(), request.getPriority(), false, array),
-                                                     feature);
+            return FeatureCreationRequestEvent
+                    .build(request.getRequestId(),
+                           FeatureCreationSessionMetadata.build(metadata.getSessionOwner(), metadata.getSession(),
+                                                                request.getPriority(), metadata.isOverride(), array),
+                           feature);
         } catch (ModuleException e) {
             throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
         }
@@ -265,7 +266,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         // Build events to reuse event registration code
         List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
         for (String location : collection.getLocations()) {
-            toTreat.add(FeatureReferenceRequestEvent.build(collection.getMetadata(), location,
+            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), location,
                                                            OffsetDateTime.now().minusSeconds(1),
                                                            collection.getPluginBusinessId()));
         }
