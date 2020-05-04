@@ -34,13 +34,19 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
+import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
+import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
+import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
+import fr.cnes.regards.modules.feature.service.IFeatureReferenceService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,6 +62,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping(FeatureController.PATH_FEATURES)
 public class FeatureController implements IResourceController<RequestInfo<?>> {
 
+    /**
+     * 
+     */
+    public static final String REFERENCE_PATH = "/reference";
+
     public final static String PATH_FEATURES = "/features";
 
     @Autowired
@@ -63,6 +74,12 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
 
     @Autowired
     private IFeatureUpdateService featureUpdateService;
+
+    @Autowired
+    private IFeatureDeletionService featureDeletionService;
+
+    @Autowired
+    private IFeatureReferenceService featureRefernceService;
 
     @Autowired
     private IResourceService resourceService;
@@ -91,15 +108,56 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
      * @param collection {@link FeatureUpdateCollection} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
      */
-    @Operation(summary = "Publish a feature and return the request id",
-            description = "Publish a feature and return the request id")
+    @Operation(summary = "Publish a feature collection to update and return urns of granted and denied requests",
+            description = "Publish a feature collection to update  and return urns of granted and denied requests")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
     @RequestMapping(method = RequestMethod.PATCH, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    @ResourceAccess(description = "Publish a feature and return the request id")
+    @ResourceAccess(
+            description = "Publish a feature collection to update and return urns of granted and denied requests")
     public ResponseEntity<EntityModel<RequestInfo<?>>> updateFeatures(@Parameter(
             description = "Contain all Features to handle") @Valid @RequestBody FeatureUpdateCollection collection) {
 
         RequestInfo<FeatureUniformResourceName> info = this.featureUpdateService.registerRequests(collection);
+        return new ResponseEntity<>(toResource(info), computeStatus(info));
+    }
+
+    /**
+     * Create a list of {@link FeatureDeletionRequest} from a list of {@link FeatureUniformResourceName} stored in a {@link FeatureDeletionCollection}
+     * and return a {@link RequestInfo} full of urns and occured errors
+     * @param collection {@link FeatureDeletionRequest} it contain all {@link Feature} to handle
+     * @return {@link RequestInfo}
+     */
+    @Operation(summary = "Publish urns collection to delete and return urns of granted and denied requests",
+            description = "Publish urns collection to delete and return urns of granted and denied requests")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
+    @ResourceAccess(
+            description = "Publish a feature collection to delete and return urns of granted and denied requests")
+    @RequestMapping(method = RequestMethod.DELETE, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
+    public ResponseEntity<EntityModel<RequestInfo<?>>> deleteFeatures(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureDeletionCollection collection) {
+
+        RequestInfo<FeatureUniformResourceName> info = this.featureDeletionService.registerRequests(collection);
+        return new ResponseEntity<>(toResource(info), computeStatus(info));
+    }
+
+    /**
+     * Create a list of {@link FeatureReferenceRequest} from a list of locationsstored in a {@link FeatureReferenceCollection}
+     * and return a {@link RequestInfo} full of urns and occured errors
+     * @param collection {@link FeatureDeletionRequest} it contain all {@link Feature} to handle
+     * @return {@link RequestInfo}
+     */
+    @Operation(
+            summary = "Publish locations collection to create features and return urns of granted and denied requests ids",
+            description = "Publish locations collection to create features and return urns of granted and denied requests ids")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "A RequestInfo") })
+    @ResourceAccess(
+            description = "Publish locations collection to create features and return urns of granted and denied requests ids")
+    @RequestMapping(value = REFERENCE_PATH, method = RequestMethod.POST,
+            consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
+    public ResponseEntity<EntityModel<RequestInfo<?>>> createFeaturesFromReferences(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureReferenceCollection collection) {
+
+        RequestInfo<String> info = this.featureRefernceService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));
     }
 

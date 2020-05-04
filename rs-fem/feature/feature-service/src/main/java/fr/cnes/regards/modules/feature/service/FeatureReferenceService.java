@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -255,6 +258,18 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
         }
 
+    }
+
+    @Override
+    public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
+        // Build events to reuse event registration code
+        List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
+        for (String location : collection.getLocations()) {
+            toTreat.add(FeatureReferenceRequestEvent.build(collection.getMetadata(), location,
+                                                           OffsetDateTime.now().minusSeconds(1),
+                                                           collection.getPluginBusinessId()));
+        }
+        return registerRequests(toTreat);
     }
 
 }

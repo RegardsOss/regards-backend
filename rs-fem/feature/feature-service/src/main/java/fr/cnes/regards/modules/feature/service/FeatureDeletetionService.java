@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
@@ -329,5 +332,15 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         }
 
         sendFeedbacksAndClean(sucessfullRequests);
+    }
+
+    @Override
+    public RequestInfo<FeatureUniformResourceName> registerRequests(@Valid FeatureDeletionCollection collection) {
+        // Build events to reuse event registration code
+        List<FeatureDeletionRequestEvent> toTreat = new ArrayList<>();
+        for (FeatureUniformResourceName urn : collection.getFeaturesUrns()) {
+            toTreat.add(FeatureDeletionRequestEvent.build(urn, collection.getPriority()));
+        }
+        return registerRequests(toTreat);
     }
 }
