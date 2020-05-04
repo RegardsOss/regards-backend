@@ -248,7 +248,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             FeatureMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);
-            return FeatureCreationRequestEvent.build(request.getRequestId(), FeatureCreationSessionMetadata
+            return FeatureCreationRequestEvent.build(request.getRequestOwner(), FeatureCreationSessionMetadata
                     .build(metadata.getSessionOwner(), metadata.getSession(), request.getPriority(), false, array),
                                                      feature);
         } catch (ModuleException e) {
