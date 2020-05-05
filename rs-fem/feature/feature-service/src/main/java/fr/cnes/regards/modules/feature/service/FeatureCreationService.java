@@ -96,7 +96,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCreationService extends AbstractFeatureService implements IFeatureCreationService {
+public class FeatureCreationService implements IFeatureCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationService.class);
 

@@ -54,7 +54,7 @@ public abstract class AbstractRequest {
 
     protected static final String COLUMN_PRIORITY = "priority";
 
-    protected static final String URN = "urn";
+    protected static final String COLUMN_URN = "urn";
 
     protected static final String COLUMN_STATE = "state";
 

@@ -87,6 +87,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
+    private static final String LOG_FORMAT = "[{}] {} {} scheduled in {} ms";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -114,69 +116,64 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
-    private final Task create_task = () -> {
+    private final Task createTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info("[{}] {} {} scheduled in {} ms", INSTANCE_RANDOM_ID, nb, CREATE_REQUESTS,
-                        System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, CREATE_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task update_task = () -> {
+    private final Task updateTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = featureUpdateService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info("[{}] {} {} scheduled in {} ms", INSTANCE_RANDOM_ID, nb, UPDATE_REQUESTS,
-                        System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, UPDATE_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task delete_task = () -> {
+    private final Task deleteTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        if (featureDeletionService.scheduleRequests()) {
-            LOGGER.info("[{}] {} scheduled in {} ms", INSTANCE_RANDOM_ID, DELETE_REQUESTS,
-                        System.currentTimeMillis() - start);
+        int nb = featureDeletionService.scheduleRequests();
+        if (nb != 0) {
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, DELETE_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task reference_task = () -> {
+    private final Task referenceTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureReferenceService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info("[{}] {} {} scheduled in {} ms", INSTANCE_RANDOM_ID, nb, REFERENCE_REQUESTS,
-                        System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, REFERENCE_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task copy_task = () -> {
+    private final Task copyTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureCopyService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info("[{}] {} {} scheduled in {} ms", INSTANCE_RANDOM_ID, nb, COPY_REQUESTS,
-                        System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, COPY_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
-    private final Task notification_task = () -> {
+    private final Task notificationTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureNotificationService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info("[{}] {} copy request(s) scheduled in {} ms", INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS,
-                        System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS, System.currentTimeMillis() - start);
         }
     };
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.feature.request.insert.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
@@ -185,7 +182,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CREATE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(create_task, new LockConfiguration(CREATE_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(createTask, new LockConfiguration(CREATE_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(CREATE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -202,7 +199,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UPDATE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(update_task, new LockConfiguration(UPDATE_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(updateTask, new LockConfiguration(UPDATE_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(UPDATE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -219,7 +216,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DELETE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(delete_task, new LockConfiguration(DELETE_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(deleteTask, new LockConfiguration(DELETE_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -236,7 +233,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, REFERENCE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(reference_task, new LockConfiguration(REFERENCE_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(referenceTask, new LockConfiguration(REFERENCE_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(REFERENCE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -253,7 +250,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, COPY_REQUESTS);
-                lockingTaskExecutors.executeWithLock(copy_task, new LockConfiguration(COPY_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(copyTask, new LockConfiguration(COPY_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(COPY_REQUESTS, NOTIFICATION_TITLE, e);
@@ -271,7 +268,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_REQUESTS);
-                lockingTaskExecutors.executeWithLock(notification_task, new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
+                lockingTaskExecutors.executeWithLock(notificationTask, new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
                         Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_REQUESTS, NOTIFICATION_TITLE, e);

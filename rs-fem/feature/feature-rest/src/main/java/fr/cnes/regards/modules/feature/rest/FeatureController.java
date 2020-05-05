@@ -62,12 +62,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping(FeatureController.PATH_FEATURES)
 public class FeatureController implements IResourceController<RequestInfo<?>> {
 
-    /**
-     * 
-     */
     public static final String REFERENCE_PATH = "/reference";
 
-    public final static String PATH_FEATURES = "/features";
+    public static final String PATH_FEATURES = "/features";
 
     @Autowired
     private IFeatureCreationService featureCreationService;
