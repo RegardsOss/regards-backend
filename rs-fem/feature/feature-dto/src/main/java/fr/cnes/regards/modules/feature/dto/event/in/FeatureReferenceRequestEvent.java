@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 
 /**
  * Request reference for new feature creation from a location
@@ -45,14 +45,14 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
 
     @Valid
     @NotNull(message = "Feature metadata is required")
-    private FeatureSessionMetadata metadata;
+    private FeatureCreationSessionMetadata metadata;
 
-    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureSessionMetadata metadata,
+    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
             String location, String factory) {
         return build(requestOwner, metadata, location, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
-    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureSessionMetadata metadata,
+    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
             String location, OffsetDateTime requestDate, String factory) {
         FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
         event.setLocation(location);
@@ -80,11 +80,11 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
         this.factory = factory;
     }
 
-    public FeatureSessionMetadata getMetadata() {
+    public FeatureCreationSessionMetadata getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(FeatureSessionMetadata metadata) {
+    public void setMetadata(FeatureCreationSessionMetadata metadata) {
         this.metadata = metadata;
     }
 

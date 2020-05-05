@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
-import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
@@ -86,12 +86,11 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            eventsToPublish
-                    .add(FeatureReferenceRequestEvent
-                            .build("bibi",
-                                   FeatureSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL,
+            eventsToPublish.add(FeatureReferenceRequestEvent
+                    .build("bibi",
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                                   "dtc " + i, "testFeatureGeneration"));
+                           "dtc " + i, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
@@ -113,12 +112,11 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            eventsToPublish
-                    .add(FeatureReferenceRequestEvent
-                            .build("bibi",
-                                   FeatureSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL,
+            eventsToPublish.add(FeatureReferenceRequestEvent
+                    .build("bibi",
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                                   "dtc " + i, "testFeatureGeneration"));
+                           "dtc " + i, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
