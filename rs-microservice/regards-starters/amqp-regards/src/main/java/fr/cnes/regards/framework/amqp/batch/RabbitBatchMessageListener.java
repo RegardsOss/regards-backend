@@ -302,11 +302,28 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                             this.getClass().getName(), message.toString(), ex.getMessage());
         LOGGER.error(errorMessage, ex);
 
-        // Notify instance
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-        NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
-                "Message conversion failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));
-        instancePublisher.publish(event);
+        // Prepare notification
+        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, "Message conversion failure",
+                NotificationLevel.ERROR, microserviceName);
+
+        if (RabbitVersion.isVersion1_1(message)) {
+            // Notify ADMIN
+            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
+            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
+            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            try {
+                // Route notification to the right tenant
+                runtimeTenantResolver.forceTenant(tenant);
+                publisher.publish(event);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        } else {
+            // Notify instance
+            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
+            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
+            instancePublisher.publish(event);
+        }
 
         // Route to DLQ
         try {
