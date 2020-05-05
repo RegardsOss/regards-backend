@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * Feature history
  *
@@ -28,7 +26,6 @@ import javax.validation.constraints.NotBlank;
  */
 public class FeatureHistory {
 
-    @NotBlank(message = "Feature creator is required")
     private String createdBy;
 
     private String updatedBy;
