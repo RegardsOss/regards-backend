@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCopyService extends AbstractFeatureService implements IFeatureCopyService {
+public class FeatureCopyService implements IFeatureCopyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCopyService.class);
 

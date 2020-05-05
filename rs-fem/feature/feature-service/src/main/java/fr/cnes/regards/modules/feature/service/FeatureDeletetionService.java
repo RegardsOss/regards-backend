@@ -168,7 +168,7 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
     }
 
     @Override
-    public boolean scheduleRequests() {
+    public int scheduleRequests() {
         long scheduleStart = System.currentTimeMillis();
 
         // Shedule job
@@ -196,9 +196,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
 
             LOGGER.debug("------------->>> {} deletion requests scheduled in {} ms", requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
-            return true;
+            return requestIds.size();
         }
-        return false;
+        return 0;
     }
 
     @Override
