@@ -80,6 +80,7 @@ public class RecipientService implements IRecipientService {
                 try {
                     return pluginService.getPluginConfiguration(id);
                 } catch (EntityNotFoundException e) {
+                    LOGGER.debug("Configuration does not exist!", e);
                     return null;
                 }
             }).filter(conf -> conf != null).collect(Collectors.toSet());
