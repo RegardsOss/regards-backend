@@ -107,22 +107,15 @@ public class RuleService implements IRuleService {
     }
 
     @Override
-    public void deleteAll(Collection<String> deletionErrors) {
+    public Set<String> deleteAll(Collection<String> deletionErrors) {
         List<Rule> rules = ruleRepo.findAll();
         Set<String> confToDelete = rules.stream().map(Rule::getRulePlugin).map(PluginConfiguration::getBusinessId)
                 .collect(Collectors.toSet());
         // Delete  rule associations
         ruleRepo.deleteAll();
-        // Delete associated plugin configurations
-        for (String conf : confToDelete) {
-            try {
-                pluginService.deletePluginConfiguration(conf);
-            } catch (ModuleException e) {
-                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
+
         notifService.cleanCache();
+        return confToDelete;
     }
 
     private RuleDTO toRuleDTO(Rule rule) {

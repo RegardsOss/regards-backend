@@ -293,10 +293,4 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     public void cleanCache() {
         this.cleanTenantCache(tenantResolver.getTenant());
     }
-
-    @Override
-    public void cleanNotificationErrorsUsingConfiguration(PluginConfiguration plgConf) {
-        this.recipientErrorRepo.deleteByRecipientBusinessId(plgConf.getBusinessId());
-    }
-
 }
