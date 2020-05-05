@@ -87,8 +87,10 @@ public class JsonMessageConverters implements MessageConverter {
             String errorMessage = String
                     .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
                             runtimeTenant, tenant);
-            LOGGER.error(errorMessage);
-            throw new MessageConversionException(errorMessage);
+            LOGGER.warn(errorMessage);
+            // FIXME
+            // throw new MessageConversionException(errorMessage);
+            // Manage tenant before calling handler to properly force and clean tenant.
         }
 
         try {
