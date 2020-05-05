@@ -36,6 +36,12 @@ import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
  */
 public final class TenantDataSourceHelper {
 
+    private static final String QUERY_PARAM_DELIMITER = "?";
+
+    private static final String QUERY_PARAM_SEPARATOR = "&";
+
+    private static final String QUERY_PARAM_KV_SEPARATOR = "=";
+
     private TenantDataSourceHelper() {
     }
 
@@ -57,6 +63,7 @@ public final class TenantDataSourceHelper {
             dataSource = DataSourceHelper.createEmbeddedDataSource(pTenantConnection.getTenant(),
                                                                    pDaoProperties.getEmbeddedPath());
         } else {
+            addApplicationName(pTenantConnection, schemaIdentifier);
             // Create a pooled data source
             dataSource = DataSourceHelper
                     .createHikariDataSource(pTenantConnection.getTenant(), pTenantConnection.getUrl(),
@@ -71,20 +78,38 @@ public final class TenantDataSourceHelper {
         return dataSource;
     }
 
+    private static void addApplicationName(TenantConnection connection, String appName) {
+        String appKey = "ApplicationName";
+        if (!connection.getUrl().contains(appKey)) {
+            StringBuffer buffer = new StringBuffer(connection.getUrl());
+            if (!connection.getUrl().contains(QUERY_PARAM_DELIMITER)) {
+                buffer.append(QUERY_PARAM_DELIMITER);
+            } else {
+                buffer.append(QUERY_PARAM_SEPARATOR);
+            }
+            buffer.append(appKey);
+            buffer.append(QUERY_PARAM_KV_SEPARATOR);
+            buffer.append(appName);
+            connection.setUrl(buffer.toString());
+        }
+    }
+
     public static void verifyBatchParameter(JpaProperties properties, TenantConnection connection) {
-        String q = "?";
         String rbi = "reWriteBatchedInserts";
         String batchSize = properties.getProperties().get("hibernate.jdbc.batch_size");
-        if (batchSize != null && TenantConnection.DEFAULT_DRIVER_CLASS_NAME.equals(connection.getDriverClassName())) {
+        if ((batchSize != null) && TenantConnection.DEFAULT_DRIVER_CLASS_NAME.equals(connection.getDriverClassName())) {
             if (connection.getUrl().contains(rbi)) {
                 // Nothing to do
             } else {
                 StringBuffer buffer = new StringBuffer(connection.getUrl());
-                if (!connection.getUrl().contains(q)) {
-                    buffer.append(q);
+                if (!connection.getUrl().contains(QUERY_PARAM_DELIMITER)) {
+                    buffer.append(QUERY_PARAM_DELIMITER);
+                } else {
+                    buffer.append(QUERY_PARAM_SEPARATOR);
                 }
                 buffer.append(rbi);
-                buffer.append("=true");
+                buffer.append(QUERY_PARAM_KV_SEPARATOR);
+                buffer.append("true");
                 connection.setUrl(buffer.toString());
             }
         }

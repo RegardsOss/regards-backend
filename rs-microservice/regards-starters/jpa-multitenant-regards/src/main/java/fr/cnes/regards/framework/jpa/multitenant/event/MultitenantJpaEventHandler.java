@@ -146,6 +146,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // Init data source
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
+                TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
                 DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
                                                                               schemaIdentifier);
                 // Remove existing one
