@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.springframework.data.util.Pair;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
@@ -62,4 +63,10 @@ public interface INotificationRuleService {
      * Clean cache of rules. Need to be called after each configuration modification.
      */
     void cleanCache();
+
+    /**
+     * Delete all notification error using a plugin configuration
+     * @param plgConf
+     */
+    void cleanNotificationErrorsUsingConfiguration(PluginConfiguration plgConf);
 }
