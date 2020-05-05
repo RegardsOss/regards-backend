@@ -56,6 +56,7 @@ public interface IRecipientService {
     /**
      * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
      * @param deletionErrors
+     * @return plugin businessIds to delete
      */
-    public void deleteAll(Collection<String> deletionErrors);
+    public Set<String> deleteAll(Collection<String> deletionErrors);
 }

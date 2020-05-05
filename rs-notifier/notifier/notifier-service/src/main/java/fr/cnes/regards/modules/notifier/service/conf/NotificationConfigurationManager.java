@@ -71,8 +71,18 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = Sets.newHashSet();
-        recipientService.deleteAll(errors);
-        ruleService.deleteAll(errors);
+        Set<String> pluginToDelete = new HashSet<>();
+        pluginToDelete.addAll(recipientService.deleteAll(errors));
+        pluginToDelete.addAll(ruleService.deleteAll(errors));
+        for (String conf : pluginToDelete) {
+            try {
+                pluginService.deletePluginConfiguration(conf);
+            } catch (ModuleException e) {
+                errors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
         return errors;
     }
 
@@ -96,11 +106,6 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
                     // Nothing to do plugin configuration does not exists.
                 }
                 if (existingOne != null) {
-                    // if override configuration we have to delete existing rule using this configuration
-                    if (configuration.isResetBeforeImport()) {
-                        this.ruleService.cleanRulesUsingConfiguration(plgConf);
-                        this.notifService.cleanNotificationErrorsUsingConfiguration(plgConf);
-                    }
                     LOGGER.info("Updating existing plugin configuration {}", plgConf.getBusinessId());
                     existingOne.setLabel(plgConf.getLabel());
                     existingOne.setParameters(plgConf.getParameters());
