@@ -216,7 +216,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performDelete(urlTemplate,
                              manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
                                             getDefaultUserEmail(), getDefaultRole()),
-                             requestBuilderCustomizer, content, errorMsg, urlVariables);
+                             content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -230,9 +230,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Allows to perform DELETE request without the security automatically handled with content
      */
-    protected ResultActions performDelete(String urlTemplate, String authToken,
-            RequestBuilderCustomizer requestBuilderCustomizer, Object content, String errorMsg,
-            Object... urlVariables) {
+    protected ResultActions performDelete(String urlTemplate, String authToken, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, content, errorMsg, urlVariables);
     }
 
