@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +55,11 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
 import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -159,7 +161,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
                 .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
-                       item.getMetadata().getStorages(), false);
+                       item.getMetadata().getStorages(), item.getMetadata().isOverride());
         grantedRequests.add(FeatureReferenceRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
                        metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
@@ -245,16 +247,30 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
         try {
             feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
             feature.withHistory(request.getRequestOwner());
-            FeatureMetadataEntity metadata = request.getMetadata();
+            FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);
-            return FeatureCreationRequestEvent.build(request.getRequestOwner(), FeatureCreationSessionMetadata
-                    .build(metadata.getSessionOwner(), metadata.getSession(), request.getPriority(), false, array),
+            return FeatureCreationRequestEvent.build(request.getRequestOwner(), request.getRequestId(),
+                                                     FeatureCreationSessionMetadata
+                                                             .build(metadata.getSessionOwner(), metadata.getSession(),
+                                                                    request.getPriority(), false, array),
                                                      feature);
         } catch (ModuleException e) {
             throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
         }
 
+    }
+
+    @Override
+    public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
+        // Build events to reuse event registration code
+        List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
+        for (String location : collection.getLocations()) {
+            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), location,
+                                                           OffsetDateTime.now().minusSeconds(1),
+                                                           collection.getPluginBusinessId()));
+        }
+        return registerRequests(toTreat);
     }
 
 }
