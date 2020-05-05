@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,27 +90,23 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         // import plugin configurations
         for (PluginConfiguration plgConf : configurations) {
             try {
-                PluginConfiguration existingOne = null;
-                try {
-                    existingOne = pluginService.getPluginConfiguration(plgConf.getBusinessId());
-                } catch (EntityNotFoundException e) { // NOSONAR
-                    // Nothing to do plugin configuration does not exists.
-                }
-                if (existingOne != null) {
+                Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
+                if (existingOne.isPresent()) {
                     // if override configuration we have to delete existing rule using this configuration
                     if (configuration.isResetBeforeImport()) {
                         this.ruleService.cleanRulesUsingConfiguration(plgConf);
                         this.notifService.cleanNotificationErrorsUsingConfiguration(plgConf);
                     }
                     LOGGER.info("Updating existing plugin configuration {}", plgConf.getBusinessId());
-                    existingOne.setLabel(plgConf.getLabel());
-                    existingOne.setParameters(plgConf.getParameters());
-                    pluginService.updatePluginConfiguration(existingOne);
+                    existingOne.get().setLabel(plgConf.getLabel());
+                    existingOne.get().setParameters(plgConf.getParameters());
+                    pluginService.updatePluginConfiguration(existingOne.get());
                 } else {
                     LOGGER.info("Creating new plugin configuration {}", plgConf.getBusinessId());
                     pluginService.savePluginConfiguration(plgConf);
                 }
             } catch (ModuleException e) {
+                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
                 importErrors.add(e.getMessage());
             }
         }
@@ -120,11 +117,22 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
                 PluginConfiguration ruleConf = pluginService.getPluginConfiguration(rule.getRuleId());
                 ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, rule.getRecipientIds()));
             } catch (ModuleException e) {
+                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
                 importErrors.add(e.getMessage());
             }
         }
 
         return importErrors;
+    }
+
+    private Optional<PluginConfiguration> loadPluginConfiguration(String businessId) {
+        PluginConfiguration existingOne = null;
+        try {
+            existingOne = pluginService.getPluginConfiguration(businessId);
+        } catch (EntityNotFoundException e) { // NOSONAR
+            // Nothing to do, plugin configuration does not exists.
+        }
+        return Optional.ofNullable(existingOne);
     }
 
     @Override
