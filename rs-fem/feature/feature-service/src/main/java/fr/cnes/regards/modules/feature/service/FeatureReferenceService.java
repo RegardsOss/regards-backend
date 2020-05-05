@@ -77,7 +77,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
  */
 @Service
 @MultitenantTransactional
-public class FeatureReferenceService extends AbstractFeatureService implements IFeatureReferenceService {
+public class FeatureReferenceService implements IFeatureReferenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceService.class);
 

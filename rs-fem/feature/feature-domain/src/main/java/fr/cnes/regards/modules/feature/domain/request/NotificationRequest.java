@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  */
 @Entity
 @Table(name = "t_notification_request",
-        indexes = { @Index(name = "idx_notification_request_urn", columnList = AbstractRequest.URN) },
+        indexes = { @Index(name = "idx_notification_request_urn", columnList = AbstractRequest.COLUMN_URN) },
         uniqueConstraints = { @UniqueConstraint(name = "uk_notification_request_id",
                 columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
 public class NotificationRequest extends AbstractRequest {

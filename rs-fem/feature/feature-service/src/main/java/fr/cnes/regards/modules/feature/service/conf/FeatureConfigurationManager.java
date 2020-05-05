@@ -22,9 +22,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +48,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 @Component
 public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
+
     @Autowired
     private IPluginService pluginService;
 
@@ -55,6 +60,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             try {
                 pluginService.deletePluginConfiguration(p.getBusinessId());
             } catch (ModuleException e) {
+                LOGGER.warn(RESET_FAIL_MESSAGE, e);
                 errors.add(e.getMessage());
             }
         }
@@ -70,25 +76,31 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
         // First create connections
         for (PluginConfiguration plgConf : configurations) {
             try {
-                PluginConfiguration existingOne = null;
-                try {
-                    existingOne = pluginService.getPluginConfiguration(plgConf.getBusinessId());
-                } catch (EntityNotFoundException e) { // NOSONAR
-                    // Nothing to do plugin configuration does not exists.
-                }
-                if (existingOne != null) {
-                    existingOne.setLabel(plgConf.getLabel());
-                    existingOne.setParameters(plgConf.getParameters());
-                    pluginService.updatePluginConfiguration(existingOne);
+                Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
+                if (existingOne.isPresent()) {
+                    existingOne.get().setLabel(plgConf.getLabel());
+                    existingOne.get().setParameters(plgConf.getParameters());
+                    pluginService.updatePluginConfiguration(existingOne.get());
                 } else {
                     pluginService.savePluginConfiguration(plgConf);
                 }
             } catch (ModuleException e) {
+                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
                 importErrors.add(e.getMessage());
             }
         }
 
         return importErrors;
+    }
+
+    private Optional<PluginConfiguration> loadPluginConfiguration(String businessId) {
+        PluginConfiguration existingOne = null;
+        try {
+            existingOne = pluginService.getPluginConfiguration(businessId);
+        } catch (EntityNotFoundException e) { // NOSONAR
+            // Nothing to do, plugin configuration does not exists.
+        }
+        return Optional.ofNullable(existingOne);
     }
 
     @Override
