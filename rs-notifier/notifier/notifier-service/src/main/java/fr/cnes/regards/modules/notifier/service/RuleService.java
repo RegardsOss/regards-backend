@@ -130,4 +130,9 @@ public class RuleService implements IRuleService {
                 .collect(Collectors.toSet()));
     }
 
+    @Override
+    public void cleanRulesUsingConfiguration(PluginConfiguration plgConf) {
+        this.ruleRepo.deleteByRulePluginBusinessId(plgConf.getBusinessId());
+    }
+
 }

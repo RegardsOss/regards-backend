@@ -27,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 
@@ -62,4 +63,10 @@ public interface IRuleService {
      * Delete all existing rules configured
      */
     public void deleteAll(Collection<String> deletionErrors);
+
+    /**
+     * Delete all rules using a plugin configuration
+     * @param plgConf
+     */
+    public void cleanRulesUsingConfiguration(PluginConfiguration plgConf);
 }
