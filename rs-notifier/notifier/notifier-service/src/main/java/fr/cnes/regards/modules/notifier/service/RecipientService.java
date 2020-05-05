@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,6 +80,7 @@ public class RecipientService implements IRecipientService {
                 try {
                     return pluginService.getPluginConfiguration(id);
                 } catch (EntityNotFoundException e) {
+                    LOGGER.debug("Configuration does not exist!", e);
                     return null;
                 }
             }).filter(conf -> conf != null).collect(Collectors.toSet());
@@ -119,17 +121,15 @@ public class RecipientService implements IRecipientService {
     }
 
     @Override
-    public void deleteAll(Collection<String> deletionErrors) {
+    public Set<String> deleteAll(Collection<String> deletionErrors) {
+        Set<String> pluginToDelete = new HashSet<>();
         for (PluginConfiguration conf : pluginService.getPluginConfigurationsByType(IRecipientNotifier.class)) {
-            try {
-                recipientErrorRepo.deleteByRecipientBusinessId(conf.getBusinessId());
-                pluginService.deletePluginConfiguration(conf.getBusinessId());
-            } catch (ModuleException e) {
-                deletionErrors.add(String.format("Error deleting rule configuration %s : %s", conf, e.getMessage()));
-                LOGGER.error(e.getMessage(), e);
-            }
+            recipientErrorRepo.deleteByRecipientBusinessId(conf.getBusinessId());
+            pluginToDelete.add(conf.getBusinessId());
+
         }
         // Clean cache
         notifService.cleanCache();
+        return pluginToDelete;
     }
 }

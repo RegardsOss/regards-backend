@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notifier.service;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -61,12 +62,7 @@ public interface IRuleService {
 
     /**
      * Delete all existing rules configured
+     * @return plugin business ids to delete
      */
-    public void deleteAll(Collection<String> deletionErrors);
-
-    /**
-     * Delete all rules using a plugin configuration
-     * @param plgConf
-     */
-    public void cleanRulesUsingConfiguration(PluginConfiguration plgConf);
+    public Set<String> deleteAll(Collection<String> deletionErrors);
 }

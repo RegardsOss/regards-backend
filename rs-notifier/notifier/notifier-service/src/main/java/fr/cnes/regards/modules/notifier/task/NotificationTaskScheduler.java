@@ -72,7 +72,7 @@ public class NotificationTaskScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    private final Task notification_task = () -> {
+    private final Task notificationTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.notificationService.scheduleRequests();
@@ -96,7 +96,7 @@ public class NotificationTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_ACTIONS);
                 lockingTaskExecutors
-                        .executeWithLock(notification_task,
+                        .executeWithLock(notificationTask,
                                          new LockConfiguration(NOTIFICATION_LOCK, Instant.now().plusSeconds(60)));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_ACTIONS, NOTIFICATION_TITLE, e);

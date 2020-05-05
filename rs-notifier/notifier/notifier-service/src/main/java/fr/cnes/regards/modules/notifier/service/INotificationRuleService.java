@@ -64,9 +64,4 @@ public interface INotificationRuleService {
      */
     void cleanCache();
 
-    /**
-     * Delete all notification error using a plugin configuration
-     * @param plgConf
-     */
-    void cleanNotificationErrorsUsingConfiguration(PluginConfiguration plgConf);
 }
