@@ -99,14 +99,14 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration {
         // transform search form into new search results: remove upper levels and convert old search-form
         // criteria into new search-results criteria (in an untitled root criterion group)
         Map<String, Object> searchResultsConfiguration = (Map<String, Object>) initialConfiguration.get("searchResult");
-        List<Map<String, Object>> criteria = (List<Map<String, Object>>) initialConfiguration.get("criterion"); // TODO seb OK ICI?
+        List<Map<String, Object>> criteria = (List<Map<String, Object>>) initialConfiguration.get("criterion");
         Map<String, Object> rootGroup = new HashMap<>();
         Map<String, Object> groupTitle = new HashMap<>();
         groupTitle.put("en", "");
         groupTitle.put("fr", "");
         rootGroup.put("showTitle", false);
         rootGroup.put("title", groupTitle);
-        rootGroup.put("criteria", criteria.stream().map(V1_1_1__update_modules_conf::updateCriterionConfiguration).collect(Collectors.toList())); // TODO Seb : utilisation des listes OK pour la sérialisation
+        rootGroup.put("criteria", criteria.stream().map(V1_1_1__update_modules_conf::updateCriterionConfiguration).collect(Collectors.toList()));
         searchResultsConfiguration.put("criteriaGroups", Collections.singletonList(rootGroup));
         return searchResultsConfiguration;
     }
@@ -118,15 +118,14 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration {
      * @return updated configuration
      */
     private static Map<String, Object> updateCriterionConfiguration(Map<String, Object> initialConfiguration) {
-        // pluginId, active and conf are reported, container and pluginInstanceId are removed
+        // pluginId and conf are reported, container, active and pluginInstanceId are removed
         Map<String, Object> newConfiguration = new HashMap<>();
         newConfiguration.put("pluginId", initialConfiguration.get("pluginId"));
-        newConfiguration.put("active", initialConfiguration.get("active"));
         newConfiguration.put("conf", initialConfiguration.get("conf"));
         // Add a label indicating to configure criteria
         Map<String, Object> criterionLabel = new HashMap<>();
-        criterionLabel.put("en", "Label undefined");
-        criterionLabel.put("fr", "Libellé indéfini");
+        criterionLabel.put("en", "");
+        criterionLabel.put("fr", "");
         newConfiguration.put("label", criterionLabel);
         return newConfiguration;
     }
