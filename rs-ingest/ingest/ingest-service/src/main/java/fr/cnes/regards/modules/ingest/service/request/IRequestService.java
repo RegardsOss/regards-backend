@@ -94,6 +94,8 @@ public interface IRequestService {
 
     /**
      * Check the given request is runnable or should  be delayed.
+     * @param request
+     * @return
      */
     public boolean shouldDelayRequest(AbstractRequest request);
 
