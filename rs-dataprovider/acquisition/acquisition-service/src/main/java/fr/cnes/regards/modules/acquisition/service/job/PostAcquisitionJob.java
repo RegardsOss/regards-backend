@@ -50,6 +50,8 @@ import fr.cnes.regards.modules.ingest.client.RequestInfo;
  */
 public class PostAcquisitionJob extends AbstractJob<Void> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
+
     public static final String EVENT_PARAMETER = "event";
 
     @Autowired
