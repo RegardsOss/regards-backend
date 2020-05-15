@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.elasticsearch.common.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ import fr.cnes.regards.modules.search.service.SearchEngineConfigurationService;
  */
 @Component
 public class SearchEngineConfigurationManager extends AbstractModuleManager<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationManager.class);
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineConfigurationService;
@@ -63,7 +67,7 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
                     } catch (ModuleException e) {
                         importErrors.add(String.format("Skipping import of search engine configuration %s: %s",
                                                        toImport.getLabel(), e.getMessage()));
-                        logger.error(e.getMessage(), e);
+                        LOGGER.error(e.getMessage(), e);
                     }
                 }
             }
