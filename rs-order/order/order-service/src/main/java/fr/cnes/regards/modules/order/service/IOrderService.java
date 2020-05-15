@@ -140,7 +140,8 @@ public interface IOrderService {
      * @param to
      * @throws IOException
      */
-    void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to) throws IOException;
+    void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
+            throws IOException;
 
     default Page<Order> findAll(int pageSize) {
         return findAll(PageRequest.of(0, pageSize));
@@ -213,4 +214,11 @@ public interface IOrderService {
      * @param order
      */
     void cleanExpiredOrder(Order order);
+
+    /**
+     * Check if the given order is really paused
+     * @param orderId
+     * @return
+     */
+    boolean isPaused(Long orderId);
 }
