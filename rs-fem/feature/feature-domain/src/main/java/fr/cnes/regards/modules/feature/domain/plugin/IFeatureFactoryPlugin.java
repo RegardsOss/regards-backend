@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
  *
  */
 @FunctionalInterface
-@PluginInterface(description = "Generate a Feature from a FeatureReferenceRequest")
+@PluginInterface(description = "Generate a feature from a reference request")
 public interface IFeatureFactoryPlugin {
 
     /**
