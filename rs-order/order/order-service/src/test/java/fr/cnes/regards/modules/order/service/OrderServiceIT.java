@@ -25,12 +25,9 @@ import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -85,8 +82,6 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -134,19 +129,19 @@ public class OrderServiceIT {
 
     @Autowired
     private IEmailClient emailClient;
-    
+
     @Autowired
     private IJobService jobService;
-    
+
     @Autowired
     private IJobInfoRepository jobInfoRepo;
-    
+
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-    
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-    
+
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     private static SimpleMailMessage mailMessage;
@@ -166,9 +161,9 @@ public class OrderServiceIT {
     @Before
     public void init() {
         clean();
-        
-        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class),null,null));
-        
+
+        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Project project = new Project();
         project.setHost("regardsHost");
@@ -316,22 +311,21 @@ public class OrderServiceIT {
         Thread.sleep(5_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
-        
+
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
         Assert.assertEquals(0, files.size());
-        
+
         jobInfos.forEach(j -> {
-			try {
-				JobInfo ji = jobInfoRepo.findCompleteById(j.getId());
-				jobService.runJob(ji, "ORDER").get();
-				tenantResolver.forceTenant("ORDER");
-			} catch (InterruptedException | ExecutionException e) {
-				tenantResolver.forceTenant("ORDER");
-				Assert.fail(e.getMessage());
-			}
-		});
-        
-        
+            try {
+                JobInfo ji = jobInfoRepo.findCompleteById(j.getId());
+                jobService.runJob(ji, "ORDER").get();
+                tenantResolver.forceTenant("ORDER");
+            } catch (InterruptedException | ExecutionException e) {
+                tenantResolver.forceTenant("ORDER");
+                Assert.fail(e.getMessage());
+            }
+        });
+
         // Some files are in error
         files = dataFileRepos.findAllAvailables(order.getId());
         int firstAvailables = files.size();
@@ -378,78 +372,6 @@ public class OrderServiceIT {
         Assert.assertEquals(0, files.size());
         order = orderService.loadSimple(order.getId());
         Assert.assertTrue(order.getStatus() == OrderStatus.EXPIRED);
-    }
-
-    @Test
-    @Ignore
-    public void testPauseResume() throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
-
-        Basket basket = new Basket("tulavu@qui.fr");
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(3_000_171l);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
-        basketRepos.save(basket);
-
-        Order order = orderService.createOrder(basket, "http://perdu.com");
-
-        Thread.sleep(1_000);
-        orderService.pause(order.getId());
-
-        Thread.sleep(10_000);
-
-        // Associated jobInfo must be ever at SUCCEEDED OR ABORTED
-        order = orderService.loadComplete(order.getId());
-        Set<JobInfo> jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(FilesTask::getJobInfo).collect(Collectors.toSet());
-        Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                .allMatch(JobStatus::isFinished));
-        // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
-        Assert.assertTrue(order.getPercentCompleted() <= 100);
-
-        orderService.resume(order.getId());
-
-        Thread.sleep(8_000);
-
-        order = orderService.loadComplete(order.getId());
-        jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(FilesTask::getJobInfo).collect(Collectors.toSet());
-        // Because there 3 sub-tasks and only 2 can be executed simustaneously without downloading files, only 2 of the
-        // 3 should be SUCCEEDED, the last one must be at PENDING state
-        Assert.assertEquals(2, jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                .filter(status -> status == JobStatus.SUCCEEDED).count());
-        Assert.assertEquals(1, jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                .filter(status -> status == JobStatus.PENDING).count());
-
-        List<FilesTask> waitingForUserTasks = filesTasksRepository.findDistinctByWaitingForUser(true);
-        Assert.assertEquals(2, waitingForUserTasks.size());
-
-        for (FilesTask filesTask : waitingForUserTasks) {
-            Set<OrderDataFile> toSaveDataFiles = new HashSet<>();
-            for (OrderDataFile dataFile : filesTask.getFiles()) {
-                // Emulate a user download
-                if (dataFile.getState() == FileState.AVAILABLE) {
-                    dataFile.setState(FileState.DOWNLOADED);
-                    toSaveDataFiles.add(dataFile);
-                }
-            }
-            orderDataFileService.save(toSaveDataFiles);
-        }
-        // Act as it was true downloads (to permit pending jobs changing their states and so be executed)
-        orderJobService.manageUserOrderJobInfos(order.getOwner());
-
-        Thread.sleep(8_000);
-        order = orderService.loadComplete(order.getId());
-        jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .map(FilesTask::getJobInfo).collect(Collectors.toSet());
-        Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                .allMatch(status -> status == JobStatus.SUCCEEDED));
-
-        Assert.assertTrue(order.getPercentCompleted() == 100);
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_140")
