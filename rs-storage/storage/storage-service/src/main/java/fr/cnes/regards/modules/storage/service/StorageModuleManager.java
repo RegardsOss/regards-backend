@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +42,8 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigura
  */
 @Component
 public class StorageModuleManager extends AbstractModuleManager<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageModuleManager.class);
 
     @Autowired
     StorageLocationConfigurationService storageConfService;
@@ -68,7 +72,7 @@ public class StorageModuleManager extends AbstractModuleManager<Void> {
                     } catch (ModuleException e) {
                         importErrors.add(String.format("Skipping import of StorageLocationConfiguration %s: %s",
                                                        conf.getName(), e.getMessage()));
-                        logger.error(e.getMessage(), e);
+                        LOGGER.error(e.getMessage(), e);
                     }
                 }
             }

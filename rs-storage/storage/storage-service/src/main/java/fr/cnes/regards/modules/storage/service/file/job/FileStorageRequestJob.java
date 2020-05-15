@@ -27,6 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
@@ -52,6 +54,8 @@ import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestSe
  *
  */
 public class FileStorageRequestJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestJob.class);
 
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the storage.
