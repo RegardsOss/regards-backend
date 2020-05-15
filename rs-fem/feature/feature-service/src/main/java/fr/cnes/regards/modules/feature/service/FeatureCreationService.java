@@ -213,7 +213,7 @@ public class FeatureCreationService implements IFeatureCreationService {
         FeatureSessionMetadata md = item.getMetadata();
         // Manage granted request
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
-                .build(md.getSession(), md.getSessionOwner(), item.getMetadata().getStorages(),
+                .build(md.getSessionOwner(), md.getSession(), item.getMetadata().getStorages(),
                        item.getMetadata().isOverride());
         FeatureCreationRequest request = FeatureCreationRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,

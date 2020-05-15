@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -45,6 +47,8 @@ import io.micrometer.core.instrument.Timer;
  *
  */
 public class FeatureUpdateJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateJob.class);
 
     public static final String IDS_PARAMETER = "ids";
 
