@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
@@ -37,10 +39,14 @@ import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 
 public class StorageClientMock implements IStorageClient {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientMock.class);
+
     @Autowired
     private final IStorageFileListener listener;
 
     private boolean isAvailable = true;
+
+    private boolean waitMode = false;
 
     public StorageClientMock(IStorageFileListener listener, boolean isAvailable) {
         super();
@@ -119,21 +125,32 @@ public class StorageClientMock implements IStorageClient {
         Collection<RequestInfo> infos = Sets.newHashSet();
         RequestInfo ri = null;
         int count = 0;
-        for (String c : checksums) {
-            if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
-                count = 0;
-            }
-            if (count == 0) {
-                ri = RequestInfo.build();
-                infos.add(ri);
-            }
-            if (!isAvailable) {
-                listener.onFileNotAvailable(c, Sets.newHashSet(ri), "");
-            } else {
-                listener.onFileAvailable(c, Sets.newHashSet(ri));
+        if (!waitMode) {
+            LOGGER.info("Simulate storage responses !!!!!!!");
+            for (String c : checksums) {
+                if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
+                    count = 0;
+                }
+                if (count == 0) {
+                    ri = RequestInfo.build();
+                    infos.add(ri);
+                }
+                if (!isAvailable) {
+                    listener.onFileNotAvailable(c, Sets.newHashSet(ri), "");
+                } else {
+                    listener.onFileAvailable(c, Sets.newHashSet(ri));
+                }
             }
         }
         return infos;
+    }
+
+    public boolean isWaitMode() {
+        return waitMode;
+    }
+
+    public void setWaitMode(boolean waitMode) {
+        this.waitMode = waitMode;
     }
 
 }
