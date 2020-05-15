@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service.job;
 
 import java.time.OffsetDateTime;
@@ -80,33 +98,36 @@ public class StorageFilesJob extends AbstractJob<Void> {
     }
 
     @Override
+    public int getCompletionCount() {
+        return dataFilesMultimap.keySet().size();
+    }
+
+    @Override
     public void run() {
         this.semaphore = new Semaphore(-dataFilesMultimap.keySet().size() + 1);
         subscriber.subscribe(this);
 
         try {
-            storageClient.makeAvailable(dataFilesMultimap.keySet(), OffsetDateTime.now().plusDays(subOrderValidationPeriodDays));
+            storageClient.makeAvailable(dataFilesMultimap.keySet(),
+                                        OffsetDateTime.now().plusDays(subOrderValidationPeriodDays));
             dataFilesMultimap.forEach((cs, f) -> {
-                LOGGER.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
+                logger.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
                              f.getFilename(), cs);
             });
             // Wait for remaining files availability from storage
-            try {
-                this.semaphore.acquire();
-            } catch (InterruptedException e) {
-                return;
-            }
-
+            this.semaphore.acquire();
             logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
+        } catch (RuntimeException e) { // Feign or network or ... exception
+            // Put All data files in ERROR and propagate exception to make job fail
+            dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
+            throw e;
+        } catch (InterruptedException e) {
+            logger.info("Order job has been interupted !");
+        } finally {
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
             dataFileService.save(dataFilesMultimap.values());
-        } catch (RuntimeException e) { // Feign or network or ... exception
-            // Put All data files in ERROR and propagate exception to make job fail
-            dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
-            dataFileService.save(dataFilesMultimap.values());
-            throw e;
         }
     }
 
@@ -135,6 +156,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
             }
             alreadyHandledFiles.add(checksum);
         }
+        this.advanceCompletion();
         this.semaphore.release();
     }
 
