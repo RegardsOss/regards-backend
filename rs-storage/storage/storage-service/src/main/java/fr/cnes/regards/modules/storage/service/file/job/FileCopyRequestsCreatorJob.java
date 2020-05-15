@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,6 +62,8 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestServi
  * @author Sébastien Binda
  */
 public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileCopyRequestsCreatorJob.class);
 
     public static final String STORAGE_LOCATION_SOURCE_ID = "source";
 
