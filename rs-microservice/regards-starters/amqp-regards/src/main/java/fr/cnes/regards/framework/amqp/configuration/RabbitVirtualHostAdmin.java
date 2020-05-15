@@ -247,7 +247,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     private void unregisterConnectionFactory(String virtualHost) {
         // if there is a connection factory for this vhost then unregister it
-        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) != null) {
+        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) != null) { // NOSONAR
             simpleRoutingConnectionFactory.removeTargetConnectionFactory(virtualHost);
         }
     }
@@ -372,7 +372,6 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      * @param tenant Tenant wanted
      * @return fully qualified name of vhost accord to namespace
      */
-    // FIXME
     public static String getVhostName(String tenant) {
         return REGARDS_NAMESPACE + tenant.toLowerCase();
     }
