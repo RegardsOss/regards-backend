@@ -49,7 +49,7 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
 
     protected static final String IMPORT_FAIL_MESSAGE = "Configuration import fails";
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected ModuleInformation info;
 
