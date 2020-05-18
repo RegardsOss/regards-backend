@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards.framework.modules</groupId>
         <artifactId>locks</artifactId>
-        <version>1.1.1</version>
+        <version>1.1.2-SNAPSHOT</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
