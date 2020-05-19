@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.access.services.client;
+package fr.cnes.regards.modules.access.services.client.cache;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
+import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 
@@ -37,28 +35,23 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
  * Module-common handler for AMQP events.
  *
  * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
  */
-@Profile("!test")
-@Component
 public class ServiceAggregatorClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ISubscriber subscriber;
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    private final IServiceAggregatorClient serviceAggregatorClient;
+    private final IServiceAggregatorKeyGenerator keyGenerator;
 
     /**
      * @param subscriber
      * @param runtimeTenantResolver
      * @param serviceAggregatorClient
      */
-    public ServiceAggregatorClientEventHandler(ISubscriber subscriber, IRuntimeTenantResolver runtimeTenantResolver,
-            IServiceAggregatorClient serviceAggregatorClient) {
+    public ServiceAggregatorClientEventHandler(ISubscriber subscriber, IServiceAggregatorKeyGenerator keyGenerator) {
         super();
         this.subscriber = subscriber;
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.serviceAggregatorClient = serviceAggregatorClient;
+        this.keyGenerator = keyGenerator;
     }
 
     @Override
@@ -67,6 +60,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
         subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());
         subscriber.subscribeTo(PluginConfEvent.class, new PluginConfEventHandler());
+        subscriber.subscribeTo(UIPluginDefinitionEvent.class, new UIPluginDefinitionEventHandler());
     }
 
     /**
@@ -78,14 +72,9 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<PluginConfEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                if ((wrapper.getContent() != null)
-                        && wrapper.getContent().getPluginTypes().contains(IService.class.getName())) {
-                    serviceAggregatorClient.clearServicesAggregatedCache();
-                }
-            } finally {
-                runtimeTenantResolver.clearTenant();
+            if ((wrapper.getContent() != null)
+                    && wrapper.getContent().getPluginTypes().contains(IService.class.getName())) {
+                keyGenerator.cleanCache();
             }
         }
     }
@@ -99,12 +88,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<LinkUiPluginsDatasetsEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                serviceAggregatorClient.clearServicesAggregatedCache();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+            keyGenerator.cleanCache();
         }
     }
 
@@ -117,12 +101,7 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<LinkPluginsDatasetsEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                serviceAggregatorClient.clearServicesAggregatedCache();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+            keyGenerator.cleanCache();
         }
     }
 
@@ -136,12 +115,15 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<UIPluginConfigurationEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                serviceAggregatorClient.clearServicesAggregatedCache();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+            keyGenerator.cleanCache();
+        }
+    }
+
+    private class UIPluginDefinitionEventHandler implements IHandler<UIPluginDefinitionEvent> {
+
+        @Override
+        public void handle(TenantWrapper<UIPluginDefinitionEvent> wrapper) {
+            keyGenerator.cleanCache();
         }
     }
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.access.services.service.ui;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -138,5 +139,7 @@ public interface IUIPluginConfigurationService {
      */
     List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
             List<ServiceScope> applicationModes);
+
+    Page<UIPluginConfiguration> retrievePluginConfigurations(PageRequest pageable);
 
 }

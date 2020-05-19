@@ -108,6 +108,11 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
+    public Page<Module> retrieveModules(Pageable pageable) {
+        return repository.findAll(pageable);
+    }
+
+    @Override
     public Page<Module> retrieveActiveModules(final String applicationId, final Pageable pageable) {
         return repository.findByApplicationIdAndActiveTrue(applicationId, pageable);
     }

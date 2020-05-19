@@ -66,6 +66,17 @@ public interface IModuleService {
     Page<Module> retrieveModules(String applicationId, Boolean active, String type, Pageable pPageable);
 
     /**
+    *
+    * Retrieve all modules for the given application Id
+    *
+    * @param applicationId
+    * @param pageable
+    * @return Paged list of {@link Module}
+    * @since 1.0-SNAPSHOT
+    */
+    Page<Module> retrieveModules(Pageable pageable);
+
+    /**
      *
      * Retrieve all active modules for the given application Id
      *

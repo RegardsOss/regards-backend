@@ -18,17 +18,20 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import java.util.List;
 import java.util.Set;
+
 import javax.validation.Valid;
+
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * Provide a bean to replace the behavior of the {@link IRolesClient} while testing
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Primary
 public class RolesClientMock implements IRolesClient {
+
     @Override
     public ResponseEntity<List<EntityModel<Role>>> getAllRoles() {
         return null;
@@ -80,7 +84,7 @@ public class RolesClientMock implements IRolesClient {
     @Override
     public ResponseEntity<Boolean> shouldAccessToResourceRequiring(String roleName) throws EntityNotFoundException {
         boolean body = false;
-        if (roleName.equals(DefaultRole.PUBLIC)) {
+        if (roleName.equals(DefaultRole.PUBLIC.toString())) {
             body = true;
         }
         return ResponseEntity.ok(body);
