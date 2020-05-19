@@ -35,16 +35,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Migrates modules configuration from previous REGARDS version into 1.1.1 (for search related changes)
+ * Migrates modules configuration from previous REGARDS version into 1.2.0 (for search related changes)
  *
  * @author Raphaël Mechali
  */
-public class V1_1_1__update_modules_conf extends BaseJavaMigration {
+public class V1_2_0__update_modules_conf extends BaseJavaMigration {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(V1_1_1__update_modules_conf.class);
+    private static final Logger LOG = LoggerFactory.getLogger(V1_2_0__update_modules_conf.class);
 
     /**
      * Parses a JSON map from string and produce new configuration (a map too) as string
@@ -106,7 +106,7 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration {
         groupTitle.put("fr", "");
         rootGroup.put("showTitle", false);
         rootGroup.put("title", groupTitle);
-        rootGroup.put("criteria", criteria.stream().map(V1_1_1__update_modules_conf::updateCriterionConfiguration).collect(Collectors.toList()));
+        rootGroup.put("criteria", criteria.stream().map(V1_2_0__update_modules_conf::updateCriterionConfiguration).collect(Collectors.toList()));
         searchResultsConfiguration.put("criteriaGroups", Collections.singletonList(rootGroup));
         return searchResultsConfiguration;
     }
@@ -143,13 +143,13 @@ public class V1_1_1__update_modules_conf extends BaseJavaMigration {
 
                     switch (type) {
                         case "search-results":
-                            updatedConf = withParsedMap(conf, V1_1_1__update_modules_conf::updateSearchResultsConfiguration);
+                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchResultsConfiguration);
                             break;
                         case "search-graph":
-                            updatedConf = withParsedMap(conf, V1_1_1__update_modules_conf::updateSearchGraphConfiguration);
+                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchGraphConfiguration);
                             break;
                         case "search-form":
-                            updatedConf = withParsedMap(conf, V1_1_1__update_modules_conf::updateSearchFormConfiguration);
+                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchFormConfiguration);
                             newType = "search-results";// also migrating to search-results type
                             break;
                         default:
