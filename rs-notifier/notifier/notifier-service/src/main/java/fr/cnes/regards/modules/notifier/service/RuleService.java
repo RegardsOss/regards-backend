@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 @MultitenantTransactional
 public class RuleService implements IRuleService {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RuleService.class);
 
     @Autowired
@@ -122,10 +123,4 @@ public class RuleService implements IRuleService {
         return RuleDTO.build(rule.getRulePlugin(), rule.getRecipients().stream().map(PluginConfiguration::getBusinessId)
                 .collect(Collectors.toSet()));
     }
-
-    @Override
-    public void cleanRulesUsingConfiguration(PluginConfiguration plgConf) {
-        this.ruleRepo.deleteByRulePluginBusinessId(plgConf.getBusinessId());
-    }
-
 }
