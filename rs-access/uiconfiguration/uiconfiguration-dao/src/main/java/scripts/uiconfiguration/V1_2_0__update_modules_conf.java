@@ -158,7 +158,7 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
                     }
                     if (updatedConf != null) {
                         LOG.info(String.format("Updating module %s from type %s to type %s", id, type, newType));
-                        String sqlRequest = "UPDATE t_ui_module SET conf= (), type= () WHERE id= ()";
+                        String sqlRequest = "UPDATE t_ui_module SET conf=? , type=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection().prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setString(2, newType);
