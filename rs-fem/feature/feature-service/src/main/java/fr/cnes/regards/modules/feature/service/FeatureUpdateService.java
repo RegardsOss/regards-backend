@@ -68,6 +68,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
@@ -171,6 +172,12 @@ public class FeatureUpdateService implements IFeatureUpdateService {
         errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
 
         if (errors.hasErrors()) {
+            // Monitoring log
+            FeatureLogger.updateDenied(item.getRequestOwner(), item.getRequestId(),
+                                       item.getFeature() != null ? item.getFeature().getId() : null,
+                                       item.getFeature() != null ? item.getFeature().getUrn() : null,
+                                       ErrorTranslator.getErrors(errors));
+            // Publish DENIED request
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         item.getFeature() != null ? item.getFeature().getUrn() : null,
@@ -186,6 +193,9 @@ public class FeatureUpdateService implements IFeatureUpdateService {
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
                        item.getFeature(), item.getMetadata().getPriority(), FeatureRequestStep.LOCAL_DELAYED);
 
+        // Monitoring log
+        FeatureLogger.updateGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+                                    request.getUrn());
         // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
@@ -283,6 +293,9 @@ public class FeatureUpdateService implements IFeatureUpdateService {
                                                request.getUrn()));
                 errorRequests.add(request);
 
+                // Monitoring log
+                FeatureLogger.updateError(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+                                          request.getUrn(), request.getErrors());
                 // Publish request failure
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
                                                             request.getProviderId(), request.getUrn(),
@@ -301,7 +314,7 @@ public class FeatureUpdateService implements IFeatureUpdateService {
 
                 // Merge properties handling null property values to unset properties
                 IProperty.mergeProperties(entity.getFeature().getProperties(), patch.getProperties(),
-                                          patch.getUrn().toString());
+                                          patch.getUrn().toString(), request.getRequestOwner());
 
                 // Geometry cannot be unset but can be mutated
                 if (!GeoJsonType.UNLOCATED.equals(patch.getGeometry().getType())) {
@@ -313,6 +326,9 @@ public class FeatureUpdateService implements IFeatureUpdateService {
                 // notify update feature without files
                 publisher.publish(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
                                                                 FeatureManagementAction.UPDATED.name()));
+                // Monitoring log
+                FeatureLogger.updateSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+                                            request.getFeature().getUrn());
                 // Publish request success
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
                                                             entity.getProviderId(), entity.getUrn(),

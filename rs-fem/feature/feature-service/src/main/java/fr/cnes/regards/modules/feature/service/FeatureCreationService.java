@@ -83,6 +83,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -203,6 +204,11 @@ public class FeatureCreationService implements IFeatureCreationService {
             LOGGER.error("Error during feature {} validation the following errors have been founded{}",
                          item.getFeature().getId(), errors.toString());
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
+            // Monitoring log
+            FeatureLogger.creationDenied(item.getRequestOwner(), item.getRequestId(),
+                                         item.getFeature() != null ? item.getFeature().getId() : null,
+                                         ErrorTranslator.getErrors(errors));
+            // Publish DENIED request
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
@@ -218,7 +224,9 @@ public class FeatureCreationService implements IFeatureCreationService {
         FeatureCreationRequest request = FeatureCreationRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
                        item.getFeature(), metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority());
-        //         Publish GRANTED request
+        // Monitoring log
+        FeatureLogger.creationGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId());
+        // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
                                                     item.getFeature() != null ? item.getFeature().getId() : null, null,
                                                     RequestState.GRANTED, null));
@@ -316,6 +324,9 @@ public class FeatureCreationService implements IFeatureCreationService {
             if ((request.getFeature().getFiles() == null) || request.getFeature().getFiles().isEmpty()) {
                 // Register request
                 requestsWithoutFiles.add(request);
+                // Monitoring log
+                FeatureLogger.creationSuccess(request.getRequestOwner(), request.getRequestId(),
+                                              request.getProviderId(), request.getFeature().getUrn());
                 // Publish successful request
                 publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
                                                             request.getProviderId(), request.getFeature().getUrn(),
@@ -327,7 +338,7 @@ public class FeatureCreationService implements IFeatureCreationService {
                     this.notificationClient
                             .notify(String.format("A FeatureEntity with the URN {} already exists for this feature",
                                                   request.getFeatureEntity().getPreviousVersionUrn()),
-                                    "A duplicated feature has been detected", NotificationLevel.ERROR,
+                                    "A duplicated feature has been detected", NotificationLevel.INFO,
                                     DefaultRole.ADMIN);
                     publisher.publish(FeatureDeletionRequestEvent
                             .build(request.getMetadata().getSessionOwner(),

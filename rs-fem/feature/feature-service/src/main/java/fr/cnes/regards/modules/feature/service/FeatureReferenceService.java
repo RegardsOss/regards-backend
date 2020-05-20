@@ -69,6 +69,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 
 /**
  * Feature reference service management
@@ -149,11 +150,16 @@ public class FeatureReferenceService implements IFeatureReferenceService {
             LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}", errors.toString());
             // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
             requestInfo.addDeniedRequest(null, ErrorTranslator.getErrors(errors));
+            // Monitoring log
+            FeatureLogger.referenceDenied(item.getRequestOwner(), item.getRequestId(),
+                                          ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
             publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
+        // Monitoring log
+        FeatureLogger.referenceGranted(item.getRequestOwner(), item.getRequestId());
         // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
                                                     RequestState.GRANTED, null));
@@ -217,10 +223,13 @@ public class FeatureReferenceService implements IFeatureReferenceService {
                     creationRequestsToRegister.add(fcre);
                     successCreationRequestGeneration.add(request);
                 } else {
+                    Set<String> errors = Sets.newHashSet("No plugin founded for this request reference");
+                    // Monitoring log
+                    FeatureLogger.referenceError(request.getRequestOwner(), request.getRequestId(), errors);
+                    // Publish ERROR request
                     request.setState(RequestState.ERROR);
-                    publisher.publish(FeatureRequestEvent
-                            .build(request.getRequestId(), request.getRequestOwner(), null, null, RequestState.ERROR,
-                                   Sets.newHashSet("No plugin founded for this request reference")));
+                    publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(), null,
+                                                                null, RequestState.ERROR, errors));
                 }
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
                 request.setState(RequestState.ERROR);

@@ -71,6 +71,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -81,9 +82,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 @Service
 @MultitenantTransactional
-public class FeatureDeletetionService implements IFeatureDeletionService {
+public class FeatureDeletionService implements IFeatureDeletionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletetionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
     private static final String ONLINE_CONF = "ONLINE_CONF";
 
@@ -148,6 +149,9 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded FeatureDeletionRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
+            // Monitoring log
+            FeatureLogger.deletionDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
+                                         ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
             publisher
                     .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
@@ -158,6 +162,8 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
         FeatureDeletionRequest request = FeatureDeletionRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
                        FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn());
+        // Monitoring log
+        FeatureLogger.deletionGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
                                                     RequestState.GRANTED, null));
@@ -239,6 +245,8 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
                 .deleteByIdIn(requestsAlreadyDeleted.stream().map(fdr -> fdr.getId()).collect(Collectors.toSet()));
         Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
         for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
+            // Monitoring log
+            FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
             // Send feedback
             publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(), null, fdr.getUrn(),
                                                         RequestState.SUCCESS, errors));
@@ -283,6 +291,8 @@ public class FeatureDeletetionService implements IFeatureDeletionService {
                 .collect(Collectors.toMap(FeatureDeletionRequest::getUrn, Function.identity()));
         for (FeatureEntity entity : sucessfullRequests.values()) {
             FeatureDeletionRequest fdr = requestByUrn.get(entity.getUrn());
+            // Monitoring log
+            FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
             // Publish successful request
             publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(),
                                                         entity.getProviderId(), fdr.getUrn(), RequestState.SUCCESS));

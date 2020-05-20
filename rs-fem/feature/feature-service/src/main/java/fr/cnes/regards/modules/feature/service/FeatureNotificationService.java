@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.NotificationRequestJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
@@ -135,7 +136,10 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         }
 
         if (errors.hasErrors()) {
-            LOGGER.debug("Error during founded NotificationRequestEvent validation {}", errors.toString());
+            // Monitoring log
+            FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
+                                             ErrorTranslator.getErrors(errors));
+            // Publish DENIED request
             publisher
                     .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
@@ -145,6 +149,8 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         NotificationRequest request = NotificationRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
                        FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn(), RequestState.GRANTED);
+        // Monitoring log
+        FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
                                                     RequestState.GRANTED, null));
@@ -191,6 +197,7 @@ public class FeatureNotificationService implements IFeatureNotificationService {
     @Override
     public void processRequests(List<NotificationRequest> requests) {
 
+        // FIXME add success response and monitoring logs
         List<FeatureEntity> features = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList()));
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
