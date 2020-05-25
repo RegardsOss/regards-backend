@@ -37,9 +37,9 @@ public class FeatureLogger {
 
     private static final String PREFIX = "[MONITORING] ";
 
-    private static final String PARAM_PREFIX = " ";
+    private static final String PARAM_PREFIX = "";
 
-    private static final String PARAM = "| %s";
+    private static final String PARAM = " | %s";
 
     private static final String PX2 = PARAM_PREFIX + PARAM + PARAM;
 
@@ -80,49 +80,49 @@ public class FeatureLogger {
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
     public static void creationDenied(String requestOwner, String requestId, String providerId, Set<String> errors) {
-        LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, providerId, errors));
+        LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, requestId, providerId, errors));
     }
 
     public static void creationGranted(String requestOwner, String requestId, String providerId) {
-        LOGGER.trace(String.format(CREATION_GRANTED_FORMAT, requestOwner, providerId));
+        LOGGER.trace(String.format(CREATION_GRANTED_FORMAT, requestOwner, requestId, providerId));
     }
 
     public static void creationSuccess(String requestOwner, String requestId, String providerId,
             FeatureUniformResourceName urn) {
-        LOGGER.info(String.format(CREATION_SUCCESS_FORMAT, requestOwner, providerId, urn));
+        LOGGER.info(String.format(CREATION_SUCCESS_FORMAT, requestOwner, requestId, providerId, urn));
     }
 
     public static void updateDenied(String requestOwner, String requestId, String providerId,
             FeatureUniformResourceName urn, Set<String> errors) {
-        LOGGER.error(String.format(UPDATE_DENIED_FORMAT, requestOwner, providerId, urn, errors));
+        LOGGER.error(String.format(UPDATE_DENIED_FORMAT, requestOwner, requestId, providerId, urn, errors));
     }
 
     public static void updateGranted(String requestOwner, String requestId, String providerId,
             FeatureUniformResourceName urn) {
-        LOGGER.trace(String.format(UPDATE_GRANTED_FORMAT, requestOwner, providerId, urn));
+        LOGGER.trace(String.format(UPDATE_GRANTED_FORMAT, requestOwner, requestId, providerId, urn));
     }
 
     public static void updateSuccess(String requestOwner, String requestId, String providerId,
             FeatureUniformResourceName urn) {
-        LOGGER.info(String.format(UPDATE_SUCCESS_FORMAT, requestOwner, providerId, urn));
+        LOGGER.info(String.format(UPDATE_SUCCESS_FORMAT, requestOwner, requestId, providerId, urn));
     }
 
     public static void updateError(String requestOwner, String requestId, String providerId,
             FeatureUniformResourceName urn, Set<String> errors) {
-        LOGGER.error(String.format(UPDATE_ERROR_FORMAT, requestOwner, providerId, urn, errors));
+        LOGGER.error(String.format(UPDATE_ERROR_FORMAT, requestOwner, requestId, providerId, urn, errors));
     }
 
     public static void deletionDenied(String requestOwner, String requestId, FeatureUniformResourceName urn,
             Set<String> errors) {
-        LOGGER.error(String.format(DELETION_DENIED_FORMAT, requestOwner, urn, errors));
+        LOGGER.error(String.format(DELETION_DENIED_FORMAT, requestOwner, requestId, urn, errors));
     }
 
     public static void deletionGranted(String requestOwner, String requestId, FeatureUniformResourceName urn) {
-        LOGGER.trace(String.format(DELETION_GRANTED_FORMAT, requestOwner, urn));
+        LOGGER.trace(String.format(DELETION_GRANTED_FORMAT, requestOwner, requestId, urn));
     }
 
     public static void deletionSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
-        LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, urn));
+        LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, requestId, urn));
     }
 
     public static void referenceDenied(String requestOwner, String requestId, Set<String> errors) {

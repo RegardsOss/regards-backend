@@ -49,6 +49,7 @@
     <!-- <logger name="fr.cnes.regards.modules.feature.service" level="TRACE" /> -->
     <!-- <logger name="fr.cnes.regards.modules.feature.service" level="TRACE"/> -->
     <logger name="fr.cnes.regards.modules.model.dto.properties.logger" level="INFO"/>
+    <logger name="fr.cnes.regards.modules.feature.service.logger" level="TRACE"/>
 	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 		<!-- <appender-ref ref="STASH" /> -->
