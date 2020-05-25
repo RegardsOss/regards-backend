@@ -75,9 +75,11 @@ public class FeatureLogger {
 
     private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
 
+    private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
+
     private static final String NOTIFICATION_GRANTED_FORMAT = PREFIX + "Feature NOTIFICATION GRANTED" + PX3;
 
-    private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
+    private static final String NOTIFICATION_SUCCESS_FORMAT = PREFIX + "Feature NOTIFIED" + PX3;
 
     public static void creationDenied(String requestOwner, String requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, requestId, providerId, errors));
@@ -146,4 +148,7 @@ public class FeatureLogger {
         LOGGER.trace(String.format(NOTIFICATION_GRANTED_FORMAT, requestOwner, requestId, urn));
     }
 
+    public static void notificationSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.trace(String.format(NOTIFICATION_SUCCESS_FORMAT, requestOwner, requestId, urn));
+    }
 }

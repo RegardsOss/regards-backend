@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -58,6 +60,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.NotificationRequestJob;
@@ -153,7 +156,7 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
         publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                    RequestState.GRANTED, null));
+                                                    RequestState.GRANTED));
         notificationsRequest.add(request);
 
         // Add new request id to existing ones
@@ -197,13 +200,23 @@ public class FeatureNotificationService implements IFeatureNotificationService {
     @Override
     public void processRequests(List<NotificationRequest> requests) {
 
+        Map<FeatureUniformResourceName, NotificationRequest> notifPerUrn = requests.stream()
+                .collect(Collectors.toMap(NotificationRequest::getUrn, Function.identity()));
+
         // FIXME add success response and monitoring logs
         List<FeatureEntity> features = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList()));
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
         for (FeatureEntity entity : features) {
+            // Prepare notification
             notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
                                                             FeatureManagementAction.NOTIFIED.toString()));
+            // Monitoring log
+            NotificationRequest request = notifPerUrn.get(entity.getUrn());
+            FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
+            // Publish request success
+            publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
+                                                        entity.getProviderId(), entity.getUrn(), RequestState.SUCCESS));
         }
         publisher.publish(notifications);
 

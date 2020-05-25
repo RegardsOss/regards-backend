@@ -125,6 +125,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-logger</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>
 			<artifactId>model-service</artifactId>
 			<scope>test</scope>

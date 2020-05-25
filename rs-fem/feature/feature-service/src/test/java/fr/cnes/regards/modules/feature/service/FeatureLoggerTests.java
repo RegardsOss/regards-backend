@@ -118,4 +118,8 @@ public class FeatureLoggerTests {
         FeatureLogger.notificationGranted(REQUEST_OWNER, REQUEST_ID, URN);
     }
 
+    @Test
+    public void notificationSuccess() {
+        FeatureLogger.notificationSuccess(REQUEST_OWNER, REQUEST_ID, URN);
+    }
 }
