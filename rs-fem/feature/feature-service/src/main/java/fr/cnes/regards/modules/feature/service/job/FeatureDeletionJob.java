@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -44,8 +42,6 @@ import io.micrometer.core.instrument.Timer;
  *
  */
 public class FeatureDeletionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionJob.class);
 
     public static final String IDS_PARAMETER = "ids";
 
@@ -73,10 +69,10 @@ public class FeatureDeletionJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Timer timer = Timer.builder(this.getClass().getName()).tag("job", "run").register(registry);
-        LOGGER.info("[{}] Feature deletion job starts", jobInfoId);
+        logger.info("[{}] Feature deletion job starts", jobInfoId);
         long start = System.currentTimeMillis();
         timer.record(() -> featureService.processRequests(featureDeletionRequests));
-        LOGGER.info("[{}]{}{} deletion request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{}{} deletion request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     featureDeletionRequests.size(), System.currentTimeMillis() - start);
     }
 }

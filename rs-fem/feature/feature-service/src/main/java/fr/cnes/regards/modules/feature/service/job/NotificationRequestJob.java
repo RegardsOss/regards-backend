@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -47,8 +45,6 @@ import io.micrometer.core.instrument.Timer;
  *
  */
 public class NotificationRequestJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestJob.class);
 
     public static final String IDS_PARAMETER = "ids";
 
@@ -75,10 +71,10 @@ public class NotificationRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Timer timer = Timer.builder(this.getClass().getName()).tag("job", "run").register(registry);
-        LOGGER.info("[{}] Feature notification request job starts", jobInfoId);
+        logger.info("[{}] Feature notification request job starts", jobInfoId);
         long start = System.currentTimeMillis();
         timer.record(() -> notificationService.processRequests(notificationRequests));
-        LOGGER.info("[{}]{}{} notifications request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{}{} notifications request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     notificationRequests.size(), System.currentTimeMillis() - start);
     }
 }

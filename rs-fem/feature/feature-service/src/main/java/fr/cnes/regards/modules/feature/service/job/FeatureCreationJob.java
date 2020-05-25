@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -50,8 +48,6 @@ import io.micrometer.core.instrument.Timer;
  *
  */
 public class FeatureCreationJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationJob.class);
 
     public static final String IDS_PARAMETER = "ids";
 
@@ -81,13 +77,13 @@ public class FeatureCreationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Feature creation job starts", jobInfoId);
+        logger.info("[{}] Feature creation job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
         Set<FeatureEntity> created = featureService.processRequests(featureCreationRequests);
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         created.forEach(e -> metrics.count(e.getProviderId(), e.getUrn(), FeatureCreationState.FEATURE_CREATED));
-        LOGGER.info("[{}]{}{} creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{}{} creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     featureCreationRequests.size(), System.currentTimeMillis() - start);
     }
 
