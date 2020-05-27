@@ -48,6 +48,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -227,7 +228,7 @@ public class AcquisitionProcessingChainController implements IResourceController
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
         if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
                 && element.isActive()) {
-            resourceService.addLink(resource, this.getClass(), "startManualChain", LinkRels.SELF,
+            resourceService.addLink(resource, this.getClass(), "startManualChain", LinkRelation.of("start"),
                                     MethodParamFactory.build(Long.class, element.getId()),
                                     MethodParamFactory.build(Optional.class));
         }
@@ -235,9 +236,9 @@ public class AcquisitionProcessingChainController implements IResourceController
             resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
-        resourceService.addLink(resource, this.getClass(), "stopChain", LinkRels.SELF,
+        resourceService.addLink(resource, this.getClass(), "stopChain", LinkRelation.of("stop"),
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", LinkRels.UPDATE,
+        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", LinkRelation.of("patch"),
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         return resource;

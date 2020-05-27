@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,12 +93,13 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
                     && !element.getChain().isLocked() && element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
-                                        LinkRels.SELF, MethodParamFactory.build(Long.class, element.getChain().getId()),
+                                        LinkRelation.of("start"),
+                                        MethodParamFactory.build(Long.class, element.getChain().getId()),
                                         MethodParamFactory.build(Optional.class));
             }
             if (element.isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain",
-                                        LinkRels.SELF,
+                                        LinkRelation.of("stop"),
                                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
             if (!element.getChain().isActive()) {
@@ -105,7 +107,8 @@ public class MonitoringController implements IResourceController<AcquisitionProc
                                         MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
             resourceService.addLink(resource, AcquisitionProcessingChainController.class, "updateStateAndMode",
-                                    LinkRels.UPDATE, MethodParamFactory.build(Long.class, element.getChain().getId()),
+                                    LinkRelation.of("patch"),
+                                    MethodParamFactory.build(Long.class, element.getChain().getId()),
                                     MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
         return resource;
