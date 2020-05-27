@@ -130,6 +130,12 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
         JobInfo jobInfo = getJobInfo(r);
+
+        if (jobInfo == null) {
+            LOGGER.error("Cannot retrieve job info", t);
+            return;
+        }
+
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         // FutureTask (which is used by ThreadPoolExecutor) doesn't give a fuck of thrown exception so we must get it
         // by hands

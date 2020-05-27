@@ -236,7 +236,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
      */
     private void registerConnectionFactory(String virtualHost, CachingConnectionFactory pConnectionFactory) {
         // if there is no registered connection factory for this vhost then register this one
-        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) == null) {
+        if (simpleRoutingConnectionFactory.getTargetConnectionFactory(virtualHost) == null) { // NOSONAR
             simpleRoutingConnectionFactory.addTargetConnectionFactory(virtualHost, pConnectionFactory);
         }
     }
