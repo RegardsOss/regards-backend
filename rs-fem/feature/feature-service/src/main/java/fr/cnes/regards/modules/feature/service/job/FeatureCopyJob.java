@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
@@ -45,8 +43,6 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
  *
  */
 public class FeatureCopyJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCopyJob.class);
 
     public static final String IDS_PARAMETER = "ids";
 
@@ -69,10 +65,10 @@ public class FeatureCopyJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Feature copy job starts", jobInfoId);
+        logger.info("[{}] Feature copy job starts", jobInfoId);
         long start = System.currentTimeMillis();
         this.featureCopyService.processRequests(featureCopyRequests);
-        LOGGER.info("[{}]{} Copy request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{} Copy request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     System.currentTimeMillis() - start);
     }
 
