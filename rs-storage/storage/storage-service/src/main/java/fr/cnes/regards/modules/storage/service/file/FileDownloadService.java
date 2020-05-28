@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
@@ -129,16 +130,27 @@ public class FileDownloadService {
             Map<String, FileReference> storages = fileRefs.stream()
                     .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
             // 2. get the storage location with the higher priority
-            Optional<StorageLocationConfiguration> storageLocation = storageLocationConfService
-                    .searchActiveHigherPriority(storages.keySet());
-            if (storageLocation.isPresent()) {
-                PluginConfiguration conf = storageLocation.get().getPluginConfiguration();
+            Optional<StorageLocationConfiguration> oStorageLocation = storageLocationConfService
+                    .searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE);
+            if (oStorageLocation.isPresent()) {
+                StorageLocationConfiguration storageLocation = oStorageLocation.get();
+                PluginConfiguration conf = storageLocation.getPluginConfiguration();
                 FileReference fileToDownload = storages.get(conf.getLabel());
-                DownloadableFile df = new DownloadableFile(downloadFileReference(fileToDownload),
-                        fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
-                        fileToDownload.getMetaInfo().getMimeType());
-                return df;
+                return new DownloadableFile(downloadOnline(fileToDownload, storageLocation),
+                                            fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
+                                            fileToDownload.getMetaInfo().getMimeType());
             } else {
+                oStorageLocation = storageLocationConfService
+                        .searchActiveHigherPriority(storages.keySet(), StorageType.NEARLINE);
+                if(oStorageLocation.isPresent()) {
+                    StorageLocationConfiguration storageLocation = oStorageLocation.get();
+                    PluginConfiguration conf = storageLocation.getPluginConfiguration();
+                    FileReference fileToDownload = storages.get(conf.getLabel());
+                    return new DownloadableFile(download(fileToDownload),
+                                                fileToDownload.getMetaInfo().getFileSize(),
+                                                fileToDownload.getMetaInfo().getFileName(),
+                                                fileToDownload.getMetaInfo().getMimeType());
+                }
                 throw new ModuleException(String
                         .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
                                 checksum, Arrays.toString(storages.keySet().toArray())));
