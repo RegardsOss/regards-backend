@@ -62,6 +62,19 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     }
 
     @Test
+    public void downloadFileOnlineAndNotNearline() throws ExecutionException, InterruptedException, ModuleException {
+        FileReference fileRef = this.generateRandomStoredNearlineFileReference();
+        fileRef = this.generateStoredFileReference(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getOwners().stream().findFirst().get(),
+                                                   fileRef.getMetaInfo().getFileName(),
+                                                   ONLINE_CONF_LABEL_WITHOUT_DELETE,
+                                                   Optional.empty(),
+                                                   Optional.empty());
+        downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
+        // there should not be any exception as the file is at the same time online and nearline
+    }
+
+    @Test
     public void downloadFileReferenceOnline()
             throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
         downloadService.downloadFile(this.generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
@@ -74,7 +87,8 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
                 .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
         try {
             downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
-            Assert.fail("File should not be available for download as it is not handled by a known storage location plugin");
+            Assert.fail(
+                    "File should not be available for download as it is not handled by a known storage location plugin");
         } catch (ModuleException e) {
             // Nothing to do
         }
@@ -92,9 +106,11 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
             Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("FileCacheRequest should be createdd", oReq.isPresent());
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                                NEARLINE_CONF_LABEL, oReq.get().getStorage());
+                                NEARLINE_CONF_LABEL,
+                                oReq.get().getStorage());
             Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                                FileRequestStatus.TO_DO, oReq.get().getStatus());
+                                FileRequestStatus.TO_DO,
+                                oReq.get().getStatus());
             Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
             runAndWaitJob(jobs);
 
@@ -108,10 +124,12 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
             DownloadableFile file = downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
             Assert.assertNotNull("File should be downloadable", file);
             Assert.assertNotNull("File should be downloadable", file.getFileInputStream());
-            Assert.assertEquals("File should be downloadable with a valid name", fileRef.getMetaInfo().getFileName(),
+            Assert.assertEquals("File should be downloadable with a valid name",
+                                fileRef.getMetaInfo().getFileName(),
                                 file.getFileName());
             Assert.assertEquals("File should be downloadable with a valid mime type",
-                                fileRef.getMetaInfo().getMimeType(), file.getMimeType());
+                                fileRef.getMetaInfo().getMimeType(),
+                                file.getMimeType());
             file.getFileInputStream().close();
         }
     }
@@ -129,8 +147,9 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void download_with_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
-            IOException, NearlineFileNotAvailableException {
+    public void download_with_cache()
+            throws InterruptedException, ExecutionException, EntityNotFoundException, IOException,
+            NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
         InputStream stream = downloadService.download(fileRef);
