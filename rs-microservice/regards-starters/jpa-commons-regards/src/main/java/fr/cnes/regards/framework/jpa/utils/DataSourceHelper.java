@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -31,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.mchange.v2.c3p0.DataSources;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -85,7 +82,7 @@ public final class DataSourceHelper {
 
     /**
      * Create an embedded data source. This method should not be used in production in favor of
-     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer, String)}
+     * {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String, String)}
      * @param pTenant Project name
      * @param pEmbeddedPath path for database files.
      * @return an HSQLDB embedded data source
@@ -101,39 +98,6 @@ public final class DataSourceHelper {
                     HR);
 
         return dmDataSource;
-    }
-
-    /**
-     * @deprecated use {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String, String)} instead.
-     *
-     * Create a pooled {@link DataSource} using {@link ComboPooledDataSource}.
-     * @param pTenant related tenant, only useful for login purpose
-     * @param pUrl data source URL
-     * @param pDriverClassName data source driver
-     * @param pUserName the user to used for the database connection
-     * @param pPassword the user's password to used for the database connection
-     * @param pMinPoolSize Minimum number of Connections a pool will maintain at any given time.
-     * @param pMaxPoolSize Maximum number of Connections a pool will maintain at any given time.
-     * @param pPreferredTestQuery preferred test query
-     * @throws PropertyVetoException See {@link PropertyVetoException}
-     */
-    @Deprecated
-    public static DataSource createPooledDataSource(final String pTenant, final String pUrl,
-            final String pDriverClassName, final String pUserName, final String pPassword, Integer pMinPoolSize,
-            Integer pMaxPoolSize, String pPreferredTestQuery) throws PropertyVetoException {
-        ComboPooledDataSource cpds = new ComboPooledDataSource();
-        cpds.setJdbcUrl(pUrl);
-        cpds.setUser(pUserName);
-        cpds.setPassword(pPassword);
-        cpds.setMinPoolSize(pMinPoolSize);
-        cpds.setMaxPoolSize(pMaxPoolSize);
-        cpds.setDriverClass(pDriverClassName);
-        cpds.setPreferredTestQuery(pPreferredTestQuery);
-        //FIXME: pollute logs way too fast, waiting on insights
-        //        cpds.setConnectionCustomizerClassName(LoggingConnectionCustomizer.class.getName());
-        LOGGER.info("\n{}\nCreating a POOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
-
-        return cpds;
     }
 
     public static DataSource createHikariDataSource(String tenant, String url, String driverClassName, String userName,
@@ -175,7 +139,7 @@ public final class DataSourceHelper {
             LOGGER.error("Data source connection fails.", e);
             if (destroyOnFail) {
                 LOGGER.error("Destroying data source", dataSource.toString());
-                DataSources.destroy(dataSource);
+                dataSource.unwrap(HikariDataSource.class).close();
             }
             throw e;
         }
