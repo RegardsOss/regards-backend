@@ -86,4 +86,25 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
             runtimeTenantResolver.clearTenant();
         }
     }
+
+    @Test
+    public void importConfigurationForDisableExistingRule() {
+        this.importConfiguration();
+        Path filePath = Paths.get("src", "test", "resources", "rs-notifier-disable-rule.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+
+        // Check
+        try {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            Set<Rule> rules = ruleRepo.findByRulePluginActiveTrue();
+            Assert.assertTrue(rules.isEmpty());
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+    }
 }
