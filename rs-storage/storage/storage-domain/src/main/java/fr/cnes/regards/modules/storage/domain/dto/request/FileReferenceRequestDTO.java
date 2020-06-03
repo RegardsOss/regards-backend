@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
@@ -42,24 +45,32 @@ import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
  */
 public class FileReferenceRequestDTO {
 
+    @NotBlank(message = "File name is required for FileReferenceRequest")
     private String fileName;
 
+    @NotBlank(message = "Checksum is required for FileReferenceRequest")
     private String checksum;
 
+    @NotBlank(message = "Algorithm is required for FileReferenceRequest")
     private String algorithm;
 
+    @NotBlank(message = "Mimetype is required for FileReferenceRequest")
     private String mimeType;
 
+    @NotNull
     private Long fileSize;
 
     private Integer height;
 
     private Integer width;
 
+    @NotBlank(message = "Owner is required for FileReferenceRequest")
     private String owner;
 
+    @NotBlank(message = "Storage is required for FileReferenceRequest")
     private String storage;
 
+    @NotBlank(message = "URL is required for FileReferenceRequest")
     private String url;
 
     private String type;
@@ -154,6 +165,10 @@ public class FileReferenceRequestDTO {
         metaInfo.setWidth(width);
         metaInfo.setType(type);
         return metaInfo;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
     }
 
     @Override
