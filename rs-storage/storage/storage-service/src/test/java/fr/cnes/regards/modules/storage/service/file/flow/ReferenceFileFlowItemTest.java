@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,13 +36,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
+import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 
@@ -78,10 +81,10 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
+        List<ReferenceFlowItem> items = new ArrayList<>();
+        items.add(item);
         long start = System.currentTimeMillis();
-        // Publish request
-        handler.handleSync(wrapper);
+        handler.handleBatch(getDefaultTenant(), items);
         long finish = System.currentTimeMillis();
         LOGGER.info("Add file reference duration {}ms", finish - start);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -101,29 +104,57 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
         String checksum = UUID.randomUUID().toString();
         String owner = "new-owner";
         String storage = "somewhere";
+        List<ReferenceFlowItem> items = Lists.newArrayList();
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
         ReferenceFlowItem item = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      owner, storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
+        items.add(item);
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
         ReferenceFlowItem item2 = ReferenceFlowItem
                 .build(FileReferenceRequestDTO.build("file.name.2", checksum, "MD5", "application/octet-stream", 10L,
                                                      owner, storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
+        items.add(item2);
 
-        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        TenantWrapper<ReferenceFlowItem> wrapper2 = TenantWrapper.build(item2, getDefaultTenant());
         // Publish request
-        handler.handle(wrapper);
-        handler.handle(wrapper2);
-        handler.handleQueue();
+        handler.handleBatch(getDefaultTenant(), items);
         Thread.sleep(5_000L);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
+
+    }
+
+    @Test
+    public void addFileRefFlowItemsWithoutChecksum() throws InterruptedException {
+
+        String checksum = UUID.randomUUID().toString();
+        String owner = "new-owner";
+        String storage = "somewhere";
+        List<ReferenceFlowItem> items = Lists.newArrayList();
+
+        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
+        FileReferenceRequestDTO req = FileReferenceRequestDTO.build("file.name", checksum, "MD5",
+                                                                    "application/octet-stream", 10L, owner, storage,
+                                                                    "file://storage/location/file.name");
+        req.setChecksum(null);
+        ReferenceFlowItem item = ReferenceFlowItem.build(req, UUID.randomUUID().toString());
+        items.add(item);
+
+        // Publish request
+        handler.handleBatch(getDefaultTenant(), items);
+        Thread.sleep(5_000L);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // Check file is well referenced
+        Assert.assertFalse("File should be referenced", fileRefService.search(storage, checksum).isPresent());
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        Assert.assertEquals("File reference event STORED should be published", FlowItemStatus.DENIED,
+                            getFileRequestsGroupEvent(argumentCaptor.getAllValues()).getState());
 
     }
 
@@ -148,9 +179,9 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<ReferenceFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
@@ -180,9 +211,9 @@ public class ReferenceFileFlowItemTest extends AbstractStorageTest {
                 .build(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                      "owner-test", storage, "file://storage/location/file.name"),
                        UUID.randomUUID().toString());
-        TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<ReferenceFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
