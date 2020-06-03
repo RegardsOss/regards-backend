@@ -75,6 +75,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
@@ -438,6 +439,17 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         for (ISubscribable c : events) {
             if (c instanceof FileReferenceEvent) {
                 event = (FileReferenceEvent) c;
+            }
+        }
+        Assert.assertNotNull("No file reference event checked", event);
+        return event;
+    }
+
+    protected FileRequestsGroupEvent getFileRequestsGroupEvent(Collection<ISubscribable> events) {
+        FileRequestsGroupEvent event = null;
+        for (ISubscribable c : events) {
+            if (c instanceof FileRequestsGroupEvent) {
+                event = (FileRequestsGroupEvent) c;
             }
         }
         Assert.assertNotNull("No file reference event checked", event);

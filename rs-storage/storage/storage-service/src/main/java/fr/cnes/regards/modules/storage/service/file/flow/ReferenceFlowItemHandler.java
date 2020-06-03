@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
  * Handler to handle {@link ReferenceFlowItem} AMQP messages.<br>
@@ -51,7 +43,7 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
  */
 @Component
 public class ReferenceFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<ReferenceFlowItem> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ReferenceFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFlowItemHandler.class);
 
@@ -70,102 +62,33 @@ public class ReferenceFlowItemHandler
     @Autowired
     private FileReferenceRequestService fileRefReqService;
 
-    @Autowired
-    private RequestsGroupService reqGroupService;
-
-    private final Map<String, ConcurrentLinkedQueue<ReferenceFlowItem>> items = new ConcurrentHashMap<>();
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(ReferenceFlowItem.class, this);
     }
 
-    /**
-     * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link ReferenceFlowItem} to handle
-     */
     @Override
-    public void handle(TenantWrapper<ReferenceFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        ReferenceFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.trace("[EVENT] New FileReferenceFlowItem received -- {}", wrapper.getContent().toString());
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
-            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
-            try {
-                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
-                Thread.sleep(30_000);
-            } catch (InterruptedException e) {
-                LOGGER.error(String
-                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
-                                items.size()),
-                             e);
-            }
-        }
-        if (item.getFiles().size() > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of reference requests (%d) for group %s exeeds maximum limit of %d",
-                                           item.getFiles().size(), item.getGroupId(),
-                                           ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
-            reqGroupService.denied(item.getGroupId(), FileRequestType.REFERENCE, message);
-        } else {
-            if (!items.containsKey(tenant)) {
-                items.put(tenant, new ConcurrentLinkedQueue<>());
-            }
-            items.get(tenant).add(item);
-        }
-    }
-
-    /**
-     * Method for tests to handle synchronously one message
-     * @param wrapper containing {@link ReferenceFlowItem} to handle
-     */
-    public void handleSync(TenantWrapper<ReferenceFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        ReferenceFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
+    public void handleBatch(String tenant, List<ReferenceFlowItem> messages) {
         try {
-            fileRefReqService.reference(item.getFiles(), item.getGroupId());
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
-                                    fileRefReqService.getRequestExpirationDate());
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
+            long start = System.currentTimeMillis();
+            fileRefReqService.reference(messages);
+            LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
+                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
-    /**
-     * Bulk save queued items every second.
-     */
-    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
-    public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<ReferenceFlowItem>> entry : items.entrySet()) {
-            try {
-                runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<ReferenceFlowItem> tenantItems = entry.getValue();
-                List<ReferenceFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        ReferenceFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", list.size());
-                        long start = System.currentTimeMillis();
-                        fileRefReqService.reference(list);
-                        LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+    @Override
+    public boolean validate(String tenant, ReferenceFlowItem message) {
+        return true;
+    }
+
+    @Override
+    public int getBatchSize() {
+        return BULK_SIZE;
     }
 
 }

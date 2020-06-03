@@ -18,28 +18,19 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
  * Handler of bus message events {@link AvailabilityFlowItem}s.<br>
@@ -49,7 +40,7 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
  */
 @Component
 public class AvailabilityFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<AvailabilityFlowItem> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<AvailabilityFlowItem> {
 
     @Value("${regards.storage.availability.items.bulk.size:1000}")
     private static final int BULK_SIZE = 1000;
@@ -63,97 +54,33 @@ public class AvailabilityFlowItemHandler
     @Autowired
     private ISubscriber subscriber;
 
-    @Autowired
-    private RequestsGroupService reqGroupService;
-
-    private final Map<String, ConcurrentLinkedQueue<AvailabilityFlowItem>> items = new ConcurrentHashMap<>();
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(AvailabilityFlowItem.class, this);
     }
 
-    /**
-     * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link ReferenceFlowItem} to handle
-     */
     @Override
-    public void handle(TenantWrapper<AvailabilityFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        AvailabilityFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
-            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
-            try {
-                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
-                Thread.sleep(30_000);
-            } catch (InterruptedException e) {
-                LOGGER.error(String
-                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
-                                items.size()),
-                             e);
-            }
-        }
-        if (item.getChecksums().size() > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String
-                    .format("Number of availability requests (%d) for group %s exeeds maximum limit of %d",
-                            item.getChecksums().size(), item.getGroupId(), AvailabilityFlowItem.MAX_REQUEST_PER_GROUP);
-            reqGroupService.denied(item.getGroupId(), FileRequestType.AVAILABILITY, message);
-        } else {
-            if (!items.containsKey(tenant)) {
-                items.put(tenant, new ConcurrentLinkedQueue<>());
-            }
-            items.get(tenant).add(item);
-        }
-    }
-
-    public void handleSync(TenantWrapper<AvailabilityFlowItem> wrapper) {
-        runtimeTenantResolver.forceTenant(wrapper.getTenant());
+    public void handleBatch(String tenant, List<AvailabilityFlowItem> messages) {
         try {
-            AvailabilityFlowItem item = wrapper.getContent();
-            reqGroupService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getChecksums().size(),
-                                    item.getExpirationDate());
-            fileCacheReqService.makeAvailable(item.getChecksums(), item.getExpirationDate(), item.getGroupId());
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", messages.size());
+            long start = System.currentTimeMillis();
+            fileCacheReqService.makeAvailable(messages);
+            LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", messages.size(),
+                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
-    /**
-     * Bulk save queued items every second.
-     */
-    @Scheduled(fixedDelay = 1_000)
-    public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<AvailabilityFlowItem>> entry : items.entrySet()) {
-            try {
-                runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<AvailabilityFlowItem> tenantItems = entry.getValue();
-                List<AvailabilityFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        AvailabilityFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...",
-                                     list.size());
-                        long start = System.currentTimeMillis();
-                        fileCacheReqService.makeAvailable(list);
-                        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms",
-                                     list.size(), System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+    @Override
+    public boolean validate(String tenant, AvailabilityFlowItem message) {
+        return true;
+    }
+
+    @Override
+    public int getBatchSize() {
+        return BULK_SIZE;
     }
 
 }

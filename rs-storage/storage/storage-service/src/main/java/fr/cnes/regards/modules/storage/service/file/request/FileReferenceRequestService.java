@@ -30,12 +30,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -72,6 +75,9 @@ public class FileReferenceRequestService {
     @Autowired
     private FileReferenceService fileRefService;
 
+    @Autowired
+    private Validator validator;
+
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -84,23 +90,16 @@ public class FileReferenceRequestService {
                 .flatMap(Set::stream).map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
         Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
         for (ReferenceFlowItem item : list) {
-            reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
-                                  getRequestExpirationDate());
-            reference(item.getFiles(), item.getGroupId(), existingOnes, existingDeletionRequests);
+            Errors errors = item.validate(validator);
+            if (errors.hasErrors()) {
+                reqGrpService.denied(item.getGroupId(), FileRequestType.REFERENCE,
+                                     ErrorTranslator.getErrorsAsString(errors));
+            } else {
+                reqGrpService.granted(item.getGroupId(), FileRequestType.REFERENCE, item.getFiles().size(),
+                                      getRequestExpirationDate());
+                reference(item.getFiles(), item.getGroupId(), existingOnes, existingDeletionRequests);
+            }
         }
-    }
-
-    /**
-     * Initialize new reference requests for a given group identifier
-     * @param requests
-     * @param groupId
-     */
-    public void reference(Collection<FileReferenceRequestDTO> requests, String groupId) {
-        // Retrieve already existing ones by checksum only to improve performance. The associated storage location is checked later
-        Set<FileReference> existingOnes = fileRefService
-                .search(requests.stream().map(FileReferenceRequestDTO::getChecksum).collect(Collectors.toSet()));
-        Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingOnes);
-        reference(requests, groupId, existingOnes, existingDeletionRequests);
     }
 
     /**

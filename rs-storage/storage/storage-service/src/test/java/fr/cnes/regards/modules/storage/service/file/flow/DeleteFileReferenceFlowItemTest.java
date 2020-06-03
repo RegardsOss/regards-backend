@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -36,7 +38,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -91,9 +92,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         DeletionFlowItem item = DeletionFlowItem
                 .build(FileDeletionRequestDTO.build(UUID.randomUUID().toString(), "some-stprage", "owner", false),
                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Mockito.verify(publisher, Mockito.never()).publish(Mockito.any(FileReferenceEvent.class));
     }
@@ -113,9 +114,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
@@ -143,9 +144,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -171,9 +172,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -217,9 +218,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -263,9 +264,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, true),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handleSync(wrapper);
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -310,10 +311,9 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
 
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
-        TenantWrapper<DeletionFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        handler.handle(wrapper);
-        handler.handleQueue();
+        List<DeletionFlowItem> items = new ArrayList<>();
+        items.add(item);
+        handler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
                                                                            Lists.newArrayList());
