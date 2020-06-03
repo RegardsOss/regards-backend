@@ -20,27 +20,28 @@ package fr.cnes.regards.modules.notifier.conf;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
+import fr.cnes.regards.modules.notifier.domain.Rule;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notifier_it" })
 public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactionalIT {
 
-    //    @Test
-    //    public void exportConfiguration() {
-    //
-    //        this.createChain();
-    //        // Define expectations
-    //        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-    //
-    //        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-    //                          requestBuilderCustomizer, "Should export configuration");
-    //    }
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IRuleRepository ruleRepo;
 
     @Test
     public void importConfiguration() {
@@ -52,18 +53,37 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");
 
-        // Import same configuration resetting existing import configuration
+        // Check
+        try {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            Set<Rule> rules = ruleRepo.findByRulePluginActiveTrue();
+            Assert.assertTrue(rules.size() == 1);
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+
+        // Import same configuration resetting existing import configuration without conflict
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
-    //    @Test
-    //    public void importExport() {
-    //        // Define expectations
-    //        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-    //
-    //        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_ENABLED_MAPPING,
-    //                          requestBuilderCustomizer, "Shoulb be enabled");
-    //    }
+    @Test
+    public void importConfigurationWithInactiveRule() {
+        Path filePath = Paths.get("src", "test", "resources", "rs-notifier-inactive.json");
 
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+
+        // Check
+        try {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            Set<Rule> rules = ruleRepo.findByRulePluginActiveTrue();
+            Assert.assertTrue(rules.isEmpty());
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+    }
 }
