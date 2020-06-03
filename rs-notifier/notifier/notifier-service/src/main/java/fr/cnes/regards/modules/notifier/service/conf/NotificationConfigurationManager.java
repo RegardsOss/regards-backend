@@ -103,10 +103,10 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
 
                 Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
                 if (existingOne.isPresent()) {
-
                     LOGGER.info("Updating existing plugin configuration {}", plgConf.getBusinessId());
                     existingOne.get().setLabel(plgConf.getLabel());
                     existingOne.get().setParameters(plgConf.getParameters());
+                    existingOne.get().setIsActive(plgConf.isActive());
                     pluginService.updatePluginConfiguration(existingOne.get());
                 } else {
                     LOGGER.info("Creating new plugin configuration {}", plgConf.getBusinessId());
