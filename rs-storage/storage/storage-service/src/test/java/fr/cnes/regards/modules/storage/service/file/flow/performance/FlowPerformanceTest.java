@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.storage.service.file.flow.performance;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -155,6 +157,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         LOGGER.info(" --------     REFERENCE TEST     --------- ");
         String refStorage = "storage-1";
         String storage = "storage" + UUID.randomUUID().toString();
+        List<ReferenceFlowItem> items = new ArrayList<>();
         for (int i = 0; i < 5000; i++) {
             String newOwner = "owner-" + UUID.randomUUID().toString();
             String checksum = UUID.randomUUID().toString();
@@ -175,10 +178,15 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             // Create a new bus message File reference request
             requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
                                                        newOwner, storage, "file://storage/location/file.name"));
-            ReferenceFlowItem item = ReferenceFlowItem.build(requests, UUID.randomUUID().toString());
-            TenantWrapper<ReferenceFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-            // Publish request
-            referenceFlowHandler.handle(wrapper);
+            items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
+            if (items.size() >= referenceFlowHandler.getBatchSize()) {
+                referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+                items.clear();
+            }
+        }
+        if (items.size() > 0) {
+            referenceFlowHandler.handleBatch(getDefaultTenant(), items);
+            items.clear();
         }
 
         int loops = 0;
@@ -294,10 +302,9 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         // Create a new bus message File reference request
         AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
                                                                UUID.randomUUID().toString());
-        TenantWrapper<AvailabilityFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        availabilityHandler.handle(wrapper);
-        availabilityHandler.handleQueue();
+        List<AvailabilityFlowItem> items = new ArrayList<>();
+        items.add(item);
+        availabilityHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), fileCacheReqRepo.count());
     }

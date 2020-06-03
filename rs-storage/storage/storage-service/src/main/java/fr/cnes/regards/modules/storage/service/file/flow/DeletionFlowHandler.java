@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,20 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 
 /**
  * Handler to handle {@link DeletionFlowItem} AMQP messages.<br>
@@ -53,7 +42,8 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService
  * @author Sébastien Binda
  */
 @Component
-public class DeletionFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<DeletionFlowItem> {
+public class DeletionFlowHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DeletionFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
 
@@ -69,91 +59,33 @@ public class DeletionFlowHandler implements ApplicationListener<ApplicationReady
     @Autowired
     private FileDeletionRequestService fileDelReqService;
 
-    @Autowired
-    private RequestsGroupService reqGroupService;
-
-    private final Map<String, ConcurrentLinkedQueue<DeletionFlowItem>> items = new ConcurrentHashMap<>();
-
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(DeletionFlowItem.class, this);
     }
 
-    /**
-     * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link ReferenceFlowItem} to handle
-     */
     @Override
-    public void handle(TenantWrapper<DeletionFlowItem> wrapper) {
-        String tenant = wrapper.getTenant();
-        DeletionFlowItem item = wrapper.getContent();
-        runtimeTenantResolver.forceTenant(tenant);
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
-            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
-            try {
-                LOGGER.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
-                Thread.sleep(30_000);
-            } catch (InterruptedException e) {
-                LOGGER.error(String
-                        .format("Error waiting for requests handled by microservice. Current requests pool to handle = %s",
-                                items.size()),
-                             e);
-            }
-        }
-        if (item.getFiles().size() > DeletionFlowItem.MAX_REQUEST_PER_GROUP) {
-            String message = String.format("Number of deletion requests (%d) for group %s exeeds maximum limit of %d",
-                                           item.getFiles().size(), item.getGroupId(),
-                                           DeletionFlowItem.MAX_REQUEST_PER_GROUP);
-            reqGroupService.denied(item.getGroupId(), FileRequestType.DELETION, message);
-        } else {
-            if (!items.containsKey(tenant)) {
-                items.put(tenant, new ConcurrentLinkedQueue<>());
-            }
-            items.get(tenant).add(item);
+    public void handleBatch(String tenant, List<DeletionFlowItem> messages) {
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", messages.size());
+            long start = System.currentTimeMillis();
+            fileDelReqService.handle(messages);
+            LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", messages.size(),
+                         System.currentTimeMillis() - start);
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
 
-    public void handleSync(TenantWrapper<DeletionFlowItem> wrapper) {
-        DeletionFlowItem item = wrapper.getContent();
-        fileDelReqService.handle(Lists.newArrayList(item));
-        reqGroupService.granted(item.getGroupId(), FileRequestType.DELETION, item.getFiles().size(),
-                                fileDelReqService.getRequestExpirationDate());
+    @Override
+    public boolean validate(String tenant, DeletionFlowItem message) {
+        return true;
     }
 
-    /**
-     * Bulk save queued items every second.
-     */
-    @Scheduled(fixedDelay = 1_000, initialDelay = 5_000)
-    public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<DeletionFlowItem>> entry : items.entrySet()) {
-            try {
-                runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<DeletionFlowItem> tenantItems = entry.getValue();
-                List<DeletionFlowItem> list = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < BULK_SIZE; i++) {
-                        DeletionFlowItem doc = tenantItems.poll();
-                        if (doc == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue document
-                            list.add(doc);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", list.size());
-                        long start = System.currentTimeMillis();
-                        fileDelReqService.handle(list);
-                        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", list.size(),
-                                     System.currentTimeMillis() - start);
-                        list.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+    @Override
+    public int getBatchSize() {
+        return BULK_SIZE;
     }
 
 }

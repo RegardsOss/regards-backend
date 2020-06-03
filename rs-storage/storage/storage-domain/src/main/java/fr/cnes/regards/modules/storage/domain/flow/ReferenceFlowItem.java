@@ -19,7 +19,12 @@
 package fr.cnes.regards.modules.storage.domain.flow;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Set;
+
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 
@@ -97,6 +102,25 @@ public class ReferenceFlowItem implements ISubscribable {
     public String toString() {
         return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "")
                 + (groupId != null ? "groupId=" + groupId : "") + "]";
+    }
+
+    /**
+     *
+     */
+    public Errors validate(Validator validator) {
+        Errors errors;
+        if (files.size() > MAX_REQUEST_PER_GROUP) {
+            errors = new MapBindingResult(new HashMap<>(), this.getClass().getName());
+            errors.reject("FileReferenceRequests",
+                          String.format("Number of reference requests (%d) for group %s exceeds maximum limit of %d",
+                                        files.size(), groupId, MAX_REQUEST_PER_GROUP));
+        } else {
+            errors = new MapBindingResult(new HashMap<>(), FileReferenceRequestDTO.class.getName());
+            for (FileReferenceRequestDTO file : files) {
+                validator.validate(file, errors);
+            }
+        }
+        return errors;
     }
 
 }

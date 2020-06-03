@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -100,9 +101,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", owner,
                                                    originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
@@ -140,9 +141,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                                  originUrl, ONLINE_CONF_LABEL, Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(requests, UUID.randomUUID().toString());
 
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Check file is not referenced yet
@@ -191,9 +192,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, storageDestination, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -217,9 +218,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                 .build(FileStorageRequestDTO.build("error.file.name", checksum, "MD5", "application/octet-stream",
                                                    "owner-test", originUrl, ONLINE_CONF_LABEL, Optional.empty()),
                        UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
@@ -250,13 +251,13 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
 
         // Retry same storage request
-        storeHandler.handleSync(wrapper);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // There should be one storage request. Same as previous error one but updated to to_do thanks to new request
         Collection<FileStorageRequest> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertEquals("File request still present", 1, storeRequests.size());
-        // On in TO_DO state
+        // One in TO_DO state
         Assert.assertEquals("There should be one request in TO_DO state", 1L,
                             storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.TO_DO).count());
     }
@@ -277,9 +278,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                               "application/octet-stream", owner, originUrl, storageDestination,
                                               Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
         Page<FileStorageRequest> requests = fileStorageRequestRepo
@@ -322,9 +323,9 @@ public class StoreFileFlowItemTest extends AbstractStorageTest {
                                               "application/octet-stream", owners.get(2), originUrl, storageDestination,
                                               Optional.empty()));
         StorageFlowItem item = StorageFlowItem.build(files, UUID.randomUUID().toString());
-        TenantWrapper<StorageFlowItem> wrapper = TenantWrapper.build(item, getDefaultTenant());
-        // Publish request
-        storeHandler.handleSync(wrapper);
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(getDefaultTenant(), items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
         Page<FileStorageRequest> requests = fileStorageRequestRepo

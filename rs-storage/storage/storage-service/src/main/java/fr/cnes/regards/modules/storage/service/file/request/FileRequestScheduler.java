@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +30,9 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
@@ -37,6 +40,9 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Scheduler to periodically handle bulk requests :<br />
@@ -53,11 +59,19 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 @Component
 @Profile("!noschedule")
 @EnableScheduling
-public class FileRequestScheduler {
+public class FileRequestScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestScheduler.class);
 
-    private static final String FILE_SCHEDULER_LOCK = "file-requests-scheduler-lock";
+    private static final String STORAGE_LOCK = "storage-requests";
+
+    private static final String STORAGE_TITLE = "Storage requests scheduling";
+
+    private static final String STORAGE_ACTIONS = "STORAGE REQUESTS ACTIONS";
+
+    private static final String DEFAULT_INITIAL_DELAY = "30000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -84,30 +98,16 @@ public class FileRequestScheduler {
     private RequestStatusService reqStatusService;
 
     @Autowired
-    private ILockService lockService;
+    private LockingTaskExecutors lockingTaskExecutors;
 
-    @Scheduled(fixedDelayString = "${regards.storage.schedule.delay:5000}", initialDelay = 5_000)
-    public void handleRequests() throws ModuleException {
-        try {
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                try {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    if (obtainLock()) {
-                        handleGroupRequests();
-                        handleFileCacheRequests();
-                        handleFileStorageRequests();
-                        handleFileDeletionRequests();
-                        handleFileCopyRequests();
-                    }
-                } finally {
-                    releaseLock();
-                    runtimeTenantResolver.clearTenant();
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error runing requests scheduling tasks. Cause : %s", e.getMessage()), e);
-        }
-    }
+    private final Task handleRequestsTask = () -> {
+        LockAssert.assertLocked();
+        handleGroupRequests();
+        handleFileCacheRequests();
+        handleFileStorageRequests();
+        handleFileDeletionRequests();
+        handleFileCopyRequests();
+    };
 
     public void handleFileStorageRequests() throws ModuleException {
         reqStatusService.checkDelayedStorageRequests();
@@ -133,18 +133,26 @@ public class FileRequestScheduler {
         reqGrpService.checkRequestsGroupsDone();
     }
 
-    /**
-     * Get lock to ensure schedulers are not started at the same time by many instance of this microservice
-     * @return
-     */
-    private boolean obtainLock() {
-        return lockService.obtainLockOrSkip(FILE_SCHEDULER_LOCK, this, 60L);
+    @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    public void scheduleUpdateRequests() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                traceScheduling(tenant, STORAGE_ACTIONS);
+                lockingTaskExecutors
+                        .executeWithLock(handleRequestsTask,
+                                         new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(120)));
+            } catch (Throwable e) {
+                handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
-    /**
-     * Release lock
-     */
-    private void releaseLock() {
-        lockService.releaseLock(FILE_SCHEDULER_LOCK, this);
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }
