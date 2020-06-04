@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access-instance</artifactId>
-	<version>1.1.2-SNAPSHOT</version>
+	<version>1.3.0-SNAPSHOT</version>
 	<name>Bootstrap Access Instance</name>
 	<description>Boots the Access microservice with cross-tenant features</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.1.2-SNAPSHOT</version>
+		<version>1.3.0-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 
