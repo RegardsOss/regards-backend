@@ -238,4 +238,9 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     public boolean allowPhysicalDeletion() {
         return true;
     }
+
+    @Override
+    public boolean isValidUrl(String urlToValidate) {
+        return true;
+    }
 }

@@ -230,4 +230,9 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         return allowPhysicalDeletion;
     }
 
+    @Override
+    public boolean isValidUrl(String urlToValidate) {
+        return true;
+    }
+
 }
