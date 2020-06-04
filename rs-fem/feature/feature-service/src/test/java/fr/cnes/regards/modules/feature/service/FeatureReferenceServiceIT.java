@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.feature.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -86,11 +88,13 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("location", "test" + i);
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                           "dtc " + i, "testFeatureGeneration"));
+                           parameters, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
@@ -112,11 +116,13 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("location", "test" + i);
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                           "dtc " + i, "testFeatureGeneration"));
+                           parameters, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 

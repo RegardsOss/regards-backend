@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -30,7 +31,8 @@ import javax.persistence.Index;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -56,24 +58,22 @@ public class FeatureReferenceRequest extends AbstractRequest {
     @Embedded
     private FeatureCreationMetadataEntity metadata;
 
-    @NotNull
-    @Column(name = "location", nullable = false)
-    private String location;
+    @Column(name = "extraction_factory", nullable = false)
+    private String factory;
 
-    @NotNull
-    @Column(name = "plugin_business_id", nullable = false)
-    private String pluginBusinessId;
+    @Column(columnDefinition = "jsonb", name = "extraction_parameters", nullable = false)
+    @Type(type = "jsonb")
+    private Map<String, Object> parameters;
 
     public static FeatureReferenceRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, FeatureCreationMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
-            String location, String pluginBusinessId) {
+            Map<String, Object> parameters, String factory) {
         FeatureReferenceRequest request = new FeatureReferenceRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setMetadata(metadata);
-        request.setLocation(location);
-        request.setPluginBusinessId(pluginBusinessId);
+        request.setFactory(factory);
+        request.setParameters(parameters);
         request.setRegistrationDate(OffsetDateTime.now());
-
         return request;
     }
 
@@ -93,20 +93,20 @@ public class FeatureReferenceRequest extends AbstractRequest {
         this.metadata = metadata;
     }
 
-    public String getLocation() {
-        return location;
+    public String getFactory() {
+        return factory;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setFactory(String factory) {
+        this.factory = factory;
     }
 
-    public String getPluginBusinessId() {
-        return pluginBusinessId;
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
-    public void setPluginBusinessId(String pluginBusinessId) {
-        this.pluginBusinessId = pluginBusinessId;
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
     }
 
 }

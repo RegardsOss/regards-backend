@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -148,8 +149,7 @@ public class FeatureReferenceService implements IFeatureReferenceService {
 
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}", errors.toString());
-            // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
-            requestInfo.addDeniedRequest(null, ErrorTranslator.getErrors(errors));
+            requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
             // Monitoring log
             FeatureLogger.referenceDenied(item.getRequestOwner(), item.getRequestId(),
                                           ErrorTranslator.getErrors(errors));
@@ -170,10 +170,9 @@ public class FeatureReferenceService implements IFeatureReferenceService {
                        item.getMetadata().getStorages(), item.getMetadata().isOverride());
         grantedRequests.add(FeatureReferenceRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
-                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
-                       item.getFactory()));
-        // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
-        requestInfo.addGrantedRequest(null, item.getRequestId());
+                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(),
+                       item.getParameters(), item.getFactory()));
+        requestInfo.addGrantedRequest(item.getRequestId(), RequestState.GRANTED.toString());
     }
 
     @Override
@@ -248,7 +247,7 @@ public class FeatureReferenceService implements IFeatureReferenceService {
 
     private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
             throws NotAvailablePluginConfigurationException, ModuleException {
-        Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getPluginBusinessId());
+        Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getFactory());
         if (!plugin.isPresent()) {
             return null;
         }
@@ -265,7 +264,8 @@ public class FeatureReferenceService implements IFeatureReferenceService {
                                                                     request.getPriority(), false, array),
                                                      feature);
         } catch (ModuleException e) {
-            throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
+            throw new ModuleException(String.format("Error generating feature for request %s", request.getRequestId()),
+                    e);
         }
 
     }
@@ -274,10 +274,10 @@ public class FeatureReferenceService implements IFeatureReferenceService {
     public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
         // Build events to reuse event registration code
         List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
-        for (String location : collection.getLocations()) {
-            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), location,
+        for (Map<String, Object> parameters : collection.getParameters()) {
+            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), parameters,
                                                            OffsetDateTime.now().minusSeconds(1),
-                                                           collection.getPluginBusinessId()));
+                                                           collection.getFactory()));
         }
         return registerRequests(toTreat);
     }

@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.feature.dto.event.in;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -37,39 +40,34 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FeatureReferenceRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
-    @NotNull(message = "Url is required")
-    private String location;
-
-    @NotNull(message = "Feature factory identified by a plugin business identifier is required")
-    private String factory;
-
     @Valid
-    @NotNull(message = "Feature metadata is required")
+    @NotNull(message = "Request metadata is required")
     private FeatureCreationSessionMetadata metadata;
 
+    @NotBlank(message = "Extraction factory identified by a plugin business identifier is required")
+    private String factory;
+
+    /**
+     * Free parameters that target factory must understand
+     */
+    @NotEmpty(message = "Extraction parameters must not be empty")
+    private Map<String, Object> parameters;
+
     public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            String location, String factory) {
-        return build(requestOwner, metadata, location, OffsetDateTime.now().minusSeconds(1), factory);
+            Map<String, Object> parameters, String factory) {
+        return build(requestOwner, metadata, parameters, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
     public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            String location, OffsetDateTime requestDate, String factory) {
+            Map<String, Object> parameters, OffsetDateTime requestDate, String factory) {
         FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
-        event.setLocation(location);
+        event.setParameters(parameters);
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);
         event.setRequestDate(requestDate);
         event.setFactory(factory);
         event.setRequestOwner(requestOwner);
         return event;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
     }
 
     public String getFactory() {
@@ -86,6 +84,14 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
 
     public void setMetadata(FeatureCreationSessionMetadata metadata) {
         this.metadata = metadata;
+    }
+
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
     }
 
 }

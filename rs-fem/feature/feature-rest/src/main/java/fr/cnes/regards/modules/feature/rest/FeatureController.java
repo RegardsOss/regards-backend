@@ -76,7 +76,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
     private IFeatureDeletionService featureDeletionService;
 
     @Autowired
-    private IFeatureReferenceService featureRefernceService;
+    private IFeatureReferenceService featureReferenceService;
 
     @Autowired
     private IResourceService resourceService;
@@ -154,7 +154,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
     public ResponseEntity<EntityModel<RequestInfo<?>>> createFeaturesFromReferences(@Parameter(
             description = "Contain all Features to handle") @Valid @RequestBody FeatureReferenceCollection collection) {
 
-        RequestInfo<String> info = this.featureRefernceService.registerRequests(collection);
+        RequestInfo<String> info = this.featureReferenceService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));
     }
 

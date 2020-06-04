@@ -122,7 +122,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
 
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
         collection.addAll(Lists.newArrayList(""));
-        collection.setPluginBusinessId("PluginName");
+        collection.setFactory("PluginName");
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
                 .thenReturn(new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName()));

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.service.plugin;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -47,7 +49,7 @@ public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTe
     public Feature createFeature(FeatureReferenceRequest reference) {
         String model = mockModelClient("feature_model_01.xml", cps, factory, runtimeTenantResolver.getTenant(),
                                        modelAttrAssocClientMock);
-        Feature toAdd = Feature.build("id " + reference.getLocation(), "DefaultFeatureGenerator", null,
+        Feature toAdd = Feature.build(UUID.randomUUID().toString(), "DefaultFeatureGenerator", null,
                                       IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model);
         toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
         toAdd.addProperty(IProperty.buildObject("file_characterization",
