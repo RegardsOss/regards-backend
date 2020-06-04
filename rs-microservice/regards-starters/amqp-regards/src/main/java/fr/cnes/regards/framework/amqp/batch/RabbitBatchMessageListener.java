@@ -67,6 +67,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private static final String HANDLE_METHOD_NAME = "handleBatchAndLog";
 
+    private static final String BATCH_PROCESSING_FAILURE_TITLE = "Batch processing failure";
+
+    private static final String INVALID_MESSAGE_TITLE = "Invalid message";
+
+    private static final String UNWRAPPING_FAILURE_TITLE = "Message unwrapping failure";
+
+    private static final String CONVERSION_FAILURE_TITLE = "Message conversion failure";
+
     private final MessageConverter messageConverter;
 
     private final IBatchHandler<?> batchHandler;
@@ -142,33 +150,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                     // Acknowledge all valid messages
                     handleValidMessage(tenant, validMessages, channel);
                 } catch (Exception ex) {
-                    LOGGER.error(String.format("Batch processing fail for tenant %s", tenant), ex);
                     // Re-queue all valid messages
-                    handleError(tenant, validMessages, channel);
+                    handleBatchException(tenant, validMessages, channel, ex);
                 }
             }
         }
     }
-
-    //    // FIXME
-    //    protected boolean checkValidationParameterType() {
-    //        Method[] allMethods = batchHandler.getClass().getDeclaredMethods();
-    //
-    //        for (Method m : allMethods) {
-    //            if (m.getName().equals(VALIDATE_SINGLE_METHOD_NAME)) {
-    //                // FIXME
-    //                Class<?>[] pType = m.getParameterTypes();
-    //                Type[] gpType = m.getGenericParameterTypes();
-    //                for (int i = 0; i < pType.length; i++) {
-    //                    LOGGER.info("{}: {}", "ParameterType", pType[i]);
-    //                    LOGGER.info("{}: {}", "GenericParameterType", gpType[i]);
-    //                }
-    //                break;
-    //            }
-    //        }
-    //        // FIXME
-    //        return false;
-    //    }
 
     protected boolean invokeValidationMethod(String tenant, Object message) {
         // Prepare arguments
@@ -238,10 +225,20 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         }
     }
 
-    private void handleError(String tenant, List<BatchMessage> validMessages, Channel channel) {
+    private void handleBatchException(String tenant, List<BatchMessage> validMessages, Channel channel, Exception ex) {
+
+        // Message not properly wrapped! Unknown tenant!
+        String errorMessage = String.format("[%s] All messages are requeued for handler %s : %s",
+                                            BATCH_PROCESSING_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            ex.getMessage());
+        LOGGER.error(errorMessage, ex);
+
+        // Send notification
+        sendNotification(tenant, BATCH_PROCESSING_FAILURE_TITLE, errorMessage);
+
         for (BatchMessage message : validMessages) {
+
             try {
-                // FIXME multiple or not
                 channel.basicNack(message.getOrigin().getMessageProperties().getDeliveryTag(), false, true);
             } catch (IOException e) {
                 LOGGER.error("Fail to nack valid message with processing error", e);
@@ -251,22 +248,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, String details) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("Invalid message for handler %s [%s] : %s", this.getClass().getName(),
-                                            details, invalidMessage.toString());
+        String errorMessage = String.format("[%s] For handler %s [%s] : %s", INVALID_MESSAGE_TITLE,
+                                            batchHandler.getClass().getName(), details, invalidMessage.toString());
         LOGGER.error(errorMessage);
 
-        // Notify admin
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
-        NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
-                "Message unwrapping failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));
-
-        try {
-            // Route notification to the right tenant
-            runtimeTenantResolver.forceTenant(tenant);
-            publisher.publish(event);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+        // Send notification
+        sendNotification(tenant, INVALID_MESSAGE_TITLE, errorMessage);
 
         // Route to DLQ
         try {
@@ -278,15 +265,13 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleWrapperError(Message message, Channel channel) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("Message wrapping error while preparing message for handler %s : %s",
-                                            this.getClass().getName(), message.toString());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s",
+                                            UNWRAPPING_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            message.toString());
         LOGGER.error(errorMessage);
 
-        // Notify instance
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-        NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
-                "Message unwrapping failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));
-        instancePublisher.publish(event);
+        // Send notification
+        sendNotification(null, UNWRAPPING_FAILURE_TITLE, errorMessage);
 
         // Route to DLQ
         try {
@@ -298,19 +283,42 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleConversionError(Message message, Channel channel, MessageConversionException ex) {
         // Message cannot be converted
-        String errorMessage = String.format("Message conversion error while preparing message for handler %s : %s (%s)",
-                                            this.getClass().getName(), message.toString(), ex.getMessage());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s (%s)",
+                                            CONVERSION_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            message.toString(), ex.getMessage());
         LOGGER.error(errorMessage, ex);
 
-        // Prepare notification
-        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, "Message conversion failure",
-                NotificationLevel.ERROR, microserviceName);
-
+        // Send notification
+        String tenant = null;
         if (RabbitVersion.isVersion1_1(message)) {
-            // Notify ADMIN
-            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
-            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
-            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+        }
+        sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
+
+        // Route to DLQ
+        try {
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
+        } catch (IOException e) {
+            LOGGER.error("Fail to nack message that cannot be converted", e);
+        }
+    }
+
+    /**
+     * Notify project administrators on error or for unknown tenant instance user.
+     * @param tenant current tenant or <code>null</code>
+     * @param title required title
+     * @param errorMessage required error message
+     */
+    private void sendNotification(String tenant, String title, String errorMessage) {
+
+        // Prepare notification
+        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, title, NotificationLevel.ERROR,
+                microserviceName);
+        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
+        NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
+
+        if (tenant != null) {
+            // Notify project
             try {
                 // Route notification to the right tenant
                 runtimeTenantResolver.forceTenant(tenant);
@@ -320,17 +328,9 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             }
         } else {
             // Notify instance
-            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
             instancePublisher.publish(event);
         }
 
-        // Route to DLQ
-        try {
-            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
-        } catch (IOException e) {
-            LOGGER.error("Fail to nack message that cannot be converted", e);
-        }
     }
 
     private BatchMessage buildBatchMessage(Message origin, Object converted) {
