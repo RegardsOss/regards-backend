@@ -74,6 +74,13 @@ public interface IStorageLocation {
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
 
     /**
+     * Allow service to validate that a file referenced on this storage location is valid.
+     * @param urlToValidate
+     * @return
+     */
+    boolean isValidUrl(String urlToValidate);
+
+    /**
      * Does the current storage location allow physical deletion of files ?
      * @return boolean
      */
