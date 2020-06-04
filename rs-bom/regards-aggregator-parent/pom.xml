@@ -23,7 +23,7 @@
 
     <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-aggregator-parent</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
     <packaging>pom</packaging>
 
     <description>Aggregates all microservices and the frontend</description>
