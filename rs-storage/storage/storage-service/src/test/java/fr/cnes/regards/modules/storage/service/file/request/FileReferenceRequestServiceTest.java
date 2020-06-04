@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -38,7 +39,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -151,12 +154,20 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
     @Test
     public void referenceFileWithoutStorage() {
         String owner = "someone";
-        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", "anywhere");
+        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
                                                                           oFileRef.get().getMetaInfo().getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           storageReqs.isEmpty());
+    }
+
+    @Test(expected = ModuleException.class)
+    public void referenceFileWithInvalidURL() throws ModuleException {
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.test",
+                1024L, MediaType.APPLICATION_OCTET_STREAM);
+        FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
+        fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
     }
 
 }

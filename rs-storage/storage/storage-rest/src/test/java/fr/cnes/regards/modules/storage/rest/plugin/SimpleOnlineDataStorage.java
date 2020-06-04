@@ -220,4 +220,9 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         return true;
     }
 
+    @Override
+    public boolean isValidUrl(String urlToValidate) {
+        return true;
+    }
+
 }

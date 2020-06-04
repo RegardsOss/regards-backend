@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -49,6 +54,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDT
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 
@@ -77,6 +83,9 @@ public class FileReferenceRequestService {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private IPluginService pluginService;
 
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -183,6 +192,8 @@ public class FileReferenceRequestService {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
+            // If referenced file is associated to a known storage location then validate the reference
+            validateReferenceUrl(request);
             FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
                                                              request.buildMetaInfo(),
                                                              new FileLocation(request.getStorage(), request.getUrl()));
@@ -191,6 +202,29 @@ public class FileReferenceRequestService {
                                            newFileRef.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds);
             return newFileRef;
+        }
+    }
+
+    private void validateReferenceUrl(FileReferenceRequestDTO request) throws ModuleException {
+        try {
+            PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(request.getStorage());
+            if (conf != null) {
+                try {
+                    IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
+                    if (!storagePlugin.isValidUrl(request.getUrl())) {
+                        throw new ModuleException(
+                                String.format("File reference %s url=%s format is not valid for storage location %s",
+                                              request.getFileName(), request.getUrl(), conf.getBusinessId()));
+                    }
+                } catch (NotAvailablePluginConfigurationException e) {
+                    throw new ModuleException(String.format("File reference %s cannot be validated by the %s plugin.",
+                                                            request.getFileName(), conf.getBusinessId()),
+                            e);
+                }
+            }
+        } catch (EntityNotFoundException e) {
+            LOGGER.debug(e.getMessage(), e);
+            // Nothing to do, no plugin configuration match the storage location so validation is not possible.
         }
     }
 

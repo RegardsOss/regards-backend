@@ -92,6 +92,7 @@ import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigura
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
+import fr.cnes.regards.modules.storage.service.plugin.SimpleOfflineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 
 /**
@@ -103,6 +104,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageTest.class);
 
     protected static final String ONLINE_CONF_LABEL = "target";
+
+    protected static final String OFFLINE_CONF_LABEL = "offline";
 
     protected static final String ONLINE_CONF_LABEL_WITHOUT_DELETE = "target_without_delete";
 
@@ -222,10 +225,20 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         });
 
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
+        initDataStorageOLPluginConfiguration(OFFLINE_CONF_LABEL);
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL_WITHOUT_DELETE, false);
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+    }
+
+    protected StorageLocationConfiguration initDataStorageOLPluginConfiguration(String label) throws ModuleException {
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOfflineDataStorage.class);
+
+        Set<IPluginParam> parameters = IPluginParam.set();
+        PluginConfiguration dataStorageConf = new PluginConfiguration(label, parameters, 0, dataStoMeta.getPluginId());
+        dataStorageConf.setIsActive(true);
+        return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
     }
 
     protected StorageLocationConfiguration initDataStoragePluginConfiguration(String label,
