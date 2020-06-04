@@ -22,13 +22,13 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>order</artifactId>
-	<version>1.1.1</version>
+	<version>1.2.0</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.1.1</version>
+		<version>1.2.0</version>
 		<relativePath/>
 	</parent>
 
