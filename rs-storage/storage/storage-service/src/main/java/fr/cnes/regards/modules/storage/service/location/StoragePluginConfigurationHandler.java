@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.location;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,9 +56,9 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePluginConfigurationHandler.class);
 
-    private final SetMultimap<String, String> storages = LinkedHashMultimap.create();
+    private final SetMultimap<String, PluginConfiguration> storages = LinkedHashMultimap.create();
 
-    private final SetMultimap<String, String> onlineStorages = LinkedHashMultimap.create();
+    private final SetMultimap<String, PluginConfiguration> onlineStorages = LinkedHashMultimap.create();
 
     @Autowired
     private IPluginService pluginService;
@@ -98,9 +99,9 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
                     case CREATE:
                         PluginConfiguration conf = pluginService
                                 .getPluginConfiguration(wrapper.getContent().getPluginBusinnessId());
-                        this.storages.put(tenant, conf.getLabel());
+                        this.storages.put(tenant, conf);
                         if (conf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
-                            this.onlineStorages.put(tenant, conf.getLabel());
+                            this.onlineStorages.put(tenant, conf);
                         }
                         break;
                     case DELETE:
@@ -126,7 +127,7 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     /**
      * Return all the configured {@link PluginConfiguration} labels.
      */
-    public Set<String> getConfiguredStorages() {
+    public Set<PluginConfiguration> getConfiguredStorages() {
         if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
                 || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh();
@@ -135,10 +136,14 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         return this.storages.get(runtimeTenantResolver.getTenant());
     }
 
+    public Optional<PluginConfiguration> getConfiguredStorage(String storage) {
+        return getConfiguredStorages().stream().filter(c -> c.getLabel().equals(storage)).findFirst();
+    }
+
     /**
      * Return all the online storage location configured {@link PluginConfiguration} labels.
      */
-    private Set<String> getConfiguredOnlineStorages() {
+    private Set<PluginConfiguration> getConfiguredOnlineStorages() {
         if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null)
                 || this.onlineStorages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh();
@@ -154,12 +159,16 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         List<PluginConfiguration> onlineConfs = confs.stream()
                 .filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
                 .collect(Collectors.toList());
-        confs.forEach(c -> this.storages.put(runtimeTenantResolver.getTenant(), c.getLabel()));
-        onlineConfs.forEach(c -> this.onlineStorages.put(runtimeTenantResolver.getTenant(), c.getLabel()));
+        confs.forEach(c -> this.storages.put(runtimeTenantResolver.getTenant(), c));
+        onlineConfs.forEach(c -> this.onlineStorages.put(runtimeTenantResolver.getTenant(), c));
+    }
+
+    public boolean isConfigured(String storage) {
+        return this.getConfiguredStorages().stream().anyMatch(c -> c.getLabel().equals(storage));
     }
 
     public boolean isOnline(String storage) {
-        return this.getConfiguredOnlineStorages().contains(storage);
+        return this.getConfiguredOnlineStorages().stream().anyMatch(c -> c.getLabel().equals(storage));
     }
 
 }
