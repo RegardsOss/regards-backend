@@ -211,10 +211,11 @@ public class FileReferenceRequestService {
             if (conf != null) {
                 try {
                     IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                    if (!storagePlugin.isValidUrl(request.getUrl())) {
-                        throw new ModuleException(
-                                String.format("File reference %s url=%s format is not valid for storage location %s",
-                                              request.getFileName(), request.getUrl(), conf.getBusinessId()));
+                    Set<String> errors = Sets.newHashSet();
+                    if (!storagePlugin.isValidUrl(request.getUrl(), errors)) {
+                        throw new ModuleException(String
+                                .format("File reference %s url=%s format is not valid for storage location %s. Cause : %s",
+                                        request.getFileName(), request.getUrl(), conf.getBusinessId(), errors));
                     }
                 } catch (NotAvailablePluginConfigurationException e) {
                     throw new ModuleException(String.format("File reference %s cannot be validated by the %s plugin.",

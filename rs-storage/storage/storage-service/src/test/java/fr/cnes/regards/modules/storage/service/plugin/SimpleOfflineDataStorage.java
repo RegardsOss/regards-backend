@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.plugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
@@ -91,7 +92,8 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public boolean isValidUrl(String urlToValidate) {
+    public boolean isValidUrl(String urlToValidate, Set<String> errors) {
+        errors.add("Simulated url validation error for tests");
         return false;
     }
 
