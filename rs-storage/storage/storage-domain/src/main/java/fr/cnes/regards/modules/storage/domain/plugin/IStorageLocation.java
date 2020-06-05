@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Collection;
+import java.util.Set;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
@@ -76,9 +77,10 @@ public interface IStorageLocation {
     /**
      * Allow service to validate that a file referenced on this storage location is valid.
      * @param urlToValidate
+     * @param errors
      * @return
      */
-    boolean isValidUrl(String urlToValidate);
+    boolean isValidUrl(String urlToValidate, Set<String> errors);
 
     /**
      * Does the current storage location allow physical deletion of files ?
