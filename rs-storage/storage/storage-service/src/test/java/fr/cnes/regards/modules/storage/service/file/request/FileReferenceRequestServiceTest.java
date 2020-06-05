@@ -26,6 +26,8 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -62,6 +64,8 @@ import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests",
         "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class FileReferenceRequestServiceTest extends AbstractStorageTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestServiceTest.class);
 
     @Before
     @Override
@@ -162,12 +166,18 @@ public class FileReferenceRequestServiceTest extends AbstractStorageTest {
                           storageReqs.isEmpty());
     }
 
-    @Test(expected = ModuleException.class)
+    @Test
     public void referenceFileWithInvalidURL() throws ModuleException {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.test",
                 1024L, MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
-        fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+        try {
+            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()));
+            Assert.fail("Module exception should be thrown here as url is not valid");
+        } catch (ModuleException e) {
+            // Expected exception
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
 }

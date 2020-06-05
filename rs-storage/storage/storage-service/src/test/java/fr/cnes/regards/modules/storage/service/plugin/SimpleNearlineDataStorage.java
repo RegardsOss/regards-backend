@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.Collection;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
@@ -247,7 +248,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     }
 
     @Override
-    public boolean isValidUrl(String urlToValidate) {
+    public boolean isValidUrl(String urlToValidate, Set<String> errors) {
         return true;
     }
 
