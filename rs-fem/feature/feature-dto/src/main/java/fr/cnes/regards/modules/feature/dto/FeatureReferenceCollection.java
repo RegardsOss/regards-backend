@@ -19,13 +19,14 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.google.gson.JsonObject;
 
 /**
  * Feature collection representation based on GeoJson standard structure.
@@ -46,7 +47,7 @@ public class FeatureReferenceCollection {
      * Free parameters that target factory must understand
      */
     @NotEmpty(message = "Extraction parameters must not be empty")
-    private Set<Map<String, Object>> parameters;
+    private Set<JsonObject> parameters;
 
     /**
      * Create a new {@link FeatureReferenceCollection} <br/>
@@ -56,7 +57,7 @@ public class FeatureReferenceCollection {
      * @return a {@link FeatureReferenceCollection}
      */
     public static FeatureReferenceCollection build(FeatureCreationSessionMetadata metadata, String factory,
-            Set<Map<String, Object>> parameters) {
+            Set<JsonObject> parameters) {
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
         collection.setMetadata(metadata);
         collection.setFactory(factory);
@@ -84,11 +85,11 @@ public class FeatureReferenceCollection {
         this.factory = factory;
     }
 
-    public Set<Map<String, Object>> getParameters() {
+    public Set<JsonObject> getParameters() {
         return parameters;
     }
 
-    public void setProperties(Set<Map<String, Object>> parameters) {
+    public void setProperties(Set<JsonObject> parameters) {
         this.parameters = parameters;
     }
 

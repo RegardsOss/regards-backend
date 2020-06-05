@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +33,9 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -88,8 +89,8 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("location", "test" + i);
+            JsonObject parameters = new JsonObject();
+            parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
@@ -116,8 +117,8 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("location", "test" + i);
+            JsonObject parameters = new JsonObject();
+            parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,

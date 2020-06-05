@@ -22,12 +22,13 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
-import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -46,7 +47,7 @@ public class DefaultFeatureGenerator extends AbstractFeatureMultitenantServiceTe
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
-    public Feature createFeature(FeatureReferenceRequest reference) {
+    public Feature generateFeature(JsonObject parameters) {
         String model = mockModelClient("feature_model_01.xml", cps, factory, runtimeTenantResolver.getTenant(),
                                        modelAttrAssocClientMock);
         Feature toAdd = Feature.build(UUID.randomUUID().toString(), "DefaultFeatureGenerator", null,

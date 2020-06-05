@@ -19,12 +19,13 @@
 package fr.cnes.regards.modules.feature.dto.event.in;
 
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -51,15 +52,15 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
      * Free parameters that target factory must understand
      */
     @NotEmpty(message = "Extraction parameters must not be empty")
-    private Map<String, Object> parameters;
+    private JsonObject parameters;
 
     public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            Map<String, Object> parameters, String factory) {
+            JsonObject parameters, String factory) {
         return build(requestOwner, metadata, parameters, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
     public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            Map<String, Object> parameters, OffsetDateTime requestDate, String factory) {
+            JsonObject parameters, OffsetDateTime requestDate, String factory) {
         FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
         event.setParameters(parameters);
         event.setRequestId(generateRequestId());
@@ -86,11 +87,11 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
         this.metadata = metadata;
     }
 
-    public Map<String, Object> getParameters() {
+    public JsonObject getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, Object> parameters) {
+    public void setParameters(JsonObject parameters) {
         this.parameters = parameters;
     }
 

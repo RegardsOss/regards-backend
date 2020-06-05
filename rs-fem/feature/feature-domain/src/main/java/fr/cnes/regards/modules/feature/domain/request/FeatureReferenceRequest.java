@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -33,6 +32,8 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
+
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -63,11 +64,11 @@ public class FeatureReferenceRequest extends AbstractRequest {
 
     @Column(columnDefinition = "jsonb", name = "extraction_parameters", nullable = false)
     @Type(type = "jsonb")
-    private Map<String, Object> parameters;
+    private JsonObject parameters;
 
     public static FeatureReferenceRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, FeatureCreationMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
-            Map<String, Object> parameters, String factory) {
+            JsonObject parameters, String factory) {
         FeatureReferenceRequest request = new FeatureReferenceRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setMetadata(metadata);
@@ -101,11 +102,11 @@ public class FeatureReferenceRequest extends AbstractRequest {
         this.factory = factory;
     }
 
-    public Map<String, Object> getParameters() {
+    public JsonObject getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, Object> parameters) {
+    public void setParameters(JsonObject parameters) {
         this.parameters = parameters;
     }
 

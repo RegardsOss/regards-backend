@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +41,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -251,9 +251,17 @@ public class FeatureReferenceService implements IFeatureReferenceService {
         if (!plugin.isPresent()) {
             return null;
         }
+
+        if (!IFeatureFactoryPlugin.class.isAssignableFrom(plugin.getClass())) {
+            // TODO throw exception - bad plugin type
+        }
+
+        IFeatureFactoryPlugin factory = (IFeatureFactoryPlugin) plugin.get();
+
         Feature feature;
         try {
-            feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
+            // Extract feature
+            feature = factory.generateFeature(request.getParameters());
             feature.withHistory(request.getRequestOwner());
             FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
@@ -274,7 +282,7 @@ public class FeatureReferenceService implements IFeatureReferenceService {
     public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
         // Build events to reuse event registration code
         List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
-        for (Map<String, Object> parameters : collection.getParameters()) {
+        for (JsonObject parameters : collection.getParameters()) {
             toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), parameters,
                                                            OffsetDateTime.now().minusSeconds(1),
                                                            collection.getFactory()));

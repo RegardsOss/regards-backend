@@ -18,26 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.domain.plugin;
 
+import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 
 /**
  * Generate a {@link Feature} from a {@link FeatureReferenceRequest}
  * @author Kevin Marchois
- *
  */
-@FunctionalInterface
 @PluginInterface(description = "Generate a feature from a reference request")
 public interface IFeatureFactoryPlugin {
 
     /**
-     * Generate a {@link Feature} from a {@link FeatureReferenceRequest}
-     * @param reference {@link FeatureReferenceRequest} data source to generate a {@link Feature}
-     * @return generated {@link FeatureCreationRequest}
+     * Generate a {@link Feature} from {@link FeatureReferenceRequest} parameters.
+     * @param parameters free extraction parameters
+     * @return generated {@link Feature}
      */
-    Feature createFeature(FeatureReferenceRequest reference) throws ModuleException;
-
+    Feature generateFeature(JsonObject parameters) throws ModuleException;
 }
