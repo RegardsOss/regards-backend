@@ -25,8 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityNotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +55,7 @@ import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 
 /**
  * Service to handle File reference requests.
@@ -86,6 +85,9 @@ public class FileReferenceRequestService {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private StoragePluginConfigurationHandler storagePluginConfHandler;
 
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -206,26 +208,21 @@ public class FileReferenceRequestService {
     }
 
     private void validateReferenceUrl(FileReferenceRequestDTO request) throws ModuleException {
-        try {
-            PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(request.getStorage());
-            if (conf != null) {
-                try {
-                    IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
-                    Set<String> errors = Sets.newHashSet();
-                    if (!storagePlugin.isValidUrl(request.getUrl(), errors)) {
-                        throw new ModuleException(String
-                                .format("File reference %s url=%s format is not valid for storage location %s. Cause : %s",
-                                        request.getFileName(), request.getUrl(), conf.getBusinessId(), errors));
-                    }
-                } catch (NotAvailablePluginConfigurationException e) {
-                    throw new ModuleException(String.format("File reference %s cannot be validated by the %s plugin.",
-                                                            request.getFileName(), conf.getBusinessId()),
-                            e);
+        Optional<PluginConfiguration> conf = storagePluginConfHandler.getConfiguredStorage(request.getStorage());
+        if (conf.isPresent()) {
+            try {
+                IStorageLocation storagePlugin = pluginService.getPlugin(conf.get().getBusinessId());
+                Set<String> errors = Sets.newHashSet();
+                if (!storagePlugin.isValidUrl(request.getUrl(), errors)) {
+                    throw new ModuleException(String
+                            .format("File reference %s url=%s format is not valid for storage location %s. Cause : %s",
+                                    request.getFileName(), request.getUrl(), conf.get().getBusinessId(), errors));
                 }
+            } catch (NotAvailablePluginConfigurationException e) {
+                throw new ModuleException(String.format("File reference %s cannot be validated by the %s plugin.",
+                                                        request.getFileName(), conf.get().getBusinessId()),
+                        e);
             }
-        } catch (EntityNotFoundException e) {
-            LOGGER.debug(e.getMessage(), e);
-            // Nothing to do, no plugin configuration match the storage location so validation is not possible.
         }
     }
 

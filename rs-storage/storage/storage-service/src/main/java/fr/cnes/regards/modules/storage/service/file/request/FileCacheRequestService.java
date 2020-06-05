@@ -340,7 +340,7 @@ public class FileCacheRequestService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Collection<JobInfo> scheduleJobsByStorage(String storage, List<FileCacheRequest> requests) {
-        if (storageHandler.getConfiguredStorages().contains(storage)) {
+        if (storageHandler.isConfigured(storage)) {
             requests = calculateRestorables(requests);
             Collection<JobInfo> jobInfoList = Sets.newHashSet();
             if ((requests != null) && !requests.isEmpty()) {
