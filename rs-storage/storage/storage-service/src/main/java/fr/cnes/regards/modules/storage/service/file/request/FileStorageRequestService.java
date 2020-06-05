@@ -439,7 +439,7 @@ public class FileStorageRequestService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void scheduleJobsByStorage(Collection<JobInfo> jobList, String storage,
             List<FileStorageRequest> fileStorageRequests) {
-        if (storageHandler.getConfiguredStorages().contains(storage)) {
+        if (storageHandler.isConfigured(storage)) {
             jobList.addAll(scheduleJobsByStorage(storage, fileStorageRequests));
         } else {
             handleStorageNotAvailable(fileStorageRequests, Optional.empty());
@@ -523,7 +523,7 @@ public class FileStorageRequestService {
                 storageSubDirectory, groupId);
         fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
         fileStorageRequest.setErrorCause(errorCause.orElse(null));
-        if (!storageHandler.getConfiguredStorages().contains(storage)) {
+        if (!storageHandler.isConfigured(storage)) {
             // The storage destination is unknown, we can already set the request in error status
             handleStorageNotAvailable(fileStorageRequest, Optional.empty());
         } else {

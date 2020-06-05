@@ -190,7 +190,7 @@ public class FileDeletionRequestService {
             LOGGER.trace("[DELETION REQUESTS] Scheduling deletion jobs ...");
             long start = System.currentTimeMillis();
             Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
-            Set<String> deletionToSchedule = storages != null && !storages.isEmpty()
+            Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
                     ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
                     : allStorages;
             for (String storage : deletionToSchedule) {
@@ -229,7 +229,7 @@ public class FileDeletionRequestService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
             Page<FileDeletionRequest> deletionRequestPage) {
-        if (storageHandler.getConfiguredStorages().contains(storage)) {
+        if (storageHandler.isConfigured(storage)) {
             return scheduleDeletionJobsByStorage(storage, deletionRequestPage.getContent());
         } else {
             handleStorageNotAvailable(deletionRequestPage.getContent(), Optional.empty());
@@ -422,7 +422,7 @@ public class FileDeletionRequestService {
         fileRefService.removeOwner(fileReference, owner, groupId);
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
-            if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
+            if (storageHandler.isConfigured(fileReference.getLocation().getStorage())) {
                 // If the file is stored on an accessible storage, create a new deletion request
                 create(fileReference, forceDelete, groupId, existingRequests, FileRequestStatus.TO_DO);
             } else {
