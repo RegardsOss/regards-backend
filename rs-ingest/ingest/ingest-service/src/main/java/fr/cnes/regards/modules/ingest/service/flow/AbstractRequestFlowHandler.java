@@ -18,18 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -37,64 +32,32 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * Common handler behaviour
  * @author Marc SORDI
  */
-public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implements IHandler<T> {
+public abstract class AbstractRequestFlowHandler<T extends ISubscribable> implements IBatchHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestFlowHandler.class);
-
-    private final Map<String, ConcurrentLinkedQueue<T>> items = new ConcurrentHashMap<>();
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
-    public void handle(TenantWrapper<T> wrapper) {
-        LOGGER.trace("New ingest request for tenant {}", wrapper.getTenant());
-        String tenant = wrapper.getTenant();
-        T item = wrapper.getContent();
-        if (!items.containsKey(tenant)) {
-            items.put(tenant, new ConcurrentLinkedQueue<>());
-        }
-        items.get(tenant).add(item);
+    public boolean validate(String tenant, T message) {
+        return true;
     }
 
-    /**
-     * Bulk save queued items every.
-     * Call this method when you want to process the queue.
-     *
-     * For instance, attach a scheduler on concrete class
-     */
-    protected void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<T>> entry : items.entrySet()) {
-            try {
-                runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<T> tenantItems = entry.getValue();
-                List<T> items = new ArrayList<>();
-                do {
-                    // Build a 10_000 (at most) documents bulk request
-                    for (int i = 0; i < getBulkSize(); i++) {
-                        T item = tenantItems.poll();
-                        if (item == null) {
-                            // Less than BULK_SIZE documents, bulk save what we have already
-                            break;
-                        } else { // enqueue item
-                            items.add(item);
-                        }
-                    }
-                    LOGGER.trace("Processing bulk of {} items", items.size());
-                    long start = System.currentTimeMillis();
-                    processBulk(items);
-                    if (!items.isEmpty()) {
-                        LOGGER.debug("{} items registered in {} ms", items.size(), System.currentTimeMillis() - start);
-                    }
-                    items.clear();
-                } while (tenantItems.size() >= getBulkSize()); // continue while more than BULK_SIZE items are to be saved
-            } finally {
-                runtimeTenantResolver.clearTenant();
+    @Override
+    public void handleBatch(String tenant, List<T> messages) {
+        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            LOGGER.trace("Processing bulk of {} items", messages.size());
+            long start = System.currentTimeMillis();
+            processBulk(messages);
+            if (!messages.isEmpty()) {
+                LOGGER.debug("{} items registered in {} ms", messages.size(), System.currentTimeMillis() - start);
             }
+        } finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
-
-    protected abstract Integer getBulkSize();
 
     protected abstract void processBulk(List<T> items);
 }
