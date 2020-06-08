@@ -137,19 +137,17 @@ public class FileDownloadService {
                 PluginConfiguration conf = storageLocation.getPluginConfiguration();
                 FileReference fileToDownload = storages.get(conf.getLabel());
                 return new DownloadableFile(downloadOnline(fileToDownload, storageLocation),
-                                            fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
-                                            fileToDownload.getMetaInfo().getMimeType());
+                        fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
+                        fileToDownload.getMetaInfo().getMimeType());
             } else {
-                oStorageLocation = storageLocationConfService
-                        .searchActiveHigherPriority(storages.keySet(), StorageType.NEARLINE);
-                if(oStorageLocation.isPresent()) {
+                oStorageLocation = storageLocationConfService.searchActiveHigherPriority(storages.keySet(),
+                                                                                         StorageType.NEARLINE);
+                if (oStorageLocation.isPresent()) {
                     StorageLocationConfiguration storageLocation = oStorageLocation.get();
                     PluginConfiguration conf = storageLocation.getPluginConfiguration();
                     FileReference fileToDownload = storages.get(conf.getLabel());
-                    return new DownloadableFile(download(fileToDownload),
-                                                fileToDownload.getMetaInfo().getFileSize(),
-                                                fileToDownload.getMetaInfo().getFileName(),
-                                                fileToDownload.getMetaInfo().getMimeType());
+                    return new DownloadableFile(download(fileToDownload), fileToDownload.getMetaInfo().getFileSize(),
+                            fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getMimeType());
                 }
                 throw new ModuleException(String
                         .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
@@ -229,6 +227,9 @@ public class FileDownloadService {
                             fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
                             fileToDownload.getLocation().toString()),
                     e);
+        } catch (FileNotFoundException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityNotFoundException(e.getMessage());
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
