@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonObject;
@@ -51,7 +50,7 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
     /**
      * Free parameters that target factory must understand
      */
-    @NotEmpty(message = "Extraction parameters must not be empty")
+    @NotNull(message = "Extraction parameters must not be empty")
     private JsonObject parameters;
 
     public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,

@@ -218,21 +218,16 @@ public class FeatureReferenceService implements IFeatureReferenceService {
         for (FeatureReferenceRequest request : requests) {
             try {
                 FeatureCreationRequestEvent fcre = initFeatureCreationRequest(request);
-                if (fcre != null) {
-                    creationRequestsToRegister.add(fcre);
-                    successCreationRequestGeneration.add(request);
-                } else {
-                    Set<String> errors = Sets.newHashSet("No plugin founded for this request reference");
-                    // Monitoring log
-                    FeatureLogger.referenceError(request.getRequestOwner(), request.getRequestId(), errors);
-                    // Publish ERROR request
-                    request.setState(RequestState.ERROR);
-                    publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(), null,
-                                                                null, RequestState.ERROR, errors));
-                }
+                creationRequestsToRegister.add(fcre);
+                successCreationRequestGeneration.add(request);
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
+                Set<String> errors = Sets.newHashSet(e.getMessage());
+                // Monitoring log
+                FeatureLogger.referenceError(request.getRequestOwner(), request.getRequestId(), errors);
+                // Publish ERROR request
                 request.setState(RequestState.ERROR);
-                LOGGER.error("Creation of FeatureCreationRequestEvent fail from plugin generator", e);
+                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(), null,
+                                                            null, RequestState.ERROR, errors));
             }
         }
 
@@ -247,13 +242,20 @@ public class FeatureReferenceService implements IFeatureReferenceService {
 
     private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
             throws NotAvailablePluginConfigurationException, ModuleException {
+
         Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getFactory());
         if (!plugin.isPresent()) {
-            return null;
+            String errorMessage = String.format("Unknown plugin for configuration %s", request.getFactory());
+            LOGGER.error(errorMessage);
+            throw new ModuleException(errorMessage);
         }
 
-        if (!IFeatureFactoryPlugin.class.isAssignableFrom(plugin.getClass())) {
-            // TODO throw exception - bad plugin type
+        if (!IFeatureFactoryPlugin.class.isAssignableFrom(plugin.get().getClass())) {
+            String errorMessage = String.format("Bad plugin type for configuration %s. %s must implement %s.",
+                                                request.getFactory(), plugin.getClass().getName(),
+                                                IFeatureFactoryPlugin.class.getName());
+            LOGGER.error(errorMessage);
+            throw new ModuleException(errorMessage);
         }
 
         IFeatureFactoryPlugin factory = (IFeatureFactoryPlugin) plugin.get();

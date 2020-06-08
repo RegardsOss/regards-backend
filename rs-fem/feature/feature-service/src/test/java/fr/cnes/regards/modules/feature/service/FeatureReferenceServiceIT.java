@@ -99,8 +99,8 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
         }
         this.publisher.publish(eventsToPublish);
 
-        this.waitRequest(this.featureCreationRequestRepo, this.properties.getMaxBulkSize(), 60000);
-        this.waitRequest(this.featureRepo, this.properties.getMaxBulkSize(), 60000);
+        // this.waitRequest(this.featureCreationRequestRepo, this.properties.getMaxBulkSize(), 60000);
+        this.waitRequest(this.featureRepo, this.properties.getMaxBulkSize(), 120_000);
 
         assertEquals(0, this.referenceRequestRepo.count());
     }
