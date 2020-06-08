@@ -204,26 +204,33 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         for (AIPUpdateRequest updateRequest : updateRequests) {
             AbstractAIPUpdateTask updateTask = updateRequest.getUpdateTask();
 
-            try {
-                switch (updateTask.getType()) {
-                    case ADD_FILE_LOCATION:
-                    case REMOVE_FILE_LOCATION:
-                        aip = updateAIPFile.run(aip, updateTask);
-                        break;
-                    case ADD_TAG:
-                    case REMOVE_TAG:
-                    case ADD_CATEGORY:
-                    case REMOVE_CATEGORY:
-                        aip = updateAIPSimpleProperty.run(aip, updateTask);
-                        break;
-                    case REMOVE_STORAGE:
-                        aip = updateAIPStorage.run(aip, updateTask);
-                        break;
+            if ((updateTask != null) && (updateTask.getType() != null)) {
+                try {
+                    switch (updateTask.getType()) {
+                        case ADD_FILE_LOCATION:
+                        case REMOVE_FILE_LOCATION:
+                            aip = updateAIPFile.run(aip, updateTask);
+                            break;
+                        case ADD_TAG:
+                        case REMOVE_TAG:
+                        case ADD_CATEGORY:
+                        case REMOVE_CATEGORY:
+                            aip = updateAIPSimpleProperty.run(aip, updateTask);
+                            break;
+                        case REMOVE_STORAGE:
+                            aip = updateAIPStorage.run(aip, updateTask);
+                            break;
+                    }
+                } catch (ModuleException e) {
+                    logger.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
+                    // Save error inside requests
+                    updateRequest.addError(e.getMessage());
+                    updateRequest.setState(InternalRequestState.ERROR);
                 }
-            } catch (ModuleException e) {
-                logger.warn("An error occured while updating aip {}: {}", aip.getAip().getAipId(), e.getMessage());
+            } else {
+                logger.warn("Update task for aip {} is not valid", aip.getAip().getAipId());
                 // Save error inside requests
-                updateRequest.addError(e.getMessage());
+                updateRequest.addError("Update task is not valid");
                 updateRequest.setState(InternalRequestState.ERROR);
             }
         }
