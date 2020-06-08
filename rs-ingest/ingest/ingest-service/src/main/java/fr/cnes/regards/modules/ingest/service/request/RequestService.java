@@ -64,6 +64,7 @@ import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
@@ -418,6 +419,7 @@ public class RequestService implements IRequestService {
      * Try to find some request in a ready state that can prevent the provided {@link AbstractRequest} request
      * to be executed right now
      */
+    @Override
     public boolean shouldDelayRequest(AbstractRequest request) {
         Specification<AbstractRequest> spec;
         Optional<String> sessionOwnerOp = Optional.ofNullable(request.getSessionOwner());
@@ -431,7 +433,9 @@ public class RequestService implements IRequestService {
                                                                                               sessionOp);
                 break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp);
+                spec = AbstractRequestSpecifications
+                        .searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp,
+                                                           ((OAISDeletionRequest) request).getAip().getId());
                 break;
             case RequestTypeConstant.STORE_METADATA_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingStoreMeta(sessionOwnerOp, sessionOp);

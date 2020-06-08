@@ -54,9 +54,9 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
 
     private static final String UNLOCK_REQ_SCHEDULER_LOCK = "request-pending-scheduler-lock";
 
-    private static final String DEFAULT_INITIAL_DELAY = "30000";
+    private static final String DEFAULT_INITIAL_DELAY = "10000";
 
-    private static final String DEFAULT_SCHEDULING_DELAY = "30000";
+    private static final String DEFAULT_SCHEDULING_DELAY = "1000";
 
     private static final String UNLOCK_TITLE = "Unlock requests scheduling";
 
