@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -38,6 +39,6 @@ public interface IOnlineStorageLocation extends IStorageLocation {
      * @param data StorageDataFile to retrieve
      * @throws ModuleException
      */
-    InputStream retrieve(FileReference fileReference) throws ModuleException;
+    InputStream retrieve(FileReference fileReference) throws ModuleException, FileNotFoundException;
 
 }
