@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -60,22 +59,14 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
         subscriber.subscribeTo(IngestRequestFlowItem.class, this);
     }
 
-    /**
-     * Bulk save queued items every second.
-     */
-    @Override
-    @Scheduled(fixedDelayString = "${regards.ingest.request.flow.bulk.delay:1000}")
-    protected void handleQueue() {
-        super.handleQueue();
-    }
-
-    @Override
-    protected Integer getBulkSize() {
-        return confProperties.getMaxBulkSize();
-    }
-
     @Override
     protected void processBulk(List<IngestRequestFlowItem> items) {
         ingestService.handleIngestRequests(items);
     }
+
+    @Override
+    public int getBatchSize() {
+        return confProperties.getMaxBulkSize();
+    }
+
 }

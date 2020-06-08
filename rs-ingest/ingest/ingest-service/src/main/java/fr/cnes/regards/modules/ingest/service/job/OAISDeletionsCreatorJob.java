@@ -125,7 +125,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
         // Delete the request
         requestService.deleteRequest(deletionCreator);
 
-        logger.info("[OAIS DELETION CREATOR JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbRequestScheduled,
+        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms", nbRequestScheduled,
                     System.currentTimeMillis() - start);
     }
 
