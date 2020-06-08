@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.Collection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,6 +40,8 @@ public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeleti
     }
 
     Page<OAISDeletionRequest> findAllByState(InternalRequestState step, Pageable page);
+
+    boolean existsByAipIdAndStateIn(Long id, Collection<InternalRequestState> states);
 
     long countByState(InternalRequestState state);
 

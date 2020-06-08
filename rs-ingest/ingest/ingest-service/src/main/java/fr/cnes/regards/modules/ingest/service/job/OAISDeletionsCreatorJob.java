@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.service.aip.AIPDeletionService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
@@ -68,6 +69,9 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private OAISDeletionService oaisDeletionRequestService;
+
+    @Autowired
+    private AIPDeletionService aipDeletionService;
 
     @Autowired
     private IOAISDeletionCreatorRepository oaisDeletionCreatorRepo;
@@ -112,7 +116,9 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
             if (totalPages < aipsPage.getTotalPages()) {
                 totalPages = aipsPage.getTotalPages();
             }
+            // If deletion request is already registered for the given aip do not create a new one.
             List<AbstractRequest> requests = aipsPage.stream()
+                    .filter(aip -> !aipDeletionService.deletionAlreadyPending(aip))
                     .map(aip -> OAISDeletionRequest.build(aip, deletionPayload.getDeletionMode(),
                                                           deletionPayload.getDeletePhysicalFiles()))
                     .collect(Collectors.toList());

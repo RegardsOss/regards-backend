@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
@@ -72,6 +73,19 @@ public class AIPDeletionService {
      */
     @Value("${regards.ingest.aips.scan.iteration-limit:100}")
     private Integer deletionRequestIterationLimit;
+
+    /**
+     * Check if a deletion request is running or pending  for the given aip
+     * @param aip
+     * @return [TRUE|FALSE]
+     */
+    public boolean deletionAlreadyPending(AIPEntity aip) {
+        return oaisDeletionRequestRepository
+                .existsByAipIdAndStateIn(aip.getId(),
+                                         Sets.newHashSet(InternalRequestState.CREATED, InternalRequestState.BLOCKED,
+                                                         InternalRequestState.RUNNING,
+                                                         InternalRequestState.TO_SCHEDULE));
+    }
 
     public JobInfo scheduleJob() {
         JobInfo jobInfo = null;

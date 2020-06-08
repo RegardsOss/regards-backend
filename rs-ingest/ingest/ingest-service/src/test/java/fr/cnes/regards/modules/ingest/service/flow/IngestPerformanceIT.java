@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
         properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
                 "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
                 "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
-        locations = { "classpath:application-local.properties" })
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
@@ -122,6 +122,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         long start = System.currentTimeMillis();
         long existingItems = 0;
         long maxloops = 10;
+        // 1. Populate catalog with products
         String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create(PROVIDER_PREFIX + i, null);
@@ -129,7 +130,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
 
-        // Wait
+        // 2. Wait
         ingestServiceTest.waitForIngestion(maxloops, maxloops * 10000, SIPState.STORED);
 
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
@@ -137,11 +138,12 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
         sessionNotifier.debugSession();
 
-        // Delete products
+        // 3. Delete products
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
                 .withProviderId(PROVIDER_PREFIX + "0");
         deletionService.registerOAISDeletionCreator(dto);
 
+        // 4. Wait
         ingestServiceTest.waitForIngestion(1, 100000, SIPState.DELETED);
         sessionNotifier.debugSession();
     }
@@ -151,9 +153,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
      * 1. Ingest Products
      * 2. Wait for ingestion ends
      * 3. Add some error requests
-     * 3. Delete Products through OAISDeletionCreator
-     * 4. Run second  time the deletion through OAISDeletionCreator
-     * 4. Wait for  deletion ends
+     * 4. Delete Products through OAISDeletionCreator
+     * 5. Run second  time the deletion through OAISDeletionCreator
+     * 6. Wait for  deletion ends
      */
     @Test
     public void deletionRequests() {
@@ -165,7 +167,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         long nbStored = 100;
         long nbDeleted = 20;
 
-        // 1. Populate catalog with 10_000 products (sip/aip)
+        // 1. Populate catalog with products
 
         String session = "session";// OffsetDateTime.now().toString();
         for (long i = 0; i < nbStored; i++) {
@@ -173,11 +175,11 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
-        // Wait
+        // 2. Wait
         ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
-        // Simulate an update request in error
+        // 3. Simulate an update request in error
         String sipToUpdate = sipRepository.findTopByProviderIdOrderByCreationDateDesc(PROVIDER_PREFIX + 0).getSipId();
         AIPEntity aip = aipService.findBySipId(sipToUpdate).iterator().next();
         AIPUpdateRequest updateRequest = new AIPUpdateRequest();
@@ -191,16 +193,16 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         updateRequest.setState(InternalRequestState.ERROR);
         updateReqRepo.save(updateRequest);
 
-        // 2. Ask for product 1000 deletion
+        // 4. Ask for product 1000 deletion
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY);
         for (int i = 0; i < nbDeleted; i++) {
             dto.withProviderId(PROVIDER_PREFIX + i);
         }
-        // Send two times the same deletion request
         deletionService.registerOAISDeletionCreator(dto);
+        // 5. Send two times the same deletion request
         deletionService.registerOAISDeletionCreator(dto);
 
-        // Wait for all 1000 deletion + 500 new ingestion ends
+        // 6. Wait for all  deletion + new ingestion ends
         ingestServiceTest.waitAllRequestsFinished(180_000);
         ingestServiceTest.waitForIngestion(nbStored - nbDeleted, 100000, SIPState.STORED);
         ingestServiceTest.waitAllRequestsFinished(180_000);
@@ -212,8 +214,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
      * 1. Ingest Products
      * 2. Wait for ingestion ends
      * 3. Update Products through AIPUpdatesCreatorRequest
-     * 3. Run second  time the same update through AIPUpdatesCreatorRequest
-     * 4. Wait for update ends
+     * 4. Run second  time the same update through AIPUpdatesCreatorRequest
+     * 5. Wait for update ends
      */
     @Test
     public void updateRequests() {
@@ -232,19 +234,19 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
             // Create event
             publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
         }
-        // Wait
+        // 2. Wait
         ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
-        // 2. Ask for product updates
+        // 3. Ask for product updates
         AIPUpdateParametersDto updateDto = AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withCategories(CATEGORIES.get(0)))
                 .withAddCategories(Lists.newArrayList("new_cat"));
         aipService.registerUpdatesCreator(updateDto);
-        aipService.registerUpdatesCreator(updateDto);
+        // 4. Ask for same product updates
         aipService.registerUpdatesCreator(updateDto);
 
-        // Wait for all 1000 deletion + 500 new ingestion ends
+        // 5. Wait for all 1000 deletion + 500 new ingestion ends
         ingestServiceTest.waitAllRequestsFinished(180_000);
         ingestServiceTest.waitForIngestion(nbStored, 100000, SIPState.STORED);
         ingestServiceTest.waitAllRequestsFinished(180_000);
@@ -332,45 +334,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         ingestServiceTest.waitForIngestion(nbDeleted, 100000, SIPState.DELETED);
         long count = nbStored - nbDeleted;
         ingestServiceTest.waitForIngestion(count, count * 1000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(180_000);
-    }
-
-    @Test
-    public void ingestWithSameSips() {
-        // STORAGE BEHAVIOR
-        storageClientMock.setBehavior(true, true);
-
-        long start = System.currentTimeMillis();
-        long nbStored = 500;
-
-        // 1. Populate catalog with 10_000 products (sip/aip)
-
-        String session = "session";// OffsetDateTime.now().toString();
-        for (long i = 0; i < nbStored; i++) {
-            SIP sip = create(PROVIDER_PREFIX + i, null);
-            // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
-        }
-        // Wait
-        ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED);
-        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
-
-        // Ask for 2*100 new product
-        for (long i = 0; i < 500; i++) {
-            SIP sip = create(PROVIDER_PREFIX + "new" + i, null);
-            // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
-            nbStored++;
-        }
-        for (long i = 0; i < 500; i++) {
-            SIP sip = create(PROVIDER_PREFIX + "new" + i, null);
-            // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
-        }
-
-        LOGGER.info("===============> Ingestion sents !!");
-
-        ingestServiceTest.waitForIngestion(nbStored, nbStored * 1000, SIPState.STORED);
         ingestServiceTest.waitAllRequestsFinished(180_000);
     }
 

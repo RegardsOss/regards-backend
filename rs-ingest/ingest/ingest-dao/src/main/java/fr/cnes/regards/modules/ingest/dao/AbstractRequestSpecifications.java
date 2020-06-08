@@ -197,7 +197,7 @@ public final class AbstractRequestSpecifications {
     }
 
     public static Specification<AbstractRequest> searchRequestBlockingOAISDeletion(Optional<String> sessionOwner,
-            Optional<String> session) {
+            Optional<String> session, Long aipId) {
 
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
