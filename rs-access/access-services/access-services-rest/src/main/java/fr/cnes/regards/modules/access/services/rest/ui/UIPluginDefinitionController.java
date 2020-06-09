@@ -107,7 +107,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugins", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<UIPluginDefinition>>> retrievePlugins(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC, size = 500) Pageable pageable,
             @RequestParam(value = "type", required = false) final UIPluginTypesEnum type,
             final PagedResourcesAssembler<UIPluginDefinition> assembler) {
 

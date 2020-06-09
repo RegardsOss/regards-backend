@@ -30,12 +30,12 @@ package fr.cnes.regards.modules.access.services.domain.ui;
 public enum UIPluginTypesEnum {
 
     /**
-     * UI Plugins for search-forms. Create a new UI Criteria.
+     * UI Plugins criteria
      */
     CRITERIA,
 
     /**
-     * UI Plugins for search results. To apply a new service to a selected list of entities.
+     * UI Plugins services
      */
     SERVICE;
 
