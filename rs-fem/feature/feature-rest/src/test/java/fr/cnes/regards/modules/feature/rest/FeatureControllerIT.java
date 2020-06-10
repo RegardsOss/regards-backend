@@ -2,7 +2,9 @@ package fr.cnes.regards.modules.feature.rest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -20,7 +22,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.validation.MapBindingResult;
 
-import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -121,13 +123,17 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     public void testCreateFeatureReferenceRequest() throws Exception {
 
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
-        collection.addAll(Lists.newArrayList(""));
+        collection.setMetadata(FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false,
+                                                                    StorageMetadata.build("id ")));
         collection.setFactory("PluginName");
+        Set<JsonObject> parameters = new HashSet<>();
+        JsonObject first = new JsonObject();
+        parameters.add(first);
+        collection.setParameters(parameters);
+
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
                 .thenReturn(new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName()));
-        collection.setMetadata(FeatureCreationSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, false,
-                                                                    StorageMetadata.build("id ")));
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
@@ -263,8 +269,8 @@ public class FeatureControllerIT extends AbstractFeatureIT {
 
         List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
 
-        lfd.add(fields.withPath("pluginBusinessId", "Plugin business ID"));
-        lfd.add(fields.withPath("locations", "Location of feature files"));
+        lfd.add(fields.withPath("factory", "Extraction plugin business ID"));
+        lfd.add(fields.withPath("parameters", "Extraction plugin parameters"));
 
         lfd.add(fields.withPath("metadata.override", "If we want to override previous version"));
         lfd.add(fields.withPath("metadata.session", "The session name"));

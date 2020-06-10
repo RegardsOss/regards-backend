@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.Collection;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -61,12 +60,8 @@ public class FeatureReferenceCollection {
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
         collection.setMetadata(metadata);
         collection.setFactory(factory);
-        collection.setProperties(parameters);
+        collection.setParameters(parameters);
         return collection;
-    }
-
-    public void addAll(Collection<String> locations) {
-        locations.addAll(locations);
     }
 
     public FeatureCreationSessionMetadata getMetadata() {
@@ -89,7 +84,7 @@ public class FeatureReferenceCollection {
         return parameters;
     }
 
-    public void setProperties(Set<JsonObject> parameters) {
+    public void setParameters(Set<JsonObject> parameters) {
         this.parameters = parameters;
     }
 
