@@ -30,20 +30,27 @@ import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
  * Default plugin rule matcher
  * @author Kevin Marchois
  */
-@Plugin(author = "REGARDS Team", description = "Default rule matcher", id = "DefaultRuleMatcher", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+@Plugin(author = "REGARDS Team", description = "Default rule matcher", id = DefaultRuleMatcher.PLUGIN_ID,
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
 public class DefaultRuleMatcher implements IRuleMatcher {
+
+    public static final String PLUGIN_ID = "DefaultRuleMatcher";
+
+    public static final String ATTRIBUTE_TO_SEEK_FIELD_NAME = "attributeToSeek";
+
+    public static final String ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME = "attributeValueToSeek";
 
     /**
      * Attribute name to seek in properties
      */
-    @PluginParameter(label = "attributeToSeek")
+    @PluginParameter(name = ATTRIBUTE_TO_SEEK_FIELD_NAME, label = "Attribute to seek")
     private String attributeToSeek;
 
     /**
      * Attribute value to seek in properties
      */
-    @PluginParameter(label = "attributeValueToSeek")
+    @PluginParameter(name = ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, label = "Attribute value to seek")
     private String attributeValueToSeek;
 
     @Override
