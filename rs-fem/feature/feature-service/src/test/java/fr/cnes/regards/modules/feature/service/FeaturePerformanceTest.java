@@ -115,7 +115,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
         waitFeature(NB_FEATURES, null, 3600_000);
 
         long duration = System.currentTimeMillis() - start;
-        Assert.assertTrue(String.format("Performance not reached! (%d/%d)", duration, DURATION), duration < DURATION);
+        Assert.assertTrue(String.format("Performance not reached! (%dms/%dms)", duration, DURATION), duration < DURATION);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES, duration);
 
         assertEquals(NB_FEATURES.longValue(), this.featureRepo.count());
