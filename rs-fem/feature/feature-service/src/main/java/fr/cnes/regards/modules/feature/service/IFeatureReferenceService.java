@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent
  * @author Kevin Marchois
  *
  */
-public interface IFeatureReferenceService {
+public interface IFeatureReferenceService extends IFeatureDeniedService {
 
     /**
      * Register {@link FeatureReferenceRequest}in database for further processing from incoming request events

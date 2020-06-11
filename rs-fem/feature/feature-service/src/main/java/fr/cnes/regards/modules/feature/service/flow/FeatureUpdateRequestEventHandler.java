@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  */
 @Component
 @Profile("!nohandler")
-public class FeatureUpdateRequestEventHandler
+public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureUpdateRequestEvent>
         implements IBatchHandler<FeatureUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateRequestEventHandler.class);

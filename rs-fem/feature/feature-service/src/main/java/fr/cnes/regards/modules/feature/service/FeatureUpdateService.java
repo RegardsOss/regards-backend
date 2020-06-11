@@ -78,7 +78,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
  */
 @Service
 @MultitenantTransactional
-public class FeatureUpdateService implements IFeatureUpdateService {
+public class FeatureUpdateService extends AbstractFeatureService implements IFeatureUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateService.class);
 

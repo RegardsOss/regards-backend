@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * This service handles feature update workflow.
  * @author Marc SORDI
  */
-public interface IFeatureUpdateService {
+public interface IFeatureUpdateService extends IFeatureDeniedService {
 
     /**
      * Register update requests in database for further processing from incoming request events

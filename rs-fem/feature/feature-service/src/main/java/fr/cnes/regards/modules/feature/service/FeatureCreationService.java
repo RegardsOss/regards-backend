@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -97,7 +97,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCreationService implements IFeatureCreationService {
+public class FeatureCreationService extends AbstractFeatureService implements IFeatureCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationService.class);
 
