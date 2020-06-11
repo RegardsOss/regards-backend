@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
@@ -96,4 +97,10 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
     }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return featureService;
+    }
+
 }
