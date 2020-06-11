@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureDeletionService {
+public interface IFeatureDeletionService extends IFeatureDeniedService {
 
     /**
      * Register delete requests in database for further processing from incoming request events

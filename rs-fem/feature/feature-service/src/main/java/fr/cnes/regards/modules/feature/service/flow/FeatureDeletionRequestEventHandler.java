@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
 /**
@@ -45,7 +46,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  */
 @Component
 @Profile("!nohandler")
-public class FeatureDeletionRequestEventHandler
+public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureDeletionRequestEvent>
         implements IBatchHandler<FeatureDeletionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionRequestEventHandler.class);
@@ -95,5 +96,10 @@ public class FeatureDeletionRequestEventHandler
     @Override
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
+    }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return featureService;
     }
 }

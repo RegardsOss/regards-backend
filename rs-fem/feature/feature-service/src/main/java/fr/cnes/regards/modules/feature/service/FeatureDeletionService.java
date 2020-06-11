@@ -82,7 +82,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 @Service
 @MultitenantTransactional
-public class FeatureDeletionService implements IFeatureDeletionService {
+public class FeatureDeletionService extends AbstractFeatureService implements IFeatureDeletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
