@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -289,11 +290,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         LOGGER.error(errorMessage, ex);
 
         // Send notification
-        String tenant = null;
         if (RabbitVersion.isVersion1_1(message)) {
-            tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+            if (batchHandler.handleConversionError(tenant, message, errorMessage)) {
+                sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
+            }
+        } else {
+            sendNotification(null, CONVERSION_FAILURE_TITLE, errorMessage);
         }
-        sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
 
         // Route to DLQ
         try {
@@ -334,6 +338,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     }
 
     private BatchMessage buildBatchMessage(Message origin, Object converted) {
+
+        // Propagate message properties if required
+        if (IMessagePropertiesAware.class.isAssignableFrom(converted.getClass())) {
+            ((IMessagePropertiesAware) converted).setMessageProperties(origin.getMessageProperties());
+        }
+
         BatchMessage message = new BatchMessage();
         message.setOrigin(origin);
         message.setConverted(converted);

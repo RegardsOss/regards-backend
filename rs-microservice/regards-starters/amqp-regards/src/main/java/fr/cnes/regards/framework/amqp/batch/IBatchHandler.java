@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -48,6 +49,21 @@ public interface IBatchHandler<M> extends IHandler<M> {
             }
         }
         handleBatch(tenant, messages);
+    }
+
+    /**
+     * This method is called for each message that cannot be converted
+     * by the selected JSON converter before message gets routed to DLQ.<br/>
+     * So system may manage business behavior programmatically.
+     *
+     * If not, return <code>false</code> so the default behavior will be applied (e.g. project or instance notification).
+     * @param tenant related message tenant
+     * @param message the message
+     * @param errorMessage the message conversion error
+     * @return <code>true</code> or <code>false</code> to respectively enable or disable the sending of default notifications.
+     */
+    default boolean handleConversionError(String tenant, Message message, String errorMessage) {
+        return true;
     }
 
     /**

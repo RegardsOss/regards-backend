@@ -44,6 +44,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -327,8 +328,14 @@ public abstract class AbstractPublisher implements IPublisherContract {
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
+            // Add headers from parameter
             if (headers != null) {
                 headers.forEach((k, v) -> messageProperties.setHeader(k, v));
+            }
+            // Add headers from event
+            if (IMessagePropertiesAware.class.isAssignableFrom(event.getClass())) {
+                ((IMessagePropertiesAware) event).getMessageProperties().getHeaders()
+                        .forEach((k, v) -> messageProperties.setHeader(k, v));
             }
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);
