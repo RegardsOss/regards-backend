@@ -63,6 +63,10 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
     @Autowired
     private IFeatureUpdateService featureService;
 
+    public FeatureUpdateRequestEventHandler() {
+        super(FeatureUpdateRequestEvent.class);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureUpdateRequestEvent.class, this);

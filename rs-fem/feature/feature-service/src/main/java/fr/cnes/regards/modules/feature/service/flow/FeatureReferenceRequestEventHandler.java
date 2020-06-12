@@ -63,6 +63,10 @@ public class FeatureReferenceRequestEventHandler
     @Autowired
     private IFeatureReferenceService featureReferenceService;
 
+    public FeatureReferenceRequestEventHandler() {
+        super(FeatureReferenceRequestEvent.class);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureReferenceRequestEvent.class, this);

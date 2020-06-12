@@ -33,6 +33,17 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final Class<M> type;
+
+    public AbstractFeatureRequestEventHandler(Class<M> type) {
+        this.type = type;
+    }
+
+    @Override
+    public Class<M> getMType() {
+        return type;
+    }
+
     @Override
     public boolean handleConversionError(String tenant, Message message, String errorMessage) {
         try {

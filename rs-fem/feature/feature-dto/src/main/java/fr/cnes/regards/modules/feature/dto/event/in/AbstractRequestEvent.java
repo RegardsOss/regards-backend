@@ -63,6 +63,10 @@ public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
         return UUID.randomUUID().toString();
     }
 
+    public boolean hasRequestId() {
+        return (getRequestId() != null) && !getRequestId().isEmpty();
+    }
+
     public String getRequestId() {
         return getRequestId(getMessageProperties());
     }
@@ -73,6 +77,10 @@ public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
 
     public void setRequestId(String requestId) {
         getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER, requestId);
+    }
+
+    public boolean hasRequestDate() {
+        return getRequestDate() != null;
     }
 
     public OffsetDateTime getRequestDate() {
@@ -91,6 +99,10 @@ public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
     public void setRequestDate(OffsetDateTime requestDate) {
         getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_DATE_HEADER,
                                          OffsetDateTimeAdapter.format(requestDate));
+    }
+
+    public boolean hasRequestOwner() {
+        return (getRequestOwner() != null) && !getRequestOwner().isEmpty();
     }
 
     public String getRequestOwner() {

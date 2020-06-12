@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
 
 import com.google.common.collect.Sets;
 
@@ -32,10 +33,23 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 /**
  * @author Marc SORDI
  */
-public abstract class AbstractFeatureService implements IFeatureDeniedService {
+public abstract class AbstractFeatureService implements IFeatureDeniedService, IRequestValidation {
 
     @Autowired
     private IPublisher publisher;
+
+    @Override
+    public void validateRequest(AbstractRequestEvent event, Errors errors) {
+        if (!event.hasRequestId()) {
+            errors.reject("missing.request.id.header", "Missing request id header");
+        }
+        if (!event.hasRequestDate()) {
+            errors.reject("missing.request.date.header", "Missing request date header");
+        }
+        if (!event.hasRequestOwner()) {
+            errors.reject("missing.request.owner.header", "Missing request owner header");
+        }
+    }
 
     @Override
     public boolean denyMessage(Message message, String errorMessage) {

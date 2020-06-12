@@ -139,8 +139,8 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

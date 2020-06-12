@@ -63,6 +63,10 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
     @Autowired
     private IFeatureDeletionService featureService;
 
+    public FeatureDeletionRequestEventHandler() {
+        super(FeatureDeletionRequestEvent.class);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureDeletionRequestEvent.class, this);

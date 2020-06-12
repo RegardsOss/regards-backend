@@ -130,8 +130,8 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             List<NotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId()) || notificationsRequest.stream()
                 .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

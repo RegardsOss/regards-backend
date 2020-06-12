@@ -62,6 +62,10 @@ public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEv
     @Autowired
     private IFeatureCreationService featureService;
 
+    public FeatureCreationRequestEventHandler() {
+        super(FeatureCreationRequestEvent.class);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(FeatureCreationRequestEvent.class, this);

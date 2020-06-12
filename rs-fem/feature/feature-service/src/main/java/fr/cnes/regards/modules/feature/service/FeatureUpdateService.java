@@ -162,6 +162,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

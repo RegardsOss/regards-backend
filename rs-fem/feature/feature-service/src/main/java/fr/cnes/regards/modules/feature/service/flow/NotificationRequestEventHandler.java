@@ -60,6 +60,10 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     @Autowired
     private IFeatureNotificationService notificationService;
 
+    public NotificationRequestEventHandler() {
+        super(NotificationRequestEvent.class);
+    }
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(NotificationRequestEvent.class, this);
