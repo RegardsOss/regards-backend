@@ -47,6 +47,11 @@ public class BatchHandler implements IBatchHandler<BatchMessage> {
     public static final String FAIL_TENANT = "FAIL";
 
     @Override
+    public Class<BatchMessage> getMType() {
+        return BatchMessage.class;
+    }
+
+    @Override
     public boolean validate(String tenant, BatchMessage message) {
         if (FAKE_TENANT.equals(tenant)) {
             return false;

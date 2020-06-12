@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
+import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
@@ -112,6 +113,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         for (Message message : messages) {
 
             try {
+                setDefaultHeaders(message);
                 Object converted = messageConverter.fromMessage(message);
                 if (RabbitVersion.isVersion1(message) && TenantWrapper.class.isAssignableFrom(converted.getClass())) {
                     // REGARDS API V1.0
@@ -335,6 +337,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             instancePublisher.publish(event);
         }
 
+    }
+
+    private void setDefaultHeaders(Message message) {
+        Gson2JsonMessageConverter.setDefaultHeaders(message, batchHandler);
     }
 
     private BatchMessage buildBatchMessage(Message origin, Object converted) {

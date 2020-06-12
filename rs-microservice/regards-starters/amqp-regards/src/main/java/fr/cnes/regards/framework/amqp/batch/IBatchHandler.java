@@ -52,6 +52,13 @@ public interface IBatchHandler<M> extends IHandler<M> {
     }
 
     /**
+     * @return generic type, allows to inject converted type into message headers for GSON converted messages
+     */
+    default Class<M> getMType() {
+        return null;
+    }
+
+    /**
      * This method is called for each message that cannot be converted
      * by the selected JSON converter before message gets routed to DLQ.<br/>
      * So system may manage business behavior programmatically.
