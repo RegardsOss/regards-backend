@@ -38,4 +38,8 @@ public interface IMessagePropertiesAware {
      * @return {@link MessageProperties} related to the current message, so that all headers will be propagated as AMQP headers.
      */
     MessageProperties getMessageProperties();
+
+    default void setHeader(String key, Object value) {
+        getMessageProperties().setHeader(key, value);
+    }
 }

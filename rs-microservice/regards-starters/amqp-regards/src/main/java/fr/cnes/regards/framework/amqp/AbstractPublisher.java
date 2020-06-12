@@ -334,8 +334,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
             }
             // Add headers from event
             if (IMessagePropertiesAware.class.isAssignableFrom(event.getClass())) {
-                ((IMessagePropertiesAware) event).getMessageProperties().getHeaders()
-                        .forEach((k, v) -> messageProperties.setHeader(k, v));
+                MessageProperties mp = ((IMessagePropertiesAware) event).getMessageProperties();
+                if (mp != null) {
+                    mp.getHeaders().forEach((k, v) -> messageProperties.setHeader(k, v));
+                }
             }
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);

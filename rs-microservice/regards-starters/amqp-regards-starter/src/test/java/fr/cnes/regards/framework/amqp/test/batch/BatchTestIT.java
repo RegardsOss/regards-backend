@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -100,7 +101,10 @@ public class BatchTestIT {
 
         // Publish message in default project
         for (int i = 1; i <= MESSAGE_NB_PROJECT; i++) {
-            publisher.publish(BatchMessage.build(String.format("%s_batch_0%02d", PROJECT, i)));
+            BatchMessage m = BatchMessage.build(String.format("%s_batch_0%02d", PROJECT, i));
+            m.setMessageProperties(new MessageProperties());
+            m.setHeader("header", "value");
+            publisher.publish(m);
         }
 
         // Publish messages in second project
