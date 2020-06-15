@@ -48,7 +48,7 @@ public class JsonMessageConverters implements MessageConverter {
 
     /**
      * Use {@link AmqpConstants#REGARDS_CONVERTER_HEADER} instead.
-     * Will be remove in V1.2
+     * Will be remove in V1.3
      */
     @Deprecated
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";

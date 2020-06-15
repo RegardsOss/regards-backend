@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.framework.random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+// FIXME update tests or remove
 public class RandomTests {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RandomTests.class);
+    //    private static final Logger LOGGER = LoggerFactory.getLogger(RandomTests.class);
 
     //    @Test
     //    public void testInteger() {
