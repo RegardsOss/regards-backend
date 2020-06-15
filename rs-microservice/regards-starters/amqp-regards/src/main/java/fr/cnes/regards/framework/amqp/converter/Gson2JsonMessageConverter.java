@@ -39,6 +39,8 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 
 /**
  * GSON message converter
@@ -137,7 +139,11 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         MessageProperties mp = message.getMessageProperties();
         // For GSON converter
         if (handler.getMType() != null) {
-            mp.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, handler.getMType().getName());
+            JsonMessageConverter jmc = EventUtils.getMessageConverter(handler.getMType());
+            if (JsonMessageConverter.GSON.equals(jmc)) {
+                mp.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, handler.getMType().getName());
+                mp.setHeader(AmqpConstants.REGARDS_CONVERTER_HEADER, jmc.toString());
+            }
         }
     }
 }

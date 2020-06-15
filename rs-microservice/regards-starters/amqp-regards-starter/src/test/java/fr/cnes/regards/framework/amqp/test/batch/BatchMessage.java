@@ -25,13 +25,14 @@ import com.google.gson.annotations.Expose;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author Marc SORDI
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class BatchMessage implements ISubscribable, IMessagePropertiesAware {
 
     String message;
