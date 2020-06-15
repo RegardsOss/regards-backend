@@ -78,7 +78,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
  */
 @Service
 @MultitenantTransactional
-public class FeatureUpdateService implements IFeatureUpdateService {
+public class FeatureUpdateService extends AbstractFeatureService implements IFeatureUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateService.class);
 
@@ -162,6 +162,7 @@ public class FeatureUpdateService implements IFeatureUpdateService {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

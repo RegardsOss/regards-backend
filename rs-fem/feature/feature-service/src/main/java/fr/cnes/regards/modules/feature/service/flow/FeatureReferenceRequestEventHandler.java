@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureReferenceService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
@@ -45,6 +46,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
 @Component
 @Profile("!nohandler")
 public class FeatureReferenceRequestEventHandler
+        extends AbstractFeatureRequestEventHandler<FeatureReferenceRequestEvent>
         implements IBatchHandler<FeatureReferenceRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceRequestEventHandler.class);
@@ -60,6 +62,10 @@ public class FeatureReferenceRequestEventHandler
 
     @Autowired
     private IFeatureReferenceService featureReferenceService;
+
+    public FeatureReferenceRequestEventHandler() {
+        super(FeatureReferenceRequestEvent.class);
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -94,5 +100,10 @@ public class FeatureReferenceRequestEventHandler
     @Override
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
+    }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return featureReferenceService;
     }
 }

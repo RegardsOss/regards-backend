@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
  */
 @Service
 @MultitenantTransactional
-public class FeatureNotificationService implements IFeatureNotificationService {
+public class FeatureNotificationService extends AbstractFeatureService implements IFeatureNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureNotificationService.class);
 
@@ -130,8 +130,8 @@ public class FeatureNotificationService implements IFeatureNotificationService {
             List<NotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId()) || notificationsRequest.stream()
                 .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

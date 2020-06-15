@@ -79,7 +79,7 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
  */
 @Service
 @MultitenantTransactional
-public class FeatureReferenceService implements IFeatureReferenceService {
+public class FeatureReferenceService extends AbstractFeatureService implements IFeatureReferenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceService.class);
 
@@ -139,8 +139,8 @@ public class FeatureReferenceService implements IFeatureReferenceService {
             Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {

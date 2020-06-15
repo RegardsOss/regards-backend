@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
@@ -45,7 +46,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  */
 @Component
 @Profile("!nohandler")
-public class FeatureUpdateRequestEventHandler
+public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureUpdateRequestEvent>
         implements IBatchHandler<FeatureUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateRequestEventHandler.class);
@@ -61,6 +62,10 @@ public class FeatureUpdateRequestEventHandler
 
     @Autowired
     private IFeatureUpdateService featureService;
+
+    public FeatureUpdateRequestEventHandler() {
+        super(FeatureUpdateRequestEvent.class);
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -96,4 +101,10 @@ public class FeatureUpdateRequestEventHandler
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
     }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return featureService;
+    }
+
 }
