@@ -66,6 +66,7 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
@@ -154,15 +155,16 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
             FeatureLogger.referenceDenied(item.getRequestOwner(), item.getRequestId(),
                                           ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, item.getRequestId(),
+                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             return;
         }
         // Monitoring log
         FeatureLogger.referenceGranted(item.getRequestOwner(), item.getRequestId());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, item.getRequestId(),
+                                                    item.getRequestOwner(), null, null, RequestState.GRANTED, null));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
@@ -226,8 +228,9 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
                 FeatureLogger.referenceError(request.getRequestOwner(), request.getRequestId(), errors);
                 // Publish ERROR request
                 request.setState(RequestState.ERROR);
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(), null,
-                                                            null, RequestState.ERROR, errors));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, request.getRequestId(),
+                                                            request.getRequestOwner(), null, null, RequestState.ERROR,
+                                                            errors));
             }
         }
 

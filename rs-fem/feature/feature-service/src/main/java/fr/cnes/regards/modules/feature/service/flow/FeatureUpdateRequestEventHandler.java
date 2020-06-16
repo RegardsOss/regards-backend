@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
@@ -105,6 +106,11 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
     @Override
     public IFeatureDeniedService getFeatureService() {
         return featureService;
+    }
+
+    @Override
+    public FeatureRequestType getFeatureRequestType() {
+        return FeatureRequestType.PATCH;
     }
 
 }

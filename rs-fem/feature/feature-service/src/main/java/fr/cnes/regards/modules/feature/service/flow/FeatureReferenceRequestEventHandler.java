@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureReferenceService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -105,5 +106,10 @@ public class FeatureReferenceRequestEventHandler
     @Override
     public IFeatureDeniedService getFeatureService() {
         return featureReferenceService;
+    }
+
+    @Override
+    public FeatureRequestType getFeatureRequestType() {
+        return FeatureRequestType.REFERENCE;
     }
 }

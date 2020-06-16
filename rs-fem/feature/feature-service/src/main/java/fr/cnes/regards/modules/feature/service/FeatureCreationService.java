@@ -77,6 +77,7 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -210,7 +211,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                          item.getFeature() != null ? item.getFeature().getId() : null,
                                          ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION, item.getRequestId(),
+                                                        item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
@@ -228,9 +230,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         // Monitoring log
         FeatureLogger.creationGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null, null,
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.GRANTED, null));
 
         // Add to granted request collection
         metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_GRANTED);
@@ -329,9 +331,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 FeatureLogger.creationSuccess(request.getRequestOwner(), request.getRequestId(),
                                               request.getProviderId(), request.getFeature().getUrn());
                 // Publish successful request
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
-                                                            request.getProviderId(), request.getFeature().getUrn(),
-                                                            RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION, request.getRequestId(),
+                                                            request.getRequestOwner(), request.getProviderId(),
+                                                            request.getFeature().getUrn(), RequestState.SUCCESS));
 
                 // if a previous version exists we will publish a FeatureDeletionRequest to delete it
                 if ((request.getFeatureEntity().getPreviousVersionUrn() != null)

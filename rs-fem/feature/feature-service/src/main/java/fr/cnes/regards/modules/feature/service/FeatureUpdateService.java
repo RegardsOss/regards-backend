@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState;
@@ -179,7 +180,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                                        item.getFeature() != null ? item.getFeature().getUrn() : null,
                                        ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, item.getRequestId(),
+                                                        item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         item.getFeature() != null ? item.getFeature().getUrn() : null,
                                                         RequestState.DENIED, ErrorTranslator.getErrors(errors)));
@@ -198,9 +200,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         FeatureLogger.updateGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                     request.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null, null,
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.PATCH, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.GRANTED, null));
         // Add to granted request collection
         metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_GRANTED);
         grantedRequests.add(request);
@@ -298,9 +300,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 FeatureLogger.updateError(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                           request.getUrn(), request.getErrors());
                 // Publish request failure
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
-                                                            request.getProviderId(), request.getUrn(),
-                                                            request.getState(), request.getErrors()));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
+                                                            request.getRequestOwner(), request.getProviderId(),
+                                                            request.getUrn(), request.getState(), request.getErrors()));
 
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
@@ -331,9 +333,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 FeatureLogger.updateSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                             request.getFeature().getUrn());
                 // Publish request success
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
-                                                            entity.getProviderId(), entity.getUrn(),
-                                                            RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
+                                                            request.getRequestOwner(), entity.getProviderId(),
+                                                            entity.getUrn(), RequestState.SUCCESS));
 
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,21 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.service;
-
-import org.springframework.amqp.core.Message;
-
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
+package fr.cnes.regards.modules.feature.dto.event.out;
 
 /**
- *
- * Denied request that cannot be converted
+ * All available feature requests.
  * @author Marc SORDI
+ *
  */
-public interface IFeatureDeniedService {
-
-    /**
-     * @return <code>true</code> if message can be denied.
-     */
-    boolean denyMessage(FeatureRequestType type, Message message, String errorMessage);
+public enum FeatureRequestType {
+    CREATION,
+    PATCH,
+    REFERENCE,
+    DELETION,
+    NOTIFICATION,
+    FILE_COPY;
 }

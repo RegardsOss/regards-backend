@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.dto.event.in.AbstractRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 
@@ -52,7 +53,7 @@ public abstract class AbstractFeatureService implements IFeatureDeniedService, I
     }
 
     @Override
-    public boolean denyMessage(Message message, String errorMessage) {
+    public boolean denyMessage(FeatureRequestType type, Message message, String errorMessage) {
 
         String requestId = AbstractRequestEvent.getRequestId(message.getMessageProperties());
         if (requestId == null) {
@@ -63,7 +64,7 @@ public abstract class AbstractFeatureService implements IFeatureDeniedService, I
         // Monitoring log
         FeatureLogger.creationDenied(requestOwner, requestId, null, Sets.newHashSet(errorMessage));
         // Publish DENIED request
-        publisher.publish(FeatureRequestEvent.build(requestId, requestOwner, null, null, RequestState.DENIED,
+        publisher.publish(FeatureRequestEvent.build(type, requestId, requestOwner, null, null, RequestState.DENIED,
                                                     Sets.newHashSet(errorMessage)));
         // FIXME is it useful, really?
         // metrics.count(null, null, FeatureCreationState.CREATION_REQUEST_DENIED);

@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -143,9 +144,9 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
                                              ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher
-                    .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                       RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
+                                                        item.getRequestOwner(), null, item.getUrn(),
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
 
@@ -155,8 +156,8 @@ public class FeatureNotificationService extends AbstractFeatureService implement
         // Monitoring log
         FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                    RequestState.GRANTED));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
+                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED));
         notificationsRequest.add(request);
 
         // Add new request id to existing ones
@@ -215,8 +216,9 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             NotificationRequest request = notifPerUrn.get(entity.getUrn());
             FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
-            publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
-                                                        entity.getProviderId(), entity.getUrn(), RequestState.SUCCESS));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
+                                                        request.getRequestOwner(), entity.getProviderId(),
+                                                        entity.getUrn(), RequestState.SUCCESS));
         }
         publisher.publish(notifications);
 

@@ -66,6 +66,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -154,9 +155,9 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
             FeatureLogger.deletionDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
                                          ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher
-                    .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                       RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, item.getRequestId(),
+                                                        item.getRequestOwner(), null, item.getUrn(),
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
 
@@ -166,8 +167,9 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         // Monitoring log
         FeatureLogger.deletionGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, item.getRequestId(),
+                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED,
+                                                    null));
 
         // Add to granted request collection
         grantedRequests.add(request);
@@ -249,8 +251,9 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
             // Monitoring log
             FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
             // Send feedback
-            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(), null, fdr.getUrn(),
-                                                        RequestState.SUCCESS, errors));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, fdr.getRequestId(),
+                                                        fdr.getRequestOwner(), null, fdr.getUrn(), RequestState.SUCCESS,
+                                                        errors));
         }
     }
 
@@ -295,8 +298,9 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
             // Monitoring log
             FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
             // Publish successful request
-            publisher.publish(FeatureRequestEvent.build(fdr.getRequestId(), fdr.getRequestOwner(),
-                                                        entity.getProviderId(), fdr.getUrn(), RequestState.SUCCESS));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, fdr.getRequestId(),
+                                                        fdr.getRequestOwner(), entity.getProviderId(), fdr.getUrn(),
+                                                        RequestState.SUCCESS));
         }
     }
 

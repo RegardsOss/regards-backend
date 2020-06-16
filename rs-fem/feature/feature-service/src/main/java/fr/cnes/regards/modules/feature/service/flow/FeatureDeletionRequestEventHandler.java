@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
@@ -105,5 +106,10 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
     @Override
     public IFeatureDeniedService getFeatureService() {
         return featureService;
+    }
+
+    @Override
+    public FeatureRequestType getFeatureRequestType() {
+        return FeatureRequestType.DELETION;
     }
 }

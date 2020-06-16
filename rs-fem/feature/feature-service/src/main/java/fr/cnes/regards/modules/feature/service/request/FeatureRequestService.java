@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
@@ -86,9 +87,9 @@ public class FeatureRequestService implements IFeatureRequestService {
      * @param item
      */
     private void publishSuccessAndDeleteOlderVersion(FeatureCreationRequest item) {
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null, null,
-                                                    RequestState.SUCCESS, null));
+        publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.SUCCESS, null));
         publisher.publish(NotificationActionEvent.build(gson.toJsonTree(item.getFeature()),
                                                         FeatureManagementAction.CREATED.name()));
         if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
@@ -107,11 +108,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
         // publish success notification for all request id
-        request.stream()
-                .forEach(item -> publisher
-                        .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
-                                                           item.getFeature() != null ? item.getFeature().getId() : null,
-                                                           null, RequestState.ERROR, null)));
+        request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.ERROR, null)));
         // set FeatureCreationRequest to error state
         request.stream().forEach(item -> item.setState(RequestState.ERROR));
 
@@ -129,8 +128,10 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureDeletionRequest> request = this.fdrRepo.findByGroupIdIn(groupIds);
 
         // publish success notification for all request id
-        request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(), RequestState.ERROR, null)));
+        request.stream()
+                .forEach(item -> publisher.publish(FeatureRequestEvent
+                        .build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null,
+                               item.getUrn(), RequestState.ERROR, null)));
         // set FeatureDeletionRequest to error state
         request.stream().forEach(item -> item.setState(RequestState.ERROR));
 
