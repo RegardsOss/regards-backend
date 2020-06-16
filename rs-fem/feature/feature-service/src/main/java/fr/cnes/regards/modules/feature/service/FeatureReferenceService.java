@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
 import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
@@ -246,7 +247,14 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
     private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
             throws NotAvailablePluginConfigurationException, ModuleException {
 
-        Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getFactory());
+        Optional<T> plugin;
+        try {
+            plugin = this.pluginService.getOptionalPlugin(request.getFactory());
+        } catch (PluginUtilsRuntimeException e) {
+            // Catch unexpected plugin initialization error
+            throw new ModuleException(e.getMessage());
+        }
+
         if (!plugin.isPresent()) {
             String errorMessage = String.format("Unknown plugin for configuration %s", request.getFactory());
             LOGGER.error(errorMessage);

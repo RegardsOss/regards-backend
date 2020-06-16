@@ -97,7 +97,7 @@ public class FeatureRequestService implements IFeatureRequestService {
                                                                 item.getFeatureEntity().getPreviousVersionUrn(),
                                                                 PriorityLevel.NORMAL));
             this.notificationClient
-                    .notify(String.format("A FeatureEntity with the URN {} already exists for this feature",
+                    .notify(String.format("A FeatureEntity with the URN %s already exists for this feature",
                                           item.getFeatureEntity().getPreviousVersionUrn()),
                             "A duplicated feature has been detected", NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
