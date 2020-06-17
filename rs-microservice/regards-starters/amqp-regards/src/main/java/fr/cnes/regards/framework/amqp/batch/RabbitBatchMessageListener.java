@@ -206,13 +206,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             return methodInvoker.invoke();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
                 | ClassNotFoundException ex) {
+            LOGGER.error("Fail to invoke handler with following raw exception", ex);
             ArrayList<String> arrayClass = new ArrayList<>();
             if (arguments != null) {
                 for (Object argument : arguments) {
                     arrayClass.add(argument.getClass().toString());
                 }
             }
-            throw new ListenerExecutionFailedException("Failed to invoke target method '" + methodName
+            throw new ListenerExecutionFailedException("Fail to invoke target method '" + methodName
                     + "' with argument type = [" + StringUtils.collectionToCommaDelimitedString(arrayClass)
                     + "], value = [" + ObjectUtils.nullSafeToString(arguments) + "]", ex, originalMessages);
         }
