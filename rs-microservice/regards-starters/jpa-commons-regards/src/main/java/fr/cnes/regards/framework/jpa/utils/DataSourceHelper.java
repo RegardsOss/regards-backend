@@ -155,6 +155,9 @@ public final class DataSourceHelper {
             config.setMaximumPoolSize(maxPoolSize);
             config.setPoolName(String.format("Hikari-Pool-%s", tenant));
             config.setIdleTimeout(30000L);
+            // Docker Swarm / Kube workaround: https://github.com/brettwooldridge/HikariCP/issues/1237
+            // maxLifetime should be 10mins to avoid stale postgres connections
+            config.setMaxLifetime(600000L);
             // Postgres schema configuration
             config.setConnectionInitSql("SET search_path to " + schemaIdentifier);
 
