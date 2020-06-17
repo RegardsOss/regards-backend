@@ -70,7 +70,7 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * @return <code>true</code> or <code>false</code> to respectively enable or disable the sending of default notifications.
      */
     default boolean handleConversionError(String tenant, Message message, String errorMessage) {
-        return true;
+        return false;
     }
 
     /**

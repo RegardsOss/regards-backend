@@ -295,7 +295,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         // Send notification
         if (RabbitVersion.isVersion1_1(message)) {
             String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-            if (batchHandler.handleConversionError(tenant, message, errorMessage)) {
+            if (!batchHandler.handleConversionError(tenant, message, errorMessage)) {
                 sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
             }
         } else {
