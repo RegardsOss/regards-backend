@@ -91,7 +91,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                     Charset.forName(DEFAULT_CHARSET))) {
                 content = gson.fromJson(json, createTypeToken(message));
             } catch (Exception e) {
-                String errorMessage = String.format(CONVERSION_ERROR, "unexpected error");
+                String errorMessage = String.format(CONVERSION_ERROR, e.getMessage());
                 LOGGER.error(errorMessage, e);
                 throw new MessageConversionException(errorMessage, e);
             }

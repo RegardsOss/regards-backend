@@ -24,9 +24,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 
+import com.google.gson.JsonIOException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -63,12 +65,16 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
     }
 
     public static OffsetDateTime parse(String date) {
-        TemporalAccessor temporalAccessor = ISO_DATE_TIME_UTC.parse(date);
-        // Zoned date
-        if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-            return OffsetDateTime.from(temporalAccessor);
-        } else { // No zone specified => UTC date time
-            return OffsetDateTime.of(LocalDateTime.from(temporalAccessor), ZoneOffset.UTC);
+        try {
+            TemporalAccessor temporalAccessor = ISO_DATE_TIME_UTC.parse(date);
+            // Zoned date
+            if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
+                return OffsetDateTime.from(temporalAccessor);
+            } else { // No zone specified => UTC date time
+                return OffsetDateTime.of(LocalDateTime.from(temporalAccessor), ZoneOffset.UTC);
+            }
+        } catch (DateTimeParseException e) {
+            throw new JsonIOException("Date could not be parsed", e);
         }
     }
 
