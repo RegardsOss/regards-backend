@@ -1,0 +1,1 @@
+create index IF NOT EXISTS idx_aipid on ingest.t_aip (aip_id);
