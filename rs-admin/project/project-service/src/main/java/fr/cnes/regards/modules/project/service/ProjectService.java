@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.project.domain.ProjectUpdateEvent;
 
 /**
  *
@@ -151,7 +152,10 @@ public class ProjectService implements IProjectService {
         if (!pProject.getName().equals(pProjectName)) {
             throw new EntityInvalidException("projectId and updated project does not match.");
         }
-        return projectRepository.save(pProject);
+        Project project = projectRepository.save(pProject);
+        ProjectUpdateEvent e = ProjectUpdateEvent.build(project);
+        instancePublisher.publish(e);
+        return project;
     }
 
     @Override
