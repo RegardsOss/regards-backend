@@ -57,7 +57,8 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 @Table(name = "t_acquisition_file",
         indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
                 @Index(name = "idx_acq_file_state_file_info", columnList = "state, acq_file_info_id"),
-                @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id") })
+                @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id"),
+                @Index(name = "idx_acq_file_product_id", columnList = "product_id") })
 public class AcquisitionFile {
 
     @Id
