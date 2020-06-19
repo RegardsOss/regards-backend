@@ -109,7 +109,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         job.updateStatus(JobStatus.ABORTED);
         job = this.jobInforepo.save(job);
 
-        JsonElement element = initElement();
+        JsonElement element = initElement("element.json");
 
         initPlugins(false);
 
@@ -144,7 +144,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         job.updateStatus(JobStatus.ABORTED);
         job = this.jobInforepo.save(job);
 
-        JsonElement modifiedElement = initElement();
+        JsonElement modifiedElement = initElement("element.json");
 
         initPlugins(true);
 

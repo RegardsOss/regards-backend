@@ -235,13 +235,24 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
      * load {@link JsonElement} from a resource test
      * @return initialised {@link JsonElement}
      */
-    protected JsonElement initElement() {
-        try (InputStream input = this.getClass().getResourceAsStream("element.json");
+    protected JsonElement initElement(String name) {
+        try (InputStream input = this.getClass().getResourceAsStream(name);
                 Reader reader = new InputStreamReader(input)) {
 
             return gson.fromJson(CharStreams.toString(reader), JsonElement.class);
         } catch (IOException e) {
-            String errorMessage = "Cannot import model";
+            String errorMessage = "Cannot import element";
+            LOGGER.debug(errorMessage);
+            throw new AssertionError(errorMessage);
+        }
+    }
+
+    protected NotificationActionEvent getEvent(String name) {
+        try (InputStream input = this.getClass().getResourceAsStream(name);
+                Reader reader = new InputStreamReader(input)) {
+            return gson.fromJson(CharStreams.toString(reader), NotificationActionEvent.class);
+        } catch (IOException e) {
+            String errorMessage = "Cannot import event";
             LOGGER.debug(errorMessage);
             throw new AssertionError(errorMessage);
         }
