@@ -201,4 +201,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
 
     Page<Product> findByProcessingChain(AcquisitionProcessingChain chain, Pageable page);
+
+    void deleteByProcessingChainId(Long id);
 }

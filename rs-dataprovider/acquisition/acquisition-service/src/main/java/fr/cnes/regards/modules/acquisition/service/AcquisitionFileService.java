@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,11 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     @Override
     public AcquisitionFile save(AcquisitionFile file) {
         return fileRepository.save(file);
+    }
+
+    @Override
+    public List<AcquisitionFile> save(Collection<AcquisitionFile> files) {
+        return fileRepository.saveAll(files);
     }
 
     @Override
