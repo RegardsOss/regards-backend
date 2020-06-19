@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import javax.persistence.LockModeType;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -144,4 +145,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     default List<JobInfo> findTopUserPendingJobs(String user, int count) {
         return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, PageRequest.of(0, count));
     }
+
+    /**
+     * @param className
+     * @param statuses
+     * @return
+     */
+    Page<JobInfo> findByClassNameAndStatusStatusIn(String className, JobStatus[] statuses, Pageable page);
 }
