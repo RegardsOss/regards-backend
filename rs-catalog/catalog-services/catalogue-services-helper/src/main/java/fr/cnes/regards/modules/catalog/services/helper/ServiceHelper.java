@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.catalog.services.helper;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +46,8 @@ import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
 @Service
 @MultitenantTransactional
 public class ServiceHelper implements IServiceHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceHelper.class);
 
     /**
      * Service to search datas from the catalog.
@@ -82,6 +86,12 @@ public class ServiceHelper implements IServiceHelper {
             throws ModuleException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         ICriterion crit = dispatcher.computeComplexCriterion(searchRequest);
+        // Check criterion properly translated
+        if (searchRequest.hasSearchParameters() && crit.isEmpty()) {
+            String errorMessage = String.format("Unexpected search parameters %s", searchRequest.getSearchParameters());
+            LOGGER.error(errorMessage);
+            throw new ModuleException(errorMessage);
+        }
         PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage);
         return searchService.search(searchKey, pageReq, crit);
     }

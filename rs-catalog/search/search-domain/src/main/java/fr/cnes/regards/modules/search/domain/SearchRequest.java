@@ -79,6 +79,10 @@ public class SearchRequest {
         return datasetUrn;
     }
 
+    public boolean hasSearchParameters() {
+        return (searchParameters != null) && !searchParameters.isEmpty();
+    }
+
     public MultiValueMap<String, String> getSearchParameters() {
         return searchParameters;
     }
