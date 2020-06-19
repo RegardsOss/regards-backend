@@ -292,6 +292,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // Unknown URN : request error
                 request.setState(RequestState.ERROR);
+                request.setStep(FeatureRequestStep.LOCAL_ERROR);
                 request.addError(String.format("No feature referenced in database with following URN : %s",
                                                request.getUrn()));
                 errorRequests.add(request);
