@@ -71,8 +71,8 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
  *
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" },
-        locations = { "classpath:application-local.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" })
+// locations = { "classpath:application-local.properties" })
 // @Ignore("Performances tests")
 public class PerformanceTest extends AbstractMultitenantServiceTest {
 
