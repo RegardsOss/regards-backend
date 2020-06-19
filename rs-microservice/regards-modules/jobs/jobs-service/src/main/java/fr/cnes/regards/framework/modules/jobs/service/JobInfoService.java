@@ -27,6 +27,8 @@ import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -187,5 +189,10 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public Long retrieveJobsCount(String className, JobStatus... statuses) {
         return jobInfoRepository.countByClassNameAndStatusStatusIn(className, statuses);
+    }
+
+    @Override
+    public Page<JobInfo> retrieveJobs(String className, Pageable page, JobStatus... statuses) {
+        return jobInfoRepository.findByClassNameAndStatusStatusIn(className, statuses, page);
     }
 }

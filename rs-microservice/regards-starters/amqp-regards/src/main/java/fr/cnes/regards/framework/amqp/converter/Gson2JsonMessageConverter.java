@@ -35,9 +35,12 @@ import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 
 /**
  * GSON message converter
@@ -88,7 +91,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
                     Charset.forName(DEFAULT_CHARSET))) {
                 content = gson.fromJson(json, createTypeToken(message));
             } catch (Exception e) {
-                String errorMessage = String.format(CONVERSION_ERROR, "unexpected error");
+                String errorMessage = String.format(CONVERSION_ERROR, e.getMessage());
                 LOGGER.error(errorMessage, e);
                 throw new MessageConversionException(errorMessage, e);
             }
@@ -130,5 +133,17 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         return new TypeToken<TenantWrapper<T>>() {
         }.where(new TypeParameter<T>() {
         }, TypeToken.of(clazz));
+    }
+
+    public static void setDefaultHeaders(Message message, IBatchHandler<?> handler) {
+        MessageProperties mp = message.getMessageProperties();
+        // For GSON converter
+        if (handler.getMType() != null) {
+            JsonMessageConverter jmc = EventUtils.getMessageConverter(handler.getMType());
+            if (JsonMessageConverter.GSON.equals(jmc)) {
+                mp.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, handler.getMType().getName());
+                mp.setHeader(AmqpConstants.REGARDS_CONVERTER_HEADER, jmc.toString());
+            }
+        }
     }
 }

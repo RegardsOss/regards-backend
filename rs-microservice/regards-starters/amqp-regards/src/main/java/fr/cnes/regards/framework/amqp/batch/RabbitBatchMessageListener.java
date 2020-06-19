@@ -45,7 +45,9 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVersion;
+import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -66,6 +68,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     private static final String VALIDATE_SINGLE_METHOD_NAME = "validate";
 
     private static final String HANDLE_METHOD_NAME = "handleBatchAndLog";
+
+    private static final String BATCH_PROCESSING_FAILURE_TITLE = "Batch processing failure";
+
+    private static final String INVALID_MESSAGE_TITLE = "Invalid message";
+
+    private static final String UNWRAPPING_FAILURE_TITLE = "Message unwrapping failure";
+
+    private static final String CONVERSION_FAILURE_TITLE = "Message conversion failure";
 
     private final MessageConverter messageConverter;
 
@@ -103,6 +113,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         for (Message message : messages) {
 
             try {
+                setDefaultHeaders(message);
                 Object converted = messageConverter.fromMessage(message);
                 if (RabbitVersion.isVersion1(message) && TenantWrapper.class.isAssignableFrom(converted.getClass())) {
                     // REGARDS API V1.0
@@ -142,33 +153,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                     // Acknowledge all valid messages
                     handleValidMessage(tenant, validMessages, channel);
                 } catch (Exception ex) {
-                    LOGGER.error(String.format("Batch processing fail for tenant %s", tenant), ex);
                     // Re-queue all valid messages
-                    handleError(tenant, validMessages, channel);
+                    handleBatchException(tenant, validMessages, channel, ex);
                 }
             }
         }
     }
-
-    //    // FIXME
-    //    protected boolean checkValidationParameterType() {
-    //        Method[] allMethods = batchHandler.getClass().getDeclaredMethods();
-    //
-    //        for (Method m : allMethods) {
-    //            if (m.getName().equals(VALIDATE_SINGLE_METHOD_NAME)) {
-    //                // FIXME
-    //                Class<?>[] pType = m.getParameterTypes();
-    //                Type[] gpType = m.getGenericParameterTypes();
-    //                for (int i = 0; i < pType.length; i++) {
-    //                    LOGGER.info("{}: {}", "ParameterType", pType[i]);
-    //                    LOGGER.info("{}: {}", "GenericParameterType", gpType[i]);
-    //                }
-    //                break;
-    //            }
-    //        }
-    //        // FIXME
-    //        return false;
-    //    }
 
     protected boolean invokeValidationMethod(String tenant, Object message) {
         // Prepare arguments
@@ -216,13 +206,14 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             return methodInvoker.invoke();
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
                 | ClassNotFoundException ex) {
+            LOGGER.error("Fail to invoke handler with following raw exception", ex);
             ArrayList<String> arrayClass = new ArrayList<>();
             if (arguments != null) {
                 for (Object argument : arguments) {
                     arrayClass.add(argument.getClass().toString());
                 }
             }
-            throw new ListenerExecutionFailedException("Failed to invoke target method '" + methodName
+            throw new ListenerExecutionFailedException("Fail to invoke target method '" + methodName
                     + "' with argument type = [" + StringUtils.collectionToCommaDelimitedString(arrayClass)
                     + "], value = [" + ObjectUtils.nullSafeToString(arguments) + "]", ex, originalMessages);
         }
@@ -238,10 +229,20 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         }
     }
 
-    private void handleError(String tenant, List<BatchMessage> validMessages, Channel channel) {
+    private void handleBatchException(String tenant, List<BatchMessage> validMessages, Channel channel, Exception ex) {
+
+        // Message not properly wrapped! Unknown tenant!
+        String errorMessage = String.format("[%s] All messages are requeued for handler %s : %s",
+                                            BATCH_PROCESSING_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            ex.getMessage());
+        LOGGER.error(errorMessage, ex);
+
+        // Send notification
+        sendNotification(tenant, BATCH_PROCESSING_FAILURE_TITLE, errorMessage);
+
         for (BatchMessage message : validMessages) {
+
             try {
-                // FIXME multiple or not
                 channel.basicNack(message.getOrigin().getMessageProperties().getDeliveryTag(), false, true);
             } catch (IOException e) {
                 LOGGER.error("Fail to nack valid message with processing error", e);
@@ -251,22 +252,12 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleInvalidMessage(String tenant, BatchMessage invalidMessage, Channel channel, String details) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("Invalid message for handler %s [%s] : %s", this.getClass().getName(),
-                                            details, invalidMessage.toString());
+        String errorMessage = String.format("[%s] For handler %s [%s] : %s", INVALID_MESSAGE_TITLE,
+                                            batchHandler.getClass().getName(), details, invalidMessage.toString());
         LOGGER.error(errorMessage);
 
-        // Notify admin
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
-        NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
-                "Message unwrapping failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));
-
-        try {
-            // Route notification to the right tenant
-            runtimeTenantResolver.forceTenant(tenant);
-            publisher.publish(event);
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+        // Send notification
+        sendNotification(tenant, INVALID_MESSAGE_TITLE, errorMessage);
 
         // Route to DLQ
         try {
@@ -278,15 +269,13 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleWrapperError(Message message, Channel channel) {
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("Message wrapping error while preparing message for handler %s : %s",
-                                            this.getClass().getName(), message.toString());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s",
+                                            UNWRAPPING_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            message.toString());
         LOGGER.error(errorMessage);
 
-        // Notify instance
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-        NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(errorMessage,
-                "Message unwrapping failure", NotificationLevel.ERROR, microserviceName).toRoles(roles));
-        instancePublisher.publish(event);
+        // Send notification
+        sendNotification(null, UNWRAPPING_FAILURE_TITLE, errorMessage);
 
         // Route to DLQ
         try {
@@ -298,31 +287,19 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     private void handleConversionError(Message message, Channel channel, MessageConversionException ex) {
         // Message cannot be converted
-        String errorMessage = String.format("Message conversion error while preparing message for handler %s : %s (%s)",
-                                            this.getClass().getName(), message.toString(), ex.getMessage());
+        String errorMessage = String.format("[%s] While preparing message for handler %s : %s (%s)",
+                                            CONVERSION_FAILURE_TITLE, batchHandler.getClass().getName(),
+                                            message.toString(), ex.getMessage());
         LOGGER.error(errorMessage, ex);
 
-        // Prepare notification
-        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, "Message conversion failure",
-                NotificationLevel.ERROR, microserviceName);
-
+        // Send notification
         if (RabbitVersion.isVersion1_1(message)) {
-            // Notify ADMIN
-            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
-            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
             String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
-            try {
-                // Route notification to the right tenant
-                runtimeTenantResolver.forceTenant(tenant);
-                publisher.publish(event);
-            } finally {
-                runtimeTenantResolver.clearTenant();
+            if (!batchHandler.handleConversionError(tenant, message, errorMessage)) {
+                sendNotification(tenant, CONVERSION_FAILURE_TITLE, errorMessage);
             }
         } else {
-            // Notify instance
-            Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
-            NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
-            instancePublisher.publish(event);
+            sendNotification(null, CONVERSION_FAILURE_TITLE, errorMessage);
         }
 
         // Route to DLQ
@@ -333,7 +310,47 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         }
     }
 
+    /**
+     * Notify project administrators on error or for unknown tenant instance user.
+     * @param tenant current tenant or <code>null</code>
+     * @param title required title
+     * @param errorMessage required error message
+     */
+    private void sendNotification(String tenant, String title, String errorMessage) {
+
+        // Prepare notification
+        NotificationDtoBuilder builder = new NotificationDtoBuilder(errorMessage, title, NotificationLevel.ERROR,
+                microserviceName);
+        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.EXPLOIT.toString()));
+        NotificationEvent event = NotificationEvent.build(builder.toRoles(roles));
+
+        if (tenant != null) {
+            // Notify project
+            try {
+                // Route notification to the right tenant
+                runtimeTenantResolver.forceTenant(tenant);
+                publisher.publish(event);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        } else {
+            // Notify instance
+            instancePublisher.publish(event);
+        }
+
+    }
+
+    private void setDefaultHeaders(Message message) {
+        Gson2JsonMessageConverter.setDefaultHeaders(message, batchHandler);
+    }
+
     private BatchMessage buildBatchMessage(Message origin, Object converted) {
+
+        // Propagate message properties if required
+        if (IMessagePropertiesAware.class.isAssignableFrom(converted.getClass())) {
+            ((IMessagePropertiesAware) converted).setMessageProperties(origin.getMessageProperties());
+        }
+
         BatchMessage message = new BatchMessage();
         message.setOrigin(origin);
         message.setConverted(converted);

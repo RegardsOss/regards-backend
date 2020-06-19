@@ -21,6 +21,9 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
@@ -72,6 +75,11 @@ public interface IJobInfoService {
      * @return all jobs
      */
     List<JobInfo> retrieveJobs();
+
+    /**
+     * @return all jobs
+     */
+    Page<JobInfo> retrieveJobs(String className, Pageable page, JobStatus... statuses);
 
     /**
      * Retrieve all jobs with given state
