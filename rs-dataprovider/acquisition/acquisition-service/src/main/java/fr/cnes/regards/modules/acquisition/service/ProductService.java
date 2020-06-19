@@ -70,6 +70,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.DeleteProductsJob;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.session.SessionChangingStateProbe;
@@ -132,6 +133,12 @@ public class ProductService implements IProductService {
                      product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
+    }
+
+    @Override
+    public void save(Collection<Product> products) {
+        LOGGER.trace("Saving {} products", products.size());
+        products.stream().forEach(this::save);
     }
 
     @Override
@@ -205,32 +212,33 @@ public class ProductService implements IProductService {
 
     @Override
     public long deleteBySession(AcquisitionProcessingChain chain, String session) {
-        Pageable page = PageRequest.of(0, 500);
+        Pageable page = PageRequest.of(0, 10_000);
         Page<Product> results;
         do {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
-            List<Product> products = results.getContent();
-            for (Product product : products) {
-                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
-            }
-            productRepository.deleteAll(products);
+            self.deleteProducts(chain, results.getContent());
         } while (results.hasNext());
         return results.getTotalElements();
     }
 
     @Override
     public long deleteByProcessingChain(AcquisitionProcessingChain chain) {
-        Pageable page = PageRequest.of(0, 500);
+        Pageable page = PageRequest.of(0, 10_000);
         Page<Product> results;
         do {
             results = productRepository.findByProcessingChain(chain, page);
-            List<Product> products = results.getContent();
-            for (Product product : products) {
-                sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
-            }
-            productRepository.deleteAll(products);
+            self.deleteProducts(chain, results.getContent());
+
         } while (results.hasNext());
         return results.getTotalElements();
+    }
+
+    @Override
+    public void deleteProducts(AcquisitionProcessingChain chain, Collection<Product> products) {
+        for (Product product : products) {
+            sessionNotifier.notifyProductDeleted(chain.getLabel(), product);
+        }
+        productRepository.deleteAll(products);
     }
 
     @Override
@@ -790,6 +798,19 @@ public class ProductService implements IProductService {
         for (Product product : errors) {
             save(product);
         }
+    }
+
+    @Override
+    public JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain, Optional<String> session,
+            boolean deleteChain) {
+        JobInfo jobInfo = new JobInfo(true);
+        jobInfo.setPriority(AcquisitionJobPriority.DELETION_JOB.getPriority());
+        jobInfo.setParameters(DeleteProductsJob.getParameters(chain.getId(), session, deleteChain));
+        jobInfo.setClassName(DeleteProductsJob.class.getName());
+        jobInfo.setOwner(authResolver.getUser());
+        jobInfo = jobInfoService.createAsPending(jobInfo);
+        return jobInfo;
+
     }
 
 }

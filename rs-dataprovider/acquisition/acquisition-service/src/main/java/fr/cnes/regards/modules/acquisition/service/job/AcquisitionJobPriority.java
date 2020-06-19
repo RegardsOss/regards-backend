@@ -64,6 +64,13 @@ public enum AcquisitionJobPriority {
         public int getPriority() {
             return 0;
         }
+    },
+    DELETION_JOB {
+
+        @Override
+        public int getPriority() {
+            return 100;
+        }
     };
 
     public abstract int getPriority();

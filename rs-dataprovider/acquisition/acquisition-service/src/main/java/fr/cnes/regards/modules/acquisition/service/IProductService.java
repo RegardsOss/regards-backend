@@ -50,6 +50,8 @@ public interface IProductService {
 
     Product save(Product product);
 
+    void save(Collection<Product> products);
+
     /**
      * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
      */
@@ -90,6 +92,8 @@ public interface IProductService {
      */
     void delete(AcquisitionProcessingChain chain, Product product);
 
+    void deleteProducts(AcquisitionProcessingChain chain, Collection<Product> products);
+
     /**
      * Delete products
      * @param chain
@@ -104,6 +108,9 @@ public interface IProductService {
      * @return number of deleted products
      */
     long deleteByProcessingChain(AcquisitionProcessingChain chain);
+
+    JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain, Optional<String> session,
+            boolean deleteChain);
 
     /**
      * @return page of products related to specified

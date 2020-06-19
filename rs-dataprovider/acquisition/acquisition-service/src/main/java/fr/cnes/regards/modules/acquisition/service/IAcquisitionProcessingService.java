@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -116,6 +118,19 @@ public interface IAcquisitionProcessingService {
     void deleteChain(Long id) throws ModuleException;
 
     /**
+     * Delete products
+     * @param processingChain
+     * @param products
+     */
+    void deleteProducts(AcquisitionProcessingChain processingChain, Collection<Product> products);
+
+    /**
+     * Check if a {@link AcquisitionProcessingChain} deletion is pending
+     * @return boolean
+     */
+    public boolean isDeletionPending(AcquisitionProcessingChain chain);
+
+    /**
      * Lock processing chain
      * @param id {@link AcquisitionProcessingChain} identifier
      */
@@ -167,19 +182,24 @@ public interface IAcquisitionProcessingService {
     AcquisitionProcessingChain stopAndCleanChain(Long processingChainId) throws ModuleException;
 
     /**
-     * Delete all products of the given processing chain and session
-     * @param processingChainLabel
-     * @param session
-     * @throws ModuleException
+     * Schedule a deletion job for the given parameters.
+     * @param processingChainLabel chain label to delete products
+     * @param session Optional Session name to delete
+     * @param deleteChain True to delete the {@link AcquisitionProcessingChain} after products deletion.
+     * @throws ModuleException if error occurs!
      */
-    void deleteSessionProducts(String processingChainLabel, String session) throws ModuleException;
+    void scheduleProductDeletion(String processingChainLabel, Optional<String> session, boolean deleteChain)
+            throws ModuleException;
 
     /**
-     * Delete all products of the given processing chain
-     * @param processingChainLabel
-     * @throws ModuleException
+     * Schedule a deletion job for the given parameters.
+     * @param processingChainId chain id to delete products
+     * @param session Optional Session name to delete
+     * @param deleteChain True to delete the {@link AcquisitionProcessingChain} after products deletion.
+     * @throws ModuleException if error occurs!
      */
-    void deleteProducts(String processingChainLabel) throws ModuleException;
+    void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
+            throws ModuleException;
 
     /**
      * Scan and register detected files for specified {@link AcquisitionProcessingChain}
