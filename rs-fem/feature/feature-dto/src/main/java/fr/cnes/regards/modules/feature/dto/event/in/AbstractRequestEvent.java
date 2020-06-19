@@ -25,11 +25,10 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.amqp.core.MessageProperties;
 
-import com.google.gson.annotations.Expose;
-
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
  * Message headers
@@ -38,8 +37,8 @@ import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
  */
 public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
 
-    // Prevent GSON converter from serializing or deserializing this field
-    @Expose(serialize = false, deserialize = false)
+    // Prevent GSON converter from serializing this field
+    @GsonIgnore
     @NotNull(message = "Message properties is required")
     protected MessageProperties messageProperties;
 
