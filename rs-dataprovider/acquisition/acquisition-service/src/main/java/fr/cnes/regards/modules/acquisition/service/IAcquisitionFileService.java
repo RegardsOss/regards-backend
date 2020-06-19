@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -43,21 +44,28 @@ public interface IAcquisitionFileService {
      * @param states {@link AcquisitionFileState}s
      * @return number of matching {@link AcquisitionFile}s
      */
-     long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> states);
+    long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> states);
 
     /**
      * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain}
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of matching {@link AcquisitionFile}s
      */
-     long countByChain(AcquisitionProcessingChain chain);
+    long countByChain(AcquisitionProcessingChain chain);
 
     /**
      * Save or update given {@link AcquisitionFile}
      * @param file {@link AcquisitionFile}
      * @return saved or updated {@link AcquisitionFile}
      */
-     AcquisitionFile save(AcquisitionFile file);
+    AcquisitionFile save(AcquisitionFile file);
+
+    /**
+     * Save or update given {@link AcquisitionFile}s
+     * @param files {@link AcquisitionFile}s
+     * @return
+     */
+    List<AcquisitionFile> save(Collection<AcquisitionFile> files);
 
     /**
      * Search for {@link AcquisitionFile} entities matching parameters
@@ -69,7 +77,7 @@ public interface IAcquisitionFileService {
      * @param pageable
      * @return {@link AcquisitionFile}s
      */
-     Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
+    Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
             OffsetDateTime from, Pageable pageable);
 
 }
