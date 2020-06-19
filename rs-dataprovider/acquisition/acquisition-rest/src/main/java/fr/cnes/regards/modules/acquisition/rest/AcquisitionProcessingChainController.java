@@ -177,7 +177,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_PATH)
     @ResourceAccess(description = "Delete a chain", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable Long chainId) throws ModuleException {
-        processingService.deleteChain(chainId);
+        processingService.scheduleProductDeletion(chainId, Optional.empty(), true);
         return ResponseEntity.noContent().build();
     }
 
@@ -207,11 +207,7 @@ public class AcquisitionProcessingChainController implements IResourceController
     @ResourceAccess(description = "Delete products for a given acquisition chain", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> deleteProducts(@PathVariable String chainName,
             @RequestParam(name = "session", required = false) String session) throws ModuleException {
-        if (session != null) {
-            processingService.deleteSessionProducts(chainName, session);
-        } else {
-            processingService.deleteProducts(chainName);
-        }
+        processingService.scheduleProductDeletion(chainName, Optional.ofNullable(session), false);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
@@ -223,24 +219,26 @@ public class AcquisitionProcessingChainController implements IResourceController
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "get", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, element.getId()),
-                                MethodParamFactory.build(AcquisitionProcessingChain.class));
-        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
-                && element.isActive()) {
-            resourceService.addLink(resource, this.getClass(), "startManualChain", LinkRelation.of("start"),
+        if (!processingService.isDeletionPending(element)) {
+            resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, element.getId()),
-                                    MethodParamFactory.build(Optional.class));
-        }
-        if (!element.isActive()) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                                    MethodParamFactory.build(AcquisitionProcessingChain.class));
+            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
+                    && element.isActive()) {
+                resourceService.addLink(resource, this.getClass(), "startManualChain", LinkRelation.of("start"),
+                                        MethodParamFactory.build(Long.class, element.getId()),
+                                        MethodParamFactory.build(Optional.class));
+            }
+            if (!element.isActive()) {
+                resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                                        MethodParamFactory.build(Long.class, element.getId()));
+            }
+            resourceService.addLink(resource, this.getClass(), "stopChain", LinkRelation.of("stop"),
                                     MethodParamFactory.build(Long.class, element.getId()));
+            resourceService.addLink(resource, this.getClass(), "updateStateAndMode", LinkRelation.of("patch"),
+                                    MethodParamFactory.build(Long.class, element.getId()),
+                                    MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
-        resourceService.addLink(resource, this.getClass(), "stopChain", LinkRelation.of("stop"),
-                                MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateStateAndMode", LinkRelation.of("patch"),
-                                MethodParamFactory.build(Long.class, element.getId()),
-                                MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         return resource;
     }
 }
