@@ -72,6 +72,11 @@ public class NotificationConfigurationService {
         if (configurations != null) {
             for (PluginConfiguration conf : configurations) {
                 PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(conf.getPluginId());
+                if (pluginMeta == null) {
+                    String errorMessage = String.format("Unknown plugin id %s", conf.getPluginId());
+                    LOGGER.error(errorMessage);
+                    throw new ModuleException(errorMessage);
+                }
                 if (pluginMeta.getInterfaceNames().contains(ruleClass.getName())) {
                     // Manage rules
                     createOrUpdate(rulePluginConfs, conf);

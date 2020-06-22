@@ -25,6 +25,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
@@ -63,6 +64,17 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         }
 
         // Import same configuration resetting existing import configuration without conflict
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+    }
+
+    @Test
+    public void importUnknownPLuginIdConfiguration() {
+        Path filePath = Paths.get("src", "test", "resources", "rs-notifier-unknown-pluginid.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
+
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }

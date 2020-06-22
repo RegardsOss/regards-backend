@@ -1,0 +1,56 @@
+{
+  "microservice": "rs-notifier",
+  "modules": [
+    {
+      "module": {
+        "id": "notifier",
+        "name": "Notifier module",
+        "description": "Notification reception and dissemination",
+        "version": "1.1.0",
+        "author": "REGARDS",
+        "legalOwner": "CNES",
+        "documentation": "https://github.com/RegardsOss"
+      },
+      "resetBeforeImport":true,
+      "configuration": [
+        {
+          "key": "fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration",
+          "value": {
+            "pluginId":"RabbitMQSend",
+            "label":"RabbitMQ Sender",
+            "businessId":"RabbitMQSender",
+            "version":"1.0.0",
+            "priorityOrder":0,
+            "active":true,
+            "parameters":[
+              {"name":"exchange", "type":"STRING", "value":"regards.geode-validation"},
+              {"name":"queueName", "type":"STRING", "value":"regards.geode-validation"}
+            ]
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration",
+          "value": {
+            "pluginId":"DefaultRuleMatcher",
+            "label":"Rule by type",
+            "businessId":"RuleByType",
+            "version":"1.0.0",
+            "priorityOrder":0,
+            "active":false,
+            "parameters":[
+              {"name":"attributeValueToSeek", "type":"STRING", "value":"L0A_LR_Packet"},
+              {"name":"attributeToSeek", "type":"STRING", "value":"type"}
+            ]
+          }
+        },
+        {
+          "key": "fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation",
+          "value": {
+            "ruleId": "RuleByType",
+            "recipientIds" : ["RabbitMQSender"]
+          }
+        }
+      ]
+    }
+  ]
+}
