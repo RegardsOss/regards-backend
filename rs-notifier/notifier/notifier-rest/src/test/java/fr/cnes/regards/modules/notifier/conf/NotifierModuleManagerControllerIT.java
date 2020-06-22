@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notifier_it" })
+//        locations = { "classpath:regards_local.properties" })
 public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
@@ -73,7 +74,18 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         Path filePath = Paths.get("src", "test", "resources", "rs-notifier-unknown-pluginid.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.CONFLICT);
+
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+    }
+
+    @Test
+    public void importInvalidConfiguration() {
+        Path filePath = Paths.get("src", "test", "resources", "rs-notifier-invalid.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.CONFLICT);
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");

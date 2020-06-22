@@ -37,6 +37,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleImportReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -86,6 +87,15 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
         }
 
         return errors;
+    }
+
+    @Override
+    public ModuleImportReport importConfigurationAndLog(ModuleConfiguration configuration) {
+        Set<String> importErrors = importConfiguration(configuration);
+        for (String importError : importErrors) {
+            LOGGER.warn(importError);
+        }
+        return new ModuleImportReport(info, importErrors, !importErrors.isEmpty());
     }
 
     @Override
