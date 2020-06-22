@@ -20,12 +20,12 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.amqp.AmqpHealthIndicator;
+import fr.cnes.regards.framework.amqp.IPublisher;
 
 /**
  * Adapted Rabbit Health indicator
@@ -38,16 +38,13 @@ import fr.cnes.regards.framework.amqp.AmqpHealthIndicator;
 @Configuration
 public class AmqpHealthIndicatorAutoConfiguration {
 
-    /**
-     * bean providing properties from the configuration file
-     */
     @Autowired
-    private RabbitProperties rabbitProperties;
+    private IPublisher publisher;
 
     // Override RabbitMQ health indicator
     @Bean(name = "rabbitHealthIndicator")
     @ConditionalOnMissingBean(name = "rabbitHealthIndicator")
     public HealthIndicator rabbitHealthIndicator() {
-        return new AmqpHealthIndicator(rabbitProperties);
+        return new AmqpHealthIndicator(publisher);
     }
 }

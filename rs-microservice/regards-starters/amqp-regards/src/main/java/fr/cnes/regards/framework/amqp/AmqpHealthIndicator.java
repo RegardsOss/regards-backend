@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 
 /**
  * AMQP Health indicator
@@ -30,15 +29,14 @@ import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
  */
 public class AmqpHealthIndicator extends AbstractHealthIndicator {
 
-    private final RabbitProperties rabbitProperties;
+    private final IPublisher publisher;
 
-    public AmqpHealthIndicator(RabbitProperties rabbitProperties) {
-        this.rabbitProperties = rabbitProperties;
+    public AmqpHealthIndicator(IPublisher publisher) {
+        this.publisher = publisher;
     }
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
-        builder.up().withDetail("addresses", rabbitProperties.determineAddresses());
+        publisher.health(builder);
     }
-
 }

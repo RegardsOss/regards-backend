@@ -37,6 +37,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -96,6 +97,28 @@ public abstract class AbstractPublisher implements IPublisherContract {
         this.rabbitAdmin = rabbitAdmin;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
+    }
+
+    @Override
+    public void health(Builder builder) {
+        LOGGER.debug("Multitenant health check");
+
+        String tenant = resolveTenant();
+        if (tenant == null) {
+            builder.down().withDetail("tenant", "Unknown tenant").build();
+            return;
+        }
+
+        try {
+            // Bind the connection to the right vhost
+            rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+
+            String version = rabbitTemplate
+                    .execute((channel) -> channel.getConnection().getServerProperties().get("version").toString());
+            builder.up().withDetail("version", version).build();
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
     }
 
     @Override
