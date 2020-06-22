@@ -83,6 +83,11 @@ public class NotificationController implements IResourceController<Notification>
     public static final String NOTIFICATION_READ_ALL_PATH = "/all/read";
 
     /**
+     * Controller path to delete read notifications
+     */
+    public static final String NOTIFICATION_DELETE_PATH = "/read/delete";
+
+    /**
      * Controller path using notification id as path variable
      */
     public static final String NOTIFICATION_UNREAD_PATH = NOTIFICATION_ID_PATH + "/unread";
@@ -225,6 +230,16 @@ public class NotificationController implements IResourceController<Notification>
     public ResponseEntity<Void> markAllNotificationAsUnread() {
         notificationService.markAllNotificationAs(NotificationStatus.UNREAD);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Endpoint to delete read notifications
+     */
+    @RequestMapping(value = NOTIFICATION_DELETE_PATH, method = RequestMethod.DELETE)
+    @ResourceAccess(description = "Endpoint to delete read notifications")
+    public ResponseEntity<Void> deleteNotification() {
+        notificationService.deleteReadNotifications();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
