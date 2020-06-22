@@ -562,7 +562,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         for (AcquisitionProcessingChain processingChain : processingChains) {
             // Check periodicity
-            if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
+            if (isDeletionPending(processingChain)) {
+                LOGGER.debug("Acquisition processing chain \"{}\" won't start due to deletion pending",
+                             processingChain.getLabel());
+            } else if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" won't start due to periodicity",
                              processingChain.getLabel());
             } else if (processingChain.isLocked()) {
