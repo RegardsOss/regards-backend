@@ -974,7 +974,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new RsRuntimeException(e);
         }
 
-        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
+        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain,
+                isDeletionPending(chain));
 
         // Handle job summary
         summary.setActive((chain.getLastProductAcquisitionJobInfo() != null)
@@ -991,10 +992,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throws ModuleException {
         List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
         for (AcquisitionProcessingChain chain : chains) {
-            if (!chain.isLocked()) {
+            if (!chain.isLocked() && !chain.isActive() && !isDeletionPending(chain)) {
                 productService.scheduleProductsDeletionJob(chain, session, deleteChain);
             } else {
-                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+                throw new EntityOperationForbiddenException(
+                        "Acquisition chain is locked or running. Deletion is not available right now.");
             }
         }
     }
@@ -1003,8 +1005,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
             throws ModuleException {
         AcquisitionProcessingChain chain = getChain(processingChainId);
-        if (isDeletionPending(chain)) {
-            throw new EntityOperationForbiddenException("Chain product deletion forbidden as a deletion is pending");
+        if (!chain.isLocked() && !chain.isActive() && !isDeletionPending(chain)) {
+            throw new EntityOperationForbiddenException(
+                    "Acquisition chain is locked or running. Deletion is not available right now.");
         }
         productService.scheduleProductsDeletionJob(chain, session, deleteChain);
     }
