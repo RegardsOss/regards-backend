@@ -80,7 +80,7 @@ public class AmqpClientApplication implements ApplicationRunner {
     public static void main(String[] args) {
         LOGGER.info("Starting AMQP client");
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder().bannerMode(Mode.OFF)
-                .web(WebApplicationType.NONE).sources(AmqpClientApplication.class).run(args);
+                .web(WebApplicationType.NONE).sources(AmqpClientApplication.class).profiles("nohandler").run(args);
         int exitCode = SpringApplication.exit(ctx, () -> 0);
         LOGGER.info("AMQP client exits with code {}", exitCode);
         System.exit(exitCode);
