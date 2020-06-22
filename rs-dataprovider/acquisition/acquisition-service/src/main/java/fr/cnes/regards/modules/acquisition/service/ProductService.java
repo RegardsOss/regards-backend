@@ -808,7 +808,7 @@ public class ProductService implements IProductService {
         jobInfo.setParameters(DeleteProductsJob.getParameters(chain.getId(), session, deleteChain));
         jobInfo.setClassName(DeleteProductsJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
-        jobInfo = jobInfoService.createAsPending(jobInfo);
+        jobInfo = jobInfoService.createAsQueued(jobInfo);
         return jobInfo;
 
     }

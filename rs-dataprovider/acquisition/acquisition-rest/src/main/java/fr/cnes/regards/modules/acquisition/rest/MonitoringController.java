@@ -89,7 +89,7 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
             Object... pExtras) {
         EntityModel<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
-        if ((element != null) && (element.getChain() != null)) {
+        if ((element != null) && (element.getChain() != null) && !service.isDeletionPending(element.getChain())) {
             if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
                     && !element.getChain().isLocked() && element.getChain().isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",

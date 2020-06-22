@@ -289,6 +289,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
         }
 
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Update chain forbidden as a deletion is pending");
+        }
+
         // Check mode
         checkProcessingChainMode(processingChain);
 
@@ -364,6 +368,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         AcquisitionProcessingChain chain = getChain(chainId);
+
+        if (isDeletionPending(chain)) {
+            throw new EntityOperationForbiddenException("update chain state forbidden as a deletion is pending");
+        }
         switch (payload.getUpdateType()) {
             case ALL:
                 chain.setActive(payload.getActive());
@@ -579,6 +587,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                            processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
+        }
+
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Start chain forbidden as a deletion is pending");
         }
 
         if (processingChain.isLocked()) {
@@ -990,7 +1002,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
             throws ModuleException {
-        productService.scheduleProductsDeletionJob(getChain(processingChainId), session, deleteChain);
+        AcquisitionProcessingChain chain = getChain(processingChainId);
+        if (isDeletionPending(chain)) {
+            throw new EntityOperationForbiddenException("Chain product deletion forbidden as a deletion is pending");
+        }
+        productService.scheduleProductsDeletionJob(chain, session, deleteChain);
     }
 
     @Override
