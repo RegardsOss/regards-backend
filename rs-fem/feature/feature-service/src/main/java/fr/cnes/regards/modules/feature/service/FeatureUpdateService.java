@@ -214,7 +214,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         long scheduleStart = System.currentTimeMillis();
         List<LightFeatureUpdateRequest> requestsToSchedule = this.lightFeatureUpdateRequestRepo
-                .findRequestsToSchedule(OffsetDateTime.now(), PageRequest.of(0, this.properties.getMaxBulkSize()),
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
+                                        PageRequest.of(0, this.properties.getMaxBulkSize()),
                                         OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing()));
 
         if (!requestsToSchedule.isEmpty()) {
