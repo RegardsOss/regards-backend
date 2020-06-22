@@ -995,11 +995,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throws ModuleException {
         List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
         for (AcquisitionProcessingChain chain : chains) {
-            if (!chain.isLocked() && !chain.isActive() && !isDeletionPending(chain)) {
-                productService.scheduleProductsDeletionJob(chain, session, deleteChain);
-            } else {
+            if (chain.isLocked() || chain.isActive() || isDeletionPending(chain)) {
                 throw new EntityOperationForbiddenException(
                         "Acquisition chain is locked or running. Deletion is not available right now.");
+            } else {
+                productService.scheduleProductsDeletionJob(chain, session, deleteChain);
             }
         }
     }
@@ -1008,7 +1008,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
             throws ModuleException {
         AcquisitionProcessingChain chain = getChain(processingChainId);
-        if (!chain.isLocked() && !chain.isActive() && !isDeletionPending(chain)) {
+        if (chain.isLocked() || chain.isActive() || isDeletionPending(chain)) {
             throw new EntityOperationForbiddenException(
                     "Acquisition chain is locked or running. Deletion is not available right now.");
         }
