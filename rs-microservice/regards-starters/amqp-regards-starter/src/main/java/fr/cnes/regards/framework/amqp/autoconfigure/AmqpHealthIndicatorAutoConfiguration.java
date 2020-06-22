@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,6 +37,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
  *
  */
 @Configuration
+@ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 public class AmqpHealthIndicatorAutoConfiguration {
 
     @Autowired
