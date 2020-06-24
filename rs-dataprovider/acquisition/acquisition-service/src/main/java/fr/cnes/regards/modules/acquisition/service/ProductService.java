@@ -217,7 +217,7 @@ public class ProductService implements IProductService {
         do {
             results = productRepository.findByProcessingChainAndSession(chain, session, page);
             self.deleteProducts(chain, results.getContent());
-        } while (results.hasNext());
+        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
         return results.getTotalElements();
     }
 
@@ -229,7 +229,7 @@ public class ProductService implements IProductService {
             results = productRepository.findByProcessingChain(chain, page);
             self.deleteProducts(chain, results.getContent());
 
-        } while (results.hasNext());
+        } while (results.hasNext() && !Thread.currentThread().isInterrupted());
         return results.getTotalElements();
     }
 
