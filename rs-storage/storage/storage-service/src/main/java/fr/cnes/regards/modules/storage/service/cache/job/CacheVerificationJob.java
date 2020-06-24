@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.storage.service.cache.job;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -40,8 +38,6 @@ import fr.cnes.regards.modules.storage.service.cache.CacheService;
  */
 public class CacheVerificationJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CacheVerificationJob.class);
-
     @Autowired
     private CacheService cacheService;
 
@@ -50,7 +46,7 @@ public class CacheVerificationJob extends AbstractJob<Void> {
         try {
             cacheService.checkDiskDBCoherence();
         } catch (IOException e) {
-            LOGGER.error("Error during cache coherence verification. Cause : {}", e.getMessage());
+            logger.error("Error during cache coherence verification. Cause : {}", e.getMessage());
             throw new JobRuntimeException(e.getMessage(), e);
         }
     }
