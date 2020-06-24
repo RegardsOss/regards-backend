@@ -26,5 +26,6 @@ public enum FeatureManagementAction {
     CREATED,
     UPDATED,
     DELETED,
+    ALREADY_DELETED,
     NOTIFIED;
 }

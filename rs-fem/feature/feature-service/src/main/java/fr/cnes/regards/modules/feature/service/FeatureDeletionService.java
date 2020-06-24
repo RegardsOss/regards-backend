@@ -48,17 +48,20 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
@@ -244,16 +247,37 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted) {
-        this.deletionRepo
-                .deleteByIdIn(requestsAlreadyDeleted.stream().map(fdr -> fdr.getId()).collect(Collectors.toSet()));
-        Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
-        for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
-            // Monitoring log
-            FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
-            // Send feedback
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, fdr.getRequestId(),
-                                                        fdr.getRequestOwner(), null, fdr.getUrn(), RequestState.SUCCESS,
-                                                        errors));
+
+        if (!requestsAlreadyDeleted.isEmpty()) {
+            this.deletionRepo
+                    .deleteByIdIn(requestsAlreadyDeleted.stream().map(fdr -> fdr.getId()).collect(Collectors.toSet()));
+
+            // PROPAGATE to NOTIFIER
+            String empty = "unknown";
+            List<NotificationActionEvent> notifs = new ArrayList<>();
+            for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
+                // Build fake incomplete feature
+                Feature fakeFeature = Feature.build(empty, empty, fdr.getUrn(), IGeometry.unlocated(), EntityType.DATA,
+                                                    empty);
+                notifs.add(NotificationActionEvent.build(gson.toJsonTree(fakeFeature),
+                                                         FeatureManagementAction.ALREADY_DELETED.name()));
+            }
+            publisher.publish(notifs);
+
+            // PROPAGATE to CATALOG
+            requestsAlreadyDeleted
+                    .forEach(r -> publisher.publish(FeatureEvent.buildFeatureDeleted(r.getUrn().toString())));
+
+            // Feedbacks for already deleted features
+            Set<String> errors = Sets.newHashSet("Feature already deleted. Skipping silently!");
+            for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
+                // Monitoring log
+                FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                // Send feedback
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, fdr.getRequestId(),
+                                                            fdr.getRequestOwner(), null, fdr.getUrn(),
+                                                            RequestState.SUCCESS, errors));
+            }
         }
     }
 
