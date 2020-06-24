@@ -131,7 +131,7 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
                 || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh();
-            LOGGER.info("[STORAGE CONFIGURATION] Plugin configuration list refreshed !");
+            LOGGER.trace("[STORAGE CONFIGURATION] Plugin configuration list refreshed !");
         }
         return this.storages.get(runtimeTenantResolver.getTenant());
     }

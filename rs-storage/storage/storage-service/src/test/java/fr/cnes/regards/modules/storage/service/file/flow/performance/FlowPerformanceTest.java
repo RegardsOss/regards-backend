@@ -115,7 +115,7 @@ public class FlowPerformanceTest extends AbstractStorageTest {
         if (fileRefRepo.count() == 0) {
             // Insert many refs
             Set<FileReference> toSave = Sets.newHashSet();
-            for (Long i = 0L; i < 100_000; i++) {
+            for (Long i = 0L; i < 1_000_000; i++) {
                 FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "UUID",
                         "file_" + i + ".test", i, MediaType.APPLICATION_OCTET_STREAM);
                 FileLocation location = new FileLocation("storage_" + i, "storage://plop/file");
@@ -163,16 +163,16 @@ public class FlowPerformanceTest extends AbstractStorageTest {
             String checksum = UUID.randomUUID().toString();
             String checksum2 = UUID.randomUUID().toString();
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, checksum2, "MD5",
+            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
                                                        "file://storage/location/quicklook1"));
-            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, checksum2, "MD5",
+            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
                                                        "file://storage/location/quicklook1"));
-            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, checksum2, "MD5",
+            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
                                                        "file://storage/location/quicklook1"));
-            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, checksum2, "MD5",
+            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, UUID.randomUUID().toString(), "MD5",
                                                        "application/octet-stream", 10L, newOwner, refStorage,
                                                        "file://storage/location/quicklook1"));
             // Create a new bus message File reference request

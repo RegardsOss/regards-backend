@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestServ
 public class AvailabilityFlowItemHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<AvailabilityFlowItem> {
 
-    @Value("${regards.storage.availability.items.bulk.size:1000}")
+    @Value("${regards.storage.availability.items.bulk.size:10}")
     private static final int BULK_SIZE = 1000;
 
     @Autowired

@@ -71,7 +71,7 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
-    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
+    private static final String DEFAULT_SCHEDULING_DELAY = "1000";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -138,11 +138,13 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
+                LOGGER.info("--------------- START !!!");
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors
                         .executeWithLock(handleRequestsTask,
                                          new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(120)));
+                LOGGER.info("---------------- DONE !!!");
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

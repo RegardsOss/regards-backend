@@ -52,7 +52,7 @@ public class StorageFlowItemHandler
      * Bulk size limit to handle messages
      * NOTE : Over 100 performance are decreased
      */
-    @Value("${regards.storage.store.items.bulk.size:100}")
+    @Value("${regards.storage.store.items.bulk.size:10}")
     private int BULK_SIZE;
 
     @Autowired
