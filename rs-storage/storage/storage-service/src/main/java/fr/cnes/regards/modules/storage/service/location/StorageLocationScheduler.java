@@ -95,7 +95,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     };
 
     @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.storage.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
+            fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

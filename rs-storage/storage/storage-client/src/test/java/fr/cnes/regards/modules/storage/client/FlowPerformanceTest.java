@@ -18,13 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -61,8 +57,9 @@ import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHa
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true",
-        "regards.storage.schedule.delay:6000000" }, locations = { "classpath:application-local.properties" })
+        "regards.storage.cache.path=target/cache", "regards.amqp.enabled=true", "regards.storage.schedule.delay:1000",
+        "regards.storage.location.schedule.delay:600000", "regards.storage.reference.items.bulk.size:10" },
+        locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
 
@@ -95,21 +92,15 @@ public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
     @Before
     public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        try {
-            if (Files.exists(Paths.get("target/cache"))) {
-                FileUtils.deleteDirectory(Paths.get("target/cache").toFile());
-            }
-            if (Files.exists(Paths.get("target/storage"))) {
-                FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
-            }
-        } catch (IOException e) {
-            Assert.fail(e.getMessage());
-        }
         grpReqInfoRepo.deleteAll();
-        fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
         lockRepo.deleteAll();
 
+        // populate();
+
+    }
+
+    private void populate() {
         // Populate
         if (fileRefRepo.count() == 0) {
             // Insert many refs
@@ -182,7 +173,7 @@ public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
             LOGGER.info(" {} requests sent ....", nbRrequests);
         }
 
-        waitRequestEnds(nbRrequests, 120);
+        waitRequestEnds(nbRrequests, 1200);
         LOGGER.info("{} requests handled in {} ms", nbRrequests, System.currentTimeMillis() - start);
     }
 

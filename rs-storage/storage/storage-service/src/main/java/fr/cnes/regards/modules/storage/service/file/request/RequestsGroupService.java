@@ -218,7 +218,7 @@ public class RequestsGroupService {
                     } else {
                         checkRequestGroupExpired(reqGrp);
                     }
-                } while (it.hasNext());
+                } while (it.hasNext() && (groupDones.size() < maxRequestPerTransaction));
                 response = reqGroupRepository.findAll(response.getPageable().next());
             } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
         }

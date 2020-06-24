@@ -138,13 +138,11 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
-                LOGGER.info("--------------- START !!!");
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors
                         .executeWithLock(handleRequestsTask,
                                          new LockConfiguration(STORAGE_LOCK, Instant.now().plusSeconds(120)));
-                LOGGER.info("---------------- DONE !!!");
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {
