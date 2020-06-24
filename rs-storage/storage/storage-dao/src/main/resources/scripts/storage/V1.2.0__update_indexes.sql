@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_file_reference_storage_checksum;
