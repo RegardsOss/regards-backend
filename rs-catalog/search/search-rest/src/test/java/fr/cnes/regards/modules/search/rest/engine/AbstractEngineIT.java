@@ -191,6 +191,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected PluginConfiguration openSearchPluginConf;
 
+    protected Dataset solarSystem;
+
     protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
@@ -295,7 +297,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));
         indexerService.saveBulkEntities(getDefaultTenant(), createStars(starModel));
 
-        Dataset solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
+        solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
         indexerService.saveEntity(getDefaultTenant(), solarSystem);
         indexerService.saveBulkEntities(getDefaultTenant(), createPlanets(planetModel, solarSystem.getIpId()));
 

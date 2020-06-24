@@ -121,6 +121,14 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchDataset() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY + "/datasets/"
+                + solarSystem.getIpId().toString(), customizer, "Search dataset error", ENGINE_TYPE);
+    }
+
+    @Test
     public void searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
