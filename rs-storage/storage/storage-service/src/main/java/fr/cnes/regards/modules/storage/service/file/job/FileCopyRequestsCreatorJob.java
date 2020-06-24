@@ -27,8 +27,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -62,8 +60,6 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestServi
  * @author Sébastien Binda
  */
 public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileCopyRequestsCreatorJob.class);
 
     public static final String STORAGE_LOCATION_SOURCE_ID = "source";
 
@@ -117,11 +113,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         try {
             locked = fileCopyReqService.lockCopyProcess(true, 300);
             if (!locked) {
-                LOGGER.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
+                logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
                 return;
             }
             long start = System.currentTimeMillis();
-            LOGGER.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
+            logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
                         storageLocationSourceId, storageLocationDestinationId);
             Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
             Page<FileReference> pageResults;
@@ -148,7 +144,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                                                                   desinationFilePath.get().toString()));
                         }
                     } catch (MalformedURLException | ModuleException e) {
-                        LOGGER.error(String
+                        logger.error(String
                                 .format("Unable to handle file reference %s for copy from %s to %s. Cause %s",
                                         fileRef.getLocation().getUrl(), storageLocationSourceId,
                                         storageLocationDestinationId),
@@ -169,7 +165,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             } else {
                 notifClient.notify(message, "Copy files", NotificationLevel.WARNING, DefaultRole.EXPLOIT);
             }
-            LOGGER.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
+            logger.info("[COPY JOB] {} All jobs scheduled in {}ms", message, System.currentTimeMillis() - start);
 
         } finally {
             if (locked) {
