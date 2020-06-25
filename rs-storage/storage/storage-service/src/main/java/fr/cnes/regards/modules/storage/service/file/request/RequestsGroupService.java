@@ -222,15 +222,17 @@ public class RequestsGroupService {
         Page<RequestGroup> response;
         do {
             response = reqGroupRepository.findAllByOrderByCreationDateAsc(page);
-            Iterator<RequestGroup> it = response.getContent().iterator();
-            do {
-                RequestGroup reqGrp = it.next();
-                if (checkRequestsGroupDone(reqGrp)) {
-                    groupDones.add(reqGrp);
-                } else {
-                    checkRequestGroupExpired(reqGrp);
-                }
-            } while (it.hasNext() && (groupDones.size() < maxRequestPerTransaction));
+            if (response.hasContent()) {
+                Iterator<RequestGroup> it = response.getContent().iterator();
+                do {
+                    RequestGroup reqGrp = it.next();
+                    if (checkRequestsGroupDone(reqGrp)) {
+                        groupDones.add(reqGrp);
+                    } else {
+                        checkRequestGroupExpired(reqGrp);
+                    }
+                } while (it.hasNext() && (groupDones.size() < maxRequestPerTransaction));
+            }
             page = response.nextPageable();
         } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
