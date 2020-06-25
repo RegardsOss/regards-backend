@@ -18,25 +18,18 @@
  */
 package fr.cnes.regards.modules.sessionmanager.service.events;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
@@ -46,7 +39,8 @@ import fr.cnes.regards.modules.sessionmanager.service.ISessionService;
  * @author Léo Mieulet
  */
 @Component
-public class SessionNotificationHandler implements IHandler<SessionMonitoringEvent>, ISessionNotificationHandler {
+public class SessionNotificationHandler
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<SessionMonitoringEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SessionNotificationHandler.class);
 
@@ -65,78 +59,33 @@ public class SessionNotificationHandler implements IHandler<SessionMonitoringEve
     @Autowired
     private ISubscriber subscriber;
 
-    private final Map<String, ConcurrentLinkedQueue<SessionMonitoringEvent>> items = new ConcurrentHashMap<>();
-
-    /**
-     * Only add the message in the list of messages handled by bulk in the scheduled method
-     * @param wrapper containing {@link SessionMonitoringEvent} to handle
-     */
     @Override
-    public void handle(TenantWrapper<SessionMonitoringEvent> wrapper) {
-        String tenant = wrapper.getTenant();
-        runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.trace("[EVENT] New SessionMonitoringEvent received -- {}", wrapper.getContent().toString());
-        while ((items.get(tenant) != null) && (items.get(tenant).size() >= (10 * BULK_SIZE))) {
-            // Do not overload the concurrent queue if the configured listener does not handle queued message faster
-            try {
-                LOG.warn("Slow process detected. Waiting 30s for getting new message from amqp queue.");
-                Thread.sleep(30_000);
-            } catch (InterruptedException e) {
-                LOG.error(String
-                        .format("Error waiting for SessionMonitoringEvent handled by microservice. Current events pool to handle = %s",
-                                items.size()),
-                          e);
-            }
-        }
-        SessionMonitoringEvent item = wrapper.getContent();
-        if (!items.containsKey(tenant)) {
-            items.put(tenant, new ConcurrentLinkedQueue<>());
-        }
-        items.get(tenant).add(item);
-    }
-
-    /**
-     * Bulk save queued items every second.
-     */
-    @Scheduled(fixedDelay = 1_000)
-    public void handleQueue() {
-        for (Map.Entry<String, ConcurrentLinkedQueue<SessionMonitoringEvent>> entry : items.entrySet()) {
-            try {
-                runtimeTenantResolver.forceTenant(entry.getKey());
-                ConcurrentLinkedQueue<SessionMonitoringEvent> tenantItems = entry.getValue();
-                List<SessionMonitoringEvent> toDos = new ArrayList<>();
-                do {
-                    // Build a BULK_SIZE (at most) documents bulk request
-                    int i =0;
-                    SessionMonitoringEvent doc = tenantItems.poll();
-                    while(i<BULK_SIZE && doc != null) {
-                        toDos.add(doc);
-                        doc = tenantItems.poll();
-                        i++;
-                    }
-                    // do something only if there is some to do
-                    if (!toDos.isEmpty()) {
-                        LOG.info("[SESSION NOTIFICATIONS HANDLER] Bulk saving {} notifications...", toDos.size());
-                        long start = System.currentTimeMillis();
-                        sessionService.updateSessionProperties(toDos);
-                        LOG.info("[SESSION NOTIFICATIONS HANDLER] {} Notifications handled in {} ms", toDos.size(),
-                                 System.currentTimeMillis() - start);
-                        toDos.clear();
-                    }
-                } while (tenantItems.size() >= BULK_SIZE); // continue while more than BULK_SIZE items are to be saved
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#onApplicationEvent(org.springframework.boot.context.event.ApplicationReadyEvent)
-     */
-    @Override
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        // Subscribe to events on {@link StorageDataFile} changes.
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(SessionMonitoringEvent.class, this);
     }
+
+    @Override
+    public boolean validate(String tenant, SessionMonitoringEvent message) {
+        return true;
+    }
+
+    @Override
+    public void handleBatch(String tenant, List<SessionMonitoringEvent> messages) {
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOG.info("[SESSION NOTIFICATIONS HANDLER] Bulk saving {} notifications...", messages.size());
+            long start = System.currentTimeMillis();
+            sessionService.updateSessionProperties(messages);
+            LOG.info("[SESSION NOTIFICATIONS HANDLER] {} Notifications handled in {} ms", messages.size(),
+                     System.currentTimeMillis() - start);
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    @Override
+    public int getBatchSize() {
+        return BULK_SIZE;
+    }
+
 }
