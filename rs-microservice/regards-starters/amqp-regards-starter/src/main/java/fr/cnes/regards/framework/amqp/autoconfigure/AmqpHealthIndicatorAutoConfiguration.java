@@ -19,7 +19,9 @@
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.amqp.RabbitHealthContributorAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -38,6 +40,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
+@AutoConfigureBefore(RabbitHealthContributorAutoConfiguration.class)
 public class AmqpHealthIndicatorAutoConfiguration {
 
     @Autowired

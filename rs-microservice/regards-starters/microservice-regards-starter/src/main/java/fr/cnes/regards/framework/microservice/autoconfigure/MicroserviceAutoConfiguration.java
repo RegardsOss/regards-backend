@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.microservice.autoconfigure;
 
 import javax.servlet.Filter;
 
+import org.springframework.boot.ExitCodeExceptionMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -92,5 +93,13 @@ public class MicroserviceAutoConfiguration {
     @Bean
     public Filter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
+    }
+
+    @Bean
+    ExitCodeExceptionMapper exitCodeToExceptionMapper() {
+        return exception -> {
+            // Always return 1 on runtime error
+            return 1;
+        };
     }
 }
