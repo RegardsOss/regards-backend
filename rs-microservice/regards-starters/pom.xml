@@ -97,6 +97,7 @@
         <module>notification-regards-starter</module>
         <module>metric-regards-starter</module>
         <module>urn-regards</module>
+        <module>urn-regards-starter</module>
         <module>amqp-regards-client</module>
         <module>json-random-starter</module>
     </modules>
