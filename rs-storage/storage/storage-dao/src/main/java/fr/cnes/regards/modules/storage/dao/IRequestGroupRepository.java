@@ -35,4 +35,6 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
 
     Page<RequestGroup> findByType(FileRequestType type, Pageable page);
 
+    Page<RequestGroup> findAllByOrderByCreationDateAsc(Pageable page);
+
 }
