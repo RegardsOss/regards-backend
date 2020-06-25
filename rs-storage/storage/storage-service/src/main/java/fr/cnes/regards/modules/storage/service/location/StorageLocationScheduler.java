@@ -60,6 +60,8 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_INITIAL_DELAY = "10000";
 
+    private static final String DEFAULT_DELAY = "3600000";
+
     private static final String MONITOR_TITLE = "Monitoring storage location scheduling";
 
     private static final String MONITOR_ACTIONS = "MONITORING STORAGE LOCATION ACTIONS";
@@ -94,8 +96,8 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
         LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
     };
 
-    @Scheduled(initialDelayString = "${regards.storage.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.storage.location.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
