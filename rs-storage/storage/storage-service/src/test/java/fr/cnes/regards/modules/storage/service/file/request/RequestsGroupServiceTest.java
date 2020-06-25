@@ -28,6 +28,8 @@ import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -52,8 +54,10 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  */
 @ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
 public class RequestsGroupServiceTest extends AbstractStorageTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupServiceTest.class);
 
     @Autowired
     private RequestsGroupService reqGrpService;
@@ -71,6 +75,42 @@ public class RequestsGroupServiceTest extends AbstractStorageTest {
     public void initialize() throws ModuleException {
         super.init();
         reqGrpRepository.deleteAll();
+    }
+
+    @Test
+    public void testPerfCheckGrp() {
+        for (int i = 0; i < 2_000; i++) {
+            // Simulate a request ends success
+            String groupId = UUID.randomUUID().toString();
+
+            // Simulate a running request
+            if (i < 10) {
+                storageReqService
+                        .createNewFileStorageRequest(Sets.newHashSet("someone"),
+                                                     new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
+                                                             "plop", 10L, MediaType.APPLICATION_ATOM_XML),
+                                                     groupId, ONLINE_CONF_LABEL, null, groupId, Optional.empty(),
+                                                     Optional.empty());
+            }
+            // Grant a group requests
+            reqGrpService.granted(groupId, FileRequestType.STORAGE, 5, OffsetDateTime.now().plusSeconds(120));
+
+            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            if (i >= 10) {
+                reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
+                                             ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            }
+        }
+        long start = System.currentTimeMillis();
+        reqGrpService.checkRequestsGroupsDone();
+        LOGGER.info("DONE in {} ms", System.currentTimeMillis() - start);
     }
 
     @Test
