@@ -220,15 +220,9 @@ public class RequestsGroupService {
                         checkRequestGroupExpired(reqGrp);
                     }
                 } while (it.hasNext() && (groupDones.size() < maxRequestPerTransaction));
-<<<<<<< HEAD
-                response = reqGroupRepository.findAll(response.getPageable().next());
-            } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
-        }
-=======
             }
             page = response.nextPageable();
         } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
->>>>>>> perf
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (!groupDones.isEmpty()) {
             Set<RequestResultInfo> infos = groupReqInfoRepository
