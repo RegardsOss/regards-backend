@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.microservices.catalog;
 
-import org.springframework.boot.ExitCodeExceptionMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
@@ -44,13 +42,5 @@ public class Application {
      */
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR
-    }
-
-    @Bean
-    ExitCodeExceptionMapper exitCodeToExceptionMapper() {
-        return exception -> {
-            // Always return 1 on runtime error
-            return 1;
-        };
     }
 }
