@@ -85,11 +85,15 @@ public class SearchRequest {
         if ((searchParameters != null) && !searchParameters.isEmpty()) {
             for (Entry<String, List<String>> param : searchParameters.entrySet()) {
                 if (!"facets".equals(param.getKey()) && (param.getValue() != null) && !param.getValue().isEmpty()) {
+<<<<<<< HEAD
                     for (String value : param.getValue()) {
                         if ((value != null) && !value.isEmpty()) {
                             return true;
                         }
                     }
+=======
+                    return true;
+>>>>>>> V1.2.0
                 }
             }
         }
