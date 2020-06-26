@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -92,7 +93,7 @@ public class ServiceHelper implements IServiceHelper {
             LOGGER.error(errorMessage);
             throw new ModuleException(errorMessage);
         }
-        PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage);
+        PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage, Sort.by("ipId"));
         return searchService.search(searchKey, pageReq, crit);
     }
 
