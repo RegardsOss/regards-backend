@@ -22,8 +22,6 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -49,8 +47,6 @@ import fr.cnes.regards.modules.ingest.client.RequestInfo;
  *
  */
 public class PostAcquisitionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
     public static final String EVENT_PARAMETER = "event";
 
@@ -90,8 +86,8 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                                 .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
                         postProcessPlugin.postProcess(product);
                     } catch (NotAvailablePluginConfigurationException e) {
-                        LOGGER.warn("Unable to run postprocess plugin as it is disabled");
-                        LOGGER.warn(e.getMessage(), e);
+                        logger.warn("Unable to run postprocess plugin as it is disabled");
+                        logger.warn(e.getMessage(), e);
                     }
 
                 }
