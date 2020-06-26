@@ -126,6 +126,9 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             if (productsScheduled == 0) {
                 sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
             }
+            if (Thread.currentThread().isInterrupted()) {
+                sessionNotifier.notifyEndingChain(processingChain.getLabel(), session);
+            }
             // Job is terminated ... release processing chain
             processingService.unlockChain(processingChain.getId());
         }
