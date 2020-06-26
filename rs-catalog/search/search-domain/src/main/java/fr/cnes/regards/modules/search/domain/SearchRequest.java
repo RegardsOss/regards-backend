@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.search.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.springframework.util.MultiValueMap;
 
@@ -80,7 +82,14 @@ public class SearchRequest {
     }
 
     public boolean hasSearchParameters() {
-        return (searchParameters != null) && !searchParameters.isEmpty();
+        if ((searchParameters != null) && !searchParameters.isEmpty()) {
+            for (Entry<String, List<String>> param : searchParameters.entrySet()) {
+                if (!"facets".equals(param.getKey()) && (param.getValue() != null) && !param.getValue().isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public MultiValueMap<String, String> getSearchParameters() {
