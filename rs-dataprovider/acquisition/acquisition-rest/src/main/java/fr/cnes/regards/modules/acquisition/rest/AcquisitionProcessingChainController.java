@@ -88,11 +88,11 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String START_MANUAL_CHAIN_PATH = CHAIN_PATH + "/start";
 
-    public static final String RELAUNCH_ERRORS_PATH = "/{chainName}/{session}/relaunch";
+    public static final String RELAUNCH_ERRORS_PATH = "/relaunch";
 
     public static final String STOP_CHAIN_PATH = CHAIN_PATH + "/stop";
 
-    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/{chainName}/products";
+    public static final String CHAIN_SESSION_PRODUCTS_PATH = "/products";
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -197,7 +197,8 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.GET, value = RELAUNCH_ERRORS_PATH)
     @ResourceAccess(description = "Relaunch errors on acquisition chain", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> relaunchErrors(@PathVariable String chainName, @PathVariable String session)
+    public ResponseEntity<Void> relaunchErrors(@RequestParam(name = "chainName") String chainName,
+            @RequestParam(name = "session") String session)
             throws ModuleException {
         processingService.relaunchErrors(chainName, session);
         return new ResponseEntity<Void>(HttpStatus.OK);
@@ -205,7 +206,7 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     @RequestMapping(method = RequestMethod.DELETE, value = CHAIN_SESSION_PRODUCTS_PATH)
     @ResourceAccess(description = "Delete products for a given acquisition chain", role = DefaultRole.ADMIN)
-    public ResponseEntity<Void> deleteProducts(@PathVariable String chainName,
+    public ResponseEntity<Void> deleteProducts(@RequestParam(name = "chainName") String chainName,
             @RequestParam(name = "session", required = false) String session) throws ModuleException {
         processingService.scheduleProductDeletion(chainName, Optional.ofNullable(session), false);
         return new ResponseEntity<Void>(HttpStatus.OK);
