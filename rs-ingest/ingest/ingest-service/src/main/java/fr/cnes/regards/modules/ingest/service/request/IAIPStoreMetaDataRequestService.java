@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -52,8 +53,8 @@ public interface IAIPStoreMetaDataRequestService {
      * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
      * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
      */
-    void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData,
-            boolean computeChecksum);
+    Collection<AIPStoreMetaDataRequest> createRequests(List<AIPEntity> aips, Set<StorageMetadata> storages,
+            boolean removeCurrentMetaData, boolean computeChecksum);
 
     /**
      * Schedule new {@link AIPStoreMetaDataRequest}s associated to given {@link AIPEntity}s
@@ -62,8 +63,8 @@ public interface IAIPStoreMetaDataRequestService {
      * @param removeCurrentMetaData true when a legacy metadata exists and should be removed
      * @param computeChecksum true when the aip does not contains a reliable checksum and should be recomputed
      */
-    void schedule(AIPEntity aip, Set<OAISDataObjectLocation> manifestLocations, boolean removeCurrentMetaData,
-            boolean computeChecksum);
+    AIPStoreMetaDataRequest createRequest(AIPEntity aip, Set<OAISDataObjectLocation> manifestLocations,
+            boolean removeCurrentMetaData, boolean computeChecksum);
 
     /**
      * @param ids a list of request id
@@ -76,7 +77,7 @@ public interface IAIPStoreMetaDataRequestService {
      * @param request {@link AIPStoreMetaDataRequest}
      * @param requestInfo {@link RequestInfo}
      */
-    void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo);
+    void handleSuccess(Collection<AIPStoreMetaDataRequest> requests, RequestInfo requestInfo);
 
     /**
      * Callback when a  {@link AIPStoreMetaDataRequest} is terminated with errors.

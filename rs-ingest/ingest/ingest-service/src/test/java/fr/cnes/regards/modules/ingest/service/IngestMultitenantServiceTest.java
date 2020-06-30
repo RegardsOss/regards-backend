@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+        locations = { "classpath:application-local.properties" })
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());

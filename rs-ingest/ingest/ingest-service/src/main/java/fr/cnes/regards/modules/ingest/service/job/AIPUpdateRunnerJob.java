@@ -31,6 +31,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -42,6 +44,7 @@ import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
@@ -51,6 +54,7 @@ import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPLocation;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
@@ -74,6 +78,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Autowired
     private IAIPStoreMetaDataRequestService aipStoreMetaDataService;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
@@ -113,6 +120,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         long numberOfDeletionRequest = 0L;
         long numberOfStorageScheduled = 0L;
         long numberOfUnmodifiedManifests = 0L;
+        List<AbstractRequest> toSchedule = Lists.newArrayList();
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP
             List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId);
@@ -141,7 +149,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                         logger.trace("[AIP {}] Schedule manifest storage on {} locations.",
                                      aipWrapper.getAip().getAipId(), manifestLocations.size());
                         numberOfStorageScheduled++;
-                        aipStoreMetaDataService.schedule(aipWrapper.getAip(), manifestLocations, true, true);
+                        toSchedule.add(aipStoreMetaDataService.createRequest(aipWrapper.getAip(), manifestLocations,
+                                                                             true, true));
                     } else {
                         logger.trace("[AIP {}] Update tasks executed have not modified the AIP content. Manifest does not need to be updated on storage locations.",
                                      aipWrapper.getAip().getAipId());
@@ -149,6 +158,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     }
                 }
             }
+            requestService.scheduleRequests(toSchedule);
             // update progress
             advanceCompletion();
         }
