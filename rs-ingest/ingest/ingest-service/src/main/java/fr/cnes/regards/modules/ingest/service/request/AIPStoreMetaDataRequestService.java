@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import com.google.common.collect.Table;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -72,9 +74,6 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
 
     @Autowired
     private IStorageClient storageClient;
-
-    @Autowired
-    private IRequestService requestService;
 
     @Override
     public void handle(List<AIPStoreMetaDataRequest> requests, List<AIPEntity> aipsToUpdate,
@@ -122,49 +121,57 @@ public class AIPStoreMetaDataRequestService implements IAIPStoreMetaDataRequestS
     }
 
     @Override
-    public void schedule(List<AIPEntity> aips, Set<StorageMetadata> storages, boolean removeCurrentMetaData,
-            boolean computeChecksum) {
+    public Collection<AIPStoreMetaDataRequest> createRequests(List<AIPEntity> aips, Set<StorageMetadata> storages,
+            boolean removeCurrentMetaData, boolean computeChecksum) {
+        Collection<AIPStoreMetaDataRequest> requests = Sets.newHashSet();
         Set<StoreLocation> storeLocations = aipStorageService.getManifestStoreLocationsByStorageMetadata(storages);
         for (AIPEntity aip : aips) {
-            scheduleRequest(aip, storeLocations, removeCurrentMetaData, computeChecksum);
+            requests.add(create(aip, storeLocations, removeCurrentMetaData, computeChecksum));
         }
+        return requests;
     }
 
     @Override
-    public void schedule(AIPEntity aip, Set<OAISDataObjectLocation> storages, boolean removeCurrentMetaData,
-            boolean computeChecksum) {
+    public AIPStoreMetaDataRequest createRequest(AIPEntity aip, Set<OAISDataObjectLocation> storages,
+            boolean removeCurrentMetaData, boolean computeChecksum) {
         // this method being called from a job, it can be interrupted. to enable the action to be done
         // especially the transaction, we use Thread.interrupted() and not Thread.currentThread().isInterrupted().
         boolean interrupted = Thread.interrupted();
         Set<StoreLocation> manifestStorages = aipStorageService.getManifestStoreLocationsByLocation(storages);
-        scheduleRequest(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
+        AIPStoreMetaDataRequest req = create(aip, manifestStorages, removeCurrentMetaData, computeChecksum);
         // once the work has been done, we reset the interrupt flag if needed.
         if (interrupted) {
             Thread.currentThread().interrupt();
         }
+        return req;
     }
 
-    private void scheduleRequest(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
+    private AIPStoreMetaDataRequest create(AIPEntity aip, Set<StoreLocation> storages, boolean removeCurrentMetaData,
             boolean computeChecksum) {
         sessionNotifier.incrementMetaStorePending(aip);
-        requestService
-                .scheduleRequest(AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum));
+        // FIXME : Handler notification when really scheduled
+        return AIPStoreMetaDataRequest.build(aip, storages, removeCurrentMetaData, computeChecksum);
     }
 
     @Override
-    public void handleSuccess(AIPStoreMetaDataRequest request, RequestInfo requestInfo) {
-        // Update the manifest, save manifest location and update storages list
-        aipStorageService.updateAIPsContentInfosAndLocations(Lists.newArrayList(request.getAip()),
-                                                             requestInfo.getSuccessRequests());
-        // Save the AIP
-        aipService.save(request.getAip());
-        // Monitoring
-        // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
-        sessionNotifier.decrementMetaStorePending(request);
-        sessionNotifier.incrementMetaStoreSuccess(request);
+    public void handleSuccess(Collection<AIPStoreMetaDataRequest> requests, RequestInfo requestInfo) {
+        List<AIPEntity> toSave = Lists.newArrayList();
+        for (AIPStoreMetaDataRequest request : requests) {
+            // Update the manifest, save manifest location and update storages list
+            aipStorageService.updateAIPsContentInfosAndLocations(Lists.newArrayList(request.getAip()),
+                                                                 requestInfo.getSuccessRequests());
+            // Save the AIP
+            toSave.add(request.getAip());
+            // Monitoring
+            // Decrement from IngestRequestService#finalizeSuccessfulRequest (AIP per AIP)
+            sessionNotifier.decrementMetaStorePending(request);
+            sessionNotifier.incrementMetaStoreSuccess(request);
+        }
 
+        // Save aips
+        aipService.saveAll(toSave);
         // Delete the request
-        aipStoreMetaDataRepository.delete(request);
+        aipStoreMetaDataRepository.deleteAll(requests);
     }
 
     @Override

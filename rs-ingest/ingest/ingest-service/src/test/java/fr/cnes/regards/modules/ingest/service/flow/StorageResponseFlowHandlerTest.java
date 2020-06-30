@@ -76,7 +76,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 @ActiveProfiles({ "noschedule" })
 @TestPropertySource(
-        properties = { "spring.jpa.show-sql=false",
+        properties = { "spring.jpa.show-sql=true",
                 "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
         locations = { "classpath:application-test.properties" })
 public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest {
@@ -182,6 +182,23 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         long start = System.currentTimeMillis();
         storageResponseFlowHandler.onStoreSuccess(responses);
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
+        // Check results
+        Assert.assertEquals(0,
+                            requestService
+                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
+                                    .getTotalElements());
+        aipRepo.findAll().forEach(a -> {
+            Assert.assertEquals(AIPState.STORED, a.getState());
+        });
+    }
+
+    @Test
+    public void testReferenceResponsesHandler() throws ModuleException {
+        Set<RequestInfo> responses = initAips(100, false);
+        long start = System.currentTimeMillis();
+        storageResponseFlowHandler.onReferenceSuccess(responses);
+        System.out.printf("Duration : %d ms\n", System.currentTimeMillis() - start);
         // Check results
         Assert.assertEquals(0,
                             requestService

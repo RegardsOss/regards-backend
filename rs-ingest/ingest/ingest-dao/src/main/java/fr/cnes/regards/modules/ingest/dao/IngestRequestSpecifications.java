@@ -18,14 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import java.util.List;
 import java.util.Set;
+
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
+
 import org.springframework.data.jpa.domain.Specification;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
@@ -41,8 +46,19 @@ public final class IngestRequestSpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
+            predicates.add(SpecificationUtils
+                    .buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
+                                                                  Lists.newArrayList(remoteStepGroupId), cb));
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public static Specification<IngestRequest> searchByRemoteStepIds(List<String> remoteStepGroupIds) {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+            Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
             predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
-                    Lists.newArrayList(remoteStepGroupId), cb));
+                                                                                           remoteStepGroupIds, cb));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
