@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -116,6 +118,7 @@ public class OAISDeletionService implements IOAISDeletionService {
     @Override
     public void handleRemoteDeleteSuccess(Set<RequestInfo> requestInfos) {
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
+        List<AbstractRequest> requestsToSchedule = Lists.newArrayList();
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -124,10 +127,11 @@ public class OAISDeletionService implements IOAISDeletionService {
                     OAISDeletionRequest deletionRequest = (OAISDeletionRequest) request;
                     deletionRequest.setRequestFilesDeleted();
                     deletionRequest.clearRemoteStepGroupIds();
-                    requestService.scheduleRequest(deletionRequest);
+                    requestsToSchedule.add(deletionRequest);
                 }
             }
         }
+        requestService.scheduleRequests(requestsToSchedule);
     }
 
     @Override
