@@ -1,0 +1,13 @@
+GET /%index/_search
+{
+  "size": 100,
+  "query": {
+    "match": {
+      "location.city": "Annex"
+    }
+  },
+  "sort": {
+    "probability": "asc"
+  },
+  "search_after": [0.5]
+}

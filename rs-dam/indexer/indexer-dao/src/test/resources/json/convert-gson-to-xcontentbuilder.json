@@ -1,0 +1,1 @@
+{"nullfield":null,"somenum":1,"somestr":"somestr value","somebool":false,"someobj":{"someobj:inner":"someobj:inner value"},"somearr":[1,true,"anything",{"somearr:inner":"somearr:inner value"},[1,2,3]]}
