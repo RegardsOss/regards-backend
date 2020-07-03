@@ -42,6 +42,8 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 public interface IAttributeModelRepository
         extends CrudRepository<AttributeModel, Long>, JpaSpecificationExecutor<AttributeModel> {
 
+    List<AttributeModel> findAll();
+
     @Override
     @EntityGraph(attributePaths = { "properties" })
     Optional<AttributeModel> findById(Long id);

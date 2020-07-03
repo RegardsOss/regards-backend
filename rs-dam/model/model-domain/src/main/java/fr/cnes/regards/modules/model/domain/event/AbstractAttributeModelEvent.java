@@ -21,7 +21,14 @@ package fr.cnes.regards.modules.model.domain.event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * {@link AttributeModel} event common information
@@ -44,19 +51,42 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
     /**
      * {@link PropertyType}
      */
-    private PropertyType PropertyType;
+    private PropertyType propertyType;
+
+    /**
+     * {@link RestrictionType}
+     */
+    private RestrictionType restrictionType;
+
+    /**
+     * Full JSON path
+     */
+    private String fullJsonPath;
+
+    /**
+     * Model attribute properties
+     */
+    private Map<String, String> attributeProperties;
 
     public AbstractAttributeModelEvent() {
+        attributeProperties = new HashMap<>();
     }
 
     public AbstractAttributeModelEvent(AttributeModel pAttributeModel) {
         this.fragmentName = pAttributeModel.getFragment().getName();
         this.attributeName = pAttributeModel.getName();
-        this.PropertyType = pAttributeModel.getType();
+        this.propertyType = pAttributeModel.getType();
+        this.fullJsonPath = pAttributeModel.getFullJsonPath();
+        this.restrictionType = Optional.ofNullable(pAttributeModel.getRestriction())
+                .map(AbstractRestriction::getType)
+                .orElse(RestrictionType.NO_RESTRICTION);
+        this.attributeProperties = pAttributeModel.getProperties()
+                .stream()
+                .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
     }
 
     public PropertyType getPropertyType() {
-        return PropertyType;
+        return propertyType;
     }
 
     public String getAttributeName() {
@@ -65,6 +95,22 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
 
     public String getFragmentName() {
         return fragmentName;
+    }
+
+    public RestrictionType getRestrictionType() {
+        return restrictionType;
+    }
+
+    public void setRestrictionType(RestrictionType restrictionType) {
+        this.restrictionType = restrictionType;
+    }
+
+    public String getFullJsonPath() {
+        return fullJsonPath;
+    }
+
+    public void setFullJsonPath(String fullJsonPath) {
+        this.fullJsonPath = fullJsonPath;
     }
 
     public void setFragmentName(String pFragmentName) {
@@ -76,7 +122,14 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
     }
 
     public void setPropertyType(PropertyType pPropertyType) {
-        PropertyType = pPropertyType;
+        propertyType = pPropertyType;
     }
 
+    public Map<String, String> getAttributeProperties() {
+        return attributeProperties;
+    }
+
+    public void setAttributeProperties(Map<String, String> attributeProperties) {
+        this.attributeProperties = attributeProperties;
+    }
 }

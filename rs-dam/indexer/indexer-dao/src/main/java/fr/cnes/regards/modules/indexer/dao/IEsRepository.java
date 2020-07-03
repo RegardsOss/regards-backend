@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.google.gson.JsonObject;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
@@ -69,6 +70,14 @@ public interface IEsRepository {
      * @return true if acknowledged by Elasticsearch, false otherwise.
      */
     boolean createIndex(String index);
+
+    /**
+     * Add mappings for the given index
+     * @param index
+     * @param mapping
+     * @return
+     */
+    boolean putMapping(String index, JsonObject mapping);
 
     /**
      * Create an alias for an index
@@ -512,4 +521,5 @@ public interface IEsRepository {
      * @return
      */
     long deleteByDatasource(String tenant, Long datasourceId);
+
 }

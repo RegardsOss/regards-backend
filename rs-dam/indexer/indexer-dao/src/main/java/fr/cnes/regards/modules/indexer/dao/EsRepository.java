@@ -29,12 +29,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
@@ -45,6 +47,8 @@ import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.mapping.IEsMappingCreationService;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
@@ -110,6 +114,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -140,7 +145,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
@@ -171,6 +176,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -295,6 +301,12 @@ public class EsRepository implements IEsRepository {
     @Autowired
     private final AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private IEsMappingCreationService mappingService;
+
     /**
      * High level Rest API client
      */
@@ -352,7 +364,7 @@ public class EsRepository implements IEsRepository {
                 .setHttpClientConfigCallback(httpClientConfig -> httpClientConfig.setKeepAliveStrategy((resp, ctx) -> HTTP_KEEP_ALIVE_MAX_IDLE_DURATION_MS))
                 ;
 
-        client = new RestHighLevelClient(restClientBuilder);
+        this.client = new RestHighLevelClient(restClientBuilder);
 
         try {
             // Testing availability of ES
@@ -439,38 +451,30 @@ public class EsRepository implements IEsRepository {
         try {
             CreateIndexRequest request = Requests.createIndexRequest(index.toLowerCase());
             // mapping (properties)
-            request.mapping(TYPE, XContentFactory.jsonBuilder().startObject() // NOSONAR
-                    // XContentFactory.jsonBuilder() of type XContentBuilder is closed by request.mapping()
-                    // Automatic double mapping (dynamic_templates)
-                    .startArray("dynamic_templates").startObject().startObject("doubles")
-                    .field("match_mapping_type", "double").startObject("mapping").field("type", "double").endObject()
-                    .endObject().endObject().endArray()
-                    // Properties mapping for geometry and type
-                    .startObject("properties")
-                    // _doc is now this unique type => add a "type" property containing previous type
-                    .startObject("type").field("type", "keyword").endObject()
-                    // Geometry mapping (field is wgs84 even if two over fields contain geometry, they
-                    // are not mapped as geo_shape, they only bring informations)
-                    .startObject("wgs84").field("type", "geo_shape") // default
-                    // With geohash
-                    .field("tree", "geohash") // precison = 11 km Astro test 13s to fill constellations
-                    // .field("tree_levels", "5") // precision = 3.5 km Astro test 19 s to fill constellations
-                    // .field("tree_levels", "6") // precision = 3.5 km Astro test 41 s to fill constellations
-                    // .field("tree_levels", "7") // precision = 111 m Astro test 2 mn to fill constellations
-                    // .field("tree_levels", "8") // precision = 111 m Astro test 13 mn to fill constellations
-
-                    // With quadtree
-                    //                                    .field("tree", "quadtree") // precison = 11 km Astro test 10s to fill constellations
-                    // .field("tree_levels", "20") // precison = 16 m Astro test 7 mn to fill constellations
-                    // .field("tree_levels", "21") // precision = 7m Astro test 17mn to fill constellations
-
-                    .endObject()
-                    // add feature.session type which should be keyword and not date. Default sessions are UTF-8 date as a string.
-                    .startObject("feature").startObject("properties").startObject("session").field("type", "keyword")
-                    .endObject().endObject().endObject().endObject().endObject());
+            XContentBuilder source =  new JsonConverter()
+                    .toXContentBuilder(mappingService.createMappingForIndex(index));
+            request.mapping(TYPE, source);
             CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override public boolean putMapping(String index, JsonObject mappingGson) {
+        try {
+            JsonConverter converter = new JsonConverter();
+            XContentBuilder mappingBuilder = converter.toXContentBuilder(mappingGson);
+            PutMappingRequest request = new PutMappingRequest(index);
+            request.source(mappingBuilder);
+            AcknowledgedResponse putMappingResponse = client.indices().putMapping(request, RequestOptions.DEFAULT);
+            return putMappingResponse.isAcknowledged();
+        }
+        catch(IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
         }

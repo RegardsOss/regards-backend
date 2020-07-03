@@ -112,15 +112,6 @@ public class EsRepositoryTest {
     }
 
     @Test
-    public void testDeleteByQuery() {
-        if (repository.indexExists("Pouet")) {
-            repository.deleteIndex("Pouet");
-        }
-        repository.createIndex("Pouet");
-        repository.deleteAll("Pouet");
-    }
-
-    @Test
     public void testCreateDeleteIndex() throws UnknownHostException {
         Assert.assertTrue(repository.createIndex("test"));
         Assert.assertTrue(repository.deleteIndex("test"));
@@ -172,11 +163,6 @@ public class EsRepositoryTest {
         Item toFindItem = new Item("1");
         toFindItem = repository.get("items", toFindItem);
 
-        // Delete
-        Assert.assertTrue(repository.delete("items", "item", "1"));
-        Assert.assertTrue(repository.delete("items", "item", "2"));
-        Assert.assertTrue(repository.delete("items", "item", "4"));
-        Assert.assertTrue(repository.delete("items", "item", "1"));
 
     }
 
