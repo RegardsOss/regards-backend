@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 
@@ -47,8 +45,6 @@ import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
  */
 public class NotificationJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationJob.class);
-
     public static final String IDS_PARAMETER = "ids";
 
     private List<NotificationAction> notificationRequests;
@@ -70,10 +66,10 @@ public class NotificationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Notification job starts", jobInfoId);
+        logger.info("[{}] Notification job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Pair<Integer, Integer> notifications = this.notificationService.processRequest(notificationRequests, jobInfoId);
-        LOGGER.info("[{}]{}{} Notifications sended in {} ms, {} notifications failed", jobInfoId, INFO_TAB,
+        logger.info("[{}]{}{} Notifications sended in {} ms, {} notifications failed", jobInfoId, INFO_TAB,
                     notifications.getFirst(), System.currentTimeMillis() - start, notifications.getSecond());
         // if there are exception we throw an exception to stop the job in error
         if (!notifications.getSecond().equals(0)) {

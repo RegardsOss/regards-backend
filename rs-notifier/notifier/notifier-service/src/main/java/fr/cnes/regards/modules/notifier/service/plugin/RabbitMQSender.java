@@ -43,13 +43,17 @@ public class RabbitMQSender implements IRecipientNotifier {
 
     public static final String PLUGIN_ID = "RabbitMQSender";
 
+    public static final String EXCHANGE_PARAM_NAME = "exchange";
+
+    public static final String QUEUE_PARAM_NAME = "queueName";
+
     @Autowired
     private IPublisher publisher;
 
-    @PluginParameter(label = "RabbitMQ exchange name", name = "exchange")
+    @PluginParameter(label = "RabbitMQ exchange name", name = EXCHANGE_PARAM_NAME)
     private String exchange;
 
-    @PluginParameter(label = "RabbitMQ queue name", name = "queueName", optional = true)
+    @PluginParameter(label = "RabbitMQ queue name", name = QUEUE_PARAM_NAME, optional = true)
     private String queueName;
 
     @Override

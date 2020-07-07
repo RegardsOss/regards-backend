@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.manager.ModuleImportReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -69,6 +68,9 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     @Autowired
     private IRecipientService recipientService;
 
+    @Autowired
+    private NotificationConfigurationService configurationService;
+
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = Sets.newHashSet();
@@ -88,58 +90,33 @@ public class NotificationConfigurationManager extends AbstractModuleManager<Void
     }
 
     @Override
+    public ModuleImportReport importConfigurationAndLog(ModuleConfiguration configuration) {
+        Set<String> importErrors = importConfiguration(configuration);
+        for (String importError : importErrors) {
+            LOGGER.warn(importError);
+        }
+        return new ModuleImportReport(info, importErrors, !importErrors.isEmpty());
+    }
+
+    @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
-        Set<RuleRecipientsAssociation> rules = getRulesRecipientsAssoc(configuration.getConfiguration());
+        Set<RuleRecipientsAssociation> associations = getRulesRecipientsAssoc(configuration.getConfiguration());
 
         // Clear cache
         notifService.cleanCache();
 
-        // import plugin configurations
-        for (PluginConfiguration plgConf : configurations) {
-            try {
-
-                Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
-                if (existingOne.isPresent()) {
-
-                    LOGGER.info("Updating existing plugin configuration {}", plgConf.getBusinessId());
-                    existingOne.get().setLabel(plgConf.getLabel());
-                    existingOne.get().setParameters(plgConf.getParameters());
-                    pluginService.updatePluginConfiguration(existingOne.get());
-                } else {
-                    LOGGER.info("Creating new plugin configuration {}", plgConf.getBusinessId());
-                    pluginService.savePluginConfiguration(plgConf);
-                }
-            } catch (ModuleException e) {
-                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
-                importErrors.add(e.getMessage());
-            }
-        }
-
-        // Now import rule recipients associations
-        for (RuleRecipientsAssociation rule : rules) {
-            try {
-                PluginConfiguration ruleConf = pluginService.getPluginConfiguration(rule.getRuleId());
-                ruleService.createOrUpdateRule(RuleDTO.build(ruleConf, rule.getRecipientIds()));
-            } catch (ModuleException e) {
-                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
-                importErrors.add(e.getMessage());
-            }
+        try {
+            // Import configuration into transaction
+            configurationService.importConfiguration(configurations, associations);
+        } catch (ModuleException ex) {
+            LOGGER.warn(IMPORT_FAIL_MESSAGE, ex);
+            importErrors.add(ex.getMessage());
         }
 
         return importErrors;
-    }
-
-    private Optional<PluginConfiguration> loadPluginConfiguration(String businessId) {
-        PluginConfiguration existingOne = null;
-        try {
-            existingOne = pluginService.getPluginConfiguration(businessId);
-        } catch (EntityNotFoundException e) { // NOSONAR
-            // Nothing to do, plugin configuration does not exists.
-        }
-        return Optional.ofNullable(existingOne);
     }
 
     @Override

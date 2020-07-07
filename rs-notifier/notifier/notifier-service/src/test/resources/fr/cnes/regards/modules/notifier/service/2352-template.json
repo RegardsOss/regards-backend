@@ -1,0 +1,50 @@
+{
+    "element": {
+        "id": "TEST:2325-1",
+        "urn": "URN:FEATURE:DATA:geode:2a22f1ec-417d-3af7-a59c-445192bf7c55:V1",
+        "type": "Feature",
+        "files": [],
+        "model": "GEODE001",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                10.0,
+                20.0
+            ]
+        },
+        "entityType": "DATA",
+        "properties": {
+            "data": {
+                "type": "L0A_LR_Packet",
+                "end_date": "2020-03-03T23:00:00Z",
+                "start_date": "2020-03-03T23:00:00Z",
+                "validity_flag": false,
+                "production_date": "2020-03-03T23:00:00Z"
+            },
+            "swot": {
+                "apid": 1,
+                "crid": "DG0001",
+                "station": "KUX",
+                "day_date": "2020-03-03T00:00:00Z",
+                "bassin_id": "bassinid",
+                "tile_side": "Full",
+                "pass_number": 125,
+                "tile_number": 25,
+                "continent_id": "AF",
+                "cycle_number": 23,
+                "granule_type": "Cycle",
+                "file_identifier": "Basic",
+                "product_counter": 22
+            },
+            "system": {
+                "filename": "test.tar",
+                "filesize": 2321,
+                "gpfs_url": "file://home/geode/test.tar",
+                "extension": "tar",
+                "change_date": "2020-04-03T00:00:00Z",
+                "ingestion_date": "2020-04-03T00:00:00Z"
+            }
+        }
+    },
+    "action": "CREATION"
+}

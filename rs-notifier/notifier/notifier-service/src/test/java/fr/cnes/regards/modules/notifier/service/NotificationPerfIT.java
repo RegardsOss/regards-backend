@@ -50,7 +50,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     public void testRegistrationAndProcessing()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
 
-        JsonElement element = initElement();
+        JsonElement element = initElement("element.json");
 
         initPlugins(false);
 
@@ -71,7 +71,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     @Test
     public void testRegistrationAndProcessingWith1RecipientFail()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
-        JsonElement element = initElement();
+        JsonElement element = initElement("element.json");
         initPlugins(true);
 
         List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
@@ -89,4 +89,13 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         assertEquals(this.notificationRepo.count(), configuration.getMaxBulkSize().intValue());
 
     }
+
+    //    @Test
+    //    public void testNotify() throws ModuleException, InterruptedException {
+    //        //NotificationActionEvent element = getEvent("2352-template.json");
+    //        //  initPlugins(true);
+    //
+    //        // publisher.publish(element);
+    //        waitDatabaseCreation(this.notificationRepo, 1, 60);
+    //    }
 }

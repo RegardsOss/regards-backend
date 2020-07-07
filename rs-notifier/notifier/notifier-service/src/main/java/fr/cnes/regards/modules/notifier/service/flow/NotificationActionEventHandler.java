@@ -58,6 +58,11 @@ public class NotificationActionEventHandler
     private INotificationRuleService notificationService;
 
     @Override
+    public Class<NotificationActionEvent> getMType() {
+        return NotificationActionEvent.class;
+    }
+
+    @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(NotificationActionEvent.class, this);
     }

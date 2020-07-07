@@ -57,7 +57,7 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
     @Test
     public void testRestartAfterFailure() throws InterruptedException, ModuleException {
 
-        JsonElement element = initElement();
+        JsonElement element = initElement("element.json");
 
         initPlugins(true);
 

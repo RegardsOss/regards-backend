@@ -173,10 +173,10 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
         long startNotificationTreatmentTime = 0;
 
         //get RecipientRrror for jobInfoId if exists
-        List<RecipientError> recipientErrros = this.recipientErrorRepo.findByJobId(jobInfoId);
+        List<RecipientError> recipientErrors = this.recipientErrorRepo.findByJobId(jobInfoId);
 
         // if empty we send notifications according rules
-        if (recipientErrros.isEmpty()) {
+        if (recipientErrors.isEmpty()) {
             ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors = ArrayListMultimap.create();
 
             for (NotificationAction notification : toHandles) {
@@ -200,8 +200,8 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
             this.notificationActionRepo.deleteAll(toHandles);
 
         } else { //if not empty we resend notification only for failed recipient
-            nbSend = resendNotification(recipientErrros);
-            nbError = recipientErrros.size() - nbSend;
+            nbSend = resendNotification(recipientErrors);
+            nbError = recipientErrors.size() - nbSend;
         }
         return Pair.of(nbSend, nbError);
     }
