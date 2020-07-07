@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.test.batch;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -79,6 +83,9 @@ public class BatchTestIT {
     @Autowired
     private IRabbitVirtualHostAdmin vhostAdmin;
 
+    @Autowired(required = false)
+    private List<HealthIndicator> indicators;
+
     @Before
     public void before() {
         // New instance for each test
@@ -94,6 +101,16 @@ public class BatchTestIT {
 
         // Purge queue
         cleanAMQPQueues(BatchHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+    }
+
+    @Test
+    public void healthTest() {
+        if (indicators != null) {
+            for (HealthIndicator indicator : indicators) {
+                Health health = indicator.health();
+                LOGGER.debug("{} : {}", indicator.getClass(), health.getStatus());
+            }
+        }
     }
 
     @Test

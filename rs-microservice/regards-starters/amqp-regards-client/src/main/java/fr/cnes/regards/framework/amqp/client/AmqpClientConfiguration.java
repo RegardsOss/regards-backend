@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Configuration;
 public class AmqpClientConfiguration {
 
     @Bean
-    ExitCodeExceptionMapper exitCodeToexceptionMapper() {
+    ExitCodeExceptionMapper exitCodeToExceptionMapper() {
         return exception -> {
             // Always return 1 on runtime error
             return 1;
