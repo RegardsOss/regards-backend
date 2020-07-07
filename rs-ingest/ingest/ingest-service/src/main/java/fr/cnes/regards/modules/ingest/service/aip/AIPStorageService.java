@@ -581,7 +581,7 @@ public class AIPStorageService implements IAIPStorageService {
         for (StoreLocation storeLocation : storeLocations) {
             // If storage location sub directory is given, add a specific one for AIPs
             String storePath = null;
-            if (storeLocation.getStorePath() != null) {
+            if ((storeLocation.getStorePath() != null) && !storeLocation.getStorePath().isEmpty()) {
                 if (!storeLocation.getStorePath().endsWith(apiStorageSubDirectory)) {
                     storePath = Paths.get(storeLocation.getStorePath(), apiStorageSubDirectory).toString();
                 } else {

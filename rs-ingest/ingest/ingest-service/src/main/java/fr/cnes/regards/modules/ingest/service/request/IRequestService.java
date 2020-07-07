@@ -89,7 +89,11 @@ public interface IRequestService {
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
      * @param request the request to save
+     * @return
+     *
+     * @deprecated Use {@link #scheduleRequests(List)} instead to improve performances.
      */
+    @Deprecated
     AbstractRequest scheduleRequest(AbstractRequest request);
 
     /**

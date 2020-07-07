@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -153,15 +154,17 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
+            Set<AIPStoreMetaDataRequest> toHandle = Sets.newHashSet();
+            Set<IngestRequest> toHandleRemote = Sets.newHashSet();
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
                     found = true;
                     if (request instanceof IngestRequest) {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Ingest request {} found associated to group request {}",
                                      request.getId(), ri.getGroupId());
-                        ingestRequestService.handleRemoteStoreSuccess((IngestRequest) (request), ri);
+                        toHandleRemote.add((IngestRequest) request);
                     } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleSuccess((AIPStoreMetaDataRequest) request, ri);
+                        toHandle.add((AIPStoreMetaDataRequest) request);
                     } else {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Request type undefined {} for group {}",
                                      request.getId(), ri.getGroupId());
@@ -169,6 +172,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                     }
                 }
             }
+            ingestRequestService.handleRemoteStoreSuccess(toHandleRemote, ri);
+            aipSaveMetaDataService.handleSuccess(toHandle, ri);
             if (!found) {
                 LOGGER.warn("[STORAGE RESPONSE HANDLER] No request found associated to group request {}",
                             ri.getGroupId());
