@@ -18,12 +18,6 @@
  */
 package scripts.uiconfiguration;
 
-import com.google.gson.Gson;
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -33,6 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 
 /**
  * Migrates modules configuration from previous REGARDS version into 1.2.0 (for search related changes)
@@ -53,7 +55,8 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
      * @param updater       configuration updater
      * @return new configuration as string
      */
-    public static String withParsedMap(String configuration, Function<Map<String, Object>, Map<String, Object>> updater) {
+    public static String withParsedMap(String configuration,
+            Function<Map<String, Object>, Map<String, Object>> updater) {
         Gson gson = new Gson();
         Map<String, Object> configurationAsMap = gson.fromJson(configuration, Map.class);
         // Update configuration
@@ -106,7 +109,12 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
         groupTitle.put("fr", "");
         rootGroup.put("showTitle", false);
         rootGroup.put("title", groupTitle);
-        rootGroup.put("criteria", criteria.stream().map(V1_2_0__update_modules_conf::updateCriterionConfiguration).collect(Collectors.toList()));
+        if (criteria != null) {
+            rootGroup.put("criteria", criteria.stream().map(V1_2_0__update_modules_conf::updateCriterionConfiguration)
+                    .collect(Collectors.toList()));
+        } else {
+            rootGroup.put("criteria", Lists.newArrayList());
+        }
         searchResultsConfiguration.put("criteriaGroups", Collections.singletonList(rootGroup));
         return searchResultsConfiguration;
     }
@@ -143,13 +151,16 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
 
                     switch (type) {
                         case "search-results":
-                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchResultsConfiguration);
+                            updatedConf = withParsedMap(conf,
+                                                        V1_2_0__update_modules_conf::updateSearchResultsConfiguration);
                             break;
                         case "search-graph":
-                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchGraphConfiguration);
+                            updatedConf = withParsedMap(conf,
+                                                        V1_2_0__update_modules_conf::updateSearchGraphConfiguration);
                             break;
                         case "search-form":
-                            updatedConf = withParsedMap(conf, V1_2_0__update_modules_conf::updateSearchFormConfiguration);
+                            updatedConf = withParsedMap(conf,
+                                                        V1_2_0__update_modules_conf::updateSearchFormConfiguration);
                             newType = "search-results";// also migrating to search-results type
                             break;
                         default:
@@ -159,7 +170,8 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
                     if (updatedConf != null) {
                         LOG.info(String.format("Updating module %s from type %s to type %s", id, type, newType));
                         String sqlRequest = "UPDATE t_ui_module SET conf=? , type=? WHERE id=?";
-                        try (PreparedStatement preparedStatement = context.getConnection().prepareStatement(sqlRequest)) {
+                        try (PreparedStatement preparedStatement = context.getConnection()
+                                .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setString(2, newType);
                             preparedStatement.setInt(3, id);
