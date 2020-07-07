@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import com.google.gson.JsonObject;
 
 /**
  * Feature collection representation based on GeoJson standard structure.
@@ -33,30 +36,32 @@ import javax.validation.Valid;
 public class FeatureReferenceCollection {
 
     @Valid
+    @NotNull(message = "Request metadata is required")
     private FeatureCreationSessionMetadata metadata;
 
-    private final Set<String> locations = new HashSet<>();
+    @NotBlank(message = "Extraction factory identified by a plugin business identifier is required")
+    private String factory;
 
-    private String pluginBusinessId;
+    /**
+     * Free parameters that target factory must understand
+     */
+    @NotEmpty(message = "Extraction parameters must not be empty")
+    private Set<JsonObject> parameters;
 
     /**
      * Create a new {@link FeatureReferenceCollection} <br/>
      * @param metadata {@link FeatureCreationSessionMetadata}
-     * @param locations collection of location of {@link Feature}
-     * @param pluginBusinessId plugin id to create feature from location
+     * @param factory extraction plugin id to create feature from specified parameters
+     * @param parameters extraction parameters
      * @return a {@link FeatureReferenceCollection}
      */
-    public static FeatureReferenceCollection build(FeatureCreationSessionMetadata metadata,
-            Collection<String> locations, String pluginBusinessId) {
+    public static FeatureReferenceCollection build(FeatureCreationSessionMetadata metadata, String factory,
+            Set<JsonObject> parameters) {
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
         collection.setMetadata(metadata);
-        collection.addAll(locations);
-        collection.setPluginBusinessId(pluginBusinessId);
+        collection.setFactory(factory);
+        collection.setParameters(parameters);
         return collection;
-    }
-
-    public void addAll(Collection<String> locations) {
-        locations.addAll(locations);
     }
 
     public FeatureCreationSessionMetadata getMetadata() {
@@ -67,16 +72,20 @@ public class FeatureReferenceCollection {
         this.metadata = metadata;
     }
 
-    public Set<String> getLocations() {
-        return locations;
+    public String getFactory() {
+        return factory;
     }
 
-    public String getPluginBusinessId() {
-        return pluginBusinessId;
+    public void setFactory(String factory) {
+        this.factory = factory;
     }
 
-    public void setPluginBusinessId(String pluginBusinessId) {
-        this.pluginBusinessId = pluginBusinessId;
+    public Set<JsonObject> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Set<JsonObject> parameters) {
+        this.parameters = parameters;
     }
 
 }

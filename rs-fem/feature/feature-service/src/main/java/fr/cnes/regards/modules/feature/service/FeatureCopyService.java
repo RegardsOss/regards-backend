@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -71,7 +72,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCopyService implements IFeatureCopyService {
+public class FeatureCopyService extends AbstractFeatureService implements IFeatureCopyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCopyService.class);
 
@@ -131,13 +132,15 @@ public class FeatureCopyService implements IFeatureCopyService {
             LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
+                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
+                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED,
+                                                    null));
 
         grantedRequests.add(item);
         requestInfo.addGrantedRequest(item.getUrn(), item.getRequestId());

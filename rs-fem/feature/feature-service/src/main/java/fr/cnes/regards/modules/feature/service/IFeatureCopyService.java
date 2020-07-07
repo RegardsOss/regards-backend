@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureCopyService {
+public interface IFeatureCopyService extends IFeatureDeniedService {
 
     /**
      * Register copy requests in database for further processing from incoming request events

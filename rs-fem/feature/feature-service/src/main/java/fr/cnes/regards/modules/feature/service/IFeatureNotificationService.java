@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureNotificationService {
+public interface IFeatureNotificationService extends IFeatureDeniedService {
 
     /**
      * Register notification requests in database for further processing from incoming request events

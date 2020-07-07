@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 
-public interface IFeatureCreationService {
+public interface IFeatureCreationService extends IFeatureDeniedService {
 
     /**
      * Register creation requests in database for further processing from incoming request events

@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
-import fr.cnes.regards.modules.feature.service.FeatureDeletetionService;
+import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 
 /**
  * @author Kevin Marchois
@@ -52,7 +52,7 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
     private FeatureRequestService requestService;
 
     @Autowired
-    private FeatureDeletetionService featureDeletionService;
+    private FeatureDeletionService featureDeletionService;
 
     /**
      * Test storage listener we will prepare data send {@linkFeatureDeletionReventEvent} and call handleDeletionSuccess

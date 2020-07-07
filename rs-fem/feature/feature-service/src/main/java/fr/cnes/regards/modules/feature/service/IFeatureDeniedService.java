@@ -16,16 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.dto;
+package fr.cnes.regards.modules.feature.service;
+
+import org.springframework.amqp.core.Message;
+
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 
 /**
- * @author kevin
  *
+ * Denied request that cannot be converted
+ * @author Marc SORDI
  */
-public enum FeatureManagementAction {
-    CREATED,
-    UPDATED,
-    DELETED,
-    ALREADY_DELETED,
-    NOTIFIED;
+public interface IFeatureDeniedService {
+
+    /**
+     * @return <code>true</code> if message can be denied.
+     */
+    boolean denyMessage(FeatureRequestType type, Message message, String errorMessage);
 }

@@ -34,6 +34,9 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -86,16 +89,18 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
+            JsonObject parameters = new JsonObject();
+            parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                           "dtc " + i, "testFeatureGeneration"));
+                           parameters, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
-        this.waitRequest(this.featureCreationRequestRepo, this.properties.getMaxBulkSize(), 60000);
-        this.waitRequest(this.featureRepo, this.properties.getMaxBulkSize(), 60000);
+        // this.waitRequest(this.featureCreationRequestRepo, this.properties.getMaxBulkSize(), 60000);
+        this.waitRequest(this.featureRepo, this.properties.getMaxBulkSize(), 120_000);
 
         assertEquals(0, this.referenceRequestRepo.count());
     }
@@ -112,11 +117,13 @@ public class FeatureReferenceServiceIT extends AbstractFeatureMultitenantService
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
+            JsonObject parameters = new JsonObject();
+            parameters.add("location", new JsonPrimitive("test" + i));
             eventsToPublish.add(FeatureReferenceRequestEvent
                     .build("bibi",
                            FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
                                                                 new StorageMetadata[0]),
-                           "dtc " + i, "testFeatureGeneration"));
+                           parameters, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 

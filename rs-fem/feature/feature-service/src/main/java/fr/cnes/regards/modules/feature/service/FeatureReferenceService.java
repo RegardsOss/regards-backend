@@ -41,6 +41,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -51,6 +52,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.feature.dao.IFeatureReferenceRequestRepository;
 import fr.cnes.regards.modules.feature.domain.plugin.IFeatureFactoryPlugin;
@@ -65,10 +67,12 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 
 /**
  * Feature reference service management
@@ -77,7 +81,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureReferenceCreationJob;
  */
 @Service
 @MultitenantTransactional
-public class FeatureReferenceService implements IFeatureReferenceService {
+public class FeatureReferenceService extends AbstractFeatureService implements IFeatureReferenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceService.class);
 
@@ -137,8 +141,8 @@ public class FeatureReferenceService implements IFeatureReferenceService {
             Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
@@ -147,16 +151,21 @@ public class FeatureReferenceService implements IFeatureReferenceService {
 
         if (errors.hasErrors()) {
             LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}", errors.toString());
-            // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
-            requestInfo.addDeniedRequest(null, ErrorTranslator.getErrors(errors));
+            requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
+            // Monitoring log
+            FeatureLogger.referenceDenied(item.getRequestOwner(), item.getRequestId(),
+                                          ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, item.getRequestId(),
+                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             return;
         }
+        // Monitoring log
+        FeatureLogger.referenceGranted(item.getRequestOwner(), item.getRequestId());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, null,
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, item.getRequestId(),
+                                                    item.getRequestOwner(), null, null, RequestState.GRANTED, null));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
@@ -164,10 +173,9 @@ public class FeatureReferenceService implements IFeatureReferenceService {
                        item.getMetadata().getStorages(), item.getMetadata().isOverride());
         grantedRequests.add(FeatureReferenceRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
-                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(), item.getLocation(),
-                       item.getFactory()));
-        // FIXME le null est-ce vraimment une bonne idée? le monde sera-t-il un jour en paix?
-        requestInfo.addGrantedRequest(null, item.getRequestId());
+                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(),
+                       item.getParameters(), item.getFactory()));
+        requestInfo.addGrantedRequest(item.getRequestId(), RequestState.GRANTED.toString());
     }
 
     @Override
@@ -213,18 +221,17 @@ public class FeatureReferenceService implements IFeatureReferenceService {
         for (FeatureReferenceRequest request : requests) {
             try {
                 FeatureCreationRequestEvent fcre = initFeatureCreationRequest(request);
-                if (fcre != null) {
-                    creationRequestsToRegister.add(fcre);
-                    successCreationRequestGeneration.add(request);
-                } else {
-                    request.setState(RequestState.ERROR);
-                    publisher.publish(FeatureRequestEvent
-                            .build(request.getRequestId(), request.getRequestOwner(), null, null, RequestState.ERROR,
-                                   Sets.newHashSet("No plugin founded for this request reference")));
-                }
+                creationRequestsToRegister.add(fcre);
+                successCreationRequestGeneration.add(request);
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
+                Set<String> errors = Sets.newHashSet(e.getMessage());
+                // Monitoring log
+                FeatureLogger.referenceError(request.getRequestOwner(), request.getRequestId(), errors);
+                // Publish ERROR request
                 request.setState(RequestState.ERROR);
-                LOGGER.error("Creation of FeatureCreationRequestEvent fail from plugin generator", e);
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.REFERENCE, request.getRequestId(),
+                                                            request.getRequestOwner(), null, null, RequestState.ERROR,
+                                                            errors));
             }
         }
 
@@ -239,13 +246,35 @@ public class FeatureReferenceService implements IFeatureReferenceService {
 
     private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
             throws NotAvailablePluginConfigurationException, ModuleException {
-        Optional<T> plugin = this.pluginService.getOptionalPlugin(request.getPluginBusinessId());
-        if (!plugin.isPresent()) {
-            return null;
+
+        Optional<T> plugin;
+        try {
+            plugin = this.pluginService.getOptionalPlugin(request.getFactory());
+        } catch (PluginUtilsRuntimeException e) {
+            // Catch unexpected plugin initialization error
+            throw new ModuleException(e.getMessage());
         }
+
+        if (!plugin.isPresent()) {
+            String errorMessage = String.format("Unknown plugin for configuration %s", request.getFactory());
+            LOGGER.error(errorMessage);
+            throw new ModuleException(errorMessage);
+        }
+
+        if (!IFeatureFactoryPlugin.class.isAssignableFrom(plugin.get().getClass())) {
+            String errorMessage = String.format("Bad plugin type for configuration %s. %s must implement %s.",
+                                                request.getFactory(), plugin.getClass().getName(),
+                                                IFeatureFactoryPlugin.class.getName());
+            LOGGER.error(errorMessage);
+            throw new ModuleException(errorMessage);
+        }
+
+        IFeatureFactoryPlugin factory = (IFeatureFactoryPlugin) plugin.get();
+
         Feature feature;
         try {
-            feature = ((IFeatureFactoryPlugin) plugin.get()).createFeature(request);
+            // Extract feature
+            feature = factory.generateFeature(request.getParameters());
             feature.withHistory(request.getRequestOwner());
             FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
@@ -256,7 +285,8 @@ public class FeatureReferenceService implements IFeatureReferenceService {
                                                                     request.getPriority(), false, array),
                                                      feature);
         } catch (ModuleException e) {
-            throw new ModuleException(String.format("Error generating feature for file %s", request.getLocation()), e);
+            throw new ModuleException(String.format("Error generating feature for request %s", request.getRequestId()),
+                    e);
         }
 
     }
@@ -265,10 +295,10 @@ public class FeatureReferenceService implements IFeatureReferenceService {
     public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
         // Build events to reuse event registration code
         List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
-        for (String location : collection.getLocations()) {
-            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), location,
+        for (JsonObject parameters : collection.getParameters()) {
+            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(), collection.getMetadata(), parameters,
                                                            OffsetDateTime.now().minusSeconds(1),
-                                                           collection.getPluginBusinessId()));
+                                                           collection.getFactory()));
         }
         return registerRequests(toTreat);
     }

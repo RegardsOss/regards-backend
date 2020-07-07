@@ -21,25 +21,39 @@ package fr.cnes.regards.modules.feature.dto.event.in;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+
+import org.springframework.amqp.core.MessageProperties;
+
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
- * @author Marc SORDI
+ * Message headers
  *
+ * @author Marc SORDI
  */
-public abstract class AbstractRequestEvent {
+public abstract class AbstractRequestEvent implements IMessagePropertiesAware {
 
-    @NotBlank(message = "Request identifier is required")
-    @Size(max = 36)
-    protected String requestId;
+    // Prevent GSON converter from serializing this field
+    @GsonIgnore
+    @NotNull(message = "Message properties is required")
+    protected MessageProperties messageProperties;
 
-    @NotNull(message = "Request time is required")
-    private OffsetDateTime requestDate;
+    @Override
+    public MessageProperties getMessageProperties() {
+        if (messageProperties == null) {
+            messageProperties = new MessageProperties();
+        }
+        return messageProperties;
+    }
 
-    @NotNull(message = "Request owner is required")
-    private String requestOwner;
+    @Override
+    public void setMessageProperties(MessageProperties messageProperties) {
+        this.messageProperties = messageProperties;
+    }
 
     /**
      * Generate a request ID
@@ -48,28 +62,57 @@ public abstract class AbstractRequestEvent {
         return UUID.randomUUID().toString();
     }
 
+    public boolean hasRequestId() {
+        return (getRequestId() != null) && !getRequestId().isEmpty();
+    }
+
     public String getRequestId() {
-        return requestId;
+        return getRequestId(getMessageProperties());
+    }
+
+    public static String getRequestId(MessageProperties messageProperties) {
+        return messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER);
     }
 
     public void setRequestId(String requestId) {
-        this.requestId = requestId;
+        getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER, requestId);
+    }
+
+    public boolean hasRequestDate() {
+        return getRequestDate() != null;
     }
 
     public OffsetDateTime getRequestDate() {
+        return getRequestDate(getMessageProperties());
+    }
+
+    public static OffsetDateTime getRequestDate(MessageProperties messageProperties) {
+        OffsetDateTime requestDate = null;
+        String header = messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_DATE_HEADER);
+        if (header != null) {
+            requestDate = OffsetDateTimeAdapter.parse(header);
+        }
         return requestDate;
     }
 
     public void setRequestDate(OffsetDateTime requestDate) {
-        this.requestDate = requestDate;
+        getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_DATE_HEADER,
+                                         OffsetDateTimeAdapter.format(requestDate));
+    }
+
+    public boolean hasRequestOwner() {
+        return (getRequestOwner() != null) && !getRequestOwner().isEmpty();
     }
 
     public String getRequestOwner() {
-        return requestOwner;
+        return getRequestOwner(getMessageProperties());
+    }
+
+    public static String getRequestOwner(MessageProperties messageProperties) {
+        return messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER);
     }
 
     public void setRequestOwner(String requestOwner) {
-        this.requestOwner = requestOwner;
+        getMessageProperties().setHeader(AmqpConstants.REGARDS_REQUEST_OWNER_HEADER, requestOwner);
     }
-
 }

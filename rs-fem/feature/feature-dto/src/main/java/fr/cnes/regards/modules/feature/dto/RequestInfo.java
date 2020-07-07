@@ -48,7 +48,7 @@ public class RequestInfo<ID> {
     private Map<ID, String> granted = new HashMap<>();
 
     /**
-     * Mapping between SIP id and denied reason
+     * Mapping between id and denied reason
      */
     private Multimap<ID, String> denied = ArrayListMultimap.create();
 

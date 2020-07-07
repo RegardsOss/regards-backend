@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -77,12 +77,14 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -96,7 +98,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCreationService implements IFeatureCreationService {
+public class FeatureCreationService extends AbstractFeatureService implements IFeatureCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationService.class);
 
@@ -190,6 +192,7 @@ public class FeatureCreationService implements IFeatureCreationService {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId())
                 || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
@@ -203,7 +206,13 @@ public class FeatureCreationService implements IFeatureCreationService {
             LOGGER.error("Error during feature {} validation the following errors have been founded{}",
                          item.getFeature().getId(), errors.toString());
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
-            publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
+            // Monitoring log
+            FeatureLogger.creationDenied(item.getRequestOwner(), item.getRequestId(),
+                                         item.getFeature() != null ? item.getFeature().getId() : null,
+                                         ErrorTranslator.getErrors(errors));
+            // Publish DENIED request
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION, item.getRequestId(),
+                                                        item.getRequestOwner(),
                                                         item.getFeature() != null ? item.getFeature().getId() : null,
                                                         null, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null, null,
@@ -218,10 +227,12 @@ public class FeatureCreationService implements IFeatureCreationService {
         FeatureCreationRequest request = FeatureCreationRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED, null,
                        item.getFeature(), metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority());
-        //         Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null, null,
-                                                    RequestState.GRANTED, null));
+        // Monitoring log
+        FeatureLogger.creationGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId());
+        // Publish GRANTED request
+        publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.GRANTED, null));
 
         // Add to granted request collection
         metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_GRANTED);
@@ -316,10 +327,13 @@ public class FeatureCreationService implements IFeatureCreationService {
             if ((request.getFeature().getFiles() == null) || request.getFeature().getFiles().isEmpty()) {
                 // Register request
                 requestsWithoutFiles.add(request);
+                // Monitoring log
+                FeatureLogger.creationSuccess(request.getRequestOwner(), request.getRequestId(),
+                                              request.getProviderId(), request.getFeature().getUrn());
                 // Publish successful request
-                publisher.publish(FeatureRequestEvent.build(request.getRequestId(), request.getRequestOwner(),
-                                                            request.getProviderId(), request.getFeature().getUrn(),
-                                                            RequestState.SUCCESS));
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION, request.getRequestId(),
+                                                            request.getRequestOwner(), request.getProviderId(),
+                                                            request.getFeature().getUrn(), RequestState.SUCCESS));
 
                 // if a previous version exists we will publish a FeatureDeletionRequest to delete it
                 if ((request.getFeatureEntity().getPreviousVersionUrn() != null)
@@ -327,7 +341,7 @@ public class FeatureCreationService implements IFeatureCreationService {
                     this.notificationClient
                             .notify(String.format("A FeatureEntity with the URN {} already exists for this feature",
                                                   request.getFeatureEntity().getPreviousVersionUrn()),
-                                    "A duplicated feature has been detected", NotificationLevel.ERROR,
+                                    "A duplicated feature has been detected", NotificationLevel.INFO,
                                     DefaultRole.ADMIN);
                     publisher.publish(FeatureDeletionRequestEvent
                             .build(request.getMetadata().getSessionOwner(),
