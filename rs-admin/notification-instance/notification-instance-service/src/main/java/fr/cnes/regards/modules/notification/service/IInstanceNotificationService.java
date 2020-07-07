@@ -100,4 +100,11 @@ public interface IInstanceNotificationService {
 
     Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state)
             throws EntityNotFoundException;
+
+    /**
+     * Delete read notifications for current user
+     */
+    void deleteReadNotifications();
+
+    Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page);
 }
