@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -50,6 +51,8 @@ public interface IGroupRequestInfoRepository extends JpaRepository<RequestResult
      * @param groupId
      */
     void deleteByGroupId(String groupId);
+
+    void deleteByGroupIdIn(Collection<String> groupIds);
 
     /**
      * Retrieve all {@RequestResultInfo}s matching the given group id and error status.

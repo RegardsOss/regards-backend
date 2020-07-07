@@ -50,6 +50,10 @@ import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
 @EnableScheduling
 public class CacheScheduler {
 
+    private static final String DEFAULT_INITIAL_DELAY = "60000";
+
+    private static final String DEFAULT_DELAY = "7200000";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -66,7 +70,8 @@ public class CacheScheduler {
      * Periodically check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every hour.
      */
-    @Scheduled(fixedDelayString = "${regards.cache.cleanup.rate.ms:3600000}", initialDelay = 120_000)
+    @Scheduled(initialDelayString = "${regards.cache.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

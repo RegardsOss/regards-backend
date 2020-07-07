@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -47,8 +45,6 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestServ
  *
  */
 public class FileCacheRequestJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileCacheRequestJob.class);
 
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the restoration.
@@ -89,7 +85,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
         FileCacheJobProgressManager progressManager = new FileCacheJobProgressManager(fileCacheRequestService, this);
-        LOGGER.debug("[AVAILABILITY JOB] Runing availability job for {} cache requests", nbRequestToHandle);
+        logger.debug("[AVAILABILITY JOB] Runing availability job for {} cache requests", nbRequestToHandle);
         INearlineStorageLocation storagePlugin;
         String errorCause = null;
         try {
@@ -110,7 +106,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
                                                                 fileRef.getMetaInfo().getChecksum(), errorCause));
                 }
             }
-            LOGGER.debug("[AVAILABILITY JOB] Availability job handled in {} ms for {} cache requests",
+            logger.debug("[AVAILABILITY JOB] Availability job handled in {} ms for {} cache requests",
                          System.currentTimeMillis() - start, nbRequestToHandle);
         }
     }

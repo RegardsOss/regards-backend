@@ -50,7 +50,7 @@ public class ReferenceFlowItemHandler
     /**
      * Bulk size limit to handle messages
      */
-    @Value("${regards.storage.reference.items.bulk.size:1000}")
+    @Value("${regards.storage.reference.items.bulk.size:10}")
     private int BULK_SIZE;
 
     @Autowired
@@ -71,11 +71,11 @@ public class ReferenceFlowItemHandler
     public void handleBatch(String tenant, List<ReferenceFlowItem> messages) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
+            LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
             long start = System.currentTimeMillis();
             fileRefReqService.reference(messages);
-            LOGGER.debug("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
-                         System.currentTimeMillis() - start);
+            LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
+                        System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
         }

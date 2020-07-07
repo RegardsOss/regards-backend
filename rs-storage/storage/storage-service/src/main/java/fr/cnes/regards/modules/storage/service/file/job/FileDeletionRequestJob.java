@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -46,8 +44,6 @@ import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestS
  *
  */
 public class FileDeletionRequestJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestJob.class);
 
     /**
      * JOB Parameter key for the storage plugin configuration identifier to use for the deletion.
@@ -94,7 +90,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         nbRequestToHandle = workingSubset.getFileDeletionRequests().size();
-        LOGGER.debug("[DELETION JOB] Runing deletion job for {} deletion requests", nbRequestToHandle);
+        logger.debug("[DELETION JOB] Runing deletion job for {} deletion requests", nbRequestToHandle);
         String errorCause = null;
         try {
             IStorageLocation storagePlugin = pluginService.getPlugin(plgBusinessId);
@@ -120,7 +116,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                 }
             }
             if (nbRequestToHandle > 0) {
-                LOGGER.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
+                logger.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
                             System.currentTimeMillis() - start, nbRequestToHandle);
             }
         }

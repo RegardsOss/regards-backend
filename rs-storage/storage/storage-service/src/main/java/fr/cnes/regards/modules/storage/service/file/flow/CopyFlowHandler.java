@@ -46,7 +46,7 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CopyFlowHandler.class);
 
-    @Value("${regards.storage.copy.items.bulk.size:1000}")
+    @Value("${regards.storage.copy.items.bulk.size:10}")
     private int BULK_SIZE;
 
     @Autowired

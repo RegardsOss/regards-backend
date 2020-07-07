@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
-import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 
 /**
  * HAndler to handle actions after a group requests ends.
@@ -48,9 +47,6 @@ public class FileRequestsGroupEventHandler
 
     @Autowired
     private ISubscriber subscriber;
-
-    @Autowired
-    private StorageLocationService storageLocationService;
 
     @Autowired
     private INotificationClient notificationClient;

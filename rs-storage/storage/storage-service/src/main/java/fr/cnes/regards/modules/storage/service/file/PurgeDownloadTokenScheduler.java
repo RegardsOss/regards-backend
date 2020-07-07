@@ -39,6 +39,10 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 @EnableScheduling
 public class PurgeDownloadTokenScheduler {
 
+    private static final String DEFAULT_INITIAL_DELAY = "60000";
+
+    private static final String DEFAULT_DELAY = "7200000";
+
     @Autowired
     private FileDownloadService downloadService;
 
@@ -48,7 +52,8 @@ public class PurgeDownloadTokenScheduler {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Scheduled(fixedDelayString = "360000", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_DELAY + "}",
+            initialDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
