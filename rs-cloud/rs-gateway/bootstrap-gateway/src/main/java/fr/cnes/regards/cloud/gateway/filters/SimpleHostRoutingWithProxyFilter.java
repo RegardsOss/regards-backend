@@ -100,8 +100,8 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
                     newParameterMap.put(authenticatedKey, Lists.newArrayList(authenticatedValue));
                 }
             }
+            context.setRequestQueryParams(newParameterMap);
         }
-        context.setRequestQueryParams(newParameterMap);
         return super.run();
     }
 }

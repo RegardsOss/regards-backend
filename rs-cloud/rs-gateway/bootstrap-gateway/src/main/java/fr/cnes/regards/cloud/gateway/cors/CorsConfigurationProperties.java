@@ -48,7 +48,7 @@ public class CorsConfigurationProperties {
         @NotNull
         private String[] allowedOrigins;
 
-        private String[] allowedHeaders = { "authorization", "content-type", "scope" };
+        private String[] allowedHeaders = { "authorization", "content-type", "scope", "X-Forwarded-Host", "X-Forwarded-For" , "X-Forwarded-Proto" };
 
         private String[] allowedMethods = { "OPTIONS", "HEAD", "GET", "PUT", "POST", "DELETE", "PATCH" };
 
