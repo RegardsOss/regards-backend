@@ -289,6 +289,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
         }
 
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Update chain forbidden as a deletion is pending");
+        }
+
         // Check mode
         checkProcessingChainMode(processingChain);
 
@@ -364,6 +368,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         AcquisitionProcessingChain chain = getChain(chainId);
+
+        if (isDeletionPending(chain)) {
+            throw new EntityOperationForbiddenException("update chain state forbidden as a deletion is pending");
+        }
         switch (payload.getUpdateType()) {
             case ALL:
                 chain.setActive(payload.getActive());
@@ -554,7 +562,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         for (AcquisitionProcessingChain processingChain : processingChains) {
             // Check periodicity
-            if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
+            if (isDeletionPending(processingChain)) {
+                LOGGER.debug("Acquisition processing chain \"{}\" won't start due to deletion pending",
+                             processingChain.getLabel());
+            } else if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" won't start due to periodicity",
                              processingChain.getLabel());
             } else if (processingChain.isLocked()) {
@@ -579,6 +590,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                            processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
+        }
+
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Start chain forbidden as a deletion is pending");
         }
 
         if (processingChain.isLocked()) {
@@ -962,7 +977,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new RsRuntimeException(e);
         }
 
-        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
+        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain,
+                isDeletionPending(chain));
 
         // Handle job summary
         summary.setActive((chain.getLastProductAcquisitionJobInfo() != null)
@@ -979,10 +995,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throws ModuleException {
         List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
         for (AcquisitionProcessingChain chain : chains) {
-            if (!chain.isLocked()) {
-                productService.scheduleProductsDeletionJob(chain, session, deleteChain);
+            if (deleteChain && (chain.isLocked() || chain.isActive())) {
+                throw new EntityOperationForbiddenException(
+                        "Acquisition chain is locked or running. Deletion is not available right now.");
             } else {
-                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+                productService.scheduleProductsDeletionJob(chain, session, deleteChain);
             }
         }
     }
@@ -990,7 +1007,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
             throws ModuleException {
-        productService.scheduleProductsDeletionJob(getChain(processingChainId), session, deleteChain);
+        AcquisitionProcessingChain chain = getChain(processingChainId);
+        if (deleteChain && (chain.isLocked() || chain.isActive())) {
+            throw new EntityOperationForbiddenException(
+                    "Acquisition chain is locked or running. Deletion is not available right now.");
+        }
+        productService.scheduleProductsDeletionJob(chain, session, deleteChain);
     }
 
     @Override

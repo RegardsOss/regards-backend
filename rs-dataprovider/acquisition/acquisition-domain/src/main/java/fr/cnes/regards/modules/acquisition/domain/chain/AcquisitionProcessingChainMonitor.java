@@ -27,12 +27,15 @@ public class AcquisitionProcessingChainMonitor {
 
     private boolean active = false;
 
+    private boolean deletionPending = false;
+
     // Post processing jobs not managed here ... can be seen in product
 
-    public AcquisitionProcessingChainMonitor(AcquisitionProcessingChain chain) {
+    public AcquisitionProcessingChainMonitor(AcquisitionProcessingChain chain, boolean deletionPending) {
         super();
         this.chain = chain;
         this.chainId = chain.getId();
+        this.deletionPending = deletionPending;
     }
 
     public AcquisitionProcessingChain getChain() {
@@ -44,11 +47,19 @@ public class AcquisitionProcessingChainMonitor {
     }
 
     public void setActive(boolean isProductAcquisitionJobActive, long nbSIPGenerationJobs) {
-        active = isProductAcquisitionJobActive || nbSIPGenerationJobs > 0;
+        active = isProductAcquisitionJobActive || (nbSIPGenerationJobs > 0);
     }
 
     public boolean isActive() {
         return active;
+    }
+
+    public boolean isDeletionPending() {
+        return deletionPending;
+    }
+
+    public void setDeletionPending(boolean deletionPending) {
+        this.deletionPending = deletionPending;
     }
 
 }

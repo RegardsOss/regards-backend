@@ -116,6 +116,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         for (Product product : products) {
             if (Thread.currentThread().isInterrupted()) {
                 debugInterruption = "before thread interruption";
+                sessionNotifier.notifyEndingChain(processingChain.getLabel(), product.getSession());
                 break;
             }
             logger.trace("Generating SIP for product {}", product.getProductName());
