@@ -30,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -75,6 +76,11 @@ public class ServiceConfiguration {
     }
 
     @Bean
+    public IModelAttrAssocClient modelAttrAssocClient() {
+        return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean
     @Primary
     public IStorageClient storageClient(IStorageFileListener listener) {
         return new StorageClientMock(listener, true);
@@ -111,13 +117,13 @@ public class ServiceConfiguration {
     /**
      * TODO : Replace by new storage client
     private class AipClientProxy {
-    
+
         private final IPublisher publisher;
-    
+
         public AipClientProxy(IPublisher publisher) {
             this.publisher = publisher;
         }
-    
+
         @SuppressWarnings("unused")
         public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
             for (String checksum : availabilityRequest.getChecksums()) {
@@ -130,7 +136,7 @@ public class ServiceConfiguration {
             return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
                     Collections.emptySet()));
         }
-    
+
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             Response mockResp = Mockito.mock(Response.class);
@@ -142,7 +148,7 @@ public class ServiceConfiguration {
             }
             return mockResp;
         }
-    
+
     }
     */
 
