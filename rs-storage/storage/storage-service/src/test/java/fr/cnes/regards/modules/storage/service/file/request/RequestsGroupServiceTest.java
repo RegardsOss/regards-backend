@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  */
 @ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-local.properties" })
+        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
 public class RequestsGroupServiceTest extends AbstractStorageTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupServiceTest.class);
