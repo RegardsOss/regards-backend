@@ -31,6 +31,10 @@ import org.springframework.util.MultiValueMap;
  */
 public class SearchRequest {
 
+    private static final String FACET_PARAMETER = "facets";
+
+    private static final String SORT_PARAMETER = "sort";
+
     /**
      * Engine to use for the research
      */
@@ -84,7 +88,8 @@ public class SearchRequest {
     public boolean hasSearchParameters() {
         if ((searchParameters != null) && !searchParameters.isEmpty()) {
             for (Entry<String, List<String>> param : searchParameters.entrySet()) {
-                if (!"facets".equals(param.getKey()) && (param.getValue() != null) && !param.getValue().isEmpty()) {
+                if (!FACET_PARAMETER.equals(param.getKey()) && !SORT_PARAMETER.equals(param.getKey())
+                        && (param.getValue() != null) && !param.getValue().isEmpty()) {
                     for (String value : param.getValue()) {
                         if ((value != null) && !value.isEmpty()) {
                             return true;
