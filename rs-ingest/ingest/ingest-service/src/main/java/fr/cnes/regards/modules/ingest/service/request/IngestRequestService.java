@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.service.request;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +34,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 
@@ -49,9 +52,11 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -65,6 +70,7 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
@@ -118,6 +124,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
+
+    @Autowired
+    private IIngestProcessingChainRepository processingChainRepository;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -347,14 +356,20 @@ public class IngestRequestService implements IIngestRequestService {
         deleteRequest(requests);
 
         List<AbstractRequest> toSchedule = Lists.newArrayList();
+        Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
 
         for (IngestRequest request : requests) {
+            Optional<IngestProcessingChain> chain = processingChainRepository
+                    .findOneByName((request.getMetadata().getIngestChain()));
             List<AIPEntity> aips = request.getAips();
 
             // Change AIP state
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 aipService.save(aipEntity);
+                if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
+                    postProcessToSchedule.getOrDefault(chain.get(), Sets.newHashSet()).add(aipEntity);
+                }
             }
 
             // Monitoring
@@ -379,7 +394,26 @@ public class IngestRequestService implements IIngestRequestService {
                                                       sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
         }
 
+        // Schedule manifest
         requestService.scheduleRequests(toSchedule);
+        // Schedule post process
+        for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
+            scheduleIngestPostProcessingJobs(es.getKey(), es.getValue());
+        }
+    }
+
+    /**
+     * Schedule a {@link IngestPostProcessingJob} for the given {@link IngestProcessingChain} to post process given {@link AIPEntity}s
+     * @param chain {@link IngestProcessingChain} to schedule job.
+     * @param aipEntities {@link AIPEntity}s to post process.
+     */
+    private void scheduleIngestPostProcessingJobs(IngestProcessingChain chain, Set<AIPEntity> aipEntities) {
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(IngestPostProcessingJob.INGEST_CHAIN_ID_PARAMETER, chain.getId()));
+        jobParameters.add(new JobParameter(IngestPostProcessingJob.AIPS_PARAMETER, aipEntities));
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB.getPriority(), jobParameters,
+                authResolver.getUser(), IngestPostProcessingJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
     }
 
     @Override

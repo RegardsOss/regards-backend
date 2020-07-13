@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.GenerationStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalFinalStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
-import fr.cnes.regards.modules.ingest.service.chain.step.PostprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
@@ -143,9 +142,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         // Step 4 : optional AIP tagging
         IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
         beanFactory.autowireBean(taggingStep);
-        // Step 5 : optional postprocessing
-        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this, ingestChain);
-        beanFactory.autowireBean(postprocessingStep);
+        /** Step 5 : optional postprocessing has to be run after storage ends. See {@link IngestPostProcessingJob}.  */
 
         // Internal final step
         IProcessingStep<List<AIP>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
@@ -183,8 +180,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         aips = generationStep.execute(currentEntity);
                         // Step 4 : optional AIP tagging
                         taggingStep.execute(aips);
-                        // Step 5 : optional postprocessing
-                        postprocessingStep.execute(sip);
                         // Internal finalization step (no plugin involved)
                         // Do all persistence actions in this step
                         finalStep.execute(aips);

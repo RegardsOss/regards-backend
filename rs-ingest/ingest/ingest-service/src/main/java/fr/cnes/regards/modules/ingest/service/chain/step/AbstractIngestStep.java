@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
@@ -51,6 +51,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
 
     protected Set<String> errors;
 
+    @Override
     public O execute(I in) throws ProcessingStepException {
         errors = new HashSet<>();
         return super.execute(in);
