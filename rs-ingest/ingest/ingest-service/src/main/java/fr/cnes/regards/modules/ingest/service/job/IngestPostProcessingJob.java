@@ -74,10 +74,10 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                         .getPlugin(ingestChain.get().getPostProcessingPlugin().get().getBusinessId());
                 plugin.postprocess(ingestChain.get(), aipEntities, this);
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                LOGGER.error("Post processing plugin doest not exists or is not active", e);
+                logger.error("Post processing plugin doest not exists or is not active", e);
             }
         } else {
-            LOGGER.warn("Ingest processing chain doest not exists anymore or no post processing plugin to apply");
+            logger.warn("Ingest processing chain doest not exists anymore or no post processing plugin to apply");
         }
     }
 
