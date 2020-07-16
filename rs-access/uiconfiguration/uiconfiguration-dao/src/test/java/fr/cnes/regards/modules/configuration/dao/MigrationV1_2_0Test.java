@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.configuration.dao;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import scripts.uiconfiguration.V1_2_0__update_modules_conf;
 
@@ -14,16 +15,19 @@ import java.util.function.Function;
 public class MigrationV1_2_0Test {
 
     @Test
+    @Ignore("Manual tests, generates migrated files")
     public void testSearchGraphUpdate() throws IOException {
         testUpdate("search-graph", V1_2_0__update_modules_conf::updateSearchGraphConfiguration);
     }
 
     @Test
+    @Ignore("Manual tests, generates migrated files")
     public void testSearchResultsUpdate() throws IOException {
         testUpdate("search-results", V1_2_0__update_modules_conf::updateSearchResultsConfiguration);
     }
 
     @Test
+    @Ignore("Manual tests, generates migrated files")
     public void testSearchFormUpdate() throws IOException {
         testUpdate("search-form", V1_2_0__update_modules_conf::updateSearchFormConfiguration);
     }
