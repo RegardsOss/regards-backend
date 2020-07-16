@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.service.session;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +68,7 @@ public class DeleteSessionEventHandler
                     event.getName());
         // Run a SessionDeletionJob
         try {
-            acquisitionService.deleteSessionProducts(event.getSource(), event.getName());
+            acquisitionService.scheduleProductDeletion(event.getSource(), Optional.ofNullable(event.getName()), false);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
         }
