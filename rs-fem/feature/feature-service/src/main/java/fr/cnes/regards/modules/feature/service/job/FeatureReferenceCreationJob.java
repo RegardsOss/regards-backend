@@ -71,14 +71,14 @@ public class FeatureReferenceCreationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Feature reference creation job starts", jobInfoId);
+        logger.info("[{}] Feature reference creation job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
 
         featureService.processRequests(featureReferenceRequests);
 
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
-        LOGGER.info("[{}]{} reference creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{} reference creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     System.currentTimeMillis() - start);
     }
 

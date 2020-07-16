@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
@@ -42,7 +44,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  */
 @Component
 @Profile("!nohandler")
-public class NotificationRequestEventHandler
+public class NotificationRequestEventHandler extends AbstractFeatureRequestEventHandler<NotificationRequestEvent>
         implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
@@ -58,6 +60,10 @@ public class NotificationRequestEventHandler
 
     @Autowired
     private IFeatureNotificationService notificationService;
+
+    public NotificationRequestEventHandler() {
+        super(NotificationRequestEvent.class);
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -90,5 +96,15 @@ public class NotificationRequestEventHandler
     @Override
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
+    }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return notificationService;
+    }
+
+    @Override
+    public FeatureRequestType getFeatureRequestType() {
+        return FeatureRequestType.NOTIFICATION;
     }
 }

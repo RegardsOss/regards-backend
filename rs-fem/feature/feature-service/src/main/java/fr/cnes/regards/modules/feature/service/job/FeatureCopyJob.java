@@ -65,10 +65,10 @@ public class FeatureCopyJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[{}] Feature copy job starts", jobInfoId);
+        logger.info("[{}] Feature copy job starts", jobInfoId);
         long start = System.currentTimeMillis();
         this.featureCopyService.processRequests(featureCopyRequests);
-        LOGGER.info("[{}]{} Copy request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{} Copy request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     System.currentTimeMillis() - start);
     }
 

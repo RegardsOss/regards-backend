@@ -21,8 +21,11 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -32,7 +35,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureDeletionService {
+public interface IFeatureDeletionService extends IFeatureDeniedService {
 
     /**
      * Register delete requests in database for further processing from incoming request events
@@ -42,9 +45,9 @@ public interface IFeatureDeletionService {
     /**
      * Schedule a job to process a batch of requests<br/>
      * Inside this list there is only one occurrence of {@link FeatureDeletionRequestEvent} per {@link Feature} id
-     * @return true if at least one request has been scheduled
+     * @return number of scheduled requests (0 if no request was scheduled)
      */
-    boolean scheduleRequests();
+    int scheduleRequests();
 
     /**
      * Process batch of requests during job
@@ -55,4 +58,11 @@ public interface IFeatureDeletionService {
      * Process batch of successful storage request
      */
     void processStorageRequests(Set<String> groupIds);
+
+    /**
+     * Register {@link FeatureDeletionRequest} from a {@link FeatureDeletionCollection}
+     * @param collection
+     * @return {@link RequestInfo} contain {@link FeatureUniformResourceName} of granted/denied features
+     */
+    RequestInfo<FeatureUniformResourceName> registerRequests(@Valid FeatureDeletionCollection collection);
 }

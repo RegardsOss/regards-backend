@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -57,10 +59,13 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.NotificationRequestJob;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
@@ -70,7 +75,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
  */
 @Service
 @MultitenantTransactional
-public class FeatureNotificationService implements IFeatureNotificationService {
+public class FeatureNotificationService extends AbstractFeatureService implements IFeatureNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureNotificationService.class);
 
@@ -126,8 +131,8 @@ public class FeatureNotificationService implements IFeatureNotificationService {
             List<NotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
-
         validator.validate(item, errors);
+        validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId()) || notificationsRequest.stream()
                 .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
@@ -135,19 +140,24 @@ public class FeatureNotificationService implements IFeatureNotificationService {
         }
 
         if (errors.hasErrors()) {
-            LOGGER.debug("Error during founded NotificationRequestEvent validation {}", errors.toString());
-            publisher
-                    .publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                       RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            // Monitoring log
+            FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
+                                             ErrorTranslator.getErrors(errors));
+            // Publish DENIED request
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
+                                                        item.getRequestOwner(), null, item.getUrn(),
+                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
 
         NotificationRequest request = NotificationRequest
                 .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
                        FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn(), RequestState.GRANTED);
+        // Monitoring log
+        FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
-                                                    RequestState.GRANTED, null));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
+                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED));
         notificationsRequest.add(request);
 
         // Add new request id to existing ones
@@ -191,17 +201,24 @@ public class FeatureNotificationService implements IFeatureNotificationService {
     @Override
     public void processRequests(List<NotificationRequest> requests) {
 
+        Map<FeatureUniformResourceName, NotificationRequest> notifPerUrn = requests.stream()
+                .collect(Collectors.toMap(NotificationRequest::getUrn, Function.identity()));
+
+        // FIXME add success response and monitoring logs
         List<FeatureEntity> features = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList()));
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
         for (FeatureEntity entity : features) {
-            if (entity.getLastUpdate().equals(entity.getCreationDate())) {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.CREATED.toString()));
-            } else {
-                notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                                FeatureManagementAction.UPDATED.toString()));
-            }
+            // Prepare notification
+            notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
+                                                            FeatureManagementAction.NOTIFIED.toString()));
+            // Monitoring log
+            NotificationRequest request = notifPerUrn.get(entity.getUrn());
+            FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
+            // Publish request success
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
+                                                        request.getRequestOwner(), entity.getProviderId(),
+                                                        entity.getUrn(), RequestState.SUCCESS));
         }
         publisher.publish(notifications);
 

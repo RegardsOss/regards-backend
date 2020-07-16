@@ -37,6 +37,11 @@ public enum FeatureRequestStep {
 
     // Awaiting processing
     LOCAL_SCHEDULED,
+
+    // ERROR
+    // - update cannot be done because feature doesn't exist anymore
+    LOCAL_ERROR,
+
     // Delete files
     REMOTE_STORAGE_DELETION_REQUESTED(true, true),
     // Store files

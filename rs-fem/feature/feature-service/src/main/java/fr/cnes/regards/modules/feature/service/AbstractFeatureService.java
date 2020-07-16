@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,56 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-/**
- *
- * Common feature utility method
- * @author Marc SORDI
- *
- */
-public abstract class AbstractFeatureService {
+import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
 
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.feature.dto.event.in.AbstractRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+
+/**
+ * @author Marc SORDI
+ */
+public abstract class AbstractFeatureService implements IFeatureDeniedService, IRequestValidation {
+
+    @Autowired
+    private IPublisher publisher;
+
+    @Override
+    public void validateRequest(AbstractRequestEvent event, Errors errors) {
+        if (!event.hasRequestId()) {
+            errors.reject("missing.request.id.header", "Missing request id header");
+        }
+        if (!event.hasRequestDate()) {
+            errors.reject("missing.request.date.header", "Missing request date header");
+        }
+        if (!event.hasRequestOwner()) {
+            errors.reject("missing.request.owner.header", "Missing request owner header");
+        }
+    }
+
+    @Override
+    public boolean denyMessage(FeatureRequestType type, Message message, String errorMessage) {
+
+        String requestId = AbstractRequestEvent.getRequestId(message.getMessageProperties());
+        if (requestId == null) {
+            return false;
+        }
+
+        String requestOwner = AbstractRequestEvent.getRequestOwner(message.getMessageProperties());
+        // Monitoring log
+        FeatureLogger.creationDenied(requestOwner, requestId, null, Sets.newHashSet(errorMessage));
+        // Publish DENIED request
+        publisher.publish(FeatureRequestEvent.build(type, requestId, requestOwner, null, null, RequestState.DENIED,
+                                                    Sets.newHashSet(errorMessage)));
+        // FIXME is it useful, really?
+        // metrics.count(null, null, FeatureCreationState.CREATION_REQUEST_DENIED);
+        return true;
+    }
 }

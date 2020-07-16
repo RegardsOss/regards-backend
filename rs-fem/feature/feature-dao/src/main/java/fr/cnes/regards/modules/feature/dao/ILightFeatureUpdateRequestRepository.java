@@ -51,9 +51,9 @@ public interface ILightFeatureUpdateRequestRepository extends JpaRepository<Ligh
      */
     @Query("select request from LightFeatureUpdateRequest request where request.urn not in ("
             + " select scheduledRequest.urn from LightFeatureUpdateRequest scheduledRequest"
-            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
-    public List<LightFeatureUpdateRequest> findRequestsToSchedule(@Param("now") OffsetDateTime now, Pageable page,
-            @Param("delay") OffsetDateTime delay);
+            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
+    public List<LightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime now, Pageable page, @Param("delay") OffsetDateTime delay);
 
     /**
      * Update {@link LightFeatureUpdateRequest} step

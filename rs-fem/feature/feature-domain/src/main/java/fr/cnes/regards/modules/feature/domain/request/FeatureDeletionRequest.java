@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
                 @Index(name = "idx_feature_deletion_step_registration_priority",
                         columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
                                 + AbstractRequest.COLUMN_PRIORITY),
-                @Index(name = "idx_feature_deletion_request_urn", columnList = AbstractRequest.URN) },
+                @Index(name = "idx_feature_deletion_request_urn", columnList = AbstractRequest.COLUMN_URN) },
         uniqueConstraints = { @UniqueConstraint(name = "uk_feature_deletion_request_id",
                 columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
 public class FeatureDeletionRequest extends AbstractFeatureRequest {

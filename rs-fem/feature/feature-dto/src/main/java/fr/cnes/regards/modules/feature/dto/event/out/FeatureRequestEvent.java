@@ -38,6 +38,11 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 public class FeatureRequestEvent implements ISubscribable {
 
     /**
+     * The requestType
+     */
+    private FeatureRequestType type;
+
+    /**
      * The request id
      */
     private String requestId;
@@ -61,14 +66,15 @@ public class FeatureRequestEvent implements ISubscribable {
 
     private Set<String> errors;
 
-    public static FeatureRequestEvent build(String requestId, String requestOwner, @Nullable String id,
-            @Nullable FeatureUniformResourceName urn, RequestState state) {
-        return build(requestId, requestOwner, id, urn, state, null);
+    public static FeatureRequestEvent build(FeatureRequestType type, String requestId, String requestOwner,
+            @Nullable String id, @Nullable FeatureUniformResourceName urn, RequestState state) {
+        return build(type, requestId, requestOwner, id, urn, state, null);
     }
 
-    public static FeatureRequestEvent build(String requestId, String requestOwner, @Nullable String id,
-            @Nullable FeatureUniformResourceName urn, RequestState state, Set<String> errors) {
+    public static FeatureRequestEvent build(FeatureRequestType type, String requestId, String requestOwner,
+            @Nullable String id, @Nullable FeatureUniformResourceName urn, RequestState state, Set<String> errors) {
         FeatureRequestEvent event = new FeatureRequestEvent();
+        event.setType(type);
         event.setRequestId(requestId);
         event.setId(id);
         event.setUrn(urn);
@@ -124,6 +130,14 @@ public class FeatureRequestEvent implements ISubscribable {
 
     public void setRequestOwner(String requestOwner) {
         this.requestOwner = requestOwner;
+    }
+
+    public FeatureRequestType getType() {
+        return type;
+    }
+
+    public void setType(FeatureRequestType type) {
+        this.type = type;
     }
 
 }

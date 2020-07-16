@@ -71,10 +71,10 @@ public class NotificationRequestJob extends AbstractJob<Void> {
     @Override
     public void run() {
         Timer timer = Timer.builder(this.getClass().getName()).tag("job", "run").register(registry);
-        LOGGER.info("[{}] Feature notification request job starts", jobInfoId);
+        logger.info("[{}] Feature notification request job starts", jobInfoId);
         long start = System.currentTimeMillis();
         timer.record(() -> notificationService.processRequests(notificationRequests));
-        LOGGER.info("[{}]{}{} notifications request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{}{} notifications request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     notificationRequests.size(), System.currentTimeMillis() - start);
     }
 }

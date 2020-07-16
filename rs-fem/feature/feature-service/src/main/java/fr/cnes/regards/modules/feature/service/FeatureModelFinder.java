@@ -57,7 +57,7 @@ public class FeatureModelFinder extends AbstractCacheableModelFinder implements 
             // if the model doesn't exists we return null
             if ((modelResponse == null) || !modelResponse.getBody().stream()
                     .anyMatch(model -> model.getContent().getName().equals(modelName))) {
-                return null;
+                return null; // NOSONAR
             }
             ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient
                     .getModelAttrAssocs(modelName);

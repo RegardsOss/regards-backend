@@ -33,7 +33,9 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
+import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
 /**
@@ -44,7 +46,7 @@ import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperti
  */
 @Component
 @Profile("!nohandler")
-public class FeatureCreationRequestEventHandler
+public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureCreationRequestEvent>
         implements IBatchHandler<FeatureCreationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationRequestEventHandler.class);
@@ -60,6 +62,10 @@ public class FeatureCreationRequestEventHandler
 
     @Autowired
     private IFeatureCreationService featureService;
+
+    public FeatureCreationRequestEventHandler() {
+        super(FeatureCreationRequestEvent.class);
+    }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -94,5 +100,15 @@ public class FeatureCreationRequestEventHandler
     @Override
     public long getReceiveTimeout() {
         return confProperties.getBatchReceiveTimeout();
+    }
+
+    @Override
+    public IFeatureDeniedService getFeatureService() {
+        return featureService;
+    }
+
+    @Override
+    public FeatureRequestType getFeatureRequestType() {
+        return FeatureRequestType.CREATION;
     }
 }

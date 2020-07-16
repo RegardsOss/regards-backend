@@ -16,16 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.dto;
+package fr.cnes.regards.modules.feature.service;
+
+import org.springframework.validation.Errors;
+
+import fr.cnes.regards.modules.feature.dto.event.in.AbstractRequestEvent;
 
 /**
- * @author kevin
+ * Validate that all required validation parameters is present.
+ * @author Marc SORDI
  *
  */
-public enum FeatureManagementAction {
-    CREATED,
-    UPDATED,
-    DELETED,
-    ALREADY_DELETED,
-    NOTIFIED;
+public interface IRequestValidation {
+
+    void validateRequest(AbstractRequestEvent event, Errors errors);
 }
