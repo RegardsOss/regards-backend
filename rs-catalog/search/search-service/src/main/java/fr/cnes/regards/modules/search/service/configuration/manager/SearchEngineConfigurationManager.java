@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.elasticsearch.common.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
@@ -15,6 +19,7 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import fr.cnes.regards.modules.search.service.SearchEngineConfigurationService;
 
 /**
  * Search engine configuration manager.
@@ -25,8 +30,26 @@ import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 @Component
 public class SearchEngineConfigurationManager extends AbstractModuleManager<Void> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationManager.class);
+
     @Autowired
     private ISearchEngineConfigurationService searchEngineConfigurationService;
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        for (SearchEngineConfiguration conf : searchEngineConfigurationService.retrieveAllConfs()) {
+            if (!conf.getConfiguration().getBusinessId()
+                    .equals(SearchEngineConfigurationService.LEGACY_SEARCH_ENGINE_BUSINESS_ID)) {
+                try {
+                    searchEngineConfigurationService.deleteConf(conf.getId());
+                } catch (ModuleException e) {
+                    errors.add(e.getMessage());
+                }
+            }
+        }
+        return errors;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -44,7 +67,7 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
                     } catch (ModuleException e) {
                         importErrors.add(String.format("Skipping import of search engine configuration %s: %s",
                                                        toImport.getLabel(), e.getMessage()));
-                        logger.error(e.getMessage(), e);
+                        LOGGER.error(e.getMessage(), e);
                     }
                 }
             }
@@ -62,6 +85,6 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
                 configurations.add(ModuleConfigurationItem.build(searchEngineConfiguration));
             }
         }
-        return ModuleConfiguration.build(info, configurations);
+        return ModuleConfiguration.build(info, true, configurations);
     }
 }

@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.search.domain;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.springframework.util.MultiValueMap;
 
@@ -28,6 +30,10 @@ import org.springframework.util.MultiValueMap;
  * @author Sébastien Binda
  */
 public class SearchRequest {
+
+    private static final String FACET_PARAMETER = "facets";
+
+    private static final String SORT_PARAMETER = "sort";
 
     /**
      * Engine to use for the research
@@ -77,6 +83,22 @@ public class SearchRequest {
 
     public String getDatasetUrn() {
         return datasetUrn;
+    }
+
+    public boolean hasSearchParameters() {
+        if ((searchParameters != null) && !searchParameters.isEmpty()) {
+            for (Entry<String, List<String>> param : searchParameters.entrySet()) {
+                if (!FACET_PARAMETER.equals(param.getKey()) && !SORT_PARAMETER.equals(param.getKey())
+                        && (param.getValue() != null) && !param.getValue().isEmpty()) {
+                    for (String value : param.getValue()) {
+                        if ((value != null) && !value.isEmpty()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public MultiValueMap<String, String> getSearchParameters() {

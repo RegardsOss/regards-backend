@@ -180,7 +180,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.addParameter("début", startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("debut", startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(0)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -190,7 +190,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
-        customizer.addParameter("début", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("debut", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -258,7 +258,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='diameter']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='sun_distance']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='début' and @value='{time:start}']")
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='debut' and @value='{time:start}']")
                 .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='fin' and @value='{time:end}']")
                 .exists());
@@ -304,7 +304,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(
                           MockMvcResultMatchers
                                   .xpath(atomUrl
-                                          + String.format("/Parameter[@name='début' and @minInclusive='%s']",
+                                          + String.format("/Parameter[@name='debut' and @minInclusive='%s']",
                                                           OffsetDateTimeAdapter
                                                                   .format((OffsetDateTime) startDate.getValue())))
                                   .exists());
