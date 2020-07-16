@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -52,6 +53,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
@@ -91,6 +93,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IRequestService requestService;
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
@@ -280,7 +285,7 @@ public class IngestRequestService implements IIngestRequestService {
                 sessionNotifier.incrementProductStorePending(request);
             } else {
                 // No files to store for the request AIPs. We can immediately store the manifest.
-                finalizeSuccessfulRequest(request, false);
+                finalizeSuccessfulRequest(Sets.newHashSet(request), false);
             }
         } catch (ModuleException e) {
             // Keep track of the error
@@ -324,22 +329,27 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRemoteStoreSuccess(IngestRequest request, RequestInfo requestInfo) {
-        if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
-            // Update AIPs with meta returned by storage
-            aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
-            // Check if there is another storage request we're waiting for
-            List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
-            if (!remoteStepGroupIds.isEmpty()) {
-                saveRequest(request);
+    public void handleRemoteStoreSuccess(Collection<IngestRequest> requests, RequestInfo requestInfo) {
+        Set<IngestRequest> toFinilize = Sets.newHashSet();
+        for (IngestRequest request : requests) {
+            if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
+                // Update AIPs with meta returned by storage
+                aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
+                                                                     requestInfo.getSuccessRequests());
+                // Check if there is another storage request we're waiting for
+                List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
+                if (!remoteStepGroupIds.isEmpty()) {
+                    saveRequest(request);
+                } else {
+                    // The current request is over
+                    toFinilize.add(request);
+                }
             } else {
-                // The current request is over
-                finalizeSuccessfulRequest(request, true);
+                // Keep track of the error
+                saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
             }
-        } else {
-            // Keep track of the error
-            saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
         }
+        finalizeSuccessfulRequest(toFinilize, true);
     }
 
     private List<String> updateRemoteStepGroupId(IngestRequest request, RequestInfo requestInfo) {
@@ -349,41 +359,50 @@ public class IngestRequestService implements IIngestRequestService {
         return remoteStepGroupIds;
     }
 
-    private void finalizeSuccessfulRequest(IngestRequest request, boolean afterStorage) {
+    private void finalizeSuccessfulRequest(Collection<IngestRequest> requests, boolean afterStorage) {
+
+        if (requests.isEmpty()) {
+            return;
+        }
+
         // Clean
-        deleteRequest(request);
+        deleteRequest(requests);
 
-        List<AIPEntity> aips = request.getAips();
+        List<AbstractRequest> toSchedule = Lists.newArrayList();
 
-        // Change AIP state
-        for (AIPEntity aipEntity : aips) {
-            aipEntity.setState(AIPState.STORED);
-            // Find if this is the last version and set last flag accordingly
-            aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode());
-            aipService.save(aipEntity);
+        for (IngestRequest request : requests) {
+            List<AIPEntity> aips = request.getAips();
+
+            // Change AIP state
+            for (AIPEntity aipEntity : aips) {
+                aipEntity.setState(AIPState.STORED);
+                // Find if this is the last version and set last flag accordingly
+                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode());
+                aipService.save(aipEntity);
+            }
+
+            // Monitoring
+            // Decrement from #requestRemoteStorage
+            if (afterStorage) {
+                sessionNotifier.decrementProductStorePending(request);
+            }
+            // Even if no file is present in AIP, we consider the product as stored
+            sessionNotifier.incrementProductStoreSuccess(request);
+
+            // Prepare manifest storage scheduling
+            toSchedule.addAll(aipSaveMetaDataService.createRequests(aips, request.getMetadata().getStorages(), false,
+                                                                    true));
+
+            // Update SIP state
+            SIPEntity sipEntity = aips.get(0).getSip();
+            sipEntity.setState(SIPState.STORED);
+            sipService.save(sipEntity);
+            // Publish SUCCESSFUL request
+            publisher
+                    .publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
+                                                      sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
         }
-
-        // Monitoring
-        // Decrement from #requestRemoteStorage
-        if (afterStorage) {
-            sessionNotifier.decrementProductStorePending(request);
-        }
-        // Even if no file is present in AIP, we consider the product as stored
-        sessionNotifier.incrementProductStoreSuccess(request);
-
-        // Schedule manifest storage
-        aipSaveMetaDataService.schedule(aips, request.getMetadata().getStorages(), false, true);
-
-        // Update SIP state
-        SIPEntity sipEntity = aips.get(0).getSip();
-        sipEntity.setState(SIPState.STORED);
-        sipService.save(sipEntity);
-        // Publish SUCCESSFUL request
-        publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip().getId(),
-                                                   sipEntity.getSipId(),
-                                                   RequestState.SUCCESS,
-                                                   request.getErrors()));
+        requestService.scheduleRequests(toSchedule);
     }
 
     @Override
@@ -413,24 +432,25 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteReferenceSuccess(Set<RequestInfo> requests) {
-        for (RequestInfo ri : requests) {
-            // Retrieve request and related SIP & AIPs entities
-            Optional<IngestRequest> requestOp = ingestRequestRepository.findOneWithAIPs(ri.getGroupId());
-            if (requestOp.isPresent()) {
-                IngestRequest request = requestOp.get();
-                if (request.getStep()
-                        == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
-                    aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), ri.getSuccessRequests());
-                    List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, ri);
+        Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
+        for (AbstractRequest request : requestService.getRequests(requests)) {
+            IngestRequest iReq = (IngestRequest) request;
+            if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+                for (RequestInfo ri : requests.stream()
+                        .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
+                        .collect(Collectors.toSet())) {
+                    aipStorageService.updateAIPsContentInfosAndLocations(iReq.getAips(), ri.getSuccessRequests());
+                    List<String> remoteStepGroupIds = updateRemoteStepGroupId(iReq, ri);
                     if (!remoteStepGroupIds.isEmpty()) {
-                        saveRequest(request);
+                        saveRequest(iReq);
                     } else {
                         // The current request is over
-                        finalizeSuccessfulRequest(request, true);
+                        requestsToFinilized.add(iReq);
                     }
                 }
             }
         }
+        finalizeSuccessfulRequest(requestsToFinilized, true);
     }
 
     @Override
@@ -454,7 +474,7 @@ public class IngestRequestService implements IIngestRequestService {
             }
         }
     }
-
+    
     @Override
     public void ignore(IngestRequest request) {
         request.setState(InternalRequestState.IGNORED);
@@ -533,13 +553,15 @@ public class IngestRequestService implements IIngestRequestService {
      * Delete the given {@link IngestRequest} and unlock associated jobs.
      * @param request
      */
-    public void deleteRequest(IngestRequest request) {
-        if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
-            JobInfo jobInfoToUnlock = request.getJobInfo();
-            jobInfoToUnlock.setLocked(false);
-            jobInfoService.save(jobInfoToUnlock);
+    public void deleteRequest(Collection<IngestRequest> requests) {
+        for (IngestRequest request : requests) {
+            if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
+                JobInfo jobInfoToUnlock = request.getJobInfo();
+                jobInfoToUnlock.setLocked(false);
+                jobInfoService.save(jobInfoToUnlock);
+            }
         }
-        ingestRequestRepository.delete(request);
+        ingestRequestRepository.deleteAll(requests);
     }
 
     private void updateRequestWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,

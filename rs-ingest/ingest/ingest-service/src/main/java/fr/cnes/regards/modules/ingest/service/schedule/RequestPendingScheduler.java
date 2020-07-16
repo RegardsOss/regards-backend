@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +28,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Scheduler to periodically check if there is some pending request that can be scheduled
@@ -42,11 +48,19 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 @Component
 @Profile("!noschedule")
 @EnableScheduling
-public class RequestPendingScheduler {
+public class RequestPendingScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestPendingScheduler.class);
 
     private static final String UNLOCK_REQ_SCHEDULER_LOCK = "request-pending-scheduler-lock";
+
+    private static final String DEFAULT_INITIAL_DELAY = "10000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "1000";
+
+    private static final String UNLOCK_TITLE = "Unlock requests scheduling";
+
+    private static final String UNLOCK_ACTIONS = "UNLOCK REQUESTS ACTIONS";
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -58,43 +72,36 @@ public class RequestPendingScheduler {
     private IRequestService requestService;
 
     @Autowired
-    private ILockService lockService;
+    private LockingTaskExecutors lockingTaskExecutors;
 
-    @Scheduled(fixedDelayString = "${regards.ingest.request.schedule.delay:30000}", initialDelay = 30_000)
-    public void unlockRequests() {
-        try {
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                try {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    if (obtainLock()) {
-                        requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
-                        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
-                        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
-                        requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
-                        requestService.unblockRequests(RequestTypeEnum.UPDATE);
-                    }
-                } finally {
-                    releaseLock();
-                    runtimeTenantResolver.clearTenant();
-                }
+    private final Task unlockRequestsTask = () -> {
+        LockAssert.assertLocked();
+        requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
+        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
+        requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
+        requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
+        requestService.unblockRequests(RequestTypeEnum.UPDATE);
+    };
+
+    @Scheduled(initialDelayString = "${regards.ingest.schedule.pending.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.ingest.schedule.pending.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    public void scheduleUpdateRequests() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                traceScheduling(tenant, UNLOCK_ACTIONS);
+                lockingTaskExecutors.executeWithLock(unlockRequestsTask, new LockConfiguration(
+                        UNLOCK_REQ_SCHEDULER_LOCK, Instant.now().plusSeconds(120)));
+            } catch (Throwable e) {
+                handleSchedulingError(UNLOCK_ACTIONS, UNLOCK_TITLE, e);
+            } finally {
+                runtimeTenantResolver.clearTenant();
             }
-        } catch (Exception e) {
-            LOGGER.error(String.format("Error runing requests scheduling tasks. Cause : %s", e.getMessage()), e);
         }
     }
 
-    /**
-     * Get lock to ensure schedulers are not started at the same time by many instance of this microservice
-     * @return
-     */
-    private boolean obtainLock() {
-        return lockService.obtainLockOrSkip(UNLOCK_REQ_SCHEDULER_LOCK, this, 60L);
-    }
-
-    /**
-     * Release lock
-     */
-    private void releaseLock() {
-        lockService.releaseLock(UNLOCK_REQ_SCHEDULER_LOCK, this);
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

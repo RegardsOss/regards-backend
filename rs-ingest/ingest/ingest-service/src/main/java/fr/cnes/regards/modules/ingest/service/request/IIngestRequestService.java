@@ -98,7 +98,7 @@ public interface IIngestRequestService {
     /**
      * Handle remote storage success
      */
-    void handleRemoteStoreSuccess(IngestRequest request, RequestInfo requestInfo);
+    void handleRemoteStoreSuccess(Collection<IngestRequest> request, RequestInfo requestInfo);
 
     /**
      * Handle remote storage error

@@ -45,7 +45,8 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
         @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
         @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
         @Index(name = "idx_aip_categories", columnList = "categories"),
-        @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"), })
+        @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
+        @Index(name = "idx_aipid", columnList = "aip_id") })
 public class AIPEntity extends AbstractAIPEntity {
 
     /**

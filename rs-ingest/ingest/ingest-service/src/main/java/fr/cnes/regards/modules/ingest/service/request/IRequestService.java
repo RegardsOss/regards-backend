@@ -89,11 +89,17 @@ public interface IRequestService {
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
      * @param request the request to save
+     * @return
+     *
+     * @deprecated Use {@link #scheduleRequests(List)} instead to improve performances.
      */
+    @Deprecated
     AbstractRequest scheduleRequest(AbstractRequest request);
 
     /**
      * Check the given request is runnable or should  be delayed.
+     * @param request
+     * @return
      */
     public boolean shouldDelayRequest(AbstractRequest request);
 

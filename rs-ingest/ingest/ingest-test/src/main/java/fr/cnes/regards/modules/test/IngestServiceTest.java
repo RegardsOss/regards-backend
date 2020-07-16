@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -282,7 +284,9 @@ public class IngestServiceTest {
         long end = System.currentTimeMillis() + timeout;
         // Wait
         do {
-            long count = abstractRequestRepository.count();
+            long count = abstractRequestRepository
+                    .countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED, InternalRequestState.CREATED,
+                                                    InternalRequestState.RUNNING, InternalRequestState.TO_SCHEDULE));
             LOGGER.info("{} Current request running", count);
             if (count == 0) {
                 break;
