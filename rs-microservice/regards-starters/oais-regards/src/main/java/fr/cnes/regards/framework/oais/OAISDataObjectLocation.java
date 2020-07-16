@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Path;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,8 @@ public class OAISDataObjectLocation {
      * URL to access the file
      */
     @NotNull(message = URL_REQUIRED)
+    @Pattern(regexp = "\\b[a-zA-Z]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
+            message = "URl should respect URL format from RFC 1738")
     private String url;
 
     /**
@@ -137,8 +140,8 @@ public class OAISDataObjectLocation {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (storage == null ? 0 : storage.hashCode());
-        result = prime * result + (url == null ? 0 : url.hashCode());
+        result = (prime * result) + (storage == null ? 0 : storage.hashCode());
+        result = (prime * result) + (url == null ? 0 : url.hashCode());
         return result;
     }
 

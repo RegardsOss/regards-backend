@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
  */
 public interface IJob<R> extends Runnable {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(IJob.class);
+    static final Logger ILOGGER = LoggerFactory.getLogger(IJob.class);
 
     /**
      * Manage job result.
@@ -110,7 +110,7 @@ public interface IJob<R> extends Runnable {
      */
     static void handleMissingParameter(String parameterName) throws JobParameterMissingException {
         String message = String.format("Missing parameter \"%s\"", parameterName);
-        LOGGER.error(message);
+        ILOGGER.error(message);
         throw new JobParameterMissingException(message);
     }
 
@@ -122,7 +122,7 @@ public interface IJob<R> extends Runnable {
      */
     static void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
         String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason);
-        LOGGER.error(errorMessage);
+        ILOGGER.error(errorMessage);
         throw new JobParameterInvalidException(errorMessage);
     }
 
@@ -135,7 +135,7 @@ public interface IJob<R> extends Runnable {
     static void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
         String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName,
                                             reason.getMessage());
-        LOGGER.error(errorMessage, reason);
+        ILOGGER.error(errorMessage, reason);
         throw new JobParameterInvalidException(errorMessage);
     }
 

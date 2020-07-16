@@ -210,9 +210,9 @@ public class PluginService implements IPluginService {
         PluginConfiguration newConf = repos.save(plgConf);
         if (shouldPublishCreation) {
             publisher.publish(new BroadcastPluginConfEvent(newConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
-                    PluginServiceAction.CREATE, newConf.getInterfaceNames()));
+                                                           PluginServiceAction.CREATE, newConf.getInterfaceNames()));
             publisher.publish(new PluginConfEvent(newConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
-                    PluginServiceAction.CREATE, newConf.getInterfaceNames()));
+                                                  PluginServiceAction.CREATE, newConf.getInterfaceNames()));
 
         }
         return newConf;
@@ -364,15 +364,15 @@ public class PluginService implements IPluginService {
         if (oldConfActive != newConf.isActive()) {
             // For CATALOG
             publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(), newConf.getBusinessId(),
-                    newConf.getLabel(), newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
-                    pluginMeta.getInterfaceNames()));
+                                                           newConf.getLabel(), newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
+                                                                   pluginMeta.getInterfaceNames()));
             // For DAM
             publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
-                    newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
-                    pluginMeta.getInterfaceNames()));
+                                                  newConf.isActive() ? PluginServiceAction.ACTIVATE : PluginServiceAction.DISABLE,
+                                                          pluginMeta.getInterfaceNames()));
         } else {
             publisher.publish(new PluginConfEvent(pluginConf.getId(), newConf.getBusinessId(), newConf.getLabel(),
-                    PluginServiceAction.UPDATE, pluginMeta.getInterfaceNames()));
+                                                  PluginServiceAction.UPDATE, pluginMeta.getInterfaceNames()));
         }
         // Remove the plugin configuration from cache
         cleanRecursively(pluginConf);
@@ -420,7 +420,7 @@ public class PluginService implements IPluginService {
         }
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(toDelete.getPluginId());
         publisher.publish(new BroadcastPluginConfEvent(toDelete.getId(), toDelete.getBusinessId(), toDelete.getLabel(),
-                PluginServiceAction.DELETE, pluginMeta.getInterfaceNames()));
+                                                       PluginServiceAction.DELETE, pluginMeta.getInterfaceNames()));
         repos.deleteById(toDelete.getId());
 
         // Remove the PluginConfiguration from the map
@@ -452,7 +452,10 @@ public class PluginService implements IPluginService {
         List<PluginConfiguration> result = new ArrayList<>();
         for (PluginConfiguration conf : repos.findAll()) {
             PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(conf.getPluginId());
-            if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
+            if(pluginMeta == null) {
+                LOGGER.error("The pluggin {} is not provided",conf.getPluginId());
+            }
+            else if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
                 conf.setMetaData(pluginMeta);
                 result.add(conf);
             }
@@ -484,7 +487,7 @@ public class PluginService implements IPluginService {
 
         if (confs.isEmpty()) {
             throw new ModuleException(
-                    String.format("No plugin configuration defined for the type <%s>.", interfacePluginType.getName()));
+                                      String.format("No plugin configuration defined for the type <%s>.", interfacePluginType.getName()));
         }
 
         // Search configuration with upper priority
@@ -599,13 +602,13 @@ public class PluginService implements IPluginService {
             LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
             logPluginServiceState("instanciatePluginAndCache");
             throw new PluginMetadataNotFoundRuntimeException(
-                    "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
+                                                             "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
         }
 
         if (!Objects.equals(pluginMetadata.getVersion(), pluginConf.getVersion())) {
             throw new CannotInstanciatePluginException(
-                    String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                  pluginConf.getVersion(), pluginMetadata.getVersion()));
+                                                       String.format("Plugin configuration version (%s) is different from plugin one (%s).",
+                                                                     pluginConf.getVersion(), pluginMetadata.getVersion()));
         }
 
         // When pluginMap are loaded from database, maybe dependant pluginMap aren't yet loaded
@@ -778,7 +781,7 @@ public class PluginService implements IPluginService {
 
         // Create a clone with decrypted value
         PluginConfiguration exportedConf = new PluginConfiguration(pluginConf.getLabel(), pluginConf.getPriorityOrder(),
-                pluginConf.getPluginId());
+                                                                   pluginConf.getPluginId());
         exportedConf.setBusinessId(pluginConf.getBusinessId());
         exportedConf.setIsActive(false);
         exportedConf.setIconUrl(pluginConf.getIconUrl());

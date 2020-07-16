@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -92,9 +93,27 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         this.publisher = publisher;
     }
 
+    private JobInfo getJobInfo(Runnable r) {
+        JobInfo jobInfo = jobsMap.inverse().get(r);
+        int loop = 0;
+        while ((jobInfo == null) && (loop < 10)) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+            loop++;
+            jobInfo = jobsMap.inverse().get(r);
+        }
+        if (jobInfo == null) {
+            LOGGER.error("Error getting job from existing runnable tasks.");
+        }
+        return jobInfo;
+    }
+
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
-        JobInfo jobInfo = jobsMap.inverse().get(r);
+        JobInfo jobInfo = getJobInfo(r);
         // In case jobsMap is not yet available (this means afterExecute has been called very very early)
         // because of jobsMap.put(jobInfo, threadPool.submit(...))
         while (jobInfo == null) {
@@ -110,7 +129,13 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
-        JobInfo jobInfo = jobsMap.inverse().get(r);
+        JobInfo jobInfo = getJobInfo(r);
+
+        if (jobInfo == null) {
+            LOGGER.error("Cannot retrieve job info", t);
+            return;
+        }
+
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         // FutureTask (which is used by ThreadPoolExecutor) doesn't give a fuck of thrown exception so we must get it
         // by hands

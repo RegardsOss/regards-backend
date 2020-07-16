@@ -153,16 +153,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     /**
-     * Allows to perform DELETE with body request with the security automatically handled
-     */
-    protected ResultActions performDefaultDelete(String urlTemplate, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPost(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST,
-                                                       getDefaultUserEmail(), getDefaultRole()),
-                           content, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
-
-    /**
      * Allows to perform POST request without the security automatically handled
      */
     protected ResultActions performPost(String urlTemplate, String token, Object content,
@@ -219,11 +209,30 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     /**
+     * Allows to perform DELETE with body request with the security automatically handled
+     */
+    protected ResultActions performDefaultDelete(String urlTemplate, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return performDelete(urlTemplate,
+                             manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
+                                            getDefaultUserEmail(), getDefaultRole()),
+                             content, requestBuilderCustomizer, errorMsg, urlVariables);
+    }
+
+    /**
      * Allows to perform DELETE request without the security automatically handled
      */
     protected ResultActions performDelete(String urlTemplate, String authToken,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
+    }
+
+    /**
+     * Allows to perform DELETE request without the security automatically handled with content
+     */
+    protected ResultActions performDelete(String urlTemplate, String authToken, Object content,
+            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+        return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, content, errorMsg, urlVariables);
     }
 
     /**

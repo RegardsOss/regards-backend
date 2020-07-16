@@ -48,7 +48,7 @@ public class JsonMessageConverters implements MessageConverter {
 
     /**
      * Use {@link AmqpConstants#REGARDS_CONVERTER_HEADER} instead.
-     * Will be remove in V1.2
+     * Will be remove in V1.3
      */
     @Deprecated
     private static final String CONVERTER_TYPE_HEADER = "__ctype__";
@@ -87,8 +87,10 @@ public class JsonMessageConverters implements MessageConverter {
             String errorMessage = String
                     .format("Inconsistent tenant resolution : runtime tenant \"%s\" does not match with message one : \"%s\"",
                             runtimeTenant, tenant);
-            LOGGER.error(errorMessage);
-            throw new MessageConversionException(errorMessage);
+            LOGGER.warn(errorMessage);
+            // FIXME
+            // throw new MessageConversionException(errorMessage);
+            // Manage tenant before calling handler to properly force and clean tenant.
         }
 
         try {

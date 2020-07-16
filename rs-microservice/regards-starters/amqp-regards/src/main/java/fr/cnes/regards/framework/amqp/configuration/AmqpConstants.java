@@ -44,6 +44,15 @@ public final class AmqpConstants {
 
     public static final String REGARDS_TYPE_HEADER = REGARDS_HEADER_NS + "type";
 
+    /**
+     * Request headers
+     */
+    public static final String REGARDS_REQUEST_ID_HEADER = REGARDS_HEADER_NS + "request.id";
+
+    public static final String REGARDS_REQUEST_DATE_HEADER = REGARDS_HEADER_NS + "request.date";
+
+    public static final String REGARDS_REQUEST_OWNER_HEADER = REGARDS_HEADER_NS + "request.owner";
+
     private AmqpConstants() {
     }
 }

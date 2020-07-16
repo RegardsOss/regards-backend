@@ -52,6 +52,8 @@ public class AmqpClientPublisher {
 
     private final static Pattern TEMPLATE_PATTERN = Pattern.compile(TEMPLATE_REGEXP);
 
+    private final static String HEADERS_NS = "$headers";
+
     private final static Integer BATCH_SIZE = 1000;
 
     @Autowired
@@ -102,7 +104,7 @@ public class AmqpClientPublisher {
             // Generate batch
             List<Map<String, Object>> messages = generator.generate(batchSize);
             List<Object> oMessages = new ArrayList<>();
-            messages.forEach(m -> oMessages.add(m));
+            messages.forEach(m -> oMessages.add(manageHeaders(m)));
             // Broadcast
             publisher.broadcastAll(exchangeName, queueName, priority, oMessages, headers);
             LOGGER.info("Batch of {} messages sended. Remaining {}.", batchSize, remaining);
@@ -135,7 +137,8 @@ public class AmqpClientPublisher {
         try {
             LOGGER.info("Loading JSON from {}", jsonPath);
             // Load JSON message
-            Map<String, Object> message = mapper.readValue(jsonPath.toFile(), Map.class);
+            Map<String, Object> readMessage = mapper.readValue(jsonPath.toFile(), Map.class);
+            Object message = manageHeaders(readMessage);
             // Broadcast
             publisher.broadcast(exchangeName, queueName, priority, message, headers);
         } catch (IOException e) {
@@ -143,5 +146,20 @@ public class AmqpClientPublisher {
             LOGGER.error(error, e);
             throw new IllegalArgumentException(error);
         }
+    }
+
+    private Object manageHeaders(Map<String, Object> message) {
+        Object oHeaders = message.remove(HEADERS_NS);
+        if ((oHeaders == null) || !Map.class.isAssignableFrom(oHeaders.getClass())) {
+            return message;
+        }
+
+        // Else prepare a message with headers
+        MessageWithHeaders<String, Object> mwh = new MessageWithHeaders<String, Object>();
+        mwh.putAll(message);
+        // Propagate headers
+        Map<String, Object> headers = (Map<String, Object>) oHeaders;
+        headers.forEach((k, v) -> mwh.setHeader(k, v));
+        return mwh;
     }
 }

@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration
+fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration,\
+fr.cnes.regards.framework.amqp.autoconfigure.AmqpHealthIndicatorAutoConfiguration

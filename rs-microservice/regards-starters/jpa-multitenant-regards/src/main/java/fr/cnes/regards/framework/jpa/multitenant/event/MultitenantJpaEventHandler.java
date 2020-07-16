@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.sql.DataSource;
 
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
@@ -31,18 +30,17 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
-import com.mchange.v2.c3p0.DataSources;
-
+import com.zaxxer.hikari.HikariDataSource;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 
@@ -146,14 +144,15 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // Init data source
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
-                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection,
-                                                                              schemaIdentifier);
+                TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
+                DataSource dataSource = TenantDataSourceHelper
+                        .initDataSource(daoProperties, tenantConnection, schemaIdentifier);
                 // Remove existing one
                 DataSource oldDataSource = dataSources.remove(tenantConnection.getTenant());
                 // Remove related lock executor
                 lockingTaskExecutors.removeLockingTaskExecutor(tenantConnection.getTenant());
                 if (oldDataSource != null) {
-                    DataSources.destroy(oldDataSource);
+                    oldDataSource.unwrap(HikariDataSource.class).close();
                 }
                 // Update schema
                 datasourceSchemaHelper.migrate(dataSource);
@@ -167,9 +166,10 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 localPublisher.publishConnectionReady(tenantConnection.getTenant());
             } catch (Exception ex) {
                 LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s",
-                                           tenantConnection.getTenant(), eventMicroserviceName),
-                             ex);
-                updateConnectionState(tenantConnection.getTenant(), TenantConnectionState.ERROR,
+                                           tenantConnection.getTenant(),
+                                           eventMicroserviceName), ex);
+                updateConnectionState(tenantConnection.getTenant(),
+                                      TenantConnectionState.ERROR,
                                       Optional.ofNullable(ex.getMessage()));
             }
         }
@@ -180,8 +180,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
             multitenantResolver.updateState(microserviceName, tenant, state, errorCause);
         } catch (JpaMultitenantException ex) {
             LOGGER.error(String.format("Cannot update datasource for tenant %s and microservice %s. Update fails.",
-                                       tenant, microserviceName),
-                         ex);
+                                       tenant,
+                                       microserviceName), ex);
         }
     }
 
@@ -230,13 +230,14 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     // Remove related lock executor
                     lockingTaskExecutors.removeLockingTaskExecutor(tenantConnection.getTenant());
                     if (oldDataSource != null) {
-                        DataSources.destroy(oldDataSource);
+                        oldDataSource.unwrap(HikariDataSource.class).close();
                     }
                     // Broadcast connection discarded with a Spring event
                     localPublisher.publishConnectionDiscarded(tenantConnection.getTenant());
                 } catch (SQLException e) {
-                    LOGGER.error("Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
-                                 tenantConnection.getTenant());
+                    LOGGER.error(
+                            "Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
+                            tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
                 }
             }
@@ -260,10 +261,12 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     // Remove related lock executor
                     lockingTaskExecutors.removeLockingTaskExecutor(tcf.getTenant());
                     if (oldDataSource != null) {
-                        DataSources.destroy(oldDataSource);
+                        oldDataSource.unwrap(HikariDataSource.class).close();
                     }
                     // Disable connection
-                    multitenantResolver.updateState(microserviceName, tcf.getTenant(), TenantConnectionState.ERROR,
+                    multitenantResolver.updateState(microserviceName,
+                                                    tcf.getTenant(),
+                                                    TenantConnectionState.ERROR,
                                                     Optional.of("Connection failed event received!"));
                 } catch (SQLException e) {
                     LOGGER.error("Cannot release datasource for tenant {}. Cannot close connection", tcf.getTenant());

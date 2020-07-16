@@ -45,7 +45,11 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
 
     protected static final String PROPERTY_FILE = "module.properties";
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected static final String RESET_FAIL_MESSAGE = "Configuration reset fails";
+
+    protected static final String IMPORT_FAIL_MESSAGE = "Configuration import fails";
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected ModuleInformation info;
 
@@ -111,7 +115,7 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
             logger.warn(importError);
         }
         return new ModuleImportReport(info, importErrors,
-                                      importErrors.size() == configuration.getConfiguration().size());
+                importErrors.size() == configuration.getConfiguration().size());
     }
 
     /**

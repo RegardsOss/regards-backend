@@ -37,6 +37,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -44,6 +45,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -95,6 +97,28 @@ public abstract class AbstractPublisher implements IPublisherContract {
         this.rabbitAdmin = rabbitAdmin;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
+    }
+
+    @Override
+    public void health(Builder builder) {
+        LOGGER.debug("Multitenant health check");
+
+        String tenant = resolveTenant();
+        if (tenant == null) {
+            builder.down().withDetail("tenant", "Unknown tenant").build();
+            return;
+        }
+
+        try {
+            // Bind the connection to the right vhost
+            rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+
+            String version = rabbitTemplate
+                    .execute((channel) -> channel.getConnection().getServerProperties().get("version").toString());
+            builder.up().withDetail("version", version).build();
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
     }
 
     @Override
@@ -327,8 +351,16 @@ public abstract class AbstractPublisher implements IPublisherContract {
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
             MessageProperties messageProperties = message.getMessageProperties();
+            // Add headers from parameter
             if (headers != null) {
                 headers.forEach((k, v) -> messageProperties.setHeader(k, v));
+            }
+            // Add headers from event
+            if (IMessagePropertiesAware.class.isAssignableFrom(event.getClass())) {
+                MessageProperties mp = ((IMessagePropertiesAware) event).getMessageProperties();
+                if (mp != null) {
+                    mp.getHeaders().forEach((k, v) -> messageProperties.setHeader(k, v));
+                }
             }
             messageProperties.setHeader(AmqpConstants.REGARDS_TENANT_HEADER, tenant);
             messageProperties.setPriority(priority);

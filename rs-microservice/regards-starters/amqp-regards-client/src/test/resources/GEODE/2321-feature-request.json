@@ -1,6 +1,8 @@
 {
-    "requestId": "TEST:REQUEST:2321",
-    "requestDate": "2020-03-17T12:24:05.995Z",
+    "$headers": {
+    	"regards.request.id": "TEST:REQUEST:2321",
+    	"regards.request.date": "2020-03-17T12:24:05.995Z"
+    },
     "metadata": {
         "sessionOwner": "CHRONOS",
         "session": "20200331",

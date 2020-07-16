@@ -18,18 +18,27 @@
  */
 package fr.cnes.regards.framework.amqp.test.batch;
 
+import org.springframework.amqp.core.MessageProperties;
+
 import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
  * @author Marc SORDI
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class BatchMessage implements ISubscribable {
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+public class BatchMessage implements ISubscribable, IMessagePropertiesAware {
 
     String message;
+
+    // Prevent GSON converter from serializing this field
+    @GsonIgnore
+    protected MessageProperties messageProperties;
 
     public static BatchMessage build(String message) {
         BatchMessage m = new BatchMessage();
@@ -43,5 +52,15 @@ public class BatchMessage implements ISubscribable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public void setMessageProperties(MessageProperties messageProperties) {
+        this.messageProperties = messageProperties;
+    }
+
+    @Override
+    public MessageProperties getMessageProperties() {
+        return messageProperties;
     }
 }
