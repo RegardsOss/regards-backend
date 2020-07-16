@@ -88,13 +88,13 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onAvailable(Set<RequestInfo> requests) {
-        throw new UnsupportedOperationException("onAvailable");
+        // Nothing to do
 
     }
 
     @Override
     public void onAvailabilityError(Set<RequestInfo> requests) {
-        throw new UnsupportedOperationException("onAvailabilityError");
+        // Nothing to do
     }
 
     @Override
