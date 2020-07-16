@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +34,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +59,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -84,6 +89,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.DeleteProductsJob;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
@@ -194,6 +200,25 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return new PageImpl<>(fullChains, pageable, apcs.getTotalElements());
     }
 
+    @Override
+    public boolean isDeletionPending(AcquisitionProcessingChain chain) {
+        boolean deletionPending = false;
+        Pageable page = PageRequest.of(0, 100);
+        Page<JobInfo> results = null;
+        do {
+            results = jobInfoService.retrieveJobs(DeleteProductsJob.class.getName(), page, JobStatus.PENDING,
+                                                  JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN);
+            for (JobInfo info : results) {
+                Long chainId = info.getParametersAsMap().get(DeleteProductsJob.CHAIN_ID_PARAM).getValue();
+                if ((chainId != null) && (chainId.equals(chain.getId()))) {
+                    deletionPending = true;
+                }
+            }
+            page = results.nextPageable();
+        } while (results.hasNext() && !deletionPending);
+        return deletionPending;
+    }
+
     private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
             throws ModuleException {
         // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
@@ -262,6 +287,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Check already exists
         if (!acqChainRepository.existsChain(processingChain.getId())) {
             throw new EntityNotFoundException(processingChain.getLabel(), IngestProcessingChain.class);
+        }
+
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Update chain forbidden as a deletion is pending");
         }
 
         // Check mode
@@ -339,6 +368,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         AcquisitionProcessingChain chain = getChain(chainId);
+
+        if (isDeletionPending(chain)) {
+            throw new EntityOperationForbiddenException("update chain state forbidden as a deletion is pending");
+        }
         switch (payload.getUpdateType()) {
             case ALL:
                 chain.setActive(payload.getActive());
@@ -425,28 +458,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                   processingChain.getLabel()));
         }
 
-        Page<Product> products;
-        Pageable pageable = PageRequest.of(0, AcquisitionProperties.WORKING_UNIT);
-        do {
-            products = productService.findChainProducts(processingChain, pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
-            // Delete products cascading to related acquisition files
-            if (products.hasContent()) {
-                for (Product product : products) {
-                    // Unlock jobs
-                    if (product.getLastPostProductionJobInfo() != null) {
-                        jobInfoService.unlock(product.getLastPostProductionJobInfo());
-                    }
-                    if (product.getLastSIPGenerationJobInfo() != null) {
-                        jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
-                    }
-
-                    productService.delete(processingChain, product);
-                }
-            }
-        } while (products.hasNext());
+        productService.deleteByProcessingChain(processingChain);
 
         // Delete acquisition file infos and its plugin configurations
         for (AcquisitionFileInfo afi : processingChain.getFileInfos()) {
@@ -458,6 +470,23 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             jobInfoService.unlock(processingChain.getLastProductAcquisitionJobInfo());
         }
         acqChainRepository.delete(processingChain);
+    }
+
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void deleteProducts(AcquisitionProcessingChain processingChain, Collection<Product> products) {
+        if ((products != null) && !products.isEmpty()) {
+            for (Product product : products) {
+                // Unlock jobs
+                if (product.getLastPostProductionJobInfo() != null) {
+                    jobInfoService.unlock(product.getLastPostProductionJobInfo());
+                }
+                if (product.getLastSIPGenerationJobInfo() != null) {
+                    jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
+                }
+                productService.delete(processingChain, product);
+            }
+        }
     }
 
     @Override
@@ -533,7 +562,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         for (AcquisitionProcessingChain processingChain : processingChains) {
             // Check periodicity
-            if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
+            if (isDeletionPending(processingChain)) {
+                LOGGER.debug("Acquisition processing chain \"{}\" won't start due to deletion pending",
+                             processingChain.getLabel());
+            } else if (!CronComparator.shouldRun(processingChain.getPeriodicity())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" won't start due to periodicity",
                              processingChain.getLabel());
             } else if (processingChain.isLocked()) {
@@ -558,6 +590,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                            processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
+        }
+
+        if (isDeletionPending(processingChain)) {
+            throw new EntityOperationForbiddenException("Start chain forbidden as a deletion is pending");
         }
 
         if (processingChain.isLocked()) {
@@ -941,7 +977,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             throw new RsRuntimeException(e);
         }
 
-        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
+        AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain,
+                isDeletionPending(chain));
 
         // Handle job summary
         summary.setActive((chain.getLastProductAcquisitionJobInfo() != null)
@@ -954,30 +991,28 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void deleteSessionProducts(String processingChainLabel, String session) throws ModuleException {
+    public void scheduleProductDeletion(String processingChainLabel, Optional<String> session, boolean deleteChain)
+            throws ModuleException {
         List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
         for (AcquisitionProcessingChain chain : chains) {
-            if (!chain.isLocked()) {
-                productService.deleteBySession(chain, session);
+            if (deleteChain && (chain.isLocked() || chain.isActive())) {
+                throw new EntityOperationForbiddenException(
+                        "Acquisition chain is locked or running. Deletion is not available right now.");
             } else {
-                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
+                productService.scheduleProductsDeletionJob(chain, session, deleteChain);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService#deleteProducts(java.lang.String)
-     */
     @Override
-    public void deleteProducts(String processingChainLabel) throws ModuleException {
-        List<AcquisitionProcessingChain> chains = getChainsByLabel(processingChainLabel);
-        for (AcquisitionProcessingChain chain : chains) {
-            if (!chain.isLocked()) {
-                productService.deleteByProcessingChain(chain);
-            } else {
-                throw new ModuleException("Acquisition chain is locked. Deletion is not available right now.");
-            }
+    public void scheduleProductDeletion(Long processingChainId, Optional<String> session, boolean deleteChain)
+            throws ModuleException {
+        AcquisitionProcessingChain chain = getChain(processingChainId);
+        if (deleteChain && (chain.isLocked() || chain.isActive())) {
+            throw new EntityOperationForbiddenException(
+                    "Acquisition chain is locked or running. Deletion is not available right now.");
         }
+        productService.scheduleProductsDeletionJob(chain, session, deleteChain);
     }
 
     @Override
