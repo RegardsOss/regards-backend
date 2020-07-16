@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -149,7 +145,6 @@ import com.google.common.collect.Range;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -160,11 +155,14 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -266,6 +264,29 @@ public class EsRepository implements IEsRepository {
     private static final String TYPE = "_doc";
 
     /**
+     * Maximum duration for idle connections in the http config for ES client.
+     * <br>
+     * Setting a short "connection unused duration" to prevent "Connection Reset By Peer" IOException.
+     * <br>
+     * See https://stackoverflow.com/a/53003627/118437 for a discussion regarding this problem.
+     * <br>
+     * Internal ticket https://thor.si.c-s.fr/gf/project/regards/tracker/?action=TrackerItemEdit&tracker_item_id=196140
+     * <br>
+     * Setting the value to 10 minutes to be kept coherent with {@link #KEEP_ALIVE_SCROLLING_TIME_MN}.
+     */
+    private static final Long HTTP_KEEP_ALIVE_MAX_IDLE_DURATION_MS = 10L * 60 * 1000L;
+
+    /**
+     * Error raised by ES when REGARDS never sent objects to ES
+     */
+    private static final String INDEX_NOT_FOUND_EXCEPTION = "index_not_found_exception";
+
+    /**
+     * Related message error
+     */
+    private static final String INDEX_NOT_FOUND_ERROR_MESSAGE = "Research won't work until you've ingested some features into ES";
+
+    /**
      * Single scheduled executor service to clean reminder tasks once expiration date is reached
      */
     private final ScheduledExecutorService reminderCleanExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -304,7 +325,9 @@ public class EsRepository implements IEsRepository {
                     //                                                key.getSourceAttribute(),
                     //                                                key.getFacetsMap()));
                     //                    return results;
-                    return searchJoined(key.getSearchKey(), key.getCriterion(), key.getSourceAttribute(),
+                    return searchJoined(key.getSearchKey(),
+                                        key.getCriterion(),
+                                        key.getSourceAttribute(),
                                         key.getFacetsMap());
                 }
             });
@@ -322,14 +345,15 @@ public class EsRepository implements IEsRepository {
         String esHost = Strings.isEmpty(inEsHost) ? inEsAddress : inEsHost;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
 
-        String connectionInfoMessage = String.format("Elastic search connection properties : host \"%s\", port \"%d\"",
-                                                     esHost, esPort);
+        String connectionInfoMessage = String
+                .format("Elastic search connection properties : host \"%s\", port \"%d\"", esHost, esPort);
         LOGGER.info(connectionInfoMessage);
 
-        // Timeouts are set to 20 minutes particulary for bulk save containing geo_shape
+        // Timeouts are set to 20 minutes particularly for bulk save containing geo_shape
         RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(esHost, esPort))
                 .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setSocketTimeout(1_200_000))
-                .setMaxRetryTimeoutMillis(1_200_000);
+                .setMaxRetryTimeoutMillis(1_200_000).setHttpClientConfigCallback(httpClientConfig -> httpClientConfig
+                        .setKeepAliveStrategy((resp, ctx) -> HTTP_KEEP_ALIVE_MAX_IDLE_DURATION_MS));
 
         client = new RestHighLevelClient(restClientBuilder);
 
@@ -377,8 +401,9 @@ public class EsRepository implements IEsRepository {
      * @return true is first type mapping found fro given attribute is of type "text"
      */
     private static boolean isTextMapping(Map<String, Object> map, String attribute) {
-        String lastPathAttName = attribute.contains(".") ? attribute.substring(attribute.lastIndexOf('.') + 1)
-                : attribute;
+        String lastPathAttName = attribute.contains(".") ?
+                attribute.substring(attribute.lastIndexOf('.') + 1) :
+                attribute;
         try {
             // Mapping map contain only one value, the concerned index mapping BUT in case index is an alias, map key
             // is true index name, not alias one so DON'T retrieve mapping from its name !!!
@@ -577,7 +602,7 @@ public class EsRepository implements IEsRepository {
     public long deleteByQuery(String index, ICriterion criterion) {
         try {
             HttpEntity entity = new NStringEntity("{ \"query\":" + criterion.accept(CRITERION_VISITOR).toString() + "}",
-                    ContentType.APPLICATION_JSON);
+                                                  ContentType.APPLICATION_JSON);
             try {
                 Request request = new Request("POST", "/" + index.toLowerCase() + "/_delete_by_query");
                 request.setEntity(entity);
@@ -658,9 +683,9 @@ public class EsRepository implements IEsRepository {
         if (this.createIndex(newIndex)) {
             // Reindex
             String requestStr = String.format("{  \"source\": {    \"index\": \"%s\"  },  \"dest\": {"
-                    + "    \"index\": \"%s\"  },  \"script\": {"
-                    + "    \"source\": \"      ctx._source.type = ctx._type;" + "      ctx._type = '_doc';    \"  }}",
-                                              index, newIndex);
+                                                      + "    \"index\": \"%s\"  },  \"script\": {"
+                                                      + "    \"source\": \"      ctx._source.type = ctx._type;"
+                                                      + "      ctx._type = '_doc';    \"  }}", index, newIndex);
             HttpEntity entity = new NStringEntity(requestStr, ContentType.APPLICATION_JSON);
             try {
                 Request request = new Request("POST", "_reindex");
@@ -737,8 +762,7 @@ public class EsRepository implements IEsRepository {
     public boolean save(String index, IIndexable doc) {
         checkDocument(doc);
         try {
-            IndexResponse response = client.index(
-                                                  new IndexRequest(index.toLowerCase(), TYPE, doc.getDocId())
+            IndexResponse response = client.index(new IndexRequest(index.toLowerCase(), TYPE, doc.getDocId())
                                                           .source(gson.toJson(doc), XContentType.JSON),
                                                   RequestOptions.DEFAULT);
             return response.getResult() == Result.CREATED; // Else UPDATED
@@ -779,7 +803,8 @@ public class EsRepository implements IEsRepository {
                     // Add item it and its associated exception
                     if (document instanceof DataObject) {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
-                        result.addInErrorDoc(itemResponse.getId(), itemResponse.getFailure().getCause(),
+                        result.addInErrorDoc(itemResponse.getId(),
+                                             itemResponse.getFailure().getCause(),
                                              Optional.ofNullable(docFeature.getSession()),
                                              Optional.ofNullable(docFeature.getSessionOwner()));
                         if (itemResponse.getFailure().getMessage().contains(IMapping.GEO_SHAPE_ATTRIBUTE)) {
@@ -790,30 +815,34 @@ public class EsRepository implements IEsRepository {
                                 if (errorBuffer.length() > 0) {
                                     errorBuffer.append('\n').append('\n');
                                 }
-                                String msg = "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
-                                        + polygonWGS84.getCoordinates().getExteriorRing().toString() + "]]}}]}";
+                                String msg =
+                                        "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                                                + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
+                                                + polygonWGS84.getCoordinates().getExteriorRing().toString() + "]]}}]}";
                                 errorBuffer.append(msg);
                             } else if (wgs84 instanceof MultiPolygon) {
                                 MultiPolygon multiPolygonWGS84 = (MultiPolygon) wgs84;
                                 if (errorBuffer.length() > 0) {
                                     errorBuffer.append('\n').append('\n');
                                 }
-                                String msg = "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
-                                        + multiPolygonWGS84.getCoordinates().stream()
+                                String msg =
+                                        "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                                                + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
+                                                + multiPolygonWGS84.getCoordinates().stream()
                                                 .map(p -> p.getExteriorRing().toString())
-                                                .collect(Collectors.joining("], [", "[", "]"))
-                                        + "]]}}]}";
+                                                .collect(Collectors.joining("], [", "[", "]")) + "]]}}]}";
                                 errorBuffer.append(msg);
                             }
                         }
                     } else {
-                        result.addInErrorDoc(itemResponse.getId(), itemResponse.getFailure().getCause(),
-                                             Optional.empty(), Optional.empty());
+                        result.addInErrorDoc(itemResponse.getId(),
+                                             itemResponse.getFailure().getCause(),
+                                             Optional.empty(),
+                                             Optional.empty());
                     }
                     String msg = String.format("Document of type %s and id %s with label %s cannot be saved",
-                                               documents[0].getClass(), itemResponse.getId(),
+                                               documents[0].getClass(),
+                                               itemResponse.getId(),
                                                map.get(itemResponse.getId()));
 
                     // Log error
@@ -831,12 +860,15 @@ public class EsRepository implements IEsRepository {
                 } else {
                     if (document instanceof DataObject) {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
-                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(),
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
                                            Optional.ofNullable(docFeature.getSession()),
                                            Optional.ofNullable(docFeature.getSessionOwner()));
                     } else {
-                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(),
-                                           Optional.empty(), Optional.empty());
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
+                                           Optional.empty(),
+                                           Optional.empty());
                     }
                 }
             }
@@ -861,7 +893,7 @@ public class EsRepository implements IEsRepository {
             builder.query(crit.accept(CRITERION_VISITOR)).size(DEFAULT_SCROLLING_HITS_SIZE);
             request.source(builder);
             request.scroll(TimeValue.timeValueMinutes(KEEP_ALIVE_SCROLLING_TIME_MN));
-            SearchResponse scrollResp = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse scrollResp = getSearchResponse(request);
 
             // Scroll until no hits are returned
             do {
@@ -880,6 +912,18 @@ public class EsRepository implements IEsRepository {
         }
     }
 
+    private SearchResponse getSearchResponse(SearchRequest request) throws IOException {
+        try {
+            return client.search(request, RequestOptions.DEFAULT);
+        } catch (ElasticsearchException ee) {
+            LOGGER.error(ee.getMessage(), ee);
+            if (ee.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
+                throw new RsRuntimeException(INDEX_NOT_FOUND_ERROR_MESSAGE);
+            }
+            throw ee;
+        }
+    }
+
     /**
      * Returns a tuple containing at the same time attribute values from search documents and facets
      * @param <R> Type of document to apply search
@@ -893,12 +937,16 @@ public class EsRepository implements IEsRepository {
             String attributeSource, Map<String, FacetType> facetsMap) {
         try {
             // Add ".keyword" if attribute mapping type is of type text
-            String attribute = isTextMapping(searchKey.getSearchIndex(), attributeSource)
-                    ? attributeSource + KEYWORD_SUFFIX
-                    : attributeSource;
+            String attribute = isTextMapping(searchKey.getSearchIndex(), attributeSource) ?
+                    attributeSource + KEYWORD_SUFFIX :
+                    attributeSource;
             SortedSet<Object> uniqueValues = new TreeSet<>(Comparator.comparing(Objects::hashCode));
-            Set<IFacet<?>> facets = unique(searchKey, addTypes(criterion, searchKey.getSearchTypes()), attribute,
-                                           Integer.MAX_VALUE, uniqueValues, facetsMap);
+            Set<IFacet<?>> facets = unique(searchKey,
+                                           addTypes(criterion, searchKey.getSearchTypes()),
+                                           attribute,
+                                           Integer.MAX_VALUE,
+                                           uniqueValues,
+                                           facetsMap);
             return new Tuple<>(uniqueValues, facets);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -936,8 +984,8 @@ public class EsRepository implements IEsRepository {
         if (searchKey.getCrs() != Crs.WGS_84) {
             // Does criterion tree contain a BoundaryBox or Polygon criterion, if so => make a projection on WGS84
             if (GeoHelper.containsPolygonOrBboxCriterion(criterion)) {
-                GeoCriterionWithPolygonOrBboxVisitor visitor = new GeoCriterionWithPolygonOrBboxVisitor(
-                        searchKey.getCrs());
+                GeoCriterionWithPolygonOrBboxVisitor visitor = new GeoCriterionWithPolygonOrBboxVisitor(searchKey
+                                                                                                                .getCrs());
                 criterion = criterion.accept(visitor);
                 PolygonCriterion polygonCrit = GeoHelper.findPolygonCriterion(criterion);
                 if (polygonCrit != null) {
@@ -951,8 +999,8 @@ public class EsRepository implements IEsRepository {
                 if (searchKey.getCrs() == Crs.ASTRO) {
                     CircleCriterion initialCircleCriterion = GeoHelper.findCircleCriterion(crit);
                     // Radius MUST NOT HAVE A UNIT
-                    initialCircleCriterion
-                            .setRadius(FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
+                    initialCircleCriterion.setRadius(
+                            FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
                                     * AUTHALIC_SPHERE_RADIUS);
                 }
                 return searchWithCircleCriterionInProjectedCrs(searchKey, pageRequest, facetsMap, criterion);
@@ -992,24 +1040,30 @@ public class EsRepository implements IEsRepository {
         FacetPage<T> intoInnerCirclePage = search0(searchKey, pageRequest, innerCircleOnWgs84Criterion, facetsMap);
         // If more than MAX_PAGE_SIZE => TooManyResultException (too complicated case)
         if (!intoInnerCirclePage.isLast()) {
-            throw new RsRuntimeException(
-                    new TooManyResultsException("Please refine criteria to avoid exceeding page size limit"));
+            throw new RsRuntimeException(new TooManyResultsException(
+                    "Please refine criteria to avoid exceeding page size limit"));
         }
         CircleCriterion innerCircleCrit = GeoHelper.findCircleCriterion(innerCircleOnWgs84Criterion);
-        LOGGER.debug("Found {} points into inner circle with radius {} and center {} projected on WGS84 (search duration: {} ms)",
-                     intoInnerCirclePage.getNumberOfElements(), innerCircleCrit.getRadius(),
-                     Arrays.toString(innerCircleCrit.getCoordinates()), System.currentTimeMillis() - start);
+        LOGGER.debug(
+                "Found {} points into inner circle with radius {} and center {} projected on WGS84 (search duration: {} ms)",
+                intoInnerCirclePage.getNumberOfElements(),
+                innerCircleCrit.getRadius(),
+                Arrays.toString(innerCircleCrit.getCoordinates()),
+                System.currentTimeMillis() - start);
         // SECOND: retrieve all data between inner and outer circles
         start = System.currentTimeMillis();
-        FacetPage<T> betweenInnerAndOuterCirclesPage = search0(searchKey, pageRequest,
-                                                               betweenInnerAndOuterCirclesCriterionOnWgs84, facetsMap);
+        FacetPage<T> betweenInnerAndOuterCirclesPage = search0(searchKey,
+                                                               pageRequest,
+                                                               betweenInnerAndOuterCirclesCriterionOnWgs84,
+                                                               facetsMap);
         // If more than MAX_PAGE_SIZE => TooManyResultException (too complicated case)
         if (!intoInnerCirclePage.isLast()) {
-            throw new RsRuntimeException(
-                    new TooManyResultsException("Please refine criteria to avoid exceeding page size limit"));
+            throw new RsRuntimeException(new TooManyResultsException(
+                    "Please refine criteria to avoid exceeding page size limit"));
         }
         LOGGER.debug("Found {} points between inner and outer circles (search duration: {} ms)",
-                     betweenInnerAndOuterCirclesPage.getNumberOfElements(), System.currentTimeMillis() - start);
+                     betweenInnerAndOuterCirclesPage.getNumberOfElements(),
+                     System.currentTimeMillis() - start);
 
         // THIRD: keep only entities with a shape nearer than specified radius from specified center
         // Retrieve radius of specified circle on given Crs
@@ -1086,8 +1140,11 @@ public class EsRepository implements IEsRepository {
                 }
             };
 
-            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, finalCriterion, pageRequest,
-                                                                                     lastSearchAfterCustomizer, sort,
+            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey,
+                                                                                     finalCriterion,
+                                                                                     pageRequest,
+                                                                                     lastSearchAfterCustomizer,
+                                                                                     sort,
                                                                                      facetsMap);
             SearchResponse response = responseNFacets.v1();
             long start = System.currentTimeMillis();
@@ -1096,7 +1153,8 @@ public class EsRepository implements IEsRepository {
                 try {
                     results.add(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 } catch (JsonParseException e) {
-                    LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"", hit.getId(),
+                    LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"",
+                                 hit.getId(),
                                  hit.getSourceAsString());
                     throw new RsRuntimeException(e);
                 }
@@ -1114,7 +1172,8 @@ public class EsRepository implements IEsRepository {
             Map<String, FacetType> facetsMap) throws IOException {
         String index = searchKey.getSearchIndex();
         SearchRequest request = new SearchRequest(index).types(TYPE);
-        SearchSourceBuilder builder = createSourceBuilder4Agg(criterion, (int) pageRequest.getOffset(),
+        SearchSourceBuilder builder = createSourceBuilder4Agg(criterion,
+                                                              (int) pageRequest.getOffset(),
                                                               pageRequest.getPageSize());
 
         if (searchSourceBuilderCustomizer != null) {
@@ -1127,7 +1186,7 @@ public class EsRepository implements IEsRepository {
         // Launch the request
         long start = System.currentTimeMillis();
         LOGGER.trace("ElasticsearchRequest: {}", request.toString());
-        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        SearchResponse response = getSearchResponse(request);
         LOGGER.debug("Elasticsearch request execution only : {} ms", System.currentTimeMillis() - start);
 
         start = System.currentTimeMillis();
@@ -1198,7 +1257,8 @@ public class EsRepository implements IEsRepository {
             // No need to add reminder type criterion because reminder type is useless since ES6
             reminderCleanExecutor
                     .schedule(() -> deleteByQuery(REMINDER_IDX, ICriterion.le("expirationDate", OffsetDateTime.now())),
-                              KEEP_ALIVE_SCROLLING_TIME_MN, TimeUnit.MINUTES);
+                              KEEP_ALIVE_SCROLLING_TIME_MN,
+                              TimeUnit.MINUTES);
         }
     }
 
@@ -1250,7 +1310,7 @@ public class EsRepository implements IEsRepository {
                 offset = searchPageNumber * MAX_RESULT_WINDOW;
             } else {
                 LOGGER.debug("Search (after) : offset {}", offset);
-                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+                SearchResponse response = getSearchResponse(request);
                 sortValues = response.getHits().getAt(response.getHits().getHits().length - 1).getSortValues();
                 offset += MAX_RESULT_WINDOW;
             }
@@ -1263,14 +1323,17 @@ public class EsRepository implements IEsRepository {
                 // Change offset
                 LOGGER.debug("Search after : offset {}", offset);
                 builder.from(0).searchAfter(sortValues);
-                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+                SearchResponse response = getSearchResponse(request);
                 sortValues = response.getHits().getAt(response.getHits().getHits().length - 1).getSortValues();
                 // Create a AbstractReminder and save it into ES for next page
-                SearchAfterReminder reminder = new SearchAfterReminder(crit, searchKey, sort,
-                        PageRequest.of(offset / MAX_RESULT_WINDOW, MAX_RESULT_WINDOW).next());
+                SearchAfterReminder reminder = new SearchAfterReminder(crit,
+                                                                       searchKey,
+                                                                       sort,
+                                                                       PageRequest.of(offset / MAX_RESULT_WINDOW,
+                                                                                      MAX_RESULT_WINDOW).next());
                 reminder.setExpirationDate(expirationDate);
                 reminder.setSearchAfterSortValues(response.getHits().getAt(response.getHits().getHits().length - 1)
-                        .getSortValues());
+                                                          .getSortValues());
 
                 save(REMINDER_IDX, reminder);
                 offset += MAX_RESULT_WINDOW;
@@ -1280,7 +1343,7 @@ public class EsRepository implements IEsRepository {
                 int size = (int) (pageRequest.getOffset() - offset);
                 LOGGER.debug("Search after : offset {}, size {}", offset, size);
                 builder.size(size).searchAfter(sortValues).from(0); // needed by searchAfter
-                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+                SearchResponse response = getSearchResponse(request);
                 sortValues = response.getHits().getAt(response.getHits().getHits().length - 1).getSortValues();
             }
 
@@ -1289,7 +1352,8 @@ public class EsRepository implements IEsRepository {
             // No need to add type restriction, reminder is useless since ES6
             reminderCleanExecutor
                     .schedule(() -> deleteByQuery(REMINDER_IDX, ICriterion.le("expirationDate", OffsetDateTime.now())),
-                              KEEP_ALIVE_SCROLLING_TIME_MN, TimeUnit.MINUTES);
+                              KEEP_ALIVE_SCROLLING_TIME_MN,
+                              TimeUnit.MINUTES);
             return sortValues;
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -1320,7 +1384,7 @@ public class EsRepository implements IEsRepository {
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()));
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             return response.getHits().getTotalHits();
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -1334,7 +1398,7 @@ public class EsRepository implements IEsRepository {
             builder.aggregation(AggregationBuilders.sum(attName).field(attName));
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             return ((Sum) response.getAggregations().get(attName)).getValue();
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -1349,7 +1413,7 @@ public class EsRepository implements IEsRepository {
             builder.aggregation(AggregationBuilders.min(attName).field(attName));
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             Min min = response.getAggregations().get(attName);
             if ((min == null) || !Double.isFinite(min.getValue())) {
                 return null;
@@ -1368,7 +1432,7 @@ public class EsRepository implements IEsRepository {
             builder.aggregation(AggregationBuilders.max(attName).field(attName));
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             Max max = response.getAggregations().get(attName);
             if ((max == null) || !Double.isFinite(max.getValue())) {
                 return null;
@@ -1387,7 +1451,8 @@ public class EsRepository implements IEsRepository {
             for (QueryableAttribute qa : attributes) {
                 if (qa.isTextAttribute() && (qa.getTermsLimit() > 0)) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName())
-                            .field(qa.getAttributeName() + KEYWORD_SUFFIX).size(qa.getTermsLimit()));
+                                                .field(qa.getAttributeName() + KEYWORD_SUFFIX)
+                                                .size(qa.getTermsLimit()));
                 } else if (qa.isBooleanAttribute()) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName()).field(qa.getAttributeName()))
                             .size(2);
@@ -1397,7 +1462,7 @@ public class EsRepository implements IEsRepository {
             }
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             // Update attributes with aggregation if any
             if (response.getAggregations() != null) {
                 for (Aggregation agg : response.getAggregations()) {
@@ -1440,7 +1505,11 @@ public class EsRepository implements IEsRepository {
      */
     public <T, R> Set<R> unique(SearchKey<?, T> searchKey, ICriterion crit, String attName) {
         Set<R> result = new HashSet<>();
-        unique(searchKey, addTypes(crit, searchKey.getSearchTypes()), attName, Integer.MAX_VALUE, result,
+        unique(searchKey,
+               addTypes(crit, searchKey.getSearchTypes()),
+               attName,
+               Integer.MAX_VALUE,
+               result,
                new HashMap<>());
         return result;
     }
@@ -1462,14 +1531,18 @@ public class EsRepository implements IEsRepository {
             int maxCount, S set, Map<String, FacetType> facetsMap) {
         try {
 
-            String attName = isTextMapping(searchKey.getSearchIndex(), inAttName) ? inAttName + KEYWORD_SUFFIX
-                    : inAttName;
+            String attName = isTextMapping(searchKey.getSearchIndex(), inAttName) ?
+                    inAttName + KEYWORD_SUFFIX :
+                    inAttName;
             Consumer<SearchSourceBuilder> addUniqueTermAgg = (builder) -> builder
                     .aggregation(AggregationBuilders.terms(attName).field(attName).size(maxCount));
 
-            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, crit,
+            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey,
+                                                                                     crit,
                                                                                      PageRequest.of(0, 1),
-                                                                                     addUniqueTermAgg, null, facetsMap);
+                                                                                     addUniqueTermAgg,
+                                                                                     null,
+                                                                                     facetsMap);
             Terms terms = responseNFacets.v1().getAggregations().get(attName);
             for (Terms.Bucket bucket : terms.getBuckets()) {
                 set.add((R) bucket.getKey());
@@ -1485,7 +1558,9 @@ public class EsRepository implements IEsRepository {
     public <R> List<R> search(SearchKey<?, R> searchKey, ICriterion criterion, String sourceAttribute) {
         try {
             SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute)).v1();
+                                                                                 addTypes(criterion,
+                                                                                          searchKey.getSearchTypes()),
+                                                                                 sourceAttribute)).v1();
             return objects.stream().map(o -> (R) o).collect(Collectors.toList());
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1498,7 +1573,9 @@ public class EsRepository implements IEsRepository {
             Function<R, U> transformFct) {
         try {
             SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute)).v1();
+                                                                                 addTypes(criterion,
+                                                                                          searchKey.getSearchTypes()),
+                                                                                 sourceAttribute)).v1();
             return objects.stream().map(o -> (R) o).map(transformFct).collect(Collectors.toList());
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1512,9 +1589,14 @@ public class EsRepository implements IEsRepository {
             Map<String, FacetType> facetsMap) {
         try {
             Tuple<SortedSet<Object>, Set<IFacet<?>>> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute, facetsMap));
+                                                                                                        addTypes(
+                                                                                                                criterion,
+                                                                                                                searchKey
+                                                                                                                        .getSearchTypes()),
+                                                                                                        sourceAttribute,
+                                                                                                        facetsMap));
             return new Tuple<>(objects.v1().stream().map(o -> (R) o).distinct().filter(filterPredicate)
-                    .map(transformFct).collect(Collectors.toList()), objects.v2());
+                                       .map(transformFct).collect(Collectors.toList()), objects.v2());
 
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1538,14 +1620,16 @@ public class EsRepository implements IEsRepository {
                 // <index>."mappings".<type>.<attribute>."mapping".<attribute_last_path>."type"
                 if ((map != null) && !map.isEmpty()) {
                     // In case attribute is toto.titi.tutu, we will need "tutu" further
-                    String lastPathAtt = attribute.contains(".") ? attribute.substring(attribute.lastIndexOf('.') + 1)
-                            : attribute;
+                    String lastPathAtt = attribute.contains(".") ?
+                            attribute.substring(attribute.lastIndexOf('.') + 1) :
+                            attribute;
                     // BEWARE : instead of map.get(index) on the innermost map value retrieval, we use directly
                     // map.values().iterator().next() to get value associated to singleton element whatever the key is
                     // Indeed, because of Elasticsearch version 6 single type update, some indices are retrieved through
                     // an alias. Asking an alias mapping returned a block with index name, not alias name
                     return toMap(toMap(toMap(toMap(toMap(toMap(map.values().iterator().next()).get("mappings"))
-                            .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt)).get("type").equals("text");
+                                                           .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt))
+                            .get("type").equals("text");
 
                 }
             }
@@ -1570,8 +1654,18 @@ public class EsRepository implements IEsRepository {
 
         // Because string attributes are not indexed with Elasticsearch, it is necessary to add ".keyword" at
         // end of attribute name into sort request. So we need to know string attributes
-        Response response = client.getLowLevelClient().performRequest(new Request("GET",
-                index + "/_mapping/field/" + Joiner.on(",").join(ascSortMap.keySet())));
+        Response response;
+        try {
+            response = client.getLowLevelClient().performRequest(new Request("GET",
+                                                                             index + "/_mapping/field/" + Joiner.on(",")
+                                                                                     .join(ascSortMap.keySet())));
+        } catch (ResponseException e) {
+            LOGGER.error(e.getMessage(), e);
+            if (e.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
+                throw new RsRuntimeException(INDEX_NOT_FOUND_ERROR_MESSAGE);
+            }
+            throw e;
+        }
         try (InputStream is = response.getEntity().getContent()) {
             Map<String, Object> map = XContentHelper.convertToMap(XContentType.JSON.xContent(), is, true);
             if ((map != null) && !map.isEmpty()) {
@@ -1588,8 +1682,9 @@ public class EsRepository implements IEsRepository {
                 }
 
                 // Add sort to request
-                updatedAscSortMap.forEach((key, value) -> builder.sort(SortBuilders.fieldSort(key)
-                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType("double")));
+                updatedAscSortMap.forEach((key, value) -> builder
+                        .sort(SortBuilders.fieldSort(key).order(value ? SortOrder.ASC : SortOrder.DESC)
+                                      .unmappedType("double")));
                 // "double" because a type is necessary. This has only an impact when seaching on several indices if
                 // property is mapped on one and no on the other(s). Will see this when it happens (if it happens a day)
                 // entry -> builder.sort(entry.getKey(), entry.getValue() ? SortOrder.ASC : SortOrder.DESC));
@@ -1642,16 +1737,17 @@ public class EsRepository implements IEsRepository {
             String attName;
             // Replace percentiles aggregations by range aggregations
             if ((facetType == FacetType.NUMERIC) || (facetType == FacetType.DATE)) {
-                attName = facetType == FacetType.NUMERIC ? attributeName + NUMERIC_FACET_SUFFIX
-                        : attributeName + DATE_FACET_SUFFIX;
+                attName = facetType == FacetType.NUMERIC ?
+                        attributeName + NUMERIC_FACET_SUFFIX :
+                        attributeName + DATE_FACET_SUFFIX;
                 Percentiles percentiles = (Percentiles) aggsMap.get(attName);
                 // No percentile values for this property => skip aggregation
                 if (Iterables.all(percentiles, p -> Double.isNaN(p.getValue()))) {
                     continue;
                 }
-                AggregationBuilder aggBuilder = facetType == FacetType.NUMERIC
-                        ? FacetType.RANGE_DOUBLE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles)
-                        : FacetType.RANGE_DATE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles);
+                AggregationBuilder aggBuilder = facetType == FacetType.NUMERIC ?
+                        FacetType.RANGE_DOUBLE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles) :
+                        FacetType.RANGE_DATE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles);
                 // In case range contains only one value, better remove facet
                 if (aggBuilder != null) {
                     // And add max and min aggregations
@@ -1759,8 +1855,8 @@ public class EsRepository implements IEsRepository {
                         // Better not return a facet
                         return;
                     } // (-∞ -> value [
-                      // range is then [min -> value [, because min value is scaled it is necessary to choose a little
-                      // less
+                    // range is then [min -> value [, because min value is scaled it is necessary to choose a little
+                    // less
                     valueRange = Range.closedOpen(EsHelper.scaledDown(min.getValue()), (Double) bucket.getTo());
                 } else if (Objects.equals(bucket.getTo(), Double.POSITIVE_INFINITY)) { // [value -> +∞)
                     // range is then [value, max], because max value is scaled it is necessary to choose a little more
@@ -1808,8 +1904,9 @@ public class EsRepository implements IEsRepository {
         try {
             final List<T> results = new ArrayList<>();
             // OffsetDateTime must be formatted to be correctly used following Gson mapping
-            Object value = inValue instanceof OffsetDateTime ? OffsetDateTimeAdapter.format((OffsetDateTime) inValue)
-                    : inValue;
+            Object value = inValue instanceof OffsetDateTime ?
+                    OffsetDateTimeAdapter.format((OffsetDateTime) inValue) :
+                    inValue;
             // Create filter query with all asked types and multi match query
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             for (String type : searchKey.getSearchTypes()) {
@@ -1823,7 +1920,7 @@ public class EsRepository implements IEsRepository {
                     .from((int) pageRequest.getOffset()).size(pageRequest.getPageSize());
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
 
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
                 results.add(gson.fromJson(hit.getSourceAsString(), searchKey.fromType(hit.getType())));
@@ -1847,7 +1944,7 @@ public class EsRepository implements IEsRepository {
 
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
 
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
@@ -1900,10 +1997,11 @@ public class EsRepository implements IEsRepository {
         for (String fileType : fileTypes) {
             // file count
             builder.aggregation(AggregationBuilders.count("total_" + fileType + "_files_count")
-                    .field("feature.files." + fileType + ".filesize")); // Only count files with a size
+                                        .field("feature.files." + fileType
+                                                       + ".filesize")); // Only count files with a size
             // file size sum
             builder.aggregation(AggregationBuilders.sum("total_" + fileType + "_files_size")
-                    .field("feature.files." + fileType + ".filesize"));
+                                        .field("feature.files." + fileType + ".filesize"));
         }
         // Then bucket aggregation by discriminants
         String termsFieldProperty = discriminantProperty;
@@ -1917,10 +2015,10 @@ public class EsRepository implements IEsRepository {
         for (String fileType : fileTypes) {
             // files count
             termsAggBuilder.subAggregation(AggregationBuilders.count(fileType + "_files_count")
-                    .field("feature.files." + fileType + ".filesize"));
+                                                   .field("feature.files." + fileType + ".filesize"));
             // file size sum
             termsAggBuilder.subAggregation(AggregationBuilders.sum(fileType + "_files_size")
-                    .field("feature.files." + fileType + ".filesize"));
+                                                   .field("feature.files." + fileType + ".filesize"));
         }
         builder.aggregation(termsAggBuilder);
     }
@@ -1940,7 +2038,7 @@ public class EsRepository implements IEsRepository {
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
 
             // Launch the request
-            SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+            SearchResponse response = getSearchResponse(request);
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
@@ -1987,7 +2085,8 @@ public class EsRepository implements IEsRepository {
         for (String fileType : fileTypes) {
             // file cardinality
             builder.aggregation(AggregationBuilders.cardinality("total_" + fileType + "_files_count")
-                    .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX)); // Only count files with a size
+                                        .field("feature.files." + fileType + ".uri"
+                                                       + KEYWORD_SUFFIX)); // Only count files with a size
         }
         // Then bucket aggregation by discriminants
         String termsFieldProperty = discriminantProperty;
@@ -2001,7 +2100,7 @@ public class EsRepository implements IEsRepository {
         for (String fileType : fileTypes) {
             // files cardinality
             termsAggBuilder.subAggregation(AggregationBuilders.cardinality(fileType + "_files_count")
-                    .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX));
+                                                   .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX));
         }
         builder.aggregation(termsAggBuilder);
     }
