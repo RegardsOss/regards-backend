@@ -64,8 +64,7 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
         // serialize map after update
         String newConfiguration = gson.toJson(updated);
         // replace curiously handled numbers in GSon... (otherwise integers become float)
-        String correctedOutput = newConfiguration.replaceAll("\\.0", "");
-        return correctedOutput;
+        return newConfiguration.replaceAll("\\.0", "");
     }
 
     /**

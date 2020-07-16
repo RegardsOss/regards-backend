@@ -1,0 +1,205 @@
+{
+  "primaryPane": "EXPANDED_COLLAPSIBLE",
+  "facets": {
+    "enabledFor": {
+      "DATA": false,
+      "DATASET": true
+    },
+    "initiallyEnabled": false,
+    "list": [
+      {
+        "attributes": [
+          {
+            "name": "properties.value_d1",
+            "renderer": "defaultRenderer"
+          }
+        ],
+        "label": {
+          "en": "Float",
+          "fr": "Flottant"
+        }
+      },
+      {
+        "attributes": [
+          {
+            "name": "properties.value_l1",
+            "renderer": "defaultRenderer"
+          }
+        ],
+        "label": {
+          "en": "Integer",
+          "fr": "Entier"
+        }
+      }
+    ]
+  },
+  "restrictions": {
+    "byDataset": {
+      "type": "NONE",
+      "selection": []
+    }
+  },
+  "viewsGroups": {
+    "DATA": {
+      "enabled": true,
+      "initialMode": "LIST",
+      "enableDownload": true,
+      "enableRefresh": false,
+      "sorting": [
+        {
+          "attributes": [
+            {
+              "name": "label",
+              "renderer": "defaultRenderer"
+            }
+          ]
+        }
+      ],
+      "views": {
+        "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "properties.value_d1",
+                  "renderer": "defaultRenderer"
+                },
+                {
+                  "name": "properties.value_l1",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Values",
+                "fr": "Valeurs"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "label",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "files",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Thumbnail",
+                "fr": "Vignette"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "properties.weight",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "weight",
+                "fr": "Poids"
+              }
+            }
+          ]
+        },
+        "QUICKLOOK": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "properties.weight",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Weight",
+                "fr": "Poids"
+              }
+            }
+          ]
+        },
+        "MAP": {
+          "enabled": false,
+          "attributes": [],
+          "backgroundLayer": {
+            "url": null,
+            "type": "AsynchroneWMS"
+          }
+        }
+      },
+      "enableServices": false,
+      "tabTitle": {
+        "en": "Data vieu=w",
+        "fr": "Vue des données"
+      }
+    },
+    "DATASET": {
+      "enabled": false,
+      "tabTitle": {
+        "en": "DatasetViex",
+        "fr": "Vue des jeux de données"
+      },
+      "initialMode": "TABLE",
+      "enableRefresh": false,
+      "sorting": [],
+      "views": {
+        "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "properties.start_date"
+                },
+                {
+                  "name": "properties.end_date",
+                  "renderer": "defaultRenderer"
+                }
+              ],
+              "label": {
+                "en": "Period",
+                "fr": "Période"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "criteriaGroups": []
+}
