@@ -156,7 +156,7 @@ public class V1_3_0__update extends BaseJavaMigration {
      */
     public void migrateUISettings(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
-            try (ResultSet rows = select.executeQuery("SELECT id, applicationId, conf FROM t_ui_configuration ORDER BY id")) {
+            try (ResultSet rows = select.executeQuery("SELECT id, application_id, conf FROM t_ui_configuration ORDER BY id")) {
                 while (rows.next()) {
                     int id = rows.getInt(1);
                     String applicationId = rows.getString(2);
