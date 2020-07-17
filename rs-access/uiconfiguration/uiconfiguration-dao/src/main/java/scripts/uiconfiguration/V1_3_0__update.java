@@ -36,12 +36,23 @@ import java.util.function.Function;
  *
  * @author Raphaël Mechali
  */
-public class V1_3_0__update_modules_conf extends BaseJavaMigration {
+public class V1_3_0__update extends BaseJavaMigration {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(V1_3_0__update_modules_conf.class);
+    private static final Logger LOG = LoggerFactory.getLogger(V1_3_0__update.class);
+
+    /**
+     * Updates UI settings
+     *
+     * @param configuration initial settings configuration
+     * @return updated UI settings configuration
+     */
+    public static Map<String, Object> updateUISettings(Map<String, Object> configuration) {
+        configuration.put("showVersion", true);
+        return configuration;
+    }
 
     /**
      * Parses a JSON map from string and produce new configuration (a map too) as string
@@ -94,6 +105,15 @@ public class V1_3_0__update_modules_conf extends BaseJavaMigration {
 
     @Override
     public void migrate(Context context) throws Exception {
+        this.migrateUISettings(context);
+        this.migrateModules(context);
+    }
+
+    /**
+     * Migrates modules
+     * @param context flyway context
+     */
+    public void migrateModules(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
             try (ResultSet rows = select.executeQuery("SELECT id, type, conf FROM t_ui_module ORDER BY id")) {
                 while (rows.next()) {
@@ -104,11 +124,11 @@ public class V1_3_0__update_modules_conf extends BaseJavaMigration {
                     switch (type) {
                         case "search-results":
                             updatedConf = withParsedMap(conf,
-                                    V1_3_0__update_modules_conf::updateSearchResultsConfiguration);
+                                    V1_3_0__update::updateSearchResultsConfiguration);
                             break;
                         case "description":
                             updatedConf = withParsedMap(conf,
-                                    V1_3_0__update_modules_conf::updateDescriptionModule);
+                                    V1_3_0__update::updateDescriptionModule);
                             break;
                         default:
                             // No update for other module types
@@ -125,6 +145,35 @@ public class V1_3_0__update_modules_conf extends BaseJavaMigration {
                         }
                     }
 
+                }
+            }
+        }
+    }
+
+    /**
+     * Migrates UI settings
+     * @param context flyway context
+     */
+    public void migrateUISettings(Context context) throws Exception {
+        try (Statement select = context.getConnection().createStatement()) {
+            try (ResultSet rows = select.executeQuery("SELECT id, applicationId, conf FROM t_ui_configuration ORDER BY id")) {
+                while (rows.next()) {
+                    int id = rows.getInt(1);
+                    String applicationId = rows.getString(2);
+                    String conf = rows.getString(3);
+
+                    if (applicationId.equals("user")) {
+                        String updatedConf = withParsedMap(conf, V1_3_0__update::updateUISettings);
+                        LOG.info("Updating user application configuration");
+
+                        String sqlRequest = "UPDATE t_ui_configuration SET conf=? WHERE id=?";
+                        try (PreparedStatement preparedStatement = context.getConnection()
+                                .prepareStatement(sqlRequest)) {
+                            preparedStatement.setString(1, updatedConf);
+                            preparedStatement.setInt(2, id);
+                            preparedStatement.executeUpdate();
+                        }
+                    }
                 }
             }
         }
