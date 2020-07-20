@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
+import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  *
  * @author Sébastien Binda
  *
  */
+@Event(target = Target.ALL)
 public class ProjectUpdateEvent implements ISubscribable {
 
     Project project;
