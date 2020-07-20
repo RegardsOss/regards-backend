@@ -91,7 +91,7 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
     public EntityFeature(UniformResourceName id, String providerId, EntityType entityType, String label) {
         Assert.notNull(entityType, "Entity type is required");
         this.id = id;
-        this.version = id.getVersion();
+        this.version = id == null? 0 :id.getVersion();
         this.providerId = providerId;
         this.entityType = entityType;
         this.label = label;
