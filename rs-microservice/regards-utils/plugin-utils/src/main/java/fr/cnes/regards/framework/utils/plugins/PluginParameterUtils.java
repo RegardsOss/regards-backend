@@ -423,6 +423,53 @@ public final class PluginParameterUtils {
     }
 
     /**
+     * Creates a new {@link IPluginParam} from a {@link PluginParamType}
+     * @param paramType
+     * @param paramName
+     * @param value
+     * @return new created {@link IPluginParam}
+     */
+    public static IPluginParam forType(PluginParamType paramType, String paramName, String value) {
+        IPluginParam param = null;
+        switch (paramType) {
+            case STRING:
+                param = IPluginParam.build(paramName, value);
+                break;
+            case BYTE:
+                param = IPluginParam.build(paramName, Byte.valueOf(value));
+                break;
+            case SHORT:
+                param = IPluginParam.build(paramName, Short.valueOf(value));
+                break;
+            case INTEGER:
+                param = IPluginParam.build(paramName, Integer.valueOf(value));
+                break;
+            case LONG:
+                param = IPluginParam.build(paramName, Long.valueOf(value));
+                break;
+            case FLOAT:
+                param = IPluginParam.build(paramName, Float.valueOf(value));
+                break;
+            case DOUBLE:
+                param = IPluginParam.build(paramName, Double.valueOf(value));
+                break;
+            case BOOLEAN:
+                param = IPluginParam.build(paramName, Boolean.valueOf(value));
+                break;
+            case POJO:
+            case COLLECTION:
+            case MAP:
+            case PLUGIN:
+                // FIXME : Handle complex types
+            default:
+                throw new PluginUtilsRuntimeException(
+                        String.format("Type parameter <%s> cannot be handled. Complex types are not supported yet.",
+                                      paramType));
+        }
+        return param;
+    }
+
+    /**
      * Find the plugin parameter from the plugin configuration or from dynamic plugin parameters if there are
      * any.
      * @param parameterName parameter name
@@ -504,9 +551,8 @@ public final class PluginParameterUtils {
                 LOGGER.debug(SKIPPING_VALUE_INJECTION_FOR_OPTIONAL, parameterName);
                 return;
             } else {
-                throw new IllegalArgumentException(
-                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                      conf.getPluginId(), conf.getLabel(), parameterName));
+                throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
+                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
 
@@ -521,9 +567,8 @@ public final class PluginParameterUtils {
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
-            throw new IllegalArgumentException(String
-                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                            conf.getPluginId(), conf.getLabel(), parameterName));
+            throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
+                                                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
         try {
@@ -532,9 +577,8 @@ public final class PluginParameterUtils {
             field.set(plugin, o);
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
-            throw new PluginUtilsRuntimeException(
-                    String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                  paramAnnotation.label(), plugin.getClass(), param),
+            throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
+                                                                paramAnnotation.label(), plugin.getClass(), param),
                     e);
         }
         LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
@@ -569,9 +613,8 @@ public final class PluginParameterUtils {
                 // Init a parameter on the fly
                 param = buildByType(typeWrapper.getType(), parameterName);
             } else {
-                throw new IllegalArgumentException(
-                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                      conf.getPluginId(), conf.getLabel(), parameterName));
+                throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
+                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
 
@@ -593,9 +636,8 @@ public final class PluginParameterUtils {
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
-            throw new IllegalArgumentException(String
-                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                            conf.getPluginId(), conf.getLabel(), parameterName));
+            throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
+                                                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
         LOGGER.debug("Primitive parameter value: {}", param);
@@ -618,9 +660,8 @@ public final class PluginParameterUtils {
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
-            throw new PluginUtilsRuntimeException(
-                    String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                  paramAnnotation.label(), plugin.getClass(), param),
+            throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
+                                                                paramAnnotation.label(), plugin.getClass(), param),
                     e);
         }
         LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
@@ -651,9 +692,8 @@ public final class PluginParameterUtils {
                 LOGGER.debug(SKIPPING_VALUE_INJECTION_FOR_OPTIONAL, parameterName);
                 return;
             } else {
-                throw new IllegalArgumentException(
-                        String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                      conf.getPluginId(), conf.getLabel(), parameterName));
+                throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
+                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
             }
         }
 
@@ -668,9 +708,8 @@ public final class PluginParameterUtils {
 
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
-            throw new IllegalArgumentException(String
-                    .format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                            conf.getPluginId(), conf.getLabel(), parameterName));
+            throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
+                                                             conf.getPluginId(), conf.getLabel(), parameterName));
         }
 
         if (!NestedPluginParam.class.isInstance(param)) {
@@ -686,9 +725,8 @@ public final class PluginParameterUtils {
                 field.set(plugin, nestedPlugin);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 // Propagate exception
-                throw new PluginUtilsRuntimeException(
-                        String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                      paramAnnotation.label(), plugin.getClass(), param),
+                throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
+                                                                    paramAnnotation.label(), plugin.getClass(), param),
                         e);
             }
             LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
