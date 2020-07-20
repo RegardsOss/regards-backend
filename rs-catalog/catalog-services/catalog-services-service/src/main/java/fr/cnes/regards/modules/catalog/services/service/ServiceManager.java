@@ -160,7 +160,7 @@ public class ServiceManager implements IServiceManager {
                 Optional<PluginParamDescriptor> param = conf.getMetaData().getParameters().stream()
                         .filter(p -> p.getName().equals(k)).findFirst();
                 if (param.isPresent()) {
-                    parameters.add(PluginParameterUtils.forType(param.get().getType(), k, v));
+                    parameters.add(PluginParameterUtils.forType(param.get().getType(), k, v, true));
                 } else {
                     LOGGER.warn("Invalid dynamic parameter  {} for plugin {} of type {}", k,
                                 pluginConfigurationBusinessId, conf.getPluginId());
