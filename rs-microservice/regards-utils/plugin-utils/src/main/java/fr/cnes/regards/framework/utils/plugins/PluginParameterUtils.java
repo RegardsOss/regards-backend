@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.BytePluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.DoublePluginParam;
@@ -429,8 +430,8 @@ public final class PluginParameterUtils {
      * @param value
      * @return new created {@link IPluginParam}
      */
-    public static IPluginParam forType(PluginParamType paramType, String paramName, String value) {
-        IPluginParam param = null;
+    public static IPluginParam forType(PluginParamType paramType, String paramName, String value, boolean isDynamic) {
+        AbstractPluginParam<?> param = null;
         switch (paramType) {
             case STRING:
                 param = IPluginParam.build(paramName, value);
@@ -466,6 +467,7 @@ public final class PluginParameterUtils {
                         String.format("Type parameter <%s> cannot be handled. Complex types are not supported yet.",
                                       paramType));
         }
+        param.setDynamic(isDynamic);
         return param;
     }
 
