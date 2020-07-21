@@ -60,7 +60,7 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
                                                        entityType,
                                                        tenant,
                                                        sipIdUrn.getEntityId(),
-                                                       version),
+                                                       version, null, null),
                            Optional.of(sipIdUrn),
                            sip.getProviderId(),
                            version));

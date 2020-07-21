@@ -4,6 +4,7 @@
 		"sessionOwner": "sampleSessionOwner",
 		"session": "sampleSession",
 		"ingestChain": "DefaultProcessingChain",
+		"versioningMode": "INC_VERSION",
 		"categories" : [
 			"CAT"
 		],

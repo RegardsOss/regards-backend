@@ -474,7 +474,7 @@ public class IngestRequestService implements IIngestRequestService {
             }
         }
     }
-    
+
     @Override
     public void ignore(IngestRequest request) {
         request.setState(InternalRequestState.IGNORED);
