@@ -222,6 +222,7 @@ public class DescriptionBuilder {
 
         StringJoiner joiner = new StringJoiner("&");
         parameters.forEach(p -> joiner.add(String.format("%s=%s", p.getName(), p.getValue())));
+        joiner.add(String.format("scope=%s", tenantResolver.getTenant()));
         urlTemplateBuilder.append(queryDelimiter ? "?" : "&");
         urlTemplateBuilder.append(joiner);
         url.setTemplate(urlTemplateBuilder.toString());
