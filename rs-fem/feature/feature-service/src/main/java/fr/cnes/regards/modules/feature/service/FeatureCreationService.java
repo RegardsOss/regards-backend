@@ -463,7 +463,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                         runtimeTenantResolver.getTenant(),
                                                         uuid,
                                                         computeNextVersion(previousVersion)));
-
+        // as version compute is previous + 1, this feature is forcibly the last
+        feature.setLast(true);
         FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(), fcr.getMetadata().getSession(),
                                                     feature, previousUrn, fcr.getFeature().getModel());
         created.setVersion(feature.getUrn().getVersion());
