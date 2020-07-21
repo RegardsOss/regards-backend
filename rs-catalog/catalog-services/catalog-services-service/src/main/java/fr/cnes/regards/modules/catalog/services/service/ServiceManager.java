@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +43,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -75,9 +79,8 @@ public class ServiceManager implements IServiceManager {
      * Builds a predicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = serviceScope -> configuration ->
-            (serviceScope == null) || Arrays
-                    .asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = serviceScope -> configuration -> (serviceScope == null)
+            || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
                     .containsAll(serviceScope);
 
     /**
@@ -153,14 +156,23 @@ public class ServiceManager implements IServiceManager {
         // Build dynamic parameters
         Set<IPluginParam> parameters = new HashSet<>();
         if (servicePluginParameters.getDynamicParameters() != null) {
-            servicePluginParameters.getDynamicParameters()
-                    .forEach((k, v) -> parameters.add(IPluginParam.build(k, v).dynamic()));
+            servicePluginParameters.getDynamicParameters().forEach((k, v) -> {
+                Optional<PluginParamDescriptor> param = conf.getMetaData().getParameters().stream()
+                        .filter(p -> p.getName().equals(k)).findFirst();
+                if (param.isPresent()) {
+                    parameters.add(PluginParameterUtils.forType(param.get().getType(), k, v, true));
+                } else {
+                    LOGGER.warn("Invalid dynamic parameter  {} for plugin {} of type {}", k,
+                                pluginConfigurationBusinessId, conf.getPluginId());
+                    parameters.add(IPluginParam.build(k, v).dynamic());
+                }
+            });
         }
 
         IService toExecute;
         try {
-            toExecute = pluginService
-                    .getPlugin(pluginConfigurationBusinessId, Iterables.toArray(parameters, IPluginParam.class));
+            toExecute = pluginService.getPlugin(pluginConfigurationBusinessId,
+                                                Iterables.toArray(parameters, IPluginParam.class));
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException("Unable to apply disabled service.", e);
         }
@@ -177,7 +189,7 @@ public class ServiceManager implements IServiceManager {
         // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
         for (PluginConfiguration conf : confs) {
             IPluginParam param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
-            if ((param != null) && param.getType() == PluginParamType.BOOLEAN && ((Boolean) param.getValue())) {
+            if ((param != null) && (param.getType() == PluginParamType.BOOLEAN) && ((Boolean) param.getValue())) {
                 allServices.add(conf);
             }
         }
