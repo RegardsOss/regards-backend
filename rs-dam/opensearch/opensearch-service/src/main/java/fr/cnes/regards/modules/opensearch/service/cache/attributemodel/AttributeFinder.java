@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -94,8 +95,8 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         AttributeModel attModel = getTenantMap().get(name);
 
         if (attModel == null) {
-            String errorMessage = String
-                    .format("Unknown parameter %s for tenant %s", name, runtimeTenantResolver.getTenant());
+            String errorMessage = String.format("Unknown parameter %s for tenant %s", name,
+                                                runtimeTenantResolver.getTenant());
             LOGGER.error(errorMessage);
             throw new OpenSearchUnknownParameter(errorMessage);
         }
@@ -108,8 +109,8 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
 
         Collection<AttributeModel> ppties = getTenantTypedMap().get(type);
         if (ppties == null) {
-            String errorMessage = String
-                    .format("No parameter found with type %s for tenant %s", type, runtimeTenantResolver.getTenant());
+            String errorMessage = String.format("No parameter found with type %s for tenant %s", type,
+                                                runtimeTenantResolver.getTenant());
             LOGGER.error(errorMessage);
             throw new OpenSearchUnknownParameter(errorMessage);
         }
@@ -165,48 +166,44 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
             Multimap<PropertyType, AttributeModel> tenantTypeMap) {
 
         // Unique identifier
-        tenantMap.put(StaticProperties.FEATURE_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_ID, PropertyType.STRING, null).isStatic()
-                              .get());
+        tenantMap.put(StaticProperties.FEATURE_ID, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_ID, PropertyType.STRING, null).isStatic().get());
 
         // Virtual identifier
-        tenantMap.put(StaticProperties.FEATURE_VIRTUAL_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_VIRTUAL_ID, PropertyType.STRING, null)
-                              .isStatic().isOptional().get());
+        tenantMap.put(StaticProperties.FEATURE_VIRTUAL_ID, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_VIRTUAL_ID, PropertyType.STRING, null).isStatic().isOptional().get());
 
         // Version
-        tenantMap.put(StaticProperties.FEATURE_VERSION,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_VERSION, PropertyType.INTEGER, null)
-                              .isStatic().get());
+        tenantMap.put(StaticProperties.FEATURE_VERSION, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_VERSION, PropertyType.INTEGER, null).isStatic().get());
+
+        // Is last version
+        tenantMap.put(StaticProperties.FEATURE_IS_LAST_VERSION, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_IS_LAST_VERSION, PropertyType.BOOLEAN, null).isStatic().get());
 
         // SIP identifier alias provider identifier
-        tenantMap.put(StaticProperties.FEATURE_PROVIDER_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_PROVIDER_ID, PropertyType.STRING, null)
-                              .isStatic().get());
+        tenantMap.put(StaticProperties.FEATURE_PROVIDER_ID, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_PROVIDER_ID, PropertyType.STRING, null).isStatic().get());
 
         // Required label for minimal display purpose
-        tenantMap.put(StaticProperties.FEATURE_LABEL,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_LABEL, PropertyType.STRING, null).isStatic()
-                              .get());
+        tenantMap.put(StaticProperties.FEATURE_LABEL, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_LABEL, PropertyType.STRING, null).isStatic().get());
 
         // Related model name
-        tenantMap.put(StaticProperties.FEATURE_MODEL,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_MODEL, PropertyType.STRING, null).isStatic()
-                              .get());
+        tenantMap.put(StaticProperties.FEATURE_MODEL, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_MODEL, PropertyType.STRING, null).isStatic().get());
 
         // // Geometry
         // tenantMap.put(StaticProperties.FEATURE_GEOMETRY, AttributeModelBuilder
         // .build(StaticProperties.FEATURE_GEOMETRY, PropertyType.STRING, null).isStatic().get());
 
         // Tags
-        tenantMap.put(StaticProperties.FEATURE_TAGS,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_TAGS, PropertyType.STRING, null).isStatic()
-                              .get());
+        tenantMap.put(StaticProperties.FEATURE_TAGS, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_TAGS, PropertyType.STRING, null).isStatic().get());
 
         // Allows to filter on dataset model id when searching for dataobjects
-        tenantMap.put(StaticProperties.DATASET_MODEL_NAMES,
-                      AttributeModelBuilder.build(StaticProperties.DATASET_MODEL_NAMES, PropertyType.STRING, null)
-                              .isInternal().get());
+        tenantMap.put(StaticProperties.DATASET_MODEL_NAMES, AttributeModelBuilder
+                .build(StaticProperties.DATASET_MODEL_NAMES, PropertyType.STRING, null).isInternal().get());
 
         // Register static properties by types
         tenantMap.values().forEach(attModel -> tenantTypeMap.put(attModel.getType(), attModel));
