@@ -12,6 +12,9 @@
     "byDataset": {
       "type": "NONE",
       "selection": []
+    },
+    "onData": {
+      "lastVersionOnly": false
     }
   },
   "viewsGroups": {

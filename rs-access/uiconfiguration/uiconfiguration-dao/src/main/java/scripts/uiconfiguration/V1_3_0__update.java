@@ -84,7 +84,8 @@ public class V1_3_0__update extends BaseJavaMigration {
         String[] pseudoEntityTypes = {"DATA", "DATASET", "COLLECTION", "DOCUMENT"};
         for (String type : pseudoEntityTypes) {
             Map<String, Object> typeConfiguration = (Map<String, Object>) initialConfiguration.get(type);
-            typeConfiguration.put("showOtherVersions", false);
+            typeConfiguration.put("showOtherVersions", false); // behaves as v1.2
+            typeConfiguration.put("showQuicklooks", true); // behaves as v1.2
         }
         return initialConfiguration;
     }

@@ -76,6 +76,8 @@ public class UIPluginDefinitionService
 
     private static final String DEFAULT_DATAWITHONLYPIC_CRITERION_NAME = "data-with-picture-only";
 
+    private static final String DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME = "last-version-only";
+
     @Autowired
     private IUIPluginDefinitionRepository repository;
 
@@ -193,6 +195,13 @@ public class UIPluginDefinitionService
         if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_DATAWITHONLYPIC_CRITERION_NAME))) {
             UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_DATAWITHONLYPIC_CRITERION_NAME,
                                                                  "/plugins/criterion/data-with-picture-only/plugin.js",
+                                                                 UIPluginTypesEnum.CRITERIA);
+            repository.save(plugin);
+        }
+
+        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME))) {
+            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME,
+                                                                 "/plugins/criterion/last-version-only/plugin.js",
                                                                  UIPluginTypesEnum.CRITERIA);
             repository.save(plugin);
         }
