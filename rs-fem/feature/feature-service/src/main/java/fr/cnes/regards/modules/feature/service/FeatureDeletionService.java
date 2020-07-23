@@ -125,6 +125,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
         List<FeatureDeletionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
+        // FIXME changer ce fonctionnement!
         Set<String> existingRequestIds = this.deletionRepo.findRequestId();
 
         events.forEach(item -> prepareFeatureDeletionRequest(item, grantedRequests, requestInfo, existingRequestIds));
