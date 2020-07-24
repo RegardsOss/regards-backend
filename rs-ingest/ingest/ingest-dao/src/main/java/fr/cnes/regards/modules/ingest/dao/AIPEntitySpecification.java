@@ -66,6 +66,10 @@ public final class AIPEntitySpecification {
                                                                           cb));
             }
 
+            if(filters.getLast() != null) {
+                predicates.add(cb.equal(root.get("last"), filters.getLast()));
+            }
+
             List<String> aipIds = filters.getAipIds();
             if ((aipIds != null) && !aipIds.isEmpty()) {
                 Set<Predicate> sipIdsPredicates = Sets.newHashSet();
