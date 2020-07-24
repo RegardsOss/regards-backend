@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
@@ -118,6 +119,8 @@ public interface IIngestRequestService {
     void ignore(IngestRequest request);
 
     void waitVersioningMode(IngestRequest request);
+
+    void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters);
 
     void fromWaitingTo(Collection<IngestRequest> requests, VersioningMode versioningMode);
 }

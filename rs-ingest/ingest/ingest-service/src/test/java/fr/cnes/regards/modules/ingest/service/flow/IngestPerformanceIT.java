@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
                 "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
+@Ignore("Performance test")
 public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);

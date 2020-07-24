@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -49,8 +48,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 
 /**
@@ -61,8 +63,6 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 @RestController
 @RequestMapping(RequestController.TYPE_MAPPING)
 public class RequestController implements IResourceController<RequestDto> {
-
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public static final String TYPE_MAPPING = "/requests";
 
@@ -77,9 +77,16 @@ public class RequestController implements IResourceController<RequestDto> {
     public static final String REQUEST_ABORT_PATH = "/abort";
 
     /**
+     * Controller path to choose multiple requests, using criteria, versioning mode after {@link fr.cnes.regards.modules.ingest.domain.sip.VersioningMode#MANUAL}
+     */
+    public static final String VERSIONING_CHOICE_PATH = "/versioning";
+
+    /**
      * Controller path to delete several request entities
      */
     public static final String REQUEST_DELETE_PATH = "/delete";
+
+    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private IRequestService requestService;
@@ -92,6 +99,9 @@ public class RequestController implements IResourceController<RequestDto> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IIngestRequestService ingestRequestService;
 
     /**
      * Retrieve a page of ingest requests according to the given filters
@@ -118,6 +128,19 @@ public class RequestController implements IResourceController<RequestDto> {
         requestService.scheduleRequestRetryJob(filters);
     }
 
+    @RequestMapping(value = VERSIONING_CHOICE_PATH, method = RequestMethod.PUT)
+    @ResourceAccess(description = "choose versioning mode for requests matching provided filters",
+            role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Object> chooseVersioning(@Valid @RequestBody ChooseVersioningRequestParameters filters) {
+        if (filters.getNewVersioningMode() == VersioningMode.MANUAL) {
+            return ResponseEntity.unprocessableEntity()
+                    .body("You cannot choose " + VersioningMode.MANUAL + " versioning mode!");
+        }
+        LOGGER.debug("Received request to retry requests");
+        ingestRequestService.scheduleRequestWithVersioningMode(filters);
+        return ResponseEntity.noContent().build();
+    }
+
     @RequestMapping(value = REQUEST_ABORT_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.ADMIN)
     public void abortRequests() {
@@ -137,14 +160,20 @@ public class RequestController implements IResourceController<RequestDto> {
     public EntityModel<RequestDto> toResource(RequestDto element, Object... extras) {
         EntityModel<RequestDto> resource = resourceService.toResource(element);
 
-        if ((InternalRequestState.ERROR == element.getState())
-                || (element.getState() == InternalRequestState.ABORTED)) {
-            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("RETRY"),
+        if ((InternalRequestState.ERROR == element.getState()) || (element.getState()
+                == InternalRequestState.ABORTED)) {
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "retryRequests",
+                                    LinkRelation.of("RETRY"),
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
                 .contains(element.getState())) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "delete",
+                                    LinkRels.DELETE,
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }
 
