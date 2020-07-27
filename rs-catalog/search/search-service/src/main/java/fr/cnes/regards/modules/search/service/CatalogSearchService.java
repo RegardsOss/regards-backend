@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -271,7 +272,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addDataAccessRights(criterion);
             // Perform compute
-            DocFilesSummary summary = searchService.computeDataFilesSummary(searchKey, criterion, "tags", dataTypes);
+            DocFilesSummary summary = searchService
+                    .computeDataFilesSummary(searchKey, criterion, "tags", Optional.of("URN:AIP:DATASET.*"), dataTypes);
             keepOnlyDatasetsWithGrantedAccess(searchKey, dataset, summary);
 
             return summary;
