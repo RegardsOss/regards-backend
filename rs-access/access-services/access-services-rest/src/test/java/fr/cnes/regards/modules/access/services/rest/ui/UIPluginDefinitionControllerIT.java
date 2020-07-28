@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
+import fr.cnes.regards.modules.access.services.domain.ui.UIDefaultPluginEnum;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -86,9 +87,11 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
      */
     @Test
     public void testGetAllPlugins() {
-        // 8 default plugins + 3 created during this test
+        // default plugins + 3 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize("$.content", 11), "Error getting all plugins");
+                          customizer().expectStatusOk().expectToHaveSize("$.content",
+                                                                         UIDefaultPluginEnum.values().length + 3),
+                          "Error getting all plugins");
     }
 
     /**
@@ -97,9 +100,10 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
      */
     @Test
     public void testGetPluginsByType() {
-        // 8 default plugins + 2 created during this test
+        // default plugins + 2 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize("$.content", 10)
+                          customizer().expectStatusOk()
+                                  .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 2)
                                   .addParameter("type", UIPluginTypesEnum.CRITERIA.toString()),
                           "Error getting all criteria plugins");
 
@@ -147,7 +151,9 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
 
         // 8 default plugins + 4 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize("$.content", 12).addParameter("size", "20"),
+                          customizer().expectStatusOk()
+                                  .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 4)
+                                  .addParameter("size", "20"),
                           "Error getting all plugins");
     }
 

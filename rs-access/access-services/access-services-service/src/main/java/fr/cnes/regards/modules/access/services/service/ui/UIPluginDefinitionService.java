@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepo
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.event.EventType;
 import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEvent;
+import fr.cnes.regards.modules.access.services.domain.ui.UIDefaultPluginEnum;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 
@@ -59,24 +60,6 @@ public class UIPluginDefinitionService
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(UIPluginDefinitionService.class);
-
-    private static final String DEFAULT_STRING_CRITERION_NAME = "string-criteria";
-
-    private static final String DEFAULT_FULLTEXT_CRITERION_NAME = "full-text-criteria";
-
-    private static final String DEFAULT_NUMERICAL_CRITERION_NAME = "numerical-criteria";
-
-    private static final String DEFAULT_TWONUMERICAL_CRITERION_NAME = "two-numerical-criteria";
-
-    private static final String DEFAULT_TEMPORAL_CRITERION_NAME = "temporal-criteria";
-
-    private static final String DEFAULT_TWOTEMPORAL_CRITERION_NAME = "two-temporal-criteria";
-
-    private static final String DEFAULT_ENUMERATED_CRITERION_NAME = "enumerated-criteria";
-
-    private static final String DEFAULT_DATAWITHONLYPIC_CRITERION_NAME = "data-with-picture-only";
-
-    private static final String DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME = "last-version-only";
 
     @Autowired
     private IUIPluginDefinitionRepository repository;
@@ -143,69 +126,11 @@ public class UIPluginDefinitionService
     protected void initDefault() {
         // Create default plugins if no plugin defined
         final List<UIPluginDefinition> plugins = repository.findAll();
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_STRING_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_STRING_CRITERION_NAME,
-                                                                 "/plugins/criterion/string/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
+        for (UIDefaultPluginEnum defaultPlugin : UIDefaultPluginEnum.values()) {
+            if (!plugins.stream().anyMatch(p -> p.getName().equals(defaultPlugin.getValue()))) {
+                repository.save(defaultPlugin.build());
+            }
         }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_FULLTEXT_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_FULLTEXT_CRITERION_NAME,
-                                                                 "/plugins/criterion/full-text/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_NUMERICAL_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_NUMERICAL_CRITERION_NAME,
-                                                                 "/plugins/criterion/numerical/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_TWONUMERICAL_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_TWONUMERICAL_CRITERION_NAME,
-                                                                 "/plugins/criterion/two-numerical/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_TEMPORAL_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_TEMPORAL_CRITERION_NAME,
-                                                                 "/plugins/criterion/temporal/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_TWOTEMPORAL_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_TWOTEMPORAL_CRITERION_NAME,
-                                                                 "/plugins/criterion/two-temporal/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_ENUMERATED_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_ENUMERATED_CRITERION_NAME,
-                                                                 "/plugins/criterion/enumerated/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_DATAWITHONLYPIC_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_DATAWITHONLYPIC_CRITERION_NAME,
-                                                                 "/plugins/criterion/data-with-picture-only/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
-        if (!plugins.stream().anyMatch(p -> p.getName().equals(DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME))) {
-            UIPluginDefinition plugin = UIPluginDefinition.build(DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME,
-                                                                 "/plugins/criterion/last-version-only/plugin.js",
-                                                                 UIPluginTypesEnum.CRITERIA);
-            repository.save(plugin);
-        }
-
     }
 
     @Override
