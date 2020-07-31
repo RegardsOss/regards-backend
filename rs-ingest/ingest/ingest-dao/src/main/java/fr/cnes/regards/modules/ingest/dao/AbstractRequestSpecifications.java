@@ -143,15 +143,17 @@ public final class AbstractRequestSpecifications {
 
     public static Specification<AbstractRequest> searchRequestBlockingAipUpdatesCreator(Optional<String> sessionOwner,
             Optional<String> session) {
-
+        // TODO : Les requests de type AIPOstProcess bloquent elles ces request ?
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb,
-                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
-                                                                                        session),
-                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
+                           .aggregateRequest(cb,
+                                             AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                               session),
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)
+                                             ,// TODO : AbstractRequestSpecifications.searchPostProcess(root, cb) ????
+                                             ));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -161,16 +163,16 @@ public final class AbstractRequestSpecifications {
 
     public static Specification<AbstractRequest> searchRequestBlockingUpdate(Optional<String> sessionOwner,
             Optional<String> session) {
-
+        // TODO : Les requests de type AIPOstProcess bloquent elles ces request ?
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb,
-                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
-                                                                                        session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
+                           .aggregateRequest(cb,
+                                             AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                               session),
+                                             AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -180,15 +182,15 @@ public final class AbstractRequestSpecifications {
 
     public static Specification<AbstractRequest> searchRequestBlockingStoreMeta(Optional<String> sessionOwner,
             Optional<String> session) {
-
+        // TODO : Les requests de type AIPOstProcess bloquent elles ces request ?
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb, AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
-                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
+                           .aggregateRequest(cb, AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchOAISDeletion(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb),
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -198,16 +200,17 @@ public final class AbstractRequestSpecifications {
 
     public static Specification<AbstractRequest> searchRequestBlockingOAISDeletion(Optional<String> sessionOwner,
             Optional<String> session, Long aipId) {
-
+        // TODO : Les requests de type AIPOstProcess bloquent elles ces request ?
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb,
-                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
-                                                                                        session),
-                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)));
+                           .aggregateRequest(cb,
+                                             AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                               session),
+                                             AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchPostProcess(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchAipUpdatesCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -217,15 +220,32 @@ public final class AbstractRequestSpecifications {
 
     public static Specification<AbstractRequest> searchRequestBlockingOAISDeletionCreator(Optional<String> sessionOwner,
             Optional<String> session) {
+        // TODO : Les requests de type AIPOstProcess bloquent elles ces request ?
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
             predicates.add(AbstractRequestSpecifications
-                    .aggregateRequest(cb,
-                                      AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
-                                                                                        session),
-                                      AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                      AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
+                           .aggregateRequest(cb,
+                                             AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
+                                                                                               session),
+                                             AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
+
+            predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
+
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+    }
+
+    public static Specification<AbstractRequest> searchRequestBlockingAIPPostProcess(Optional<String> sessionOwner,
+            Optional<String> session) {
+        return (root, query, cb) -> {
+            Set<Predicate> predicates = Sets.newHashSet();
+
+            predicates.add(AbstractRequestSpecifications
+                                   .aggregateRequest(cb,
+                                                     // TODO : Chercher si il existe des types de request bloquant le post proccess
+                                                     );
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -255,6 +275,12 @@ public final class AbstractRequestSpecifications {
             Optional<String> session) {
         return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
                                                                 RequestTypeConstant.UPDATE_VALUE);
+    }
+
+    public static Predicate searchPostProcess(Root<AbstractRequest> root, CriteriaBuilder cb, Optional<String> sessionOwner,
+            Optional<String> session) {
+        return AbstractRequestSpecifications.searchMicroRequest(root, cb, sessionOwner, session,
+                                                                RequestTypeConstant.AIP_POST_PROCESS_VALUE);
     }
 
     public static Predicate searchOAISDeletionCreator(Root<AbstractRequest> root, CriteriaBuilder cb) {

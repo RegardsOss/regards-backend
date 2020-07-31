@@ -51,6 +51,8 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
     @Autowired
     private IPluginService pluginService;
 
+    public static final String AIP_POST_PROCESS_REQUEST_IDS = "AIP_POST_PROCESS_REQUEST_IDS";
+
     public static final String INGEST_CHAIN_ID_PARAMETER = "chain_id";
 
     public static final String AIPS_PARAMETER = "aips";

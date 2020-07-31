@@ -41,4 +41,6 @@ public class RequestTypeConstant {
     public static final String OAIS_DELETION_CREATOR_VALUE = "OAIS_DELETION_CREATOR";
 
     public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";
+
+    public static final String AIP_POST_PROCESS_VALUE = "AIP_POST_PROCESS";
 }
