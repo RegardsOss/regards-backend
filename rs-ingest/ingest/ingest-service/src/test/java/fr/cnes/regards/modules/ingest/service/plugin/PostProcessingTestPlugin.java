@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 
 /**
@@ -43,11 +44,12 @@ public class PostProcessingTestPlugin implements ISipPostprocessing {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public void postprocess(IngestProcessingChain chain, Collection<AIPEntity> aipEntities, IJob job)
+    public PostProcessResult postprocess(Collection<AIPEntity> aipEntities)
             throws ModuleException {
         if (PostProcessingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new ModuleException("Simulated exception for step PreprocessingTestPlugin");
         }
+        return null;
     }
 
 }

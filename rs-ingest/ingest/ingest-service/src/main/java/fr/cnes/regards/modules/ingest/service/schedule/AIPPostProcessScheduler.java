@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
  * @author Iliana Ghazali
  */
 
-public class AIPPostProcessingScheduler {
+public class AIPPostProcessScheduler {
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -52,6 +52,7 @@ public class AIPPostProcessingScheduler {
     /**
      * Bulk save queued items every second.
      */
+    //TODO change delay
     @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:10000}", initialDelay = 1_000)
     protected void scheduleAIPPostProcessingJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

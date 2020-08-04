@@ -41,8 +41,10 @@ import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 
@@ -74,19 +76,10 @@ public class AIPPostProcessService {
     @Value("${regards.ingest.aips.scan.iteration-limit:100}")
     private Integer aipRequestIterationLimit;
 
-    /**
-     * Check if a aip post process request is running or pending  for the given aip
-     * @param aip
-     * @return [TRUE|FALSE]
-     */
-    public boolean aipPostProcessAlreadyPending(AIPEntity aip) {
-        return aipPostProcessRequestRepository
-                .existsByAipIdAndStateIn(aip.getId(),
-                                         Sets.newHashSet(InternalRequestState.CREATED, InternalRequestState.BLOCKED,
-                                                         InternalRequestState.RUNNING,
-                                                         InternalRequestState.TO_SCHEDULE));
-    }
 
+    /**
+     * Schedule a {@link IngestPostProcessingJob} for the given {@link IngestProcessingChain} to post process given {@link AIPEntity}s
+     */
     public JobInfo scheduleJob() {
         JobInfo jobInfo = null;
         LOGGER.trace("[AIP POSTPROCESS SCHEDULER] Scheduling job ...");

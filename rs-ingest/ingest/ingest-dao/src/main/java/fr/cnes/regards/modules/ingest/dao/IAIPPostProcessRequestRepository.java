@@ -20,11 +20,16 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 
@@ -35,13 +40,20 @@ import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProce
 
 public interface IAIPPostProcessRequestRepository extends JpaRepository<AIPPostProcessRequest,Long> {
 
+    // find created requests
     default Page<AIPPostProcessRequest> findWaitingRequest(Pageable pageRequest){
         return findAllByState(InternalRequestState.CREATED, pageRequest);
     }
-
+    // find requests by state
     Page<AIPPostProcessRequest> findAllByState(InternalRequestState step, Pageable page);
 
-    boolean existsByAipIdAndStateIn(Long id, Collection<InternalRequestState> states);
+    // get requests by id
+    @EntityGraph(attributePaths = "aips")
+    List<AIPPostProcessRequest> findByIdIn(Collection<Long> ids);
+
+    //find request corresponding to an AIP id
+    @Query(value="SELECT aip_id FROM t_request WHERE aip_id = (:id)")
+    AIPPostProcessRequest findRequestByAipId(@Param("id") String aipId);
 
 
 }

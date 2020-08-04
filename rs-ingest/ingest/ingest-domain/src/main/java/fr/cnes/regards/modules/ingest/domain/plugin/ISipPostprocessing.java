@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
@@ -39,7 +40,7 @@ public interface ISipPostprocessing {
 
     /**
      * Allows to make some action after SIP processing.
-     * @param sip processed {@link SIP}
+     * @param aipEntities
      */
-    void postprocess(IngestProcessingChain chain, Collection<AIPEntity> aipEntities, IJob job) throws ModuleException;
+    PostProcessResult postprocess(Collection<AIPEntity> aipEntities) throws ModuleException;
 }

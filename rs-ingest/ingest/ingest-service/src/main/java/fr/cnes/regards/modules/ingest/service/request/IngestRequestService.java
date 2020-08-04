@@ -52,6 +52,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -61,6 +62,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -127,6 +129,9 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
+
+    @Autowired
+    private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -398,23 +403,14 @@ public class IngestRequestService implements IIngestRequestService {
         requestService.scheduleRequests(toSchedule);
         // Schedule post process
         for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
-            scheduleIngestPostProcessingJobs(es.getKey(), es.getValue());
+            for (AIPEntity aip : es.getValue()) {
+                AIPPostProcessRequest req = AIPPostProcessRequest
+                        .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
+                aipPostProcessRequestRepository.save(req);
+            }
         }
     }
 
-    /**
-     * Schedule a {@link IngestPostProcessingJob} for the given {@link IngestProcessingChain} to post process given {@link AIPEntity}s
-     * @param chain {@link IngestProcessingChain} to schedule job.
-     * @param aipEntities {@link AIPEntity}s to post process.
-     */
-    private void scheduleIngestPostProcessingJobs(IngestProcessingChain chain, Set<AIPEntity> aipEntities) {
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(IngestPostProcessingJob.INGEST_CHAIN_ID_PARAMETER, chain.getId()));
-        jobParameters.add(new JobParameter(IngestPostProcessingJob.AIPS_PARAMETER, aipEntities));
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB.getPriority(), jobParameters,
-                authResolver.getUser(), IngestPostProcessingJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
-    }
 
     @Override
     public void handleRemoteStoreError(IngestRequest request, RequestInfo requestInfo) {

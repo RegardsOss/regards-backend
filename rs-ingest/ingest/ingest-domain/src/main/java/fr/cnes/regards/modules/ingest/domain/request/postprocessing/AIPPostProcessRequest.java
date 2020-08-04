@@ -50,7 +50,6 @@ public class AIPPostProcessRequest extends AbstractRequest {
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private AIPPostProcessPayload config;
 
-
     /**
      * AIP to process
      */
@@ -58,10 +57,11 @@ public class AIPPostProcessRequest extends AbstractRequest {
     @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
     private AIPEntity aip;
 
-    public static AIPPostProcessRequest build(AIPEntity aipToProcess,String postProcessingPluginBusinnessId) {
+
+    public static AIPPostProcessRequest build(AIPEntity aipToProcess,String postProcessingPluginBusinessId) {
         AIPPostProcessRequest appr = new AIPPostProcessRequest();
         appr.aip = aipToProcess;
-        appr.config = AIPPostProcessPayload.build(postProcessingPluginBusinnessId);
+        appr.config = AIPPostProcessPayload.build(postProcessingPluginBusinessId);
         appr.setCreationDate(OffsetDateTime.now());
         appr.setSessionOwner(aipToProcess.getSessionOwner());
         appr.setSession(aipToProcess.getSession());
@@ -78,4 +78,8 @@ public class AIPPostProcessRequest extends AbstractRequest {
     public AIPEntity getAip() {
         return aip;
     }
+
+
+
+
 }
