@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -150,7 +151,7 @@ public class OrderService implements IOrderService {
 
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
-    private static final int MAX_EXTERNAL_BUCKET_FILE_COUNT = 1_000;
+    private static final int MAX_BUCKET_FILE_COUNT = 1_000;
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
 
@@ -312,20 +313,19 @@ public class OrderService implements IOrderService {
                         dispatchFeatureFilesInBuckets(basket, order, role, feature, storageBucketFiles,
                                                       externalBucketFiles);
                         // If sum of files size > storageBucketSize, add a new bucket
-                        if (storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize) {
+                        if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || (storageBucketFiles.stream()
+                                .mapToLong(DataFile::getFilesize).sum() >= storageBucketSize)) {
                             internalFilesCount += storageBucketFiles.size();
                             // Create all bucket data files at once
-                            dataFileService.create(storageBucketFiles);
-                            createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                            self.createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
                             subOrderNumber++;
                             storageBucketFiles.clear();
                         }
                         // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                        if (externalBucketFiles.size() > MAX_EXTERNAL_BUCKET_FILE_COUNT) {
+                        if (externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) {
                             externalFilesCount += externalBucketFiles.size();
                             // Create all bucket data files at once
-                            dataFileService.create(externalBucketFiles);
-                            createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                            self.createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
                             externalBucketFiles.clear();
                         }
                     }
@@ -336,15 +336,13 @@ public class OrderService implements IOrderService {
                 if (!storageBucketFiles.isEmpty()) {
                     internalFilesCount += storageBucketFiles.size();
                     // Create all bucket data files at once
-                    dataFileService.create(storageBucketFiles);
-                    createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                    self.createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
                     subOrderNumber++;
                 }
                 if (!externalBucketFiles.isEmpty()) {
                     externalFilesCount += externalBucketFiles.size();
                     // Create all bucket data files at once
-                    dataFileService.create(externalBucketFiles);
-                    createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                    self.createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
                 }
 
                 // Add dsTask ONLY IF it contains at least one FilesTask
@@ -505,9 +503,13 @@ public class OrderService implements IOrderService {
     /**
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
             String role, int priority) {
         LOGGER.info("Creating storage sub-order of {} files", bucketFiles.size());
+        dataFileService.create(bucketFiles);
+
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
@@ -530,9 +532,11 @@ public class OrderService implements IOrderService {
     /**
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
-    private void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-            Order order) {
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
+        dataFileService.create(bucketFiles);
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());

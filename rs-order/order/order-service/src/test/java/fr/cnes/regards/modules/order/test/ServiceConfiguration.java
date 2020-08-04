@@ -86,24 +86,6 @@ public class ServiceConfiguration {
         return new StorageClientMock(listener, true);
     }
 
-    /**
-     * TODO : Replace by new storage client
-    @Bean
-    public IAipClient mockAipClient() {
-        final AipClientProxy aipClientProxy = new AipClientProxy(publisher);
-        InvocationHandler handler = (proxy, method, args) -> {
-            for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
-                if (aipClientProxyMethod.getName().equals(method.getName())) {
-                    return aipClientProxyMethod.invoke(aipClientProxy, args);
-                }
-            }
-            return null;
-        };
-        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
-                                                   new Class<?>[] { IAipClient.class }, handler);
-    }
-    */
-
     @Bean
     public IAuthenticationResolver mockAuthResolver() {
         return Mockito.mock(IAuthenticationResolver.class);
@@ -113,43 +95,4 @@ public class ServiceConfiguration {
     public IEmailClient mockEmailClient() {
         return Mockito.mock(IEmailClient.class);
     }
-
-    /**
-     * TODO : Replace by new storage client
-    private class AipClientProxy {
-
-        private final IPublisher publisher;
-
-        public AipClientProxy(IPublisher publisher) {
-            this.publisher = publisher;
-        }
-
-        @SuppressWarnings("unused")
-        public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-            for (String checksum : availabilityRequest.getChecksums()) {
-                if (((int) (Math.random() * 10) % 2) == 0) {
-                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
-                } else {
-                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
-                }
-            }
-            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
-                    Collections.emptySet()));
-        }
-
-        @SuppressWarnings("unused")
-        public Response downloadFile(String aipId, String checksum) {
-            Response mockResp = Mockito.mock(Response.class);
-            try {
-                Mockito.when(mockResp.body().asInputStream())
-                        .thenReturn(getClass().getResourceAsStream("/files/" + checksum));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return mockResp;
-        }
-
-    }
-    */
-
 }
