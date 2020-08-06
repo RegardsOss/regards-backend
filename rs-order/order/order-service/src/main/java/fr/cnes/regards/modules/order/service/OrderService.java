@@ -350,9 +350,8 @@ public class OrderService implements IOrderService {
                     order.addDatasetOrderTask(dsTask);
                 }
             }
-            // Compute order expiration date using number of sub order created + 2,
-            // that gives time to users to download there last suborders
-            order.setExpirationDate(OffsetDateTime.now().plusDays((subOrderNumber + 2) * orderValidationPeriodDays));
+            // Compute order expiration date using number of sub orders
+            order.setExpirationDate(OffsetDateTime.now().plusDays(orderValidationPeriodDays).plusHours(subOrderNumber));
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
             if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
