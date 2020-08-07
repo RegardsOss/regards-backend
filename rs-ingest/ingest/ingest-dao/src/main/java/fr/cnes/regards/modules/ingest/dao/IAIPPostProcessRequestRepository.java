@@ -47,13 +47,4 @@ public interface IAIPPostProcessRequestRepository extends JpaRepository<AIPPostP
     // find requests by state
     Page<AIPPostProcessRequest> findAllByState(InternalRequestState step, Pageable page);
 
-    // get requests by id
-    @EntityGraph(attributePaths = "aips")
-    List<AIPPostProcessRequest> findByIdIn(Collection<Long> ids);
-
-    //find request corresponding to an AIP id
-    @Query(value="SELECT aip_id FROM t_request WHERE aip_id = (:id)")
-    AIPPostProcessRequest findRequestByAipId(@Param("id") String aipId);
-
-
 }

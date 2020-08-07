@@ -28,13 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -52,7 +55,8 @@ import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
  *
  * @author Iliana Ghazali
  */
-
+@Service
+@MultitenantTransactional
 public class AIPPostProcessService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPDeletionService.class);
@@ -69,11 +73,10 @@ public class AIPPostProcessService {
     @Autowired
     private JobInfoService jobInfoService;
 
-
     /**
      * Limit number of AIPs to retrieve in one page.
      */
-    @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+    @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}")
     private Integer aipRequestIterationLimit;
 
 

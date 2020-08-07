@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -37,7 +39,6 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
@@ -45,6 +46,8 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  * @author Sébastien Binda
  * @author Iliana Ghazali
  */
+
+
 public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     @Autowired
@@ -61,121 +64,207 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     public static final String AIP_POST_PROCESS_REQUEST_IDS = "AIP_POST_PROCESS_REQUEST_IDS";
 
-    private List<AIPPostProcessRequest> requests;
+    private Map<Long, AIPPostProcessRequest> requests;
 
+    private Map<String, Long> mapAipReq = new HashMap<>();
+
+    private Map<String, List<String>> mapPluginAip = new HashMap<>();
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        Set<Long> postProcessRequestIds = getValue(parameters, AIP_POST_PROCESS_REQUEST_IDS);
-        // Retrieve list of AIP post process requests to handle
-        requests = aipPostProcessRequestRepository.findByIdIn(postProcessRequestIds);
+    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+        Type type = new TypeToken<List<Long>>() {
+
+        }.getType();
+        List<Long> postProcessRequestIds = getValue(parameters, AIP_POST_PROCESS_REQUEST_IDS, type);
+        // Convert Request List to Map
+        this.requests = listRequestsToMap(aipPostProcessRequestRepository.findAllById(postProcessRequestIds));
+        
     }
 
     @Override
     public void run() {
         logger.debug("[INGEST POST PROCESSING JOB] Running job for {} AIPPostProcess(s) requests", requests.size());
-
         // Init params
         long start = System.currentTimeMillis();
-        List<AIPEntity> aipEntities = new ArrayList<>();
-        boolean interrupted = Thread.currentThread().isInterrupted();//for hibernate transaction
 
-        // Iterate on requests and add aip to list of aips
-        Iterator<AIPPostProcessRequest> requestIter = requests.iterator();
-        while (requestIter.hasNext() && !interrupted) {
-            AIPPostProcessRequest request = requestIter.next();
-            aipEntities.add(request.getAip());
-            interrupted = Thread.currentThread().isInterrupted();
-        }
+        // Create links between aipId/reqId and pluginBusinessId/set(aipIds)
+        createMapsAipReqPluginId();
 
-        // If thread was interrupted, put all requests to ABORTED state
-        interrupted = Thread.interrupted();
-        if (interrupted) {
-            requests.forEach(req -> req.setState(InternalRequestState.ABORTED));
-            aipPostProcessRequestRepository.saveAll(requests);
-            Thread.currentThread().interrupt();
-        } else {
-            // Run postprocessing plugin
-            PostProcessResult postProcessResult = null;
+        //Run plugins for all requests
+        launchPlugins();
+
+        logger.debug("[AIP POSTPROCESS JOB] Job handled for {} AIPPostProcesses(s) requests in {}ms",
+                     this.requests.size(), System.currentTimeMillis() - start);
+
+    }
+
+
+    /**
+     * PostProcess aips with their associated plugins
+     */
+    private void launchPlugins() {
+        // Init params
+        PostProcessResult postProcessResult;
+        ISipPostprocessing plugin;
+        Set<String> aipIdsSuccess = new HashSet<>();
+        String pluginBusinessId;
+
+        boolean isInterrupted = false;
+
+        // Loop on map businessId-aipIds
+        for (Map.Entry<String, List<String>> pluginToLaunch : this.mapPluginAip.entrySet()) {
             try {
-                ISipPostprocessing plugin = pluginService.getPlugin(requests.get(0).getConfig().getPostProcessingPluginBusinnessId());
-                postProcessResult = plugin.postprocess(aipEntities);
+                // Launch plugin by businessId
+                pluginBusinessId = pluginToLaunch.getKey();
+                logger.debug("Launch plugin {}",pluginBusinessId);
+                plugin = pluginService.getPlugin(pluginBusinessId);
+                postProcessResult = plugin.postprocess(getAipById(pluginToLaunch.getValue()));
 
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                logger.error("Post processing plugin doest not exists or is not active", e);
-            }
-
-            // If postProcess returns errors
-            if(postProcessResult!=null) {
-                // Update request state to ERROR
-                Map<AIPEntity, String> errors = postProcessResult.getErrors();
-                for(Map.Entry error: errors.entrySet()){
-                    AIPEntity aip = (AIPEntity) error.getKey();
-                    AIPPostProcessRequest req = aipPostProcessRequestRepository.findRequestByAipId(aip.getAipId());
-                    req.setState(InternalRequestState.ERROR);
-                    aipPostProcessRequestRepository.save(req);
+                // Check if process was interrupted
+                if(postProcessResult.getInterrupted() || Thread.currentThread().isInterrupted()){
+                    isInterrupted = true;
+                    break;
                 }
-            }
 
-            // Delete successful requests
-            List<AIPPostProcessRequest> succeedRequestsToDelete = requests.stream()
-                    .filter(request -> (request.getState() != InternalRequestState.ABORTED
-                            && request.getState() != InternalRequestState.ERROR)).collect(Collectors.toList());
-            aipPostProcessRequestRepository.deleteAll(succeedRequestsToDelete);
-
-        }
-        logger.debug("[AIP POST PROCESS JOB] Job handled for {} AIPPostProcessRequest(s) requests in {}ms",
-                     requests.size(), System.currentTimeMillis() - start);
-
-    }
-
-
-  /*
-
-    @Autowired
-    private IIngestProcessingChainRepository processingChainRepository;
-
-    @Autowired
-    private IPluginService pluginService;
-
-    public static final String AIP_POST_PROCESS_REQUEST_IDS = "AIP_POST_PROCESS_REQUEST_IDS";
-
-    public static final String INGEST_CHAIN_ID_PARAMETER = "chain_id";
-
-    public static final String AIPS_PARAMETER = "aips";
-
-    private Optional<IngestProcessingChain> ingestChain = Optional.empty();
-
-    private final Set<AIPEntity> aipEntities = Sets.newHashSet();
-
-    @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        ingestChain = processingChainRepository.findById(parameters.get(INGEST_CHAIN_ID_PARAMETER).getValue());
-        aipEntities.addAll(parameters.get(AIPS_PARAMETER).getValue());
-    }
-
-    @Override
-    public void run() {
-        if (ingestChain.isPresent() && ingestChain.get().getPostProcessingPlugin().isPresent()) {
-            try {
-                ISipPostprocessing plugin = pluginService
-                        .getPlugin(ingestChain.get().getPostProcessingPlugin().get().getBusinessId());
-                plugin.postprocess(ingestChain.get(), aipEntities, this);
+                // Update Local Requests
+                // If postProcess returns errors - put all requests corresponding to failed aips to ERROR state
+                if (!postProcessResult.getErrors().isEmpty()) {
+                    putReqError(postProcessResult.getErrors());
+               
+                }
+                // If Success - put all requests corresponding to successfully processed aipIds to RUNNING state
+                if (!postProcessResult.getSuccesses().isEmpty()) {
+                   aipIdsSuccess.addAll(postProcessResult.getSuccesses());
+                }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 logger.error("Post processing plugin doest not exists or is not active", e);
             }
-        } else {
-            logger.warn("Ingest processing chain doest not exists anymore or no post processing plugin to apply");
+        }
+
+        // Update BDD (update running and error requests)
+        // If interrupted all requests not handled are already set in ABORTED status at job start
+        aipPostProcessRequestRepository.saveAll(this.requests.values());
+
+        // Delete requests processed
+        deleteSuccessReq(aipIdsSuccess);
+
+        if(isInterrupted){
+            // Restart thread
+            Thread.currentThread().interrupt();
+        }
+
+    }
+
+    //--------------------------------------
+    // --------- MAPPING CREATION ----------
+    //--------------------------------------
+
+    /**
+     * Create two mappings. 
+     * One between aipId and its corresponding reqId. 
+     * The other between the plugin id and the set of aipIds it has to process.
+     */
+    private void createMapsAipReqPluginId() {
+        this.requests.forEach((reqId,req) -> {
+            String aipId = req.getAip().getAipId();
+            String pluginId = req.getConfig().getPostProcessingPluginBusinnessId();
+            
+            // Build aipId and reqId mapping
+            this.mapAipReq.put(aipId, reqId);
+            
+            // Build plugin businessId and AIP ID mapping
+            // create businessId key if not existing
+            if (!this.mapPluginAip.containsKey(pluginId)) {
+                this.mapPluginAip.put(pluginId, new ArrayList<>());
+            }
+            // add aips to related businessId
+            this.mapPluginAip.get(pluginId).add(aipId);
+        });
+    }
+
+
+    //--------------------------------------
+    // ----- TO SEARCH REQ/AIP BY IDS ------
+    //--------------------------------------
+
+    /**
+     * Transform list of requests to map of reqIds - requests and put all request states to ABORTED state
+     * @param list list of requests
+     * @return map of reqIds - aborted requests
+     */
+    private Map<Long, AIPPostProcessRequest> listRequestsToMap(List<AIPPostProcessRequest> list) {
+        return list.stream().collect(Collectors.toMap(AIPPostProcessRequest::getId, request -> {
+            // Set all state requests to aborded at init so that all requests not postprocessed keep ABORTED state
+            request.setState(InternalRequestState.ABORTED);
+            return request;
+        }));
+    }
+
+    /**
+     * Get set of aips to postprocess by provided their ids.
+     * @param aipIdSet set of aipsId
+     * @return set of aips
+     */
+    private Set<AIPEntity> getAipById (List<String> aipIdSet){
+        Set<AIPEntity> aipSet = new LinkedHashSet<>();
+        Long reqId;
+        for(String aipId : aipIdSet){
+            //Get req.aip and add to set
+            reqId = mapAipReq.get(aipId);
+            aipSet.add(this.requests.get(reqId).getAip());
+        }
+        return aipSet;
+    }
+
+    //--------------------------------------
+    // ---------- REQUEST UPDATES ----------
+    //--------------------------------------
+
+    /**
+     * Update status of requests in errors to ERROR
+     * @param errorMap map of aipIds in error and the corresponding list of error messages
+     */
+    private void putReqError(Map<String,Set<String>> errorMap){
+        Long reqId;
+        // map of aipIds - linked errors
+        for(Map.Entry<String,Set<String>> error: errorMap.entrySet()){
+            reqId = mapAipReq.get(error.getKey());
+            this.requests.get(reqId).setState(InternalRequestState.ERROR);
+            this.requests.get(reqId).setErrors(error.getValue());
+
         }
     }
 
-    @Override
-    public int getCompletionCount() {
-        return this.aipEntities.size();
-    }*/
+    /**
+     * Delete requests successfully processed
+     */
+    private void deleteSuccessReq(Set<String> aipIdsSuccess){
+        // Get all reqIds corresponding to aipIds returned as successes
+        Set<Long> reqIdsSuccess = new HashSet<>();
+        for (Map.Entry<String, Long> e : this.mapAipReq.entrySet()) {
+            if (aipIdsSuccess.contains(e.getKey())) {
+                Long value = e.getValue();
+                reqIdsSuccess.add(value);
+            }
+        }
+        // Get all successful requests to delete
+        List<AIPPostProcessRequest> succeedRequestsToDelete = new ArrayList<>();
+        for (Map.Entry<Long, AIPPostProcessRequest> req : this.requests.entrySet()) {
+            if (reqIdsSuccess.contains(req.getKey())) {
+                succeedRequestsToDelete.add(req.getValue());
+            }
+        }
+        //Delete successful requests
+        aipPostProcessRequestRepository.deleteAll(succeedRequestsToDelete);
+        logger.debug("AIPs in success deleted from database");
+    }
 
 }
+
+
+
+
+
+
 
 

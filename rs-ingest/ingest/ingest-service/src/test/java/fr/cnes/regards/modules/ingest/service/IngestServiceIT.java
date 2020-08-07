@@ -32,6 +32,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -40,10 +41,13 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -55,6 +59,12 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
+import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
@@ -76,21 +86,35 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPStoreMetaDataRepository storeMetaRepo;
 
+    @Autowired
+    private IAIPPostProcessRequestRepository postProcessRepo;
+
     @SpyBean
     private IIngestRequestService ingestRequestService;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
+    private AIPPostProcessService aipPostProcessService;
 
     private final static String SESSION_OWNER = "sessionOwner";
 
     private final static String SESSION = "session";
 
     @Override
-    public void doInit() {
+    public void doInit() throws ModuleException {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        
+        // Creates a test chain with default post processing plugin
+        createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
 
         Mockito.clearInvocations(ingestRequestService);
     }
+
+
 
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection
@@ -103,6 +127,38 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
         // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);
+    }
+
+    @Test
+    @Purpose("Test postprocess requests creation")
+    public void ingestWithPostProcess() throws EntityInvalidException {
+        Assert.assertEquals("There should be no store metadata request in db", 0L, storeMetaRepo.count());
+        // Ingest SIP with no dataObject
+        String providerId = "SIP_001";
+        SIPCollection sips = SIPCollection
+                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, CHAIN_PP_LABEL,
+                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        sips.add(SIP.build(EntityType.DATA, providerId));
+        ingestService.handleSIPCollection(sips);
+        ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
+
+        // Check that the SIP is STORED
+        SIPEntity entity = sipRepository.findTopByProviderIdOrderByCreationDateDesc(providerId);
+        Assert.assertNotNull(entity);
+        Assert.assertTrue(providerId.equals(entity.getProviderId()));
+        Assert.assertTrue(entity.getVersion() == 1);
+        Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
+
+        // A post process request should be created
+        Assert.assertEquals("There should be one store metadata request created", 1L, postProcessRepo.count());
+
+        // No job scheduled yet
+        Assert.assertEquals(0L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName()).longValue());
+
+        // Check that post process job is scheduled
+        aipPostProcessService.scheduleJob();
+
+        Assert.assertEquals(1L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName()).longValue());
     }
 
     @Test

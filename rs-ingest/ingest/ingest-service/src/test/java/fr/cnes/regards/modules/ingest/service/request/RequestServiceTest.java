@@ -53,6 +53,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionReques
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -183,6 +184,10 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         return (AIPStoreMetaDataRequest) requestService.scheduleRequest(storeMetaDataRequest);
     }
 
+    private AIPPostProcessRequest createPostProcessRequest(AIPEntity aip){
+        AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip,"sampleId");
+        return (AIPPostProcessRequest) requestService.scheduleRequest(postProcessRequest);
+    }
     public void clearRequest() {
         abstractRequestRepository.deleteAll();
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
@@ -229,6 +234,12 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
                             storageDeletionRequest.getState());
         clearRequest();
+
+        AIPPostProcessRequest aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
+                            aipPostProcessRequest.getState());
+        clearRequest();
+
         // END  ------ Empty repo tests
 
         // BEGIN ------- Test AIPUpdatesCreatorRequest
@@ -273,6 +284,16 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
                             storageDeletionRequest.getState());
         clearRequest();
         // END ------- Test StorageDeletionRequest
+
+
+        // BEGIN ------- Test AIPPostProcessRequest
+        createIngestRequest(aips.get(0));
+        createStoreMetaDataRequest(aips);
+        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
+                            aipPostProcessRequest.getState());
+        clearRequest();
+        // END ------- Test AIPPostProcessRequest
     }
 
     @Test
@@ -288,6 +309,12 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         clearRequest();
 
         createOAISDeletionCreatorRequest();
+        aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipUpdatesCreatorRequest.getState());
+        clearRequest();
+
+        createPostProcessRequest(aips.get(0));
         aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             aipUpdatesCreatorRequest.getState());
@@ -310,6 +337,13 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         clearRequest();
 
         createOAISDeletionCreatorRequest();
+        updateRequest = createUpdateRequest(aips);
+        for (AIPUpdateRequest request : updateRequest) {
+            Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED, request.getState());
+        }
+        clearRequest();
+
+        createPostProcessRequest(aips.get(0));
         updateRequest = createUpdateRequest(aips);
         for (AIPUpdateRequest request : updateRequest) {
             Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED, request.getState());
@@ -355,6 +389,12 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
                             oaisDeletionRequest.getState());
         clearRequest();
+
+        createPostProcessRequest(aips.get(0));
+        oaisDeletionRequest = createOAISDeletionCreatorRequest();
+        Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
+                            oaisDeletionRequest.getState());
+        clearRequest();
         // END ------- Test OAISDeletionCreatorRequest
 
         // BEGIN ------- Test StorageDeletionRequest
@@ -375,7 +415,40 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             storageDeletionRequest.getState());
         clearRequest();
+
+        createPostProcessRequest(aips.get(0));
+        storageDeletionRequest = createOAISDeletionRequest(aips);
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        clearRequest();
         // END ------- Test StorageDeletionRequest
+
+        // BEGIN ------- Test AIPPostProcessRequest
+        createOAISDeletionRequest(aips);
+        AIPPostProcessRequest aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipPostProcessRequest.getState());
+
+        clearRequest();
+
+        createOAISDeletionCreatorRequest();
+        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipPostProcessRequest.getState());
+        clearRequest();
+
+        createUpdateRequest(aips);
+        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipPostProcessRequest.getState());
+        clearRequest();
+
+        createAIPUpdatesCreatorRequest();
+        aipPostProcessRequest = createPostProcessRequest(aips.get(0));
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipPostProcessRequest.getState());
+        clearRequest();
+        // END ------- Test AIPPostProcessRequest
 
     }
 

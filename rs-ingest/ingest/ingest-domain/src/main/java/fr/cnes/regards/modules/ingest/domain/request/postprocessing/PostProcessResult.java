@@ -21,9 +21,10 @@
 package fr.cnes.regards.modules.ingest.domain.request.postprocessing;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.Maps;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import com.google.common.collect.Sets;
 
 /**
  *
@@ -32,18 +33,44 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 
 public class PostProcessResult {
 
-    private Map<AIPEntity, String> errors = Maps.newHashMap();
+    private Map<String, Set<String>> errors = Maps.newHashMap();
 
-    public void build(Map<AIPEntity, String> errors) {
+    private Set<String> successes = Sets.newHashSet();
+
+    private boolean interupted = false;
+
+    /**
+     * Build postprocess result of sipad post processing plugin
+     * @param errors map of aipId and related errors encountered during process
+     * @return
+     */
+    public static PostProcessResult build(Map<String, Set<String>> errors) {
         PostProcessResult p = new PostProcessResult();
         p.errors.putAll(errors);
+        return p;
     }
 
-    public void addError(AIPEntity aip, String errorMessage) {
-        this.errors.put(aip, errorMessage);
+    public void addError(String aip, Set<String> errorMessages) {
+        this.errors.put(aip, errorMessages);
     }
 
-    public Map<AIPEntity, String> getErrors() {
+    public Map<String, Set<String>> getErrors() {
         return errors;
+    }
+
+    public void addSuccess(String aipId) {
+        this.successes.add(aipId);
+    }
+
+    public Set<String> getSuccesses() {
+        return successes;
+    }
+
+    public boolean getInterrupted() {
+        return this.interupted;
+    }
+
+    public void setInterrupted() {
+        this.interupted = true;
     }
 }

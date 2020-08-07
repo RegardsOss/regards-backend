@@ -373,7 +373,11 @@ public class IngestRequestService implements IIngestRequestService {
                 aipEntity.setState(AIPState.STORED);
                 aipService.save(aipEntity);
                 if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
-                    postProcessToSchedule.getOrDefault(chain.get(), Sets.newHashSet()).add(aipEntity);
+                    if (postProcessToSchedule.get(chain.get()) != null) {
+                        postProcessToSchedule.get(chain.get()).add(aipEntity);
+                    } else {
+                        postProcessToSchedule.put(chain.get(),Sets.newHashSet(aipEntity) );
+                    }
                 }
             }
 
@@ -399,16 +403,16 @@ public class IngestRequestService implements IIngestRequestService {
                                                       sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
         }
 
-        // Schedule manifest
-        requestService.scheduleRequests(toSchedule);
-        // Schedule post process
+        // Create post process
         for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
             for (AIPEntity aip : es.getValue()) {
                 AIPPostProcessRequest req = AIPPostProcessRequest
                         .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
-                aipPostProcessRequestRepository.save(req);
+                toSchedule.add(aipPostProcessRequestRepository.save(req));
             }
         }
+
+        requestService.scheduleRequests(toSchedule);
     }
 
 

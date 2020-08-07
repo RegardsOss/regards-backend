@@ -21,7 +21,9 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -34,7 +36,8 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
  *
  * @author Iliana Ghazali
  */
-
+@Profile("!noschedule")
+@Component
 public class AIPPostProcessScheduler {
     @Autowired
     private ITenantResolver tenantResolver;
@@ -52,8 +55,7 @@ public class AIPPostProcessScheduler {
     /**
      * Bulk save queued items every second.
      */
-    //TODO change delay
-    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:10000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.aips.postprocess.bulk.delay:10000}", initialDelay = 1_000)
     protected void scheduleAIPPostProcessingJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
