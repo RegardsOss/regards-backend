@@ -317,10 +317,10 @@ public class AIPService implements IAIPService {
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aipsRelatedToSip = aipRepository.findBySipSipId(sipId);
         if (!aipsRelatedToSip.isEmpty()) {
-            aipsRelatedToSip.forEach(entity -> {
-                sessionNotifier.productDeleted(entity.getSessionOwner(), entity.getSession(), aipsRelatedToSip);
-                entity.setState(AIPState.DELETED);
-            });
+            // we can find any aip from one sip as they are generated at same time so they all have the same session information
+            AIPEntity aipForSessionInfo = aipsRelatedToSip.stream().findAny().get();
+            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(), aipForSessionInfo.getSession(), aipsRelatedToSip);
+            aipsRelatedToSip.forEach(entity -> entity.setState(AIPState.DELETED));
             if (deleteIrrevocably) {
                 requestService.deleteAllByAip(aipsRelatedToSip);
                 // Delete them

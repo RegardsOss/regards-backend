@@ -141,6 +141,7 @@ public class SessionNotifier {
 
     public void incrementProductIgnored(IngestRequest request) {
         if (request.getState() == InternalRequestState.IGNORED) {
+            this.decrementProductGenerationPending(request);
             sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_IGNORED,
                                       SessionNotificationState.OK, 1);
         }
@@ -148,6 +149,7 @@ public class SessionNotifier {
 
     public void incrementProductWaitingVersioningMode(IngestRequest request) {
         if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
+            this.decrementProductGenerationPending(request);
             sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_WAITING_VERSIONING_MODE,
                                       SessionNotificationState.OK, 1);
         }

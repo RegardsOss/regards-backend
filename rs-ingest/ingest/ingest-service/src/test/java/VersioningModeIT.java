@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -100,6 +101,17 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
 
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
@@ -139,6 +151,16 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
                             AIPState.STORED,
                             aips[0].getState());
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
     }
 
     /**
@@ -179,6 +201,17 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
                             AIPState.STORED,
                             aips[0].getState());
+
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
 
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
@@ -226,6 +259,24 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
                             AIPState.DELETED,
                             aips[0].getState());
+
+        // session monitoring
+        // 1 - for new version
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+        // 2 - for old version removal
+        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
 
     /**
@@ -267,6 +318,17 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
 
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
                         STORAGE_0,
@@ -296,11 +358,16 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
         // check that session has been notified
-        Mockito.verify(sessionNotifier).incrementProductIgnored(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1)).incrementProductIgnored(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
         // check that request is in state IGNORE, there is only this test request in DB so if there is one IGNORED, it is ours
         Assert.assertEquals("There should be one request in IGNORED state",
                             1,
                             ingestRequestRepository.countByState(InternalRequestState.IGNORED));
+
     }
 
     /**
@@ -341,6 +408,17 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
 
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
                         STORAGE_0,
@@ -370,7 +448,12 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
         // check that session has been notified
-        Mockito.verify(sessionNotifier).incrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .incrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
         // check that request is in state WAITING_VERSIONING_MODE, there is only this test request in DB so if there is one WAITING_VERSIONING_MODE, it is ours
         Assert.assertEquals("There should be one request in WAITING_VERSIONING_MODE state",
                             1,
@@ -425,7 +508,18 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.STORED,
                             aips[0].getState());
         // check session notifier
-        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
     }
 
     @Test
@@ -478,7 +572,24 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                             AIPState.DELETED,
                             aips[0].getState());
         // check session notifier
-        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        // 1 - for new version
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(2))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+        // 2 - for old version removal
+        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
 
     @Test
@@ -511,13 +622,17 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
                             AIPState.STORED,
                             aips[0].getState());
-        // check that session has been notified
-        Mockito.verify(sessionNotifier).incrementProductIgnored(Mockito.any(IngestRequest.class));
         // check that request is in state IGNORE, there is only this test request in DB so if there is one IGNORED, it is ours
         Assert.assertEquals("There should be one request in IGNORED state",
                             1,
                             ingestRequestRepository.countByState(InternalRequestState.IGNORED));
         // check session notifier
-        Mockito.verify(sessionNotifier).decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1))
+                .decrementProductWaitingVersioningMode(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(1)).incrementProductIgnored(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
     }
 }

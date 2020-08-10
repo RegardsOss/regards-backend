@@ -513,10 +513,10 @@ public class IngestRequestService implements IIngestRequestService {
     public void fromWaitingTo(Collection<IngestRequest> requests, VersioningMode versioningMode) {
         MultiValueMap<String, IngestRequest> ingestRequestToSchedulePerChain = new LinkedMultiValueMap<>();
         for (IngestRequest request : requests) {
+            sessionNotifier.decrementProductWaitingVersioningMode(request);
             request.setState(InternalRequestState.CREATED);
             request.getMetadata().setVersioningMode(versioningMode);
             handleRequestGranted(request);
-            sessionNotifier.decrementProductWaitingVersioningMode(request);
             ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
         }
         ingestRequestToSchedulePerChain.keySet().forEach(chain -> scheduleIngestProcessingJobByChain(chain,
