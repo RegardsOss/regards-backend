@@ -58,16 +58,16 @@ import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender10;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender2;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender3;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender4;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender5;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender6;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender7;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender8;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender4;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender6;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender7;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender8;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender9;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.flow.NotificationActionEventHandler;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
@@ -113,10 +113,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
+    protected IAmqpAdmin amqpAdmin;
 
     @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
+    protected IRabbitVirtualHostAdmin vhostAdmin;
 
     @Autowired
     protected NotificationConfigurationProperties configuration;
@@ -125,10 +125,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IPublisher publisher;
 
     @Autowired
-    private Gson gson;
+    protected Gson gson;
 
     @Autowired
-    private ISubscriber subscriber;
+    protected ISubscriber subscriber;
 
     @Before
     public void before() throws InterruptedException {
@@ -247,10 +247,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         }
     }
 
-    protected NotificationActionEvent getEvent(String name) {
+    protected NotificationRequestEvent getEvent(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
                 Reader reader = new InputStreamReader(input)) {
-            return gson.fromJson(CharStreams.toString(reader), NotificationActionEvent.class);
+            return gson.fromJson(CharStreams.toString(reader), NotificationRequestEvent.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import event";
             LOGGER.debug(errorMessage);
@@ -260,7 +260,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     @After
     public void after() {
-        subscriber.unsubscribeFrom(NotificationActionEvent.class);
+        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
         cleanAMQPQueues(NotificationActionEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender2.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender3.class, Target.ONE_PER_MICROSERVICE_TYPE);

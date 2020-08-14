@@ -61,10 +61,10 @@ import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
 import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.service.cache.AbstractCacheableRule;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
@@ -109,9 +109,9 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
     /**
      * Handle a {@link NotificationAction} and check if it matches with enabled {@link Rule} in that case
-     * send a notification to {@link Recipient}
-     * @param toHandle {@link NotificationAction} to handle
-     * @param notificationsInErrors list of {@link NotificationAction} where a {@link Recipient} fail
+     * send a notification to Recipient
+     * @param notification {@link NotificationAction} to handle
+     * @param notificationsInErrors list of {@link NotificationAction} where a Recipient fail
      * @return number of notification sended
      * @throws NotAvailablePluginConfigurationException
      * @throws ModuleException
@@ -125,10 +125,10 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
             try {
                 // check if the  element match with the rule
                 if (((IRuleMatcher) this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId()))
-                        .match(notification.getElement())) {
+                        .match(notification.getPayload())) {
 
                     for (PluginConfiguration recipient : rule.getRecipients()) {
-                        if (notifyRecipient(notification.getElement(), recipient, notification.getAction())) {
+                        if (notifyRecipient(notification, recipient)) {
                             notificationNumber++;
                         } else {
                             notification.setState(NotificationState.ERROR);
@@ -146,16 +146,14 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
     /**
      * Notify a recipient return false if a problem occurs
-     * @param toHandle {@link JsonElement} about to notify
-     * @param recipient {@link Recipient} of the notification
-     * @param action  done on {@link JsonElement}
+     * @param notification {@link JsonElement} about to notify
+     * @param recipient Recipient of the notification
      * @return
      */
-    private boolean notifyRecipient(JsonElement toHandle, PluginConfiguration recipient, String action) {
+    private boolean notifyRecipient(NotificationAction notification, PluginConfiguration recipient) {
         try {
             // check that all send method of recipiens return true
-            return ((IRecipientNotifier) this.pluginService.getPlugin(recipient.getBusinessId())).send(toHandle,
-                                                                                                       action);
+            return ((IRecipientNotifier) this.pluginService.getPlugin(recipient.getBusinessId())).send(notification);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             LOGGER.error("Error while sending notification to receiver ", e);
             return false;
@@ -207,7 +205,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     /**
-     * Try to resend failed {@link Recipient}
+     * Try to resend failed Recipient
      * @param recipientErrors list of previous notification failed
      * @return the number of notification sended
      */
@@ -216,8 +214,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
         List<RecipientError> succededRecipient = new ArrayList<RecipientError>();
         for (RecipientError error : recipientErrors) {
 
-            if (notifyRecipient(error.getNotification().getElement(), error.getRecipient(),
-                                error.getNotification().getAction())) {
+            if (notifyRecipient(error.getNotification(), error.getRecipient())) {
                 succededRecipient.add(error);
                 nbSend++;
             }
@@ -229,8 +226,8 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     /**
-     * Create and save {@link RecipientError} from {@link Recipient}
-     * @param notificationsInErrors Map of failed {@link NotificationAction}=>{@link Recipient}
+     * Create and save {@link RecipientError} from Recipient
+     * @param notificationsInErrors Map of failed {@link NotificationAction}=>Recipient
      * @param jobInfo current {@link JobInfo}
      */
     private void saveRecipientErrors(ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors,
@@ -241,7 +238,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     @Override
-    public void registerNotifications(List<NotificationActionEvent> events) {
+    public void registerNotifications(List<NotificationRequestEvent> events) {
         Set<NotificationAction> notificationToRegister = events.stream().map(event -> initNotificationRequest(event))
                 .collect(Collectors.toSet());
         notificationToRegister.remove(null);
@@ -254,12 +251,12 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @param event
      * @return a implemented {@link NotificationAction} or null if invalid
      */
-    private NotificationAction initNotificationRequest(NotificationActionEvent event) {
-        Errors errors = new MapBindingResult(new HashMap<>(), NotificationActionEvent.class.getName());
+    private NotificationAction initNotificationRequest(NotificationRequestEvent event) {
+        Errors errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
         this.validator.validate(event, errors);
 
         if (!errors.hasErrors()) {
-            return NotificationAction.build(event.getElement(), event.getAction(), NotificationState.DELAYED);
+            return NotificationAction.build(event.getPayload(), event.getMetadata(), NotificationState.DELAYED);
         }
         this.notificationClient.notify(errors.toString(), "A NotificationActionEvent received is invalid",
                                        NotificationLevel.ERROR, DefaultRole.ADMIN);

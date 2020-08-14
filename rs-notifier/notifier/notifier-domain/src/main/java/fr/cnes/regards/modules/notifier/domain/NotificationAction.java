@@ -50,12 +50,13 @@ public class NotificationAction {
     @GeneratedValue(generator = "notificationSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(columnDefinition = "jsonb", name = "element", nullable = false)
+    @Column(columnDefinition = "jsonb", name = "payload", nullable = false)
     @Type(type = "jsonb")
-    private JsonElement element;
+    private JsonElement payload;
 
-    @Column(name = "action", nullable = false)
-    private String action;
+    @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
+    @Type(type = "jsonb")
+    private JsonElement metadata;
 
     /** creation date of the instance */
     @Column(name = "action_date", nullable = false)
@@ -65,20 +66,20 @@ public class NotificationAction {
     @Enumerated(EnumType.STRING)
     private NotificationState state;
 
-    public JsonElement getElement() {
-        return element;
+    public JsonElement getPayload() {
+        return payload;
     }
 
-    public void setElement(JsonElement element) {
-        this.element = element;
+    public void setPayload(JsonElement payload) {
+        this.payload = payload;
     }
 
-    public String getAction() {
-        return action;
+    public JsonElement getMetadata() {
+        return metadata;
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setMetadata(JsonElement metadata) {
+        this.metadata = metadata;
     }
 
     public OffsetDateTime getActionDate() {
@@ -101,10 +102,10 @@ public class NotificationAction {
         this.state = state;
     }
 
-    public static NotificationAction build(JsonElement element, String action, NotificationState state) {
+    public static NotificationAction build(JsonElement element, JsonElement action, NotificationState state) {
         NotificationAction toCreate = new NotificationAction();
-        toCreate.setAction(action);
-        toCreate.setElement(element);
+        toCreate.setMetadata(action);
+        toCreate.setPayload(element);
         toCreate.setActionDate(OffsetDateTime.now());
         toCreate.setState(state);
 

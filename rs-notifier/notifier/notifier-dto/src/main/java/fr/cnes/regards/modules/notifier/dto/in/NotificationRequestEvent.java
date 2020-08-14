@@ -16,46 +16,51 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.dto.out;
+package fr.cnes.regards.modules.notifier.dto.in;
+
+import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonElement;
 
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- * @author kevin
+ * An event contain a JSON element plus an action
+ * @author Kevin Marchois
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class NotificationEvent implements ISubscribable {
+public class NotificationRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
-    private JsonElement element;
+    @NotNull(message = "JSON element is required")
+    private JsonElement payload;
 
-    private String action;
+    private JsonElement metadata;
 
-    public JsonElement getElement() {
-        return element;
+    public JsonElement getPayload() {
+        return payload;
     }
 
-    public void setElement(JsonElement element) {
-        this.element = element;
+    public void setPayload(JsonElement payload) {
+        this.payload = payload;
     }
 
-    public String getAction() {
-        return action;
+    public JsonElement getMetadata() {
+        return metadata;
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setMetadata(JsonElement metadata) {
+        this.metadata = metadata;
     }
 
-    public static NotificationEvent build(JsonElement element, String action) {
-        NotificationEvent toCreate = new NotificationEvent();
-        toCreate.setAction(action);
-        toCreate.setElement(element);
+    public static NotificationRequestEvent build(JsonElement element, JsonElement action) {
+        NotificationRequestEvent toCreate = new NotificationRequestEvent();
+        toCreate.setMetadata(action);
+        toCreate.setPayload(element);
         return toCreate;
     }
 }

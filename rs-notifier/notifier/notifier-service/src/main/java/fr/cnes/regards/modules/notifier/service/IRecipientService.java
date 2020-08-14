@@ -25,7 +25,7 @@ import javax.validation.Valid;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
  * Service for {@link Recipient} manipulation

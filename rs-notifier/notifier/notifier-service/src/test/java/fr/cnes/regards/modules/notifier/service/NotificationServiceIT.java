@@ -50,15 +50,15 @@ import fr.cnes.regards.modules.notifier.dto.NotificationEvent6;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent7;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent8;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent9;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender10;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender2;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender3;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender4;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender5;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender6;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender7;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender8;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender4;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender6;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender7;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender8;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender9;
 
 /**
  * Test class for service {@link NotificationRuleService}
@@ -117,7 +117,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         int bulk = 0;
         for (int i = 0; i < EVENT_TO_RECEIVE; i++) {
             bulk++;
-            events.add(NotificationAction.build(element, "CREATE", NotificationState.DELAYED));
+            events.add(NotificationAction.build(element, gson.toJsonTree("CREATE"), NotificationState.DELAYED));
             if (bulk == EVENT_BULK) {
                 bulk = 0;
                 assertEquals(EVENT_BULK * RECIPIENTS_PER_RULE,
@@ -150,7 +150,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
         List<NotificationAction> events = new ArrayList<>();
         for (int i = 0; i < EVENT_TO_RECEIVE; i++) {
-            events.add(NotificationAction.build(modifiedElement, "CREATE", NotificationState.DELAYED));
+            events.add(NotificationAction.build(modifiedElement, gson.toJsonTree("CREATE"), NotificationState.DELAYED));
         }
 
         Pair<Integer, Integer> results = this.notificationService.processRequest(events, job.getId());

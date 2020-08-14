@@ -24,8 +24,6 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
 
 /**
  * Associates a {@link IRuleMatcher}/{@link PluginConfiguration} to a list of {@link IRecipientNotifier}/{@link PluginConfiguration}

@@ -16,27 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.plugin;
+package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonElement;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent4;
 
 /**
- * Describe action for {@link Recipient}
- * @author Kevin Marchois
+ * @author kevin
  *
  */
-@FunctionalInterface
-@PluginInterface(description = "Recipient sender plugin")
-public interface IRecipientNotifier {
+@Plugin(author = "REGARDS Team", description = "Recipient sender 4", id = "RecipientSender4", version = "1.0.0",
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+public class RecipientSender4 extends AbstractRecipientSender<NotificationEvent4> {
 
-    /**
-     *
-     * @param element {@link JsonElement} to send with notification
-     * @param action what cause the notification (creation, update....)
-     * @return true if succed, false otherwise
-     */
-    boolean send(JsonElement element, String action);
-
+    @Override
+    NotificationEvent4 buildEvent(JsonElement element, JsonElement action) {
+        return NotificationEvent4.build(element, action);
+    }
 }

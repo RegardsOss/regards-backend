@@ -52,6 +52,7 @@
 		<module>notifier-dao</module>
 		<module>notifier-dto</module>
 		<module>notifier-rest</module>
+		<module>notifier-client</module>
 	</modules>
 
 	<dependencyManagement>

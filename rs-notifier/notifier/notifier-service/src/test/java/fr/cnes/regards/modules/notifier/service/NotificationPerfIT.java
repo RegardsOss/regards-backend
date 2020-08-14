@@ -32,7 +32,7 @@ import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * Performance tests on Notification manager
@@ -54,9 +54,9 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
 
         initPlugins(false);
 
-        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
+        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationActionEvent.build(element, "CREATE"));
+            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
@@ -74,9 +74,9 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         JsonElement element = initElement("element.json");
         initPlugins(true);
 
-        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
+        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationActionEvent.build(element, "CREATE"));
+            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database

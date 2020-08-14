@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * Test notification job restart after recipient failure
@@ -61,9 +61,9 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
 
         initPlugins(true);
 
-        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
+        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationActionEvent.build(element, "CREATE"));
+            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database

@@ -35,7 +35,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>plugins-service</artifactId>
+			<artifactId>plugins-domain</artifactId>
 		</dependency>
 	</dependencies>
 </project>

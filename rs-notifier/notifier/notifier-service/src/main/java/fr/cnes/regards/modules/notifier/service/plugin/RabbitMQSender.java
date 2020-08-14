@@ -24,12 +24,15 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationEvent;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
  * Default plugin notification sender
@@ -57,9 +60,41 @@ public class RabbitMQSender implements IRecipientNotifier {
     private String queueName;
 
     @Override
-    public boolean send(JsonElement element, String action) {
-        this.publisher.broadcast(exchange, Optional.ofNullable(queueName), 0, NotificationEvent.build(element, action),
+    public boolean send(NotificationAction toSend) {
+        this.publisher.broadcast(exchange,
+                                 Optional.ofNullable(queueName),
+                                 0,
+                                 toSend,
                                  new HashMap<>());
         return true;
+    }
+
+    @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+    public static class NotificationEvent implements ISubscribable {
+
+        private JsonElement payload;
+
+        private JsonElement metadata;
+
+        public NotificationEvent(NotificationAction request) {
+            this.payload = request.getPayload();
+            this.metadata = request.getMetadata();
+        }
+
+        public JsonElement getPayload() {
+            return payload;
+        }
+
+        public void setPayload(JsonElement payload) {
+            this.payload = payload;
+        }
+
+        public JsonElement getMetadata() {
+            return metadata;
+        }
+
+        public void setMetadata(JsonElement metadata) {
+            this.metadata = metadata;
+        }
     }
 }

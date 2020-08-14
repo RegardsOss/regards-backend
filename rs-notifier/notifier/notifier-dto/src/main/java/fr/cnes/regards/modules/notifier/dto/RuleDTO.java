@@ -23,32 +23,22 @@ import java.util.Collection;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
 
 /**
- * DTO to handle creation of {@link IRuleMatcher}/{@link PluginConfiguration} and  association with {@link IRecipientNotifier}/{@link PluginConfiguration}
- * for rest controllers.
+ * DTO to handle creation of Rule for rest controllers.
  *
  * @author Sébastien Binda
  *
  */
 public class RuleDTO {
 
-    /**
-     * {@link IRuleMatcher}/{@link PluginConfiguration}
-     */
     private PluginConfiguration rulePluginConf;
 
     /**
-     * BusinessIds of associated {@link IRecipientNotifier}/{@link PluginConfiguration}s
+     * BusinessIds of associated IRecipientNotifier {@link PluginConfiguration}s
      */
     private final Collection<String> recipientsBusinessIds = Sets.newHashSet();
 
-    /**
-     * @param businessId
-     * @param map
-     */
     public static RuleDTO build(PluginConfiguration rulePluginConf, Collection<String> recipientsBusinessIds) {
         RuleDTO dto = new RuleDTO();
         dto.rulePluginConf = rulePluginConf;
@@ -65,7 +55,7 @@ public class RuleDTO {
     }
 
     /**
-     * @return  businessId of the {@link IRuleMatcher}/{@link PluginConfiguration}
+     * @return  businessId of the IRuleMatcher {@link PluginConfiguration}
      */
     public String getId() {
         if (rulePluginConf != null) {

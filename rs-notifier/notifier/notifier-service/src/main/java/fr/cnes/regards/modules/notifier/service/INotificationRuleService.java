@@ -26,7 +26,7 @@ import org.springframework.data.util.Pair;
 import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * Notification service interface
@@ -48,9 +48,9 @@ public interface INotificationRuleService {
     Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId);
 
     /**
-     * Register {@link NotificationActionEvent} to schedule notifications
+     * Register {@link NotificationRequestEvent} to schedule notifications
      */
-    void registerNotifications(List<NotificationActionEvent> events);
+    void registerNotifications(List<NotificationRequestEvent> events);
 
     /**
      * Schedule a job to process a batch of {@link NotificationAction}<br/>

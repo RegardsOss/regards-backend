@@ -16,27 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.plugin;
-
-import org.dom4j.rule.Rule;
+package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonElement;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent2;
 
 /**
- * Describe action to applied to a {@link Rule}
- * @author Kevin Marchois
+ * @author kevin
  *
  */
-@FunctionalInterface
-@PluginInterface(description = "Element rule matcher")
-public interface IRuleMatcher {
+@Plugin(author = "REGARDS Team", description = "Recipient sender 2", id = "RecipientSender2", version = "1.0.0",
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+public class RecipientSender2 extends AbstractRecipientSender<NotificationEvent2> {
 
-    /**
-     * Verify if a {@link JsonElement} match with a rule
-     * @param element {@link JsonElement} to verify if it matches
-     * @return true if match, false otherwise
-     */
-    boolean match(JsonElement element);
+    @Override
+    NotificationEvent2 buildEvent(JsonElement element, JsonElement action) {
+        return NotificationEvent2.build(element, action);
+    }
 }

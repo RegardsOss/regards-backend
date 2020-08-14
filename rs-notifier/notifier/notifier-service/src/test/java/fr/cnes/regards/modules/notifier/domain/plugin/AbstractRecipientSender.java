@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.plugin;
+package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.modules.notifier.domain.NotificationAction;
 
 /**
  * @author Marc SORDI
@@ -42,11 +43,11 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
     @Autowired
     IPublisher publisher;
 
-    abstract E buildEvent(JsonElement element, String action);
+    abstract E buildEvent(JsonElement element, JsonElement action);
 
     @Override
-    public boolean send(JsonElement element, String action) {
-        this.publisher.publish(buildEvent(element, action));
+    public boolean send(NotificationAction toSend) {
+        this.publisher.publish(buildEvent(toSend.getPayload(), toSend.getMetadata()));
         return true;
     }
 

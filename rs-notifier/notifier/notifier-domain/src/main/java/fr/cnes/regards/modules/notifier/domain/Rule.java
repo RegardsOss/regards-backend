@@ -41,6 +41,7 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
+ * {@link IRuleMatcher}/{@link PluginConfiguration} and  association with {@link IRecipientNotifier}/{@link PluginConfiguration}
  * @author kevin
  *
  */
