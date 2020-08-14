@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.JsonObject;
 
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;

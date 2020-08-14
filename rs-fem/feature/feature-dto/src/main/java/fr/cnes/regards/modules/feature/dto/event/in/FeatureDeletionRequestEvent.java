@@ -24,6 +24,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;

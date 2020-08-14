@@ -179,7 +179,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
 
         if (!dbRequests.isEmpty()) {
             for (NotificationRequest request : dbRequests.getContent()) {
-                requestsToSchedule.add(request);
+                requestsToSchedule.add(request); //FIXME: sert à rien, autant utiliser requestIds & dbRequests pour récup la priorité
                 requestIds.add(request.getId());
             }
             notificationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
@@ -221,7 +221,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                                                         entity.getUrn(), RequestState.SUCCESS));
         }
         publisher.publish(notifications);
-
+        //TODO remove delete and deplace logic to check if NotificationActionEvent has been successfully handled or not from above to once µS notifier has responded
         this.notificationRequestRepo.deleteAll(requests);
     }
 
