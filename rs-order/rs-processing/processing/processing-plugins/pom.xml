@@ -39,8 +39,16 @@
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
             <artifactId>plugins-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>urn-regards</artifactId>
+        </dependency>
 
         <!-- Libraries -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>nuprocess</artifactId>
@@ -58,12 +66,9 @@
             <artifactId>processing-test</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>urn-regards</artifactId>
+            <groupId>fr.cnes.regards.modules</groupId>
+            <artifactId>processing-engine-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>

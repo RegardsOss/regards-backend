@@ -30,6 +30,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
@@ -99,15 +101,8 @@ public class ProcessingRestClientTest extends AbstractRegardsWebIT {
 
         @Bean IProcessService processService() {
             return new IProcessService() {
-
-                @Override public List<PProcessDTO> listAll() {
-                    return Values.processes;
-                }
-
-                @Override
-                public Try<Unit> setProcessProperties(String processName, Seq<String> tenants, Seq<String> datasets,
-                        Seq<String> userRoles) {
-                    return Try.failure(new NotImplementedError());
+                @Override public Flux<PProcessDTO> listAll() {
+                    return Flux.fromIterable(Values.processes);
                 }
             };
         }

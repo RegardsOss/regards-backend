@@ -74,6 +74,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
                 .flatMap(durationForecast -> enginRepo.findByName(plugin.engineName())
                     .map(engine -> new PProcess(
                         plugin.processName(),
+                        plugin.isActive(),
                         concQuota(plugin),
                         bytesQuota(plugin),
                         ExecutionRights.allowedUserRoles(plugin.allowedUserRoles()),

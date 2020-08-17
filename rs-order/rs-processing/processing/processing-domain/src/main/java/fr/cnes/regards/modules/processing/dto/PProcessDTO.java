@@ -15,6 +15,8 @@ public class PProcessDTO {
 
     private final String name;
 
+    private final boolean active;
+
     private final List<String> tenants;
 
     private final List<String> userRoles;

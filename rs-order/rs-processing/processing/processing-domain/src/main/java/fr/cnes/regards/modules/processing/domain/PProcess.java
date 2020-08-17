@@ -16,6 +16,8 @@ public class PProcess {
 
     String processName;
 
+    boolean active;
+
     ExecutionQuota<Integer> maxParallelExecutionsForUser;
 
     ExecutionQuota<Long> maxBytesInCache;

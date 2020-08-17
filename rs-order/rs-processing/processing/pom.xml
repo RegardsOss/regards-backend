@@ -79,6 +79,16 @@
                 <artifactId>processing-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules</groupId>
+                <artifactId>processing-engine-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules</groupId>
+                <artifactId>processing-engine-jobs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>

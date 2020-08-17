@@ -20,4 +20,6 @@ public class PProcessPutDTO {
 
     private final Seq<String> datasets;
 
+    private final Seq<ExecutionParamDTO> parameters;
+
 }

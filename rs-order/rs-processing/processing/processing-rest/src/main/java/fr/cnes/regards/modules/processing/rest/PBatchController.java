@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCHES_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_PATH;
 
 @RestController
-@RequestMapping(BATCHES_PATH)
+@RequestMapping(BATCH_PATH)
 public class PBatchController {
 
     private final IBatchService batchService;
