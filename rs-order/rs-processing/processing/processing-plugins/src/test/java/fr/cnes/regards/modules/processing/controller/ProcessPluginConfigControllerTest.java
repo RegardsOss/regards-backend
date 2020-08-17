@@ -4,21 +4,19 @@ import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import feign.Feign;
-import feign.Headers;
-import feign.RequestLine;
-import feign.Response;
+import feign.*;
 import feign.codec.Decoder;
+import feign.gson.GsonEncoder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import io.vavr.collection.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -40,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.testcontainers.containers.PostgreSQLContainer;
-import reactor.core.publisher.Mono;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -48,27 +45,84 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static feign.Util.ensureClosed;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_CONFIG_INSTANCES_PATH;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_CONFIG_METADATA_PATH;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=processing_plugins_config_tests" })
 @ContextConfiguration(classes = ProcessPluginConfigControllerTest.Config.class)
+@TestPropertySource(
+        properties = {
+                "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///ProcessPluginConfigControllerTest",
+                "regards.jpa.multitenant.tenants[0].tenant=default"
+        }
+)
 public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigControllerTest.class);
-
 
     private Client client;
 
     @Test
     public void test_list_metadata() {
-        client.listAllDetectedPlugins()
-            .forEach(md -> LOGGER.info("Found md {}: {}", md.getPluginId(), md));
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // LIST AVAILABLE PLUGINS
+        List<PluginMetaData> pluginMetaData = client.listAllDetectedPlugins();
+
+        pluginMetaData
+                .forEach(md -> LOGGER.info("Found md {}: {}", md.getPluginId(), md));
+
+        assertThat(pluginMetaData).hasSize(2);
+        assertThat(pluginMetaData).anyMatch(md -> md.getPluginClassName().equals(UselessProcessPlugin.class.getName()));
+
+        // LIST AVAILABLE CONFIGURATIONS: NOTHING YET...
+        List<PluginConfiguration> pluginConfigs = client.listAllPluginConfigurations();
+        pluginConfigs.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginId(), pc));
+        assertThat(pluginConfigs).hasSize(0);
+
+        // CREATE A CONFIG
+        PluginConfiguration useless1Config = new PluginConfiguration("useless1 label", UselessProcessPlugin.class.getSimpleName());
+        useless1Config.setVersion("1.0");
+        useless1Config.setPriorityOrder(1);
+        useless1Config.setParameters(IPluginParam.set(
+                IPluginParam.build("processName", "useless-processName-1")
+        ));
+        client.create(useless1Config);
+
+        // LIST AGAIN: THERE IS ONE CONFIG!
+        List<PluginConfiguration> pluginConfigsWithUseless1 = client.listAllPluginConfigurations();
+        pluginConfigsWithUseless1.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginId(), pc));
+        assertThat(pluginConfigsWithUseless1).hasSize(1);
+        assertThat(pluginConfigsWithUseless1).anyMatch(pc -> pc.getParameter("processName").getValue().equals("useless-processName-1"));
+
+        // UPDATE THE CONFIG
+        PluginConfiguration useless1ConfigPersisted = pluginConfigsWithUseless1.get(0);
+        useless1ConfigPersisted.setParameters(IPluginParam.set(
+                IPluginParam.build("processName", "useless-processName-2")
+        ));
+        client.update(useless1ConfigPersisted);
+
+        // LIST AGAIN: THERE IS ONE CONFIG!
+        List<PluginConfiguration> pluginConfigsWithUseless2 = client.listAllPluginConfigurations();
+        pluginConfigsWithUseless2.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginId(), pc));
+        assertThat(pluginConfigsWithUseless2).hasSize(1);
+        assertThat(pluginConfigsWithUseless2).anyMatch(pc -> pc.getParameter("processName").getValue().equals("useless-processName-2"));
+
+        // NOW DELETE IT
+        client.delete(pluginConfigsWithUseless2.get(0).getId());
+
+        // LIST AVAILABLE CONFIGURATIONS: NOTHING ANYMORE...
+        List<PluginConfiguration> pluginConfigsFinal = client.listAllPluginConfigurations();
+        pluginConfigsFinal.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginId(), pc));
+        assertThat(pluginConfigsFinal).hasSize(0);
+
     }
 
     //==================================================================================================================
@@ -76,13 +130,7 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
     //==================================================================================================================
     //==================================================================================================================
 
-    private static final String DBNAME = ProcessPluginConfigControllerTest.class.getSimpleName().toLowerCase();
-
-    @ClassRule
-    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5")
-            .withDatabaseName(DBNAME)
-            .withUsername("user")
-            .withPassword("secret");
+    private static final String DBNAME = "ProcessPluginConfigControllerTest";
 
     @Autowired
     private FeignSecurityManager feignSecurityManager;
@@ -95,42 +143,46 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
 
     @Before
     public void init() throws IOException, ModuleException {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         client = Feign.builder()
             .decoder(new GsonDecoder(gson))
+            .encoder(new GsonEncoder(gson))
             .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         FeignSecurityManager.asSystem();
     }
 
     interface Values {
-        List<PProcessDTO> processes = randomList(PProcessDTO.class, 20);
+        io.vavr.collection.List<PProcessDTO> processes = randomList(PProcessDTO.class, 20);
     }
 
     @RestClient(name = "rs-processing-config", contextId = "rs-processing.rest.plugin-conf.client")
     @Headers({ "Accept: application/json", "Content-Type: application/json" })
     public interface Client {
-
         @RequestLine("GET " + PROCESS_CONFIG_METADATA_PATH)
-        java.util.List<PluginMetaData> listAllDetectedPlugins();
+        List<PluginMetaData> listAllDetectedPlugins();
 
         @RequestLine("GET " + PROCESS_CONFIG_INSTANCES_PATH)
-        java.util.List<PluginConfiguration> listAllPluginConfigurations();
+        List<PluginConfiguration> listAllPluginConfigurations();
 
         @RequestLine("POST " + PROCESS_CONFIG_INSTANCES_PATH)
         PluginConfiguration create(PluginConfiguration config);
 
         @RequestLine("PUT " + PROCESS_CONFIG_INSTANCES_PATH)
-        PluginConfiguration update(Mono<PluginConfiguration> config);
+        PluginConfiguration update(PluginConfiguration config);
 
+        @RequestLine("DELETE " + PROCESS_CONFIG_INSTANCES_PATH + "/{id}")
+        void delete(@Param("id") Long id);
     }
 
     @Configuration
     @EnableTransactionManagement
-    @EnableAutoConfiguration(exclude = { R2dbcAutoConfiguration.class })
+    @EnableAutoConfiguration(exclude = {
+            R2dbcAutoConfiguration.class
+    })
     @EnableJpaRepositories(excludeFilters = {
             @ComponentScan.Filter(type = ASSIGNABLE_TYPE, classes = { ReactiveCrudRepository.class })
     })
+
     static class Config {
 
         @Bean
@@ -148,34 +200,6 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
                 return Files.createTempDirectory("sharedStorage");
             } catch (IOException e) {
                 throw new RuntimeException("Can not create shared storage base directory.");
-            }
-        }
-
-        @Bean
-        public DataSource dataSource() {
-            HikariConfig hk = new HikariConfig();
-            hk.setJdbcUrl("jdbc:postgresql://" + postgreSQLContainer.getContainerIpAddress() +
-                                  ":" + postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT) + "/" +
-                                  postgreSQLContainer.getDatabaseName());
-
-            hk.setDriverClassName(org.postgresql.Driver.class.getCanonicalName());
-            hk.setUsername(postgreSQLContainer.getUsername());
-            hk.setPassword(postgreSQLContainer.getPassword());
-
-            return new DockerizedDataSource(postgreSQLContainer, hk);
-        }
-
-        public class DockerizedDataSource extends HikariDataSource implements DisposableBean {
-            private PostgreSQLContainer<?> container;
-            public DockerizedDataSource(PostgreSQLContainer<?> container, HikariConfig config) {
-                super(config);
-                this.container = container;
-            }
-            @Override
-            public void destroy() throws Exception {
-                if (container != null && container.isRunning()) {
-                    container.stop();
-                }
             }
         }
 

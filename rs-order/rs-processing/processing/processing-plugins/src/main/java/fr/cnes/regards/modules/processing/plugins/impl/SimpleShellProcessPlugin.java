@@ -19,7 +19,6 @@ import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
-import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import static fr.cnes.regards.modules.processing.domain.PExecutionStep.newStep;
 
 @Plugin(
-        id = "Arcad3IsoprobeDensiteProductPlugin",
+        id = "SimpleShellProcessPlugin",
         version = "1.0.0-SNAPSHOT",
-        description = "Compute the product name from data and browse filenames",
+        description = "Launch a shell script",
         author = "REGARDS Team",
         contact = "regards@c-s.fr",
         license = "GPLv3",
