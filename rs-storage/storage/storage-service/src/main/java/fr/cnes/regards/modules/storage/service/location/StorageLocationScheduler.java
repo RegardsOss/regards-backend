@@ -78,27 +78,30 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    @Value("${regards.storage.data.storage.threshold.percent:20}")
+    @Value("${regards.storage.location.full.calculation.ratio:20}")
     private Integer fullCalculationRatio;
 
-    private int lightCalculationCount = 0;
+    private static int lightCalculationCount = 0;
+
+    private static boolean reset = false;
 
     private final Task monitorTask = () -> {
         LockAssert.assertLocked();
         long startTime = System.currentTimeMillis();
-        if (lightCalculationCount > fullCalculationRatio) {
-            storageLocationService.monitorStorageLocations(true);
-            lightCalculationCount = 0;
-        } else {
-            storageLocationService.monitorStorageLocations(false);
-            lightCalculationCount++;
-        }
+        storageLocationService.monitorStorageLocations(reset);
         LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
     };
 
     @Scheduled(initialDelayString = "${regards.storage.location.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
     public void scheduleUpdateRequests() {
+        if (lightCalculationCount > fullCalculationRatio) {
+            lightCalculationCount = 0;
+            reset = true;
+        } else {
+            lightCalculationCount++;
+            reset = false;
+        }
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

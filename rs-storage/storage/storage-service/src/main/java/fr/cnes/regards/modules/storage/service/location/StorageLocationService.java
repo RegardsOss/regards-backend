@@ -209,11 +209,12 @@ public class StorageLocationService {
      * Monitor all storage locations to calculate informations about stored files.
      */
     public void monitorStorageLocations(Boolean reset) {
+        LOGGER.trace("Starting locations monitor process (reset={})", reset.toString());
         OffsetDateTime monitoringDate = OffsetDateTime.now();
         // Retrieve last monitoring process
         StorageMonitoring storageMonitoring = storageMonitoringRepo.findById(0L)
                 .orElse(new StorageMonitoring(true, null, null, null));
-        if (reset && storageMonitoring.getId() != null) {
+        if (reset && (storageMonitoring.getId() != null)) {
             storageMonitoringRepo.delete(storageMonitoring);
             storageLocationRepo.deleteAll();
             storageMonitoring = new StorageMonitoring(true, null, null, null);
@@ -225,17 +226,18 @@ public class StorageLocationService {
         long start = System.currentTimeMillis();
         Collection<StorageMonitoringAggregation> aggregations = fileReferenceService
                 .aggragateFilesSizePerStorage(storageMonitoring.getLastFileReferenceIdMonitored());
+        LOGGER.trace("Aggregation calcul done (reset={})", reset.toString());
         for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
             StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
             storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo()
-                    + agg.getUsedSize() / 1024);
+                    + (agg.getUsedSize() / 1024));
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
 
-            if (storageMonitoring.getLastFileReferenceIdMonitored() == null
-                    || storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId()) {
+            if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
+                    || (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
                 storageMonitoring.setLastFileReferenceIdMonitored(agg.getLastFileReferenceId());
             }
             storageLocationRepo.save(storage);
@@ -261,6 +263,8 @@ public class StorageLocationService {
                     LOGGER.warn(message);
                     notifyAdmins(String.format("Data storage %s is almost full", storage.getName()), message,
                                  NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
+                } else {
+                    LOGGER.trace("Storage location %s monitoring done with no warnings.", storage.getName());
                 }
             } else {
                 LOGGER.warn("[STORAGE LOCATION] Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
