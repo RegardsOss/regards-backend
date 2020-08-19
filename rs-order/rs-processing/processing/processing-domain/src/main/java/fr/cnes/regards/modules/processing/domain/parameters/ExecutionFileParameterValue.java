@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.processing.domain.parameters;
 
 import lombok.Value;
 import lombok.With;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.net.URL;
 
@@ -9,19 +11,25 @@ import java.net.URL;
 public class ExecutionFileParameterValue {
 
     /** Parameter name in the dynamic execution parameters for this file. */
-    String parameterName;
+    @Nullable String parameterName;
 
-    /** Where to put the file once downloaded so that the execution finds it. */
-    String localRelativePath;
+    /** Where to put the file once downloaded so that the execution finds it.
+     * The path is relative to the 'input' workdir folder. */
+    @NonNull String localRelativePath;
 
     /** Optional content type of the file, may determine what to do with it. */
-    String contentType;
+    @Nullable String contentType;
 
     /** If the descriptor is a file, this is its location. */
-    URL url;
+    @NonNull URL url;
 
-    /** If the descriptor is a file, this is its */
-    long bytes;
+    /** File content length in bytes */
+    @NonNull Long bytes;
 
+    /** The file checksum */
+    @NonNull String checksum;
+
+    /** True if the file is accessible from the storageClient, false if accessible from en external ressource */
+    @NonNull Boolean internal;
 
 }

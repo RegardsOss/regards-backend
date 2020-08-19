@@ -5,7 +5,6 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -23,11 +22,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 @Service
 public class SharedStorageService implements ISharedStorageService {
 
+    static final Scheduler fileCopyScheduler = Schedulers.boundedElastic();
+
     private final Path basePath;
 
-    private Scheduler fileCopyScheduler = Schedulers.boundedElastic();
-
-    @Autowired
     public SharedStorageService(@Qualifier("sharedStorageBasePath") Path basePath) {
         this.basePath = basePath;
     }

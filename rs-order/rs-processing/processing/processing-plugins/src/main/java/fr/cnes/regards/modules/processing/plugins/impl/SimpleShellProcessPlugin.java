@@ -6,7 +6,7 @@ import com.zaxxer.nuprocess.NuProcessBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.processing.domain.PExecutionStep;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.exception.ExecutionFailureException;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static fr.cnes.regards.modules.processing.domain.PExecutionStep.newStep;
+import static fr.cnes.regards.modules.processing.domain.PStep.newStep;
 
 @Plugin(
         id = "SimpleShellProcessPlugin",
@@ -110,7 +110,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
     @Override public IExecutable executable() {
         return new IExecutable() {
             @Override
-            public Mono<Seq<POutputFile>> execute(ExecutionContext ctx, FluxSink<PExecutionStep> stepSink) {
+            public Mono<Seq<POutputFile>> execute(ExecutionContext ctx, FluxSink<PStep> stepSink) {
                 NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
                 pb.environment().putAll(ctx.getBatch().getUserSuppliedParameters()
                     .toJavaMap(v -> Tuple.of(v.getName(), v.getValue())));
@@ -138,7 +138,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                             .flatMap(mono -> mono)
                             .doOnCancel(() -> {
                                 nuProcessRef.getAndUpdate(p -> { if (p != null) { p.destroy(true); } return null; });
-                                stepSink.next(newStep(ctx.getExec(), ExecutionStatus.CANCELLED, ""));
+                                stepSink.next(newStep(ExecutionStatus.CANCELLED, ""));
                             })
                             .log("ShellScriptNuProcessHandler mono");
                         }));
@@ -151,12 +151,12 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
 
         private final ExecutionContext ctx;
         private final ExecutionLocalWorkdir workdir;
-        private final FluxSink<PExecutionStep> stepSink;
+        private final FluxSink<PStep> stepSink;
         private final MonoSink<Mono<Seq<POutputFile>>> monoSink;
 
         private NuProcess nuProcess;
 
-        ShellScriptNuProcessHandler(ExecutionContext ctx, ExecutionLocalWorkdir workdir, FluxSink<PExecutionStep> stepSink,
+        ShellScriptNuProcessHandler(ExecutionContext ctx, ExecutionLocalWorkdir workdir, FluxSink<PStep> stepSink,
                 MonoSink<Mono<Seq<POutputFile>>> monoSink) {
             this.ctx = ctx;
             this.workdir = workdir;
@@ -170,7 +170,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
         }
         @Override public void onStart(NuProcess nuProcess) {
             LOGGER.debug("nu process start"); // TODO cleanup
-            this.stepSink.next(newStep(ctx.getExec(), ExecutionStatus.RUNNING));
+            this.stepSink.next(newStep(ExecutionStatus.RUNNING));
         }
         @Override public void onExit(int i) {
             if (i == 0) { this.onSuccess(); }
@@ -186,7 +186,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                     processName,
                     i
             );
-            stepSink.next(newStep(ctx.getExec(), ExecutionStatus.FAILURE, message));
+            stepSink.next(newStep(ExecutionStatus.FAILURE, message));
             monoSink.error(new ExecutionFailureException(message));
         }
 
@@ -195,7 +195,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                          ctx.getBatch().getCorrelationId(),
                          ctx.getExec().getId(),
                          processName);
-            stepSink.next(newStep(ctx.getExec(), ExecutionStatus.SUCCESS, "Exited with status code 0"));
+            stepSink.next(newStep(ExecutionStatus.SUCCESS, "Exited with status code 0"));
 
             monoSink.success(storageService.storeResult(ctx, workdir));
         }

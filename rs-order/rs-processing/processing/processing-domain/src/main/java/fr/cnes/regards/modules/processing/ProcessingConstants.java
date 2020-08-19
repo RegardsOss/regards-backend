@@ -8,6 +8,8 @@ public interface ProcessingConstants {
 
         String PROCESS_CONFIG_METADATA_PATH = "/process/config/metadata";
         String PROCESS_CONFIG_INSTANCES_PATH = "/process/config/instances";
+
+        String MONITORING_EXECUTIONS_PATH = "/monitoring/executions";
     }
 
     interface ContentType {

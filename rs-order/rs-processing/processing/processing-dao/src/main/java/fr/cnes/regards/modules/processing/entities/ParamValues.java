@@ -5,12 +5,10 @@ import lombok.*;
 
 import java.util.List;
 
-@Data @With
-@AllArgsConstructor @NoArgsConstructor
-@Builder(toBuilder = true)
+@Value
 
 public class ParamValues {
 
-    private List<ExecutionStringParameterValue> values;
+    List<ExecutionStringParameterValue> values;
 
 }

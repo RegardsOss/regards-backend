@@ -12,7 +12,9 @@ public class DaoCustomConverters {
                 new FileStatsByDatasetToJsonbConverter(gson),
                 new JsonbToFileStatsByDatasetConverter(gson),
                 new FileParametersToJsonbConverter(gson),
-                new JsonbToFileParametersConverter(gson)
+                new JsonbToFileParametersConverter(gson),
+                new StepsToJsonbConverter(gson),
+                new JsonbToStepsConverter(gson)
         ).toJavaList();
     }
 

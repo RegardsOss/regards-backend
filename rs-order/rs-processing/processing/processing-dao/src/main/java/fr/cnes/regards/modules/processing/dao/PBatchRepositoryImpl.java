@@ -33,7 +33,6 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
         this.mapper = mapper;
     }
 
-    @MultitenantTransactional
     @Override public Mono<PBatch> save(PBatch domain) {
         return delegate
             .save(mapper.toEntity(domain))
@@ -42,7 +41,6 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
             .doOnNext(b -> cache.put(b.getId(), b));
     }
 
-    @MultitenantTransactional
     @Override public Mono<PBatch> findById(UUID id) {
         return Option.of(cache.getIfPresent(id))
             .map(Mono::just)
@@ -50,6 +48,7 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
                 .findById(id)
                 .map(BatchEntity::persisted)
                 .flatMap(mapper::toDomain)
+                .doOnNext(b -> cache.put(b.getId(), b))
             );
     }
 }

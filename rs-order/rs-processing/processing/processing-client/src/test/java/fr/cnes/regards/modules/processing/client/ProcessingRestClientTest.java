@@ -9,8 +9,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.entities.mapping.DomainEntityMapper;
+import fr.cnes.regards.modules.processing.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.IProcessService;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.vavr.NotImplementedError;
@@ -34,7 +37,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.util.UUID;
 
+import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,7 +85,7 @@ public class ProcessingRestClientTest extends AbstractRegardsWebIT {
 
     @Test
     public void download() {
-        List<PProcessDTO> ps = client.listAll();
+        List<PProcessDTO> ps = client.listAll().getBody();
 
         ps.forEach(p -> LOGGER.info("Found process: {}", p));
 
@@ -94,6 +99,7 @@ public class ProcessingRestClientTest extends AbstractRegardsWebIT {
 
     interface Values {
         List<PProcessDTO> processes = randomList(PProcessDTO.class, 20);
+        PBatch batch = randomInstance(PBatch.class);
     }
 
     @Configuration
@@ -103,6 +109,13 @@ public class ProcessingRestClientTest extends AbstractRegardsWebIT {
             return new IProcessService() {
                 @Override public Flux<PProcessDTO> listAll() {
                     return Flux.fromIterable(Values.processes);
+                }
+            };
+        }
+        @Bean IBatchService batchService() {
+            return new IBatchService() {
+                @Override public Mono<PBatch> checkAndCreateBatch(PBatchRequest data) {
+                    return Mono.just(Values.batch);
                 }
             };
         }

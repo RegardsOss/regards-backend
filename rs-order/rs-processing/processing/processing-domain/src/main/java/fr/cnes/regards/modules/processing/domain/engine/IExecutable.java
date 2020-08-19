@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import fr.cnes.regards.modules.processing.domain.PExecutionStep;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.Seq;
@@ -15,6 +15,6 @@ public interface IExecutable {
      * @param context the execution parameters
      * @return a list of output files.
      */
-    Mono<Seq<POutputFile>> execute(ExecutionContext context, FluxSink<PExecutionStep> stepSink);
+    Mono<Seq<POutputFile>> execute(ExecutionContext context, FluxSink<PStep> stepSink);
 
 }

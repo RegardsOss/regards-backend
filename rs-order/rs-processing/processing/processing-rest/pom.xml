@@ -33,6 +33,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-service</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards-starter</artifactId>
 		</dependency>
@@ -49,18 +54,19 @@
 			<artifactId>feign-regards-starter</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-service</artifactId>
-		</dependency>
 
 		<!-- Test -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-test</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
+		<dependency>
             <groupId>org.jeasy</groupId>
             <artifactId>easy-random-core</artifactId>
             <version>4.2.0</version>

@@ -7,10 +7,7 @@ import fr.cnes.regards.modules.processing.utils.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,16 +15,20 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.ContentType
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
 
 @RestController
-@RequestMapping(PROCESS_PATH)
 public class PProcessController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PProcessController.class);
 
     @Autowired private IProcessService processService;
 
-    @RequestMapping(method = RequestMethod.GET, produces = APPLICATION_JSON)
-    public Flux<PProcessDTO> listAll() {
+    @GetMapping(path = PROCESS_PATH, produces = APPLICATION_JSON)
+    public Flux<PProcessDTO> findAll() {
         return processService.listAll();
+    }
+
+    @GetMapping(path= PROCESS_PATH + "/{name}", produces = APPLICATION_JSON)
+    public Mono<PProcessDTO> findByName(@PathVariable("name") String processName) {
+        return processService.listAll().filter(p -> p.getName().equals(processName)).next();
     }
 
 }

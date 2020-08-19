@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.processing.dto;
 
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

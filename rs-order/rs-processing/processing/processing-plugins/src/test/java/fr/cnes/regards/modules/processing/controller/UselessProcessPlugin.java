@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.processing.controller;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.processing.domain.PExecutionStep;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
@@ -41,7 +41,7 @@ public class UselessProcessPlugin extends AbstractBaseProcessPlugin {
     @Override public IExecutable executable() {
         return new IExecutable() {
             @Override
-            public Mono<Seq<POutputFile>> execute(ExecutionContext context, FluxSink<PExecutionStep> stepSink) {
+            public Mono<Seq<POutputFile>> execute(ExecutionContext context, FluxSink<PStep> stepSink) {
                 return Mono.empty();
             }
         };

@@ -113,15 +113,15 @@ public class ProcessRepositoryImplTest {
 
         @Bean public ConnectionFactory connectionFactory() {
             return ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                                                   .option(DRIVER, "pool") // This is important to allow large number of parallel calls to db (pooled connections)
-                                                   .option(PROTOCOL, "postgresql")
-                                                   .option(HOST, postgreSQLContainer.getContainerIpAddress())
-                                                   .option(PORT, postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
-                                                   .option(USER, "user")
-                                                   .option(PASSWORD, "secret")
-                                                   .option(DATABASE, DBNAME)
-                                                   .option(SCHEMA, DBNAME)
-                                                   .build());
+                .option(DRIVER, "pool") // This is important to allow large number of parallel calls to db (pooled connections)
+                .option(PROTOCOL, "postgresql")
+                .option(HOST, postgreSQLContainer.getContainerIpAddress())
+                .option(PORT, postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
+                .option(USER, "user")
+                .option(PASSWORD, "secret")
+                .option(DATABASE, DBNAME)
+                .option(SCHEMA, DBNAME)
+                .build());
         }
 
         @Bean public DatabaseClient databaseClient(ConnectionFactory connectionFactory) {

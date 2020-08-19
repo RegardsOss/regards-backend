@@ -9,11 +9,9 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParamet
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.plugins.repository.ProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
-import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
-import fr.cnes.regards.modules.processing.storage.SharedStorageService;
+import fr.cnes.regards.modules.processing.storage.*;
 import io.vavr.collection.HashMap;
+import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.junit.Test;
@@ -23,10 +21,12 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,7 +42,14 @@ public class SimpleShellProcessPluginTest {
         Path tempWorkdirBase = Files.createTempDirectory("workdirs");
         Path tempStorageBase = Files.createTempDirectory("storage");
 
-        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase);
+        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(
+                tempWorkdirBase,
+                new DownloadService(
+                    Proxy.NO_PROXY,
+                    HashSet.empty(),
+                    null
+                )
+        );
         ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
 
         IWorkloadEngine engine = makeEngine();
@@ -58,7 +65,7 @@ public class SimpleShellProcessPluginTest {
 
         AtomicReference<Seq<POutputFile>> outputFiles = new AtomicReference<>();
         IExecutable executable = shellProcessPlugin.executable();
-        Flux.<PExecutionStep>create(sink -> {
+        Flux.<PStep>create(sink -> {
                 executable
                     .execute(ctx, sink)
                     .doOnTerminate(sink::complete)
@@ -123,9 +130,16 @@ public class SimpleShellProcessPluginTest {
             execId, batchId,
             Duration.ofSeconds(10),
             List.of(
-                    new ExecutionFileParameterValue("one", "one.raw", "text/plain", Paths.get("src/test/resources/one.raw").toUri().toURL(), 3),
-                    new ExecutionFileParameterValue("two", "two.raw", "text/plain", Paths.get("src/test/resources/two.raw").toUri().toURL(), 3)
+                    new ExecutionFileParameterValue("one", "one.raw", "text/plain", Paths.get("src/test/resources/one.raw").toUri().toURL(), 3L, "checksum", false),
+                    new ExecutionFileParameterValue("two", "two.raw", "text/plain", Paths.get("src/test/resources/two.raw").toUri().toURL(), 3L, "checksum", false)
             ),
+            List.empty(),
+            "tenant",
+            "user@ema.il",
+            "processName",
+            OffsetDateTime.now().minusMinutes(2),
+            OffsetDateTime.now().minusMinutes(1),
+            0,
             true
         );
     }

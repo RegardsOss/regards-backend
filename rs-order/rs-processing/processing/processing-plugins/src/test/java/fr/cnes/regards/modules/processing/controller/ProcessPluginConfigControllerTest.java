@@ -2,8 +2,6 @@ package fr.cnes.regards.modules.processing.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import feign.*;
 import feign.codec.Decoder;
 import feign.gson.GsonEncoder;
@@ -17,17 +15,19 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -37,9 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.testcontainers.containers.PostgreSQLContainer;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
@@ -56,7 +54,7 @@ import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=processing_plugins_config_tests" })
-@ContextConfiguration(classes = ProcessPluginConfigControllerTest.Config.class)
+@ContextConfiguration(classes = { ProcessPluginConfigControllerTest.Config.class })
 @TestPropertySource(
         properties = {
                 "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///ProcessPluginConfigControllerTest",
@@ -182,7 +180,8 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
     @EnableJpaRepositories(excludeFilters = {
             @ComponentScan.Filter(type = ASSIGNABLE_TYPE, classes = { ReactiveCrudRepository.class })
     })
-
+    @EnableConfigurationProperties
+    @ConfigurationPropertiesScan
     static class Config {
 
         @Bean
@@ -203,6 +202,11 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
             }
         }
 
+        @Bean
+        public IStorageRestClient storageRestClient() {
+            return Mockito.mock(IStorageRestClient.class);
+        }
+
     }
 
     class GsonDecoder implements Decoder {
@@ -219,7 +223,8 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
                 return null;
             Reader reader = response.body().asReader();
             String content = IOUtils.toString(reader);
-            LOGGER.info("Body content: \n>>>\n{}\n<<<", content);
+            Request request = response.request();
+            LOGGER.error("{} {}\n>>>\n{}\n<<<", request.httpMethod().name(), request.url(), content);
             try {
                 return gson.fromJson(content, type);
             } catch (JsonIOException e) {

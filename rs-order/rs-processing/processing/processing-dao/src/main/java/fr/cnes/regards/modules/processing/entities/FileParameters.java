@@ -1,20 +1,13 @@
 package fr.cnes.regards.modules.processing.entities;
 
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
-import io.vavr.control.Option;
-import lombok.*;
+import lombok.Value;
 
-import javax.persistence.Embeddable;
-import java.net.URL;
 import java.util.List;
 
-@Data @With
-@AllArgsConstructor @NoArgsConstructor
-@Builder(toBuilder = true)
-
+@Value
 public class FileParameters {
 
-    private List<ExecutionFileParameterValue> values;
+    List<ExecutionFileParameterValue> values;
 
 }

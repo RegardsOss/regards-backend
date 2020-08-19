@@ -5,12 +5,9 @@ import lombok.*;
 
 import java.util.Map;
 
-@Data @With
-@AllArgsConstructor @NoArgsConstructor
-@Builder(toBuilder = true)
-
+@Value
 public class FileStatsByDataset {
 
-    private Map<String, FileSetStatistics> map;
+    Map<String, FileSetStatistics> map;
 
 }

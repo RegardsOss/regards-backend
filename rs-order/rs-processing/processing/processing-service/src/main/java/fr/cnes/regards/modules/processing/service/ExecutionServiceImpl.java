@@ -7,10 +7,13 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.repository.IPExecutionRepository;
-import fr.cnes.regards.modules.processing.repository.IPExecutionStepRepository;
 import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.service.events.PExecutionRequestEvent;
+import io.vavr.collection.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.OptimisticLockingFailureException;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -20,18 +23,18 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
 public class ExecutionServiceImpl implements IExecutionService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionServiceImpl.class);
+
     private final IJobInfoService jobInfoService;
 
-    private final IPExecutionStepRepository stepRepo;
     private final IPExecutionRepository execRepo;
     private final IPBatchRepository batchRepo;
     private final IPProcessRepository processRepo;
 
     @Autowired
-    public ExecutionServiceImpl(IJobInfoService jobInfoService, IPExecutionStepRepository stepRepo,
+    public ExecutionServiceImpl(IJobInfoService jobInfoService,
             IPExecutionRepository execRepo, IPBatchRepository batchRepo, IPProcessRepository processRepo) {
         this.jobInfoService = jobInfoService;
-        this.stepRepo = stepRepo;
         this.execRepo = execRepo;
         this.batchRepo = batchRepo;
         this.processRepo = processRepo;
@@ -39,8 +42,7 @@ public class ExecutionServiceImpl implements IExecutionService {
 
     @Override public Mono<PExecution> launchExecution(PExecutionRequestEvent request) {
         return makeExec(request)
-            .flatMap(this::runEngine)
-                .flatMap(this::saveRegisteredStep);
+            .flatMap(this::runEngine);
     }
 
     private Mono<PExecution> runEngine(PExecution exec) {
@@ -61,11 +63,18 @@ public class ExecutionServiceImpl implements IExecutionService {
 
     private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch, Duration duration) {
         return new PExecution(
-            UUID.randomUUID(),
-            batch.getId(),
-            duration,
-            request.getInputFiles(),
-            false);
+                UUID.randomUUID(),
+                batch.getId(),
+                duration,
+                request.getInputFiles(),
+                List.of(new PStep(ExecutionStatus.REGISTERED, nowUtc(), "")),
+                batch.getTenant(),
+                batch.getUser(),
+                batch.getProcessName(),
+                null,
+                null,
+                0,
+                false);
     }
 
     @Override public Mono<Duration> estimateDuration(PBatch batch, PExecutionRequestEvent request) {
@@ -79,14 +88,12 @@ public class ExecutionServiceImpl implements IExecutionService {
             });
     }
 
-    @Override public Mono<PExecutionStepSequence> saveExecutionStep(PExecutionStep step) {
-        return stepRepo.save(step)
-                .map(PExecutionStep::getExecutionId)
-                .flatMap(stepRepo::findAllForExecution);
-    }
-
-    public Mono<PExecution> saveRegisteredStep(PExecution exec) {
-        return saveExecutionStep(new PExecutionStep(null, exec.getId(), ExecutionStatus.REGISTERED, nowUtc(), ""))
-                .map(s -> exec);
+    @Override public Mono<PExecution> addExecutionStep(PExecution exec, PStep step) {
+        return execRepo.save(exec.addStep(step))
+                .onErrorResume(OptimisticLockingFailureException.class, e -> {
+                    LOGGER.warn("Optimistic locking failure when adding step {} to exec {}", step, exec.getId());
+                    return Mono.defer(() -> execRepo.findById(exec.getId())
+                            .flatMap(freshExec -> addExecutionStep(freshExec, step)));
+                });
     }
 }

@@ -26,6 +26,15 @@
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>plugin-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-service</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-client</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
@@ -34,10 +43,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-            <artifactId>plugins-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
@@ -80,6 +85,7 @@
             <artifactId>r2dbc-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
