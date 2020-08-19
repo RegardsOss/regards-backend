@@ -184,7 +184,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             }
             notificationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
-            jobParameters.add(new JobParameter(FeatureCreationJob.IDS_PARAMETER, requestIds));
+            jobParameters.add(new JobParameter(NotificationRequestJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
             JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
@@ -214,6 +214,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                                                             FeatureManagementAction.NOTIFIED.toString()));
             // Monitoring log
             NotificationRequest request = notifPerUrn.get(entity.getUrn());
+            //TODO remove delete and deplace logic to check if NotificationActionEvent has been successfully handled or not from above to once µS notifier has responded
             FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
             publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
@@ -221,7 +222,6 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                                                         entity.getUrn(), RequestState.SUCCESS));
         }
         publisher.publish(notifications);
-        //TODO remove delete and deplace logic to check if NotificationActionEvent has been successfully handled or not from above to once µS notifier has responded
         this.notificationRequestRepo.deleteAll(requests);
     }
 

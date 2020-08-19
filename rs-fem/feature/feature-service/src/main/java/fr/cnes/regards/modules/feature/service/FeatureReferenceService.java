@@ -237,6 +237,7 @@ public class FeatureReferenceService extends AbstractFeatureService implements I
 
         this.featureReferenceRequestRepo.saveAll(requests);
         this.featureCreationService.registerRequests(creationRequestsToRegister);
+        // TODO remove this to another method that will be called once notification has been properly sent by notifier
         // Successful requests are deleted now!
         this.featureReferenceRequestRepo.deleteInBatch(successCreationRequestGeneration);
 

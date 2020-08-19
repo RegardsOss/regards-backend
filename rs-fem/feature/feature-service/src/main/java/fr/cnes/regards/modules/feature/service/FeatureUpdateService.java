@@ -348,6 +348,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         featureRepo.saveAll(entities);
         featureUpdateRequestRepo.saveAll(errorRequests);
+        //TODO once notifier said its ok
         featureUpdateRequestRepo.deleteInBatch(successfulRequests);
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms", requests.size(),

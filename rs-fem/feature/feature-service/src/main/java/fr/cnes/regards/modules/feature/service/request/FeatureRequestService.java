@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -75,8 +74,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
         // publish success notification for all request id
-        request.stream().forEach(item -> publishSuccessAndDeleteOlderVersion(item));
+        request.forEach(this::publishSuccessAndDeleteOlderVersion);
 
+        // FIXME: delete once notifier has said that it succeeded
         // delete useless FeatureCreationRequest
         this.fcrRepo.deleteAll(request);
     }
@@ -87,19 +87,25 @@ public class FeatureRequestService implements IFeatureRequestService {
      * @param item
      */
     private void publishSuccessAndDeleteOlderVersion(FeatureCreationRequest item) {
-        publisher.publish(FeatureRequestEvent
-                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
-                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.SUCCESS, null));
-        publisher.publish(NotificationActionEvent.build(gson.toJsonTree(item.getFeature()),
-                                                        FeatureManagementAction.CREATED.name()));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
+                                                    item.getRequestId(),
+                                                    item.getRequestOwner(),
+                                                    item.getFeature() != null ? item.getFeature().getId() : null,
+                                                    null,
+                                                    RequestState.SUCCESS,
+                                                    null));
+        publisher.publish(NotificationActionEvent
+                                  .build(gson.toJsonTree(item.getFeature()), FeatureManagementAction.CREATED.name()));
         if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
             publisher.publish(FeatureDeletionRequestEvent.build(item.getMetadata().getSessionOwner(),
                                                                 item.getFeatureEntity().getPreviousVersionUrn(),
                                                                 PriorityLevel.NORMAL));
-            this.notificationClient
-                    .notify(String.format("A FeatureEntity with the URN %s already exists for this feature",
-                                          item.getFeatureEntity().getPreviousVersionUrn()),
-                            "A duplicated feature has been detected", NotificationLevel.ERROR, DefaultRole.ADMIN);
+            this.notificationClient.notify(String.format(
+                    "A FeatureEntity with the URN %s already exists for this feature",
+                    item.getFeatureEntity().getPreviousVersionUrn()),
+                                           "A duplicated feature has been detected",
+                                           NotificationLevel.ERROR,
+                                           DefaultRole.ADMIN);
         }
     }
 
@@ -107,12 +113,18 @@ public class FeatureRequestService implements IFeatureRequestService {
     public void handleStorageError(Set<String> groupIds) {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
-        // publish success notification for all request id
-        request.stream().forEach(item -> publisher.publish(FeatureRequestEvent
-                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
-                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.ERROR, null)));
+        // publish error notification for all request id
+        request.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
+                                                                            item.getRequestId(),
+                                                                            item.getRequestOwner(),
+                                                                            item.getFeature() != null ?
+                                                                                    item.getFeature().getId() :
+                                                                                    null,
+                                                                            null,
+                                                                            RequestState.ERROR,
+                                                                            null)));
         // set FeatureCreationRequest to error state
-        request.stream().forEach(item -> item.setState(RequestState.ERROR));
+        request.forEach(item -> item.setState(RequestState.ERROR));
 
         this.fcrRepo.saveAll(request);
 
@@ -128,12 +140,15 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureDeletionRequest> request = this.fdrRepo.findByGroupIdIn(groupIds);
 
         // publish success notification for all request id
-        request.stream()
-                .forEach(item -> publisher.publish(FeatureRequestEvent
-                        .build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null,
-                               item.getUrn(), RequestState.ERROR, null)));
+        request.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
+                                                                            item.getRequestId(),
+                                                                            item.getRequestOwner(),
+                                                                            null,
+                                                                            item.getUrn(),
+                                                                            RequestState.ERROR,
+                                                                            null)));
         // set FeatureDeletionRequest to error state
-        request.stream().forEach(item -> item.setState(RequestState.ERROR));
+        request.forEach(item -> item.setState(RequestState.ERROR));
 
         this.fdrRepo.saveAll(request);
     }
