@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.config.PgSqlConfig;
-import fr.cnes.regards.modules.processing.config.R2dbcSpringConfiguration;
+import fr.cnes.regards.modules.processing.config.ProcessingDaoR2dbcConfiguration;
 import fr.cnes.regards.modules.processing.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.testutils.RandomUtils;
@@ -53,7 +53,7 @@ public abstract class AbstractRepoTest implements RandomUtils {
     @Configuration
     @EnableTransactionManagement
     @EntityScan("fr.cnes.regards.modules.processing.entities")
-    @Import({ R2dbcSpringConfiguration.class })
+    @Import({ ProcessingDaoR2dbcConfiguration.class })
     static class Config {
         @Bean
         public PgSqlConfig pgSqlConfig() {

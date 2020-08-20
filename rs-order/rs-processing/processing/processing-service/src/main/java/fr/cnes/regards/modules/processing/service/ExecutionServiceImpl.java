@@ -1,7 +1,10 @@
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.processing.domain.*;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.PProcess;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
@@ -14,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -21,6 +25,7 @@ import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
+@Service
 public class ExecutionServiceImpl implements IExecutionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionServiceImpl.class);

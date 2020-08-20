@@ -11,8 +11,6 @@ import fr.cnes.regards.modules.processing.entities.mapping.DomainEntityMapperImp
 import fr.cnes.regards.modules.processing.utils.GsonProcessingUtils;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
-import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
 import name.nkonev.r2dbc.migrate.core.Dialect;
 import name.nkonev.r2dbc.migrate.core.R2dbcMigrate;
 import name.nkonev.r2dbc.migrate.core.R2dbcMigrateProperties;
@@ -44,26 +42,30 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
         PBatchRepositoryImpl.class,
         PExecutionRepositoryImpl.class
 })
-public class R2dbcSpringConfiguration extends AbstractR2dbcConfiguration {
+public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(R2dbcSpringConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingDaoR2dbcConfiguration.class);
     @Autowired private final PgSqlConfig pgSqlConfig;
 
-    public R2dbcSpringConfiguration(PgSqlConfig pgSqlConfig) {
+    public ProcessingDaoR2dbcConfiguration(PgSqlConfig pgSqlConfig) {
         this.pgSqlConfig = pgSqlConfig;
     }
 
     @Bean public ConnectionFactory connectionFactory() {
-        return ConnectionFactories.get(ConnectionFactoryOptions.builder()
-               .option(DRIVER, "pool") // This is important to allow large number of parallel calls to db (pooled connections)
-               .option(PROTOCOL, "postgresql")
-               .option(HOST, pgSqlConfig.getHost())
-               .option(PORT, pgSqlConfig.getPort())
-               .option(USER, pgSqlConfig.getUser())
-               .option(PASSWORD, pgSqlConfig.getPassword())
-               .option(DATABASE, pgSqlConfig.getDbname())
-               .option(SCHEMA, pgSqlConfig.getSchema())
-               .build());
+        Builder builder = builder()
+                .option(DRIVER, "pool")
+                .option(PROTOCOL, "postgresql")
+                .option(HOST, pgSqlConfig.getHost())
+                .option(PORT, pgSqlConfig.getPort())
+                .option(DATABASE, pgSqlConfig.getDbname())
+                .option(SCHEMA, pgSqlConfig.getSchema());
+        if (pgSqlConfig.getUser() != null) {
+               builder = builder.option(USER, pgSqlConfig.getUser());
+        }
+        if (pgSqlConfig.getPassword() != null) {
+               builder = builder.option(PASSWORD, pgSqlConfig.getPassword());
+        }
+        return ConnectionFactories.get(builder.build());
     }
 
     protected java.util.List<Object> getCustomConverters() {
