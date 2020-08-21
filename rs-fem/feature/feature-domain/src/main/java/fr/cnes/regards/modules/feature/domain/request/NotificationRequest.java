@@ -75,6 +75,7 @@ public class NotificationRequest extends AbstractRequest {
         this.urn = urn;
     }
 
+    @Override
     public Long getId() {
         return id;
     }

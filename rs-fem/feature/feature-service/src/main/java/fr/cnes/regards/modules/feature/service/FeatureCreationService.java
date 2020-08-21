@@ -42,7 +42,6 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -136,9 +135,6 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     private INotificationClient notificationClient;
 
     @Autowired
-    private Gson gson;
-
-    @Autowired
     private Validator validator;
 
     @Override
@@ -167,7 +163,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     @Override
     public RequestInfo<String> registerRequests(FeatureCreationCollection collection) {
         // Build events to reuse event registration code
-        List<FeatureCreationRequestEvent> toTreat = new ArrayList<FeatureCreationRequestEvent>();
+        List<FeatureCreationRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : collection.getFeatures()) {
             toTreat.add(FeatureCreationRequestEvent
                                 .build(collection.getRequestOwner(), collection.getMetadata(), feature));
@@ -204,7 +200,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         if (errors.hasErrors()) {
             LOGGER.error("Error during feature {} validation the following errors have been founded{}",
                          item.getFeature().getId(),
-                         errors.toString());
+                         errors);
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
             // Monitoring log
             FeatureLogger.creationDenied(item.getRequestOwner(),
@@ -349,58 +345,60 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                      System.currentTimeMillis() - subProcessStart);
 
         // Delete requests without files
-        subProcessStart = System.currentTimeMillis();
-        List<FeatureCreationRequest> requestsWithoutFiles = new ArrayList<>();
-        for (FeatureCreationRequest request : requests) {
-            if ((request.getFeature().getFiles() == null) || request.getFeature().getFiles().isEmpty()) {
-                // Register request
-                requestsWithoutFiles.add(request);
-                // Monitoring log
-                FeatureLogger.creationSuccess(request.getRequestOwner(),
-                                              request.getRequestId(),
-                                              request.getProviderId(),
-                                              request.getFeature().getUrn());
-                // Publish successful request
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                            request.getRequestId(),
-                                                            request.getRequestOwner(),
-                                                            request.getProviderId(),
-                                                            request.getFeature().getUrn(),
-                                                            RequestState.SUCCESS));
-
-                // if a previous version exists we will publish a FeatureDeletionRequest to delete it
-                if ((request.getFeatureEntity().getPreviousVersionUrn() != null) && request.getMetadata()
-                        .isOverride()) {
-                    this.notificationClient.notify(String.format(
-                            "A FeatureEntity with the URN {} already exists for this feature",
-                            request.getFeatureEntity().getPreviousVersionUrn()),
-                                                   "A duplicated feature has been detected",
-                                                   NotificationLevel.INFO,
-                                                   DefaultRole.ADMIN);
-                    publisher.publish(FeatureDeletionRequestEvent.build(request.getMetadata().getSessionOwner(),
-                                                                        request.getFeatureEntity()
-                                                                                .getPreviousVersionUrn(),
-                                                                        PriorityLevel.NORMAL));
-                }
-            }
-        }
-
-        if (!requestsWithoutFiles.isEmpty()) {
-            // notify feature without files creation
-
-        }
-
-        // TODO remove this to another method that will be called once notification has been properly sent by notifier
-        // Successful requests are deleted now!
-        featureCreationRequestRepo.deleteInBatch(requestsWithoutFiles);
-        LOGGER.trace("------------->>> {} creation requests without files deleted in {} ms",
-                     requestsWithoutFiles.size(),
-                     System.currentTimeMillis() - subProcessStart);
+        Set<FeatureCreationRequest> requestWithoutFiles = requests.stream()
+                .filter(request -> (request.getFeature().getFiles() == null) || request.getFeature().getFiles()
+                        .isEmpty()).collect(Collectors.toSet());
+        // handling of requests without files is already done so they are successful
+        handleSuccessfulCreation(requestWithoutFiles);
 
         LOGGER.trace("------------->>> {} creation requests processed in {} ms",
                      requests.size(),
                      System.currentTimeMillis() - processStart);
         return entities;
+    }
+
+    @Override
+    public void handleSuccessfulCreation(Set<FeatureCreationRequest> requests) {
+        long startSuccessProcess = System.currentTimeMillis();
+        Set<Long> requestWithoutFilesIds = new HashSet<>();
+        for (FeatureCreationRequest request : requests) {
+            // Register request
+            requestWithoutFilesIds.add(request.getId());
+            // Monitoring log
+            FeatureLogger.creationSuccess(request.getRequestOwner(),
+                                          request.getRequestId(),
+                                          request.getProviderId(),
+                                          request.getFeature().getUrn());
+            // Publish successful request
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
+                                                        request.getRequestId(),
+                                                        request.getRequestOwner(),
+                                                        request.getProviderId(),
+                                                        request.getFeature().getUrn(),
+                                                        RequestState.SUCCESS));
+
+            // if a previous version exists we will publish a FeatureDeletionRequest to delete it
+            if ((request.getFeatureEntity().getPreviousVersionUrn() != null) && request.getMetadata().isOverride()) {
+                this.notificationClient.notify(String.format(
+                        "A FeatureEntity with the URN %s already exists for this feature",
+                        request.getFeatureEntity().getPreviousVersionUrn()),
+                                               "A duplicated feature has been detected",
+                                               NotificationLevel.INFO,
+                                               DefaultRole.ADMIN);
+                publisher.publish(FeatureDeletionRequestEvent.build(request.getMetadata().getSessionOwner(),
+                                                                    request.getFeatureEntity().getPreviousVersionUrn(),
+                                                                    PriorityLevel.NORMAL));
+            }
+        }
+
+        if (!requestWithoutFilesIds.isEmpty()) {
+            // notify creation of feature without files
+            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.TO_BE_NOTIFIED, requestWithoutFilesIds);
+
+        }
+        LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
+                     requestWithoutFilesIds.size(),
+                     System.currentTimeMillis() - startSuccessProcess);
     }
 
     /**
@@ -465,10 +463,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     /**
      * Init a {@link FeatureEntity} from a {@link FeatureCreationRequest} and set it
      * as feature entity
-     * @param previousVersion number of last version in database for a provider id
      * @param fcr from we will create the {@link FeatureEntity}
      * @param previousVersion previous urn for the last version
-     * @return
+     * @return initialized feature entity
      */
     private FeatureEntity initFeatureEntity(FeatureCreationRequest fcr, @Nullable Integer previousVersion,
             FeatureUniformResourceName previousUrn) {

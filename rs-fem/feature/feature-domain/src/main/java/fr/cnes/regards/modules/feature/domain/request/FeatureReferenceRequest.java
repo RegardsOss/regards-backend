@@ -78,6 +78,7 @@ public class FeatureReferenceRequest extends AbstractRequest {
         return request;
     }
 
+    @Override
     public Long getId() {
         return id;
     }

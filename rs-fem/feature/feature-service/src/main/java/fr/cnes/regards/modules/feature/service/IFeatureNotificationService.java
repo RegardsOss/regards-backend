@@ -46,4 +46,10 @@ public interface IFeatureNotificationService extends IFeatureDeniedService {
      * Process batch of requests during job
      */
     void processRequests(List<NotificationRequest> requests);
+
+    int sendToNotifier();
+
+    void handleNotificationSuccess();
+
+    void handleNotificationError();
 }

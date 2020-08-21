@@ -39,4 +39,9 @@ public interface IFeatureCreationService extends IFeatureDeniedService {
      */
     Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests);
 
+    /**
+     * Handle successful creation process
+     * @param requests successful requests
+     */
+    void handleSuccessfulCreation(Set<FeatureCreationRequest> requests);
 }

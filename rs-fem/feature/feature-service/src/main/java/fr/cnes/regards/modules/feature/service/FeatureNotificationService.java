@@ -35,6 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -42,7 +43,6 @@ import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -53,9 +53,14 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -63,9 +68,9 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
-import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.job.NotificationRequestJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
@@ -103,6 +108,9 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private INotifierClient notifierClient;
+
     @Override
     public int registerRequests(List<NotificationRequestEvent> events) {
         long registrationStart = System.currentTimeMillis();
@@ -111,12 +119,14 @@ public class FeatureNotificationService extends AbstractFeatureService implement
         Set<String> existingRequestIds = this.notificationRequestRepo.findRequestId();
 
         events.forEach(item -> prepareNotificationRequest(item, notificationsRequest, existingRequestIds));
-        LOGGER.trace("------------->>> {} Notification requests prepared in {} ms", notificationsRequest.size(),
+        LOGGER.trace("------------->>> {} Notification requests prepared in {} ms",
+                     notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureDeletionRequest from a list of
         notificationRequestRepo.saveAll(notificationsRequest);
-        LOGGER.debug("------------->>> {} Notification requests registered in {} ms", notificationsRequest.size(),
+        LOGGER.debug("------------->>> {} Notification requests registered in {} ms",
+                     notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
         return notificationsRequest.size();
     }
@@ -141,23 +151,38 @@ public class FeatureNotificationService extends AbstractFeatureService implement
 
         if (errors.hasErrors()) {
             // Monitoring log
-            FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
+            FeatureLogger.notificationDenied(item.getRequestOwner(),
+                                             item.getRequestId(),
+                                             item.getUrn(),
                                              ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
-                                                        item.getRequestOwner(), null, item.getUrn(),
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        null,
+                                                        item.getUrn(),
+                                                        RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             return;
         }
 
-        NotificationRequest request = NotificationRequest
-                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
-                       FeatureRequestStep.LOCAL_DELAYED, item.getPriority(), item.getUrn(), RequestState.GRANTED);
+        //FIXME voir avec marc
+        NotificationRequest request = NotificationRequest.build(item.getRequestId(),
+                                                                item.getRequestOwner(),
+                                                                item.getRequestDate(),
+                                                                FeatureRequestStep.TO_BE_NOTIFIED,
+                                                                item.getPriority(),
+                                                                item.getUrn(),
+                                                                RequestState.GRANTED);
         // Monitoring log
         FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
-                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED));
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                    item.getRequestId(),
+                                                    item.getRequestOwner(),
+                                                    null,
+                                                    item.getUrn(),
+                                                    RequestState.GRANTED));
         notificationsRequest.add(request);
 
         // Add new request id to existing ones
@@ -165,21 +190,26 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     @Override
+    //TODO remove as job is to be removed
     public int scheduleRequests() {
         long scheduleStart = System.currentTimeMillis();
 
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
         Set<Long> requestIds = new HashSet<>();
-        List<NotificationRequest> requestsToSchedule = new ArrayList<>();
 
-        Page<NotificationRequest> dbRequests = this.notificationRequestRepo
-                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
-                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+        Page<NotificationRequest> dbRequests = this.notificationRequestRepo.findByStep(FeatureRequestStep.LOCAL_DELAYED,
+                                                                                       OffsetDateTime.now(),
+                                                                                       PageRequest.of(0,
+                                                                                                      properties
+                                                                                                              .getMaxBulkSize(),
+                                                                                                      Sort.by(Order.asc(
+                                                                                                              "priority"),
+                                                                                                              Order.asc(
+                                                                                                                      "requestDate"))));
 
         if (!dbRequests.isEmpty()) {
             for (NotificationRequest request : dbRequests.getContent()) {
-                requestsToSchedule.add(request); //FIXME: sert à rien, autant utiliser requestIds & dbRequests pour récup la priorité
                 requestIds.add(request.getId());
             }
             notificationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
@@ -187,42 +217,158 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             jobParameters.add(new JobParameter(NotificationRequestJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                    jobParameters, authResolver.getUser(), NotificationRequestJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false,
+                                          dbRequests.getContent().get(0).getPriority().getPriorityLevel(),
+                                          jobParameters,
+                                          authResolver.getUser(),
+                                          NotificationRequestJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.debug("------------->>> {} Notification requests scheduled in {} ms", requestsToSchedule.size(),
+            LOGGER.debug("------------->>> {} Notification requests scheduled in {} ms",
+                         requestIds.size(),
                          System.currentTimeMillis() - scheduleStart);
-            return requestsToSchedule.size();
+            return requestIds.size();
         }
         return 0;
     }
 
     @Override
+    //TODO remove this method and remove notification job & update NotificationRequest processing to use FeatureRequestStep#TO_BE_NOTIFIED
     public void processRequests(List<NotificationRequest> requests) {
 
         Map<FeatureUniformResourceName, NotificationRequest> notifPerUrn = requests.stream()
                 .collect(Collectors.toMap(NotificationRequest::getUrn, Function.identity()));
 
-        // FIXME add success response and monitoring logs
         List<FeatureEntity> features = this.featureRepo
                 .findByUrnIn(requests.stream().map(request -> request.getUrn()).collect(Collectors.toList()));
         List<NotificationActionEvent> notifications = new ArrayList<NotificationActionEvent>();
         for (FeatureEntity entity : features) {
             // Prepare notification
-            notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
-                                                            FeatureManagementAction.NOTIFIED.toString()));
+            //FIXME
+            //            notifications.add(NotificationActionEvent.build(gson.toJsonTree(entity.getFeature()),
+            //                                                            FeatureManagementAction.NOTIFIED.toString()));
             // Monitoring log
             NotificationRequest request = notifPerUrn.get(entity.getUrn());
             //TODO remove delete and deplace logic to check if NotificationActionEvent has been successfully handled or not from above to once µS notifier has responded
             FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
-                                                        request.getRequestOwner(), entity.getProviderId(),
-                                                        entity.getUrn(), RequestState.SUCCESS));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        request.getRequestId(),
+                                                        request.getRequestOwner(),
+                                                        entity.getProviderId(),
+                                                        entity.getUrn(),
+                                                        RequestState.SUCCESS));
         }
         publisher.publish(notifications);
         this.notificationRequestRepo.deleteAll(requests);
     }
 
+    @Override
+    public int sendToNotifier() {
+        long scheduleStart = System.currentTimeMillis();
+        Set<Long> requestIds = new HashSet<>();
+        Map<Feature, Pair<FeatureManagementAction, AbstractRequest>> featureToNotifyWithActionAndRequestId = new HashMap<>();
+        Page<AbstractRequest> dbRequests = Page.empty();
+        //FIXME
+        //        = this.notificationRequestRepo.findByStep(FeatureRequestStep.LOCAL_DELAYED,
+        //                                                                                   OffsetDateTime.now(),
+        //                                                                                   PageRequest.of(0,
+        //                                                                                                  properties
+        //                                                                                                          .getMaxBulkSize(),
+        //                                                                                                  Sort.by(Order.asc(
+        //                                                                                                          "priority"),
+        //                                                                                                          Order.asc(
+        //                                                                                                                  "requestDate"))));
+
+        if (!dbRequests.isEmpty()) {
+            for (AbstractRequest request : dbRequests.getContent()) {
+                if (request instanceof AbstractFeatureUpdateRequest) {
+                    featureToNotifyWithActionAndRequestId
+                            .put(featureRepo.findByUrn(((AbstractFeatureUpdateRequest) request).getUrn()).getFeature(),
+                                 Pair.of(FeatureManagementAction.UPDATED, request));
+                } else if (request instanceof FeatureDeletionRequest) {
+                    FeatureDeletionRequest deletionRequest = (FeatureDeletionRequest) request;
+                    if (deletionRequest.isAlreadyDeleted()) {
+                        featureToNotifyWithActionAndRequestId.put(deletionRequest.getToNotify(),
+                                                                  Pair.of(FeatureManagementAction.ALREADY_DELETED,
+                                                                          request));
+                    } else {
+                        featureToNotifyWithActionAndRequestId
+                                .put(deletionRequest.getToNotify(), Pair.of(FeatureManagementAction.DELETED, request));
+                    }
+                } else if (request instanceof FeatureCreationRequest) {
+                    featureToNotifyWithActionAndRequestId.put(((FeatureCreationRequest) request).getFeature(),
+                                                              Pair.of(FeatureManagementAction.CREATED, request));
+                } else if (request instanceof FeatureCopyRequest) {
+                    featureToNotifyWithActionAndRequestId
+                            .put(featureRepo.findByUrn(((FeatureCopyRequest) request).getUrn()).getFeature(),
+                                 Pair.of(FeatureManagementAction.COPY, request));
+                } else if (request instanceof NotificationRequest) {
+                    featureToNotifyWithActionAndRequestId
+                            .put(featureRepo.findByUrn(((NotificationRequest) request).getUrn()).getFeature(),
+                                 Pair.of(FeatureManagementAction.NOTIFIED, request));
+                }
+                requestIds.add(request.getId());
+            }
+            notificationRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, requestIds);
+            List<NotificationActionEvent> toSend = new ArrayList<>();
+            for (Map.Entry<Feature, Pair<FeatureManagementAction, AbstractRequest>> entry : featureToNotifyWithActionAndRequestId
+                    .entrySet()) {
+                Feature feature = entry.getKey();
+                FeatureManagementAction action = entry.getValue().getFirst();
+                AbstractRequest request = entry.getValue().getSecond();
+                toSend.add(new NotificationActionEvent(gson.toJsonTree(feature),
+                                                       gson.toJsonTree(new NotificationActionEventMetadata(action)),
+                                                       request.getRequestId(),
+                                                       request.getRequestOwner()));
+            }
+            notifierClient.sendNotifications(toSend);
+
+            LOGGER.debug("------------->>> {} Notification requests in {} ms",
+                         featureToNotifyWithActionAndRequestId.size(),
+                         System.currentTimeMillis() - scheduleStart);
+            return featureToNotifyWithActionAndRequestId.size();
+        }
+        return 0;
+    }
+
+    @Override
+    public void handleNotificationSuccess() {
+        // TODO: add notification success log
+        FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
+        // Publish request success
+        //TODO: see if all those informations are really needed, for example informations on entity might be difficult to get
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                    request.getRequestId(),
+                                                    request.getRequestOwner(),
+                                                    entity.getProviderId(),
+                                                    entity.getUrn(),
+                                                    RequestState.SUCCESS));
+        // Successful requests are deleted now!
+        // FIXME: repo for AbstractRequest
+        // featureCreationRequestRepo.deleteInBatch(requestWithoutFilesIds);
+    }
+
+    @Override
+    public void handleNotificationError() {
+        //TODO: add notification error log
+        //TODO: handle step and state on request
+    }
+
+    private class NotificationActionEventMetadata {
+
+        private String action;
+
+        public NotificationActionEventMetadata(FeatureManagementAction action) {
+            this.action = action.toString();
+        }
+
+        public String getAction() {
+            return action;
+        }
+
+        public void setAction(String action) {
+            this.action = action;
+        }
+    }
 }

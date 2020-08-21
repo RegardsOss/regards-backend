@@ -161,10 +161,24 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
         }
     };
 
-    private final Task notificationTask = () -> {
+    /**
+     * FIXME
+     * @deprecated to be removed and use notificationTask instead
+     */
+    @Deprecated
+    private final Task notificationRequestHandlingTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.featureNotificationService.scheduleRequests();
+        if (nb != 0) {
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS, System.currentTimeMillis() - start);
+        }
+    };
+
+    private final Task notificationTask = () -> {
+        LockAssert.assertLocked();
+        long start = System.currentTimeMillis();
+        int nb = this.featureNotificationService.sendToNotifier();
         if (nb != 0) {
             LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS, System.currentTimeMillis() - start);
         }
@@ -268,8 +282,9 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_REQUESTS);
-                lockingTaskExecutors.executeWithLock(notificationTask, new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
-                        Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                //FIXME
+                lockingTaskExecutors.executeWithLock(notificationRequestHandlingTask, new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
+                                                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {

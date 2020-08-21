@@ -129,6 +129,10 @@
 			<artifactId>model-service</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.notifier</groupId>
+			<artifactId>notifier-client</artifactId>
+		</dependency>
 		<!-- FIXME -->
 <!-- 		<dependency>
 			<groupId>net.logstash.logback</groupId>

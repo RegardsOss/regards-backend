@@ -64,8 +64,13 @@ public abstract class AbstractFeatureUpdateRequest extends AbstractFeatureReques
     @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_id"))
     private FeatureEntity featureEntity;
 
+    @Override
     public Long getId() {
         return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public FeatureUniformResourceName getUrn() {
@@ -91,5 +96,4 @@ public abstract class AbstractFeatureUpdateRequest extends AbstractFeatureReques
     public void setFeatureEntity(FeatureEntity featureEntity) {
         this.featureEntity = featureEntity;
     }
-
 }

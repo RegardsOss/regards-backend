@@ -172,4 +172,6 @@ public abstract class AbstractRequest {
         this.requestOwner = requestOwner;
     }
 
+    public abstract Long getId();
+
 }

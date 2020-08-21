@@ -32,6 +32,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Type;
+
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -63,6 +66,19 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Convert(converter = FeatureUrnConverter.class)
     private FeatureUniformResourceName urn;
 
+    /**
+     * Should be null until it reaches {@link FeatureRequestStep#TO_BE_NOTIFIED}
+     */
+    @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
+    @Type(type = "jsonb")
+    private Feature toNotify;
+
+    /**
+     * This is used to notify user. Should only be setted by deletion process
+     */
+    @Column(name = "already_deleted")
+    private boolean alreadyDeleted;
+
     public static FeatureDeletionRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, Set<String> errors, FeatureRequestStep step, PriorityLevel priority,
             FeatureUniformResourceName urn) {
@@ -82,6 +98,7 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         this.urn = urn;
     }
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -90,4 +107,19 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         this.id = id;
     }
 
+    public Feature getToNotify() {
+        return toNotify;
+    }
+
+    public void setToNotify(Feature toNotify) {
+        this.toNotify = toNotify;
+    }
+
+    public boolean isAlreadyDeleted() {
+        return alreadyDeleted;
+    }
+
+    public void setAlreadyDeleted(boolean alreadyDeleted) {
+        this.alreadyDeleted = alreadyDeleted;
+    }
 }

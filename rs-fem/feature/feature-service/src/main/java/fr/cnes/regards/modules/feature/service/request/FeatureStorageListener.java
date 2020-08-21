@@ -99,39 +99,42 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onDeletionSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleDeletionSuccess(requests.stream().map(request -> request.getGroupId())
+        this.featureRequestService.handleDeletionSuccess(requests.stream().map(RequestInfo::getGroupId)
                 .collect(Collectors.toSet()));
 
     }
 
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
+        //FIXME retrieve errors from requestInfo
         this.featureRequestService
-                .handleStorageError(requests.stream().map(request -> request.getGroupId()).collect(Collectors.toSet()));
+                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageSuccess(requests.stream().map(request -> request.getGroupId())
+        this.featureRequestService.handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId)
                 .collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceError(Set<RequestInfo> requests) {
+        //FIXME retrieve errors from requestInfo
         this.featureRequestService
-                .handleStorageError(requests.stream().map(request -> request.getGroupId()).collect(Collectors.toSet()));
+                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
     }
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageSuccess(requests.stream().map(request -> request.getGroupId())
+        this.featureRequestService.handleStorageSuccess(requests.stream().map(RequestInfo::getGroupId)
                 .collect(Collectors.toSet()));
     }
 
     @Override
     public void onStoreError(Set<RequestInfo> requests) {
+        //FIXME retrieve errors from requestInfo
         this.featureRequestService
-                .handleStorageError(requests.stream().map(request -> request.getGroupId()).collect(Collectors.toSet()));
+                .handleStorageError(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
     }
 
 }

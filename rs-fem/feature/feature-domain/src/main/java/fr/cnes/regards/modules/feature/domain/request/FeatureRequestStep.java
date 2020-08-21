@@ -45,7 +45,12 @@ public enum FeatureRequestStep {
     // Delete files
     REMOTE_STORAGE_DELETION_REQUESTED(true, true),
     // Store files
-    REMOTE_STORAGE_REQUESTED(true, true);
+    REMOTE_STORAGE_REQUESTED(true, true),
+
+    // this request handling still needs to be notified
+    TO_BE_NOTIFIED,
+    REMOTE_NOTIFICATION_REQUESTED(true, true),
+    REMOTE_NOTIFICATION_SUCCESS, REMOTE_NOTIFICATION_ERROR;
 
     private boolean remote = false;
 

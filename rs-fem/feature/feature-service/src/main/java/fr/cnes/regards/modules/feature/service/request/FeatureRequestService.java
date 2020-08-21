@@ -23,24 +23,17 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  *
@@ -61,52 +54,16 @@ public class FeatureRequestService implements IFeatureRequestService {
     private IPublisher publisher;
 
     @Autowired
-    private INotificationClient notificationClient;
+    private IFeatureCreationService featureCreationService;
 
     @Autowired
     private IFeatureDeletionService featureDeletionService;
-
-    @Autowired
-    private Gson gson;
 
     @Override
     public void handleStorageSuccess(Set<String> groupIds) {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
-        // publish success notification for all request id
-        request.forEach(this::publishSuccessAndDeleteOlderVersion);
-
-        // FIXME: delete once notifier has said that it succeeded
-        // delete useless FeatureCreationRequest
-        this.fcrRepo.deleteAll(request);
-    }
-
-    /**
-     * Publish a succed event for a {@link Feature} creation on storage and delete previous version if exists
-     * if the boolean overridePreviousVersion is set to true
-     * @param item
-     */
-    private void publishSuccessAndDeleteOlderVersion(FeatureCreationRequest item) {
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                    item.getRequestId(),
-                                                    item.getRequestOwner(),
-                                                    item.getFeature() != null ? item.getFeature().getId() : null,
-                                                    null,
-                                                    RequestState.SUCCESS,
-                                                    null));
-        publisher.publish(NotificationActionEvent
-                                  .build(gson.toJsonTree(item.getFeature()), FeatureManagementAction.CREATED.name()));
-        if ((item.getFeatureEntity().getPreviousVersionUrn() != null) && item.getMetadata().isOverride()) {
-            publisher.publish(FeatureDeletionRequestEvent.build(item.getMetadata().getSessionOwner(),
-                                                                item.getFeatureEntity().getPreviousVersionUrn(),
-                                                                PriorityLevel.NORMAL));
-            this.notificationClient.notify(String.format(
-                    "A FeatureEntity with the URN %s already exists for this feature",
-                    item.getFeatureEntity().getPreviousVersionUrn()),
-                                           "A duplicated feature has been detected",
-                                           NotificationLevel.ERROR,
-                                           DefaultRole.ADMIN);
-        }
+        featureCreationService.handleSuccessfulCreation(request);
     }
 
     @Override
