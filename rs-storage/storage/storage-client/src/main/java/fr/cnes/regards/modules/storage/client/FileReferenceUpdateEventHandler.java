@@ -18,16 +18,21 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceUpdateEvent;
+import sun.misc.Request;
 
 /**
  * Handle bus messages {@link FileReferenceUpdateEvent}
@@ -35,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileReferenceUpdateEvent;
  */
 @Component("clientRequestUpdateEventHandler")
 public class FileReferenceUpdateEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceUpdateEvent> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceUpdateEvent> {
 
     @Autowired(required = false)
     private IStorageFileListener listener;
@@ -56,14 +61,31 @@ public class FileReferenceUpdateEventHandler
     }
 
     @Override
-    public void handle(TenantWrapper<FileReferenceUpdateEvent> wrapper) {
-        String tenant = wrapper.getTenant();
-        FileReferenceUpdateEvent event = wrapper.getContent();
+    public boolean validate(String tenant, FileReferenceUpdateEvent message) {
+        return true;
+    }
+
+    @Override
+    public void handleBatch(String tenant, List<FileReferenceUpdateEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            listener.onFileUpdated(event.getChecksum(), event.getStorage(), event.getUpdatedFile());
+            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
+            long start = System.currentTimeMillis();
+            handle(messages);
+            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms", messages.size(),
+                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    private void handle(List<FileReferenceUpdateEvent> events) {
+        List<FileReferenceUpdateDTO> dtos = new ArrayList<>();
+        for(FileReferenceUpdateEvent event: events) {
+            dtos.add(new FileReferenceUpdateDTO(event));
+        }
+        if(!dtos.isEmpty()) {
+            listener.onFileUpdated(dtos);
         }
     }
 

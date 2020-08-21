@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,9 +27,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 
@@ -40,7 +41,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 @Profile("!test")
 @Component("clientFileRefEventHandler")
 public class FileReferenceEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<FileReferenceEvent> {
+        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
 
     @Autowired(required = false)
     private IStorageFileListener listener;
@@ -61,13 +62,20 @@ public class FileReferenceEventHandler
     }
 
     @Override
-    public void handle(TenantWrapper<FileReferenceEvent> wrapper) {
-        String tenant = wrapper.getTenant();
-        FileReferenceEvent event = wrapper.getContent();
+    public boolean validate(String tenant, FileReferenceEvent message) {
+        return true;
+    }
+
+    @Override
+    public void handleBatch(String tenant, List<FileReferenceEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.debug("Handling {}", event.toString());
-            handle(event);
+            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceEvent...", messages.size());
+            long start = System.currentTimeMillis();
+            handle(messages);
+            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceEvent handled in {} ms",
+                         messages.size(),
+                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
@@ -75,37 +83,82 @@ public class FileReferenceEventHandler
 
     /**
      * Handle event by calling the listener method associated to the event type.
-     * @param event {@link FileReferenceEvent}
+     * @param events {@link FileReferenceEvent}s
      */
-    private void handle(FileReferenceEvent event) {
-        Set<RequestInfo> requestInfos = event.getGroupIds().stream().map(RequestInfo::build)
-                .collect(Collectors.toSet());
-        switch (event.getType()) {
-            case AVAILABILITY_ERROR:
-                listener.onFileNotAvailable(event.getChecksum(), requestInfos, event.getMessage());
-                break;
-            case AVAILABLE:
-                listener.onFileAvailable(event.getChecksum(), requestInfos);
-                break;
-            case DELETED_FOR_OWNER:
-                event.getOwners().forEach(o -> listener
-                        .onFileDeleted(event.getChecksum(), event.getLocation().getStorage(), o, requestInfos));
-                break;
-            case DELETION_ERROR:
-            case FULLY_DELETED:
-                break;
-            case STORED:
-                listener.onFileStored(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(),
-                                      requestInfos);
-                break;
-            case STORE_ERROR:
-                listener.onFileStoreError(event.getChecksum(), event.getLocation().getStorage(), event.getOwners(),
-                                          requestInfos, event.getMessage());
-                break;
-            default:
-                break;
-
+    private void handle(List<FileReferenceEvent> events) {
+        List<FileReferenceEventDTO> availabilityError = new ArrayList<>();
+        List<FileReferenceEventDTO> available = new ArrayList<>();
+        List<FileReferenceEventDTO> deletedForOwner = new ArrayList<>();
+        List<FileReferenceEventDTO> stored = new ArrayList<>();
+        List<FileReferenceEventDTO> storedError = new ArrayList<>();
+        for (FileReferenceEvent event : events) {
+            switch (event.getType()) {
+                case AVAILABILITY_ERROR:
+                    availabilityError.add(new FileReferenceEventDTO(event));
+                    break;
+                case AVAILABLE:
+                    available.add(new FileReferenceEventDTO(event));
+                    break;
+                case DELETED_FOR_OWNER:
+                    deletedForOwner.add(new FileReferenceEventDTO(event));
+                    break;
+                case DELETION_ERROR:
+                case FULLY_DELETED:
+                    // request handling in storage is done so that these type of event are never sent
+                    break;
+                case STORED:
+                    stored.add(new FileReferenceEventDTO(event));
+                    break;
+                case STORE_ERROR:
+                    storedError.add(new FileReferenceEventDTO(event));
+                    break;
+                default:
+                    break;
+            }
         }
+        //Handle each type of action in right order
+        if (!storedError.isEmpty()) {
+            handleStoredError(storedError);
+        }
+        if (!stored.isEmpty()) {
+            handleStored(stored);
+        }
+        if (!available.isEmpty()) {
+            handleAvailable(available);
+        }
+        if (!availabilityError.isEmpty()) {
+            handleAvailabilityError(availabilityError);
+        }
+        if (!deletedForOwner.isEmpty()) {
+            handleDeletedForOwner(deletedForOwner);
+        }
+    }
+
+    private void handleDeletedForOwner(List<FileReferenceEventDTO> deletedForOwner) {
+        ListMultimap<String, FileReferenceEventDTO> deletedForOwnerPerOwner = ArrayListMultimap.create();
+        for (FileReferenceEventDTO dto : deletedForOwner) {
+            for (String owner : dto.getOwners()) {
+                deletedForOwnerPerOwner.put(owner, dto);
+            }
+        }
+        deletedForOwnerPerOwner.keySet()
+                .forEach(owner -> listener.onFileDeletedForOwner(owner, deletedForOwnerPerOwner.get(owner)));
+    }
+
+    private void handleAvailabilityError(List<FileReferenceEventDTO> availabilityError) {
+        listener.onFileNotAvailable(availabilityError);
+    }
+
+    private void handleAvailable(List<FileReferenceEventDTO> available) {
+        listener.onFileAvailable(available);
+    }
+
+    private void handleStored(List<FileReferenceEventDTO> stored) {
+        listener.onFileStored(stored);
+    }
+
+    private void handleStoredError(List<FileReferenceEventDTO> storedError) {
+        listener.onFileStoreError(storedError);
     }
 
 }
