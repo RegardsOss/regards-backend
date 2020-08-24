@@ -16,40 +16,42 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 package fr.cnes.regards.modules.ingest.service.plugin;
 
 import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
-import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 
 /**
- * @author Marc SORDI
  *
+ * @author Iliana Ghazali
  */
-@Plugin(author = "REGARDS Team", description = "Test plugin for SIP postprocessing", id = "PostProcessingTestPlugin",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
-public class PostProcessingTestPlugin implements ISipPostprocessing {
 
-    @Autowired
-    private ProcessingChainTestErrorSimulator errorSimulator;
+@Plugin(id = "PostProcessFailTestPlugin", version = "1.0.0-SNAPSHOT",
+        description = "Test plugin", author = "REGARDS Team",
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+public class AIPPostProcessFailTestPlugin implements ISipPostprocessing {
 
     @Override
-    public PostProcessResult postprocess(Collection<AIPEntity> aipEntities)
-            throws ModuleException {
-        if (PostProcessingTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
-            throw new ModuleException("Simulated exception for step PreprocessingTestPlugin");
+    public PostProcessResult postprocess(Collection<AIPEntity> aipEntities) {
+        PostProcessResult ppr = PostProcessResult.build(Maps.newHashMap());
+        boolean setError = false;
+        for (AIPEntity aip : aipEntities) {
+            if (setError) {
+                ppr.addSuccess(aip.getAipId());
+                setError=false;
+            } else {
+                ppr.addError(aip.getAipId(), Sets.newHashSet("Simulated test error !!!!"));
+                setError=true;
+            }
         }
-        return null;
+        return ppr;
     }
-
 }

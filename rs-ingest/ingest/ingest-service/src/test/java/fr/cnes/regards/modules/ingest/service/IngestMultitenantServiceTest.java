@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
@@ -47,6 +50,10 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
@@ -67,6 +74,10 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     protected static final long TEN_SECONDS = 10000;
 
+    protected final static String CHAIN_PP_LABEL = "ChainWithPostProcess";
+
+    protected final static String CHAIN_PP_WITH_ERRORS_LABEL = "ChainWithPostProcessErrors";
+
     @Autowired
     protected IIngestRequestRepository ingestRequestRepository;
 
@@ -78,6 +89,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @Autowired
     protected IngestServiceTest ingestServiceTest;
+
+    @Autowired
+    protected IIngestProcessingChainService ingestProcessingService;
 
     @Before
     public void init() throws Exception {
@@ -125,17 +139,53 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         return sip;
     }
 
+    protected IngestProcessingChain createChainWithPostProcess(String label, Class postProcessPluginClass) throws ModuleException {
+        IngestProcessingChain newChain = new IngestProcessingChain();
+        newChain.setDescription(label);
+        newChain.setName(label);
+
+        PluginConfiguration validation = PluginConfiguration.build(ValidationTestPlugin.class, null, Sets.newHashSet());
+        validation.setIsActive(true);
+        validation.setLabel("validationPlugin_ipst");
+        newChain.setValidationPlugin(validation);
+
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
+        generation.setIsActive(true);
+        generation.setLabel("generationPlugin_ipst");
+        newChain.setGenerationPlugin(generation);
+
+        PluginConfiguration postprocess = PluginConfiguration.build(postProcessPluginClass, null,
+                                                                    Sets.newHashSet());
+        postprocess.setIsActive(true);
+        postprocess.setLabel("postprocess test plugin");
+
+        newChain.setPostProcessingPlugin(postprocess);
+
+        return ingestProcessingService.createNewChain(newChain);
+    }
+
     protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner,
             List<String> categories) {
-        this.publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories);
+        publishSIPEvent(sip, storage,session,sessionOwner,categories, Optional.empty());
+    }
+
+    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner,
+            List<String> categories,Optional<String> chainLabel) {
+        this.publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories,chainLabel);
     }
 
     protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
             List<String> categories) {
+        publishSIPEvent(sip, storages,session,sessionOwner,categories, Optional.empty());
+    }
+
+    protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
+            List<String> categories, Optional<String> chainLabel) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
-                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
                                                         Sets.newHashSet(categories), storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }

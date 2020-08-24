@@ -41,6 +41,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
@@ -441,6 +442,9 @@ public class RequestService implements IRequestService {
                 break;
             case RequestTypeConstant.UPDATE_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
+                break;
+            case RequestTypeConstant.AIP_POST_PROCESS_VALUE:
+                spec = AbstractRequestSpecifications.searchRequestBlockingAIPPostProcess(sessionOwnerOp,sessionOp);
                 break;
             case RequestTypeConstant.INGEST_VALUE:
                 // Ingest cannot be blocked

@@ -342,7 +342,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         simulateProcessingError(sips, ValidationTestPlugin.class);
         simulateProcessingError(sips, AIPGenerationTestPlugin.class);
         simulateProcessingError(sips, AIPTaggingTestPlugin.class);
-        simulateProcessingError(sips, PostProcessingTestPlugin.class);
 
         // Simulate a full process without error
         stepErrorSimulator.setSimulateErrorForStep(null);
