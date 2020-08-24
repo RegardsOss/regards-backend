@@ -150,8 +150,7 @@ public final class AbstractRequestSpecifications {
                            .aggregateRequest(cb,
                                              AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
                                                                                                session),
-                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb),
-                                             AbstractRequestSpecifications.searchPostProcess(root, cb,sessionOwner, session)));
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));
 
@@ -226,8 +225,7 @@ public final class AbstractRequestSpecifications {
                                              AbstractRequestSpecifications.searchStoreMetadata(root, cb, sessionOwner,
                                                                                                session),
                                              AbstractRequestSpecifications.searchUpdate(root, cb, sessionOwner, session),
-                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb),
-                                             AbstractRequestSpecifications.searchPostProcess(root, cb,sessionOwner, session)));
+                                             AbstractRequestSpecifications.searchOAISDeletionCreator(root, cb)));
 
 
             predicates.add(AbstractRequestSpecifications.getRunningRequestFilter(root, cb));

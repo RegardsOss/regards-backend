@@ -47,7 +47,6 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
  * @author Iliana Ghazali
  */
 
-
 public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     @Autowired
@@ -71,14 +70,15 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
     private Map<String, List<String>> mapPluginAip = new HashMap<>();
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         Type type = new TypeToken<List<Long>>() {
 
         }.getType();
         List<Long> postProcessRequestIds = getValue(parameters, AIP_POST_PROCESS_REQUEST_IDS, type);
         // Convert Request List to Map
         this.requests = listRequestsToMap(aipPostProcessRequestRepository.findAllById(postProcessRequestIds));
-        
+
     }
 
     @Override
@@ -98,7 +98,6 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     }
 
-
     /**
      * PostProcess aips with their associated plugins
      */
@@ -116,12 +115,12 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             try {
                 // Launch plugin by businessId
                 pluginBusinessId = pluginToLaunch.getKey();
-                logger.debug("Launch plugin {}",pluginBusinessId);
+                logger.debug("Launch plugin {}", pluginBusinessId);
                 plugin = pluginService.getPlugin(pluginBusinessId);
                 postProcessResult = plugin.postprocess(getAipById(pluginToLaunch.getValue()));
 
                 // Check if process was interrupted
-                if(postProcessResult.getInterrupted() || Thread.currentThread().isInterrupted()){
+                if (postProcessResult.getInterrupted() || Thread.currentThread().isInterrupted()) {
                     isInterrupted = true;
                     break;
                 }
@@ -130,11 +129,11 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                 // If postProcess returns errors - put all requests corresponding to failed aips to ERROR state
                 if (!postProcessResult.getErrors().isEmpty()) {
                     putReqError(postProcessResult.getErrors());
-               
+
                 }
                 // If Success - put all requests corresponding to successfully processed aipIds to RUNNING state
                 if (!postProcessResult.getSuccesses().isEmpty()) {
-                   aipIdsSuccess.addAll(postProcessResult.getSuccesses());
+                    aipIdsSuccess.addAll(postProcessResult.getSuccesses());
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 logger.error("Post processing plugin doest not exists or is not active", e);
@@ -148,7 +147,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
         // Delete requests processed
         deleteSuccessReq(aipIdsSuccess);
 
-        if(isInterrupted){
+        if (isInterrupted) {
             // Restart thread
             Thread.currentThread().interrupt();
         }
@@ -165,13 +164,13 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
      * The other between the plugin id and the set of aipIds it has to process.
      */
     private void createMapsAipReqPluginId() {
-        this.requests.forEach((reqId,req) -> {
+        this.requests.forEach((reqId, req) -> {
             String aipId = req.getAip().getAipId();
             String pluginId = req.getConfig().getPostProcessingPluginBusinnessId();
-            
+
             // Build aipId and reqId mapping
             this.mapAipReq.put(aipId, reqId);
-            
+
             // Build plugin businessId and AIP ID mapping
             // create businessId key if not existing
             if (!this.mapPluginAip.containsKey(pluginId)) {
@@ -181,7 +180,6 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             this.mapPluginAip.get(pluginId).add(aipId);
         });
     }
-
 
     //--------------------------------------
     // ----- TO SEARCH REQ/AIP BY IDS ------
@@ -205,10 +203,10 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
      * @param aipIdSet set of aipsId
      * @return set of aips
      */
-    private Set<AIPEntity> getAipById (List<String> aipIdSet){
+    private Set<AIPEntity> getAipById(List<String> aipIdSet) {
         Set<AIPEntity> aipSet = new LinkedHashSet<>();
         Long reqId;
-        for(String aipId : aipIdSet){
+        for (String aipId : aipIdSet) {
             //Get req.aip and add to set
             reqId = mapAipReq.get(aipId);
             aipSet.add(this.requests.get(reqId).getAip());
@@ -224,10 +222,10 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
      * Update status of requests in errors to ERROR
      * @param errorMap map of aipIds in error and the corresponding list of error messages
      */
-    private void putReqError(Map<String,Set<String>> errorMap){
+    private void putReqError(Map<String, Set<String>> errorMap) {
         Long reqId;
         // map of aipIds - linked errors
-        for(Map.Entry<String,Set<String>> error: errorMap.entrySet()){
+        for (Map.Entry<String, Set<String>> error : errorMap.entrySet()) {
             reqId = mapAipReq.get(error.getKey());
             this.requests.get(reqId).setState(InternalRequestState.ERROR);
             this.requests.get(reqId).setErrors(error.getValue());
@@ -238,7 +236,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
     /**
      * Delete requests successfully processed
      */
-    private void deleteSuccessReq(Set<String> aipIdsSuccess){
+    private void deleteSuccessReq(Set<String> aipIdsSuccess) {
         // Get all reqIds corresponding to aipIds returned as successes
         Set<Long> reqIdsSuccess = new HashSet<>();
         for (Map.Entry<String, Long> e : this.mapAipReq.entrySet()) {
@@ -260,11 +258,3 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
     }
 
 }
-
-
-
-
-
-
-
-

@@ -313,12 +313,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             aipUpdatesCreatorRequest.getState());
         clearRequest();
-
-        createPostProcessRequest(aips.get(0));
-        aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            aipUpdatesCreatorRequest.getState());
-        clearRequest();
         // END ------- Test AIPUpdatesCreatorRequest
 
         // BEGIN ------- Test AIPUpdateRequest
@@ -385,12 +379,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         clearRequest();
 
         createUpdateRequest(aips);
-        oaisDeletionRequest = createOAISDeletionCreatorRequest();
-        Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
-                            oaisDeletionRequest.getState());
-        clearRequest();
-
-        createPostProcessRequest(aips.get(0));
         oaisDeletionRequest = createOAISDeletionCreatorRequest();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
                             oaisDeletionRequest.getState());

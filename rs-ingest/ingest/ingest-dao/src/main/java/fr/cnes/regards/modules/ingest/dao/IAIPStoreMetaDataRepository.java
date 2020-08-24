@@ -24,7 +24,6 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -40,6 +39,5 @@ public interface IAIPStoreMetaDataRepository extends JpaRepository<AIPStoreMetaD
 
     Page<AIPStoreMetaDataRequest> findAllByState(InternalRequestState step, Pageable page);
 
-    @Query("select chain.preProcessingPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.preProcessingPlugin.id = conf.id")
     List<AIPStoreMetaDataRequest> findAllByAipIdIn(List<Long> aips);
 }
