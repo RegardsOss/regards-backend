@@ -1226,6 +1226,13 @@
 				<version>${modules.ingest.plugins.version}</version>
 				<classifier>shaded</classifier>
 			</dependency>
+            <!-- Ingest post processing plugin -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ingest</groupId>
+				<artifactId>ssalto-sipad-postprocessing</artifactId>
+				<version>${modules.ingest.plugins.version}</version>
+				<classifier>shaded</classifier>
+			</dependency>
             <!-- CNES REMOTE STORAGES -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.storage</groupId>
