@@ -42,9 +42,8 @@ import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessR
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
- *
- * @author Sébastien Binda
  * @author Iliana Ghazali
+ * @author Sébastien Binda
  */
 
 public class IngestPostProcessingJob extends AbstractJob<Void> {

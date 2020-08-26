@@ -43,7 +43,8 @@ public class AIPPostProcessTestPlugin implements ISipPostprocessing {
 
     @Override
     public PostProcessResult postprocess(Collection<AIPEntity> aipEntities) {
-        PostProcessResult ppr = PostProcessResult.build(Maps.newHashMap());
+        PostProcessResult ppr = new PostProcessResult();
+        ppr.build(Maps.newHashMap());
         aipEntities.forEach(a -> ppr.addSuccess(a.getAipId()));
         return ppr;
     }
