@@ -42,7 +42,7 @@ public class AIPPostProcessFailTestPlugin implements ISipPostprocessing {
     @Override
     public PostProcessResult postprocess(Collection<AIPEntity> aipEntities) {
         PostProcessResult ppr = new PostProcessResult();
-        ppr.build(Maps.newHashMap());
+        ppr.buildErrors(Maps.newHashMap());
         boolean setError = false;
         for (AIPEntity aip : aipEntities) {
             if (setError) {

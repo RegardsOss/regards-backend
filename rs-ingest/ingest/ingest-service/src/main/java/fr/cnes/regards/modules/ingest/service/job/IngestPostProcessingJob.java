@@ -25,13 +25,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -106,17 +104,19 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
         ISipPostprocessing plugin;
         Set<String> aipIdsSuccess = new HashSet<>();
         String pluginBusinessId;
+        List<String> aipIds;
 
         boolean isInterrupted = false;
 
         // Loop on map businessId-aipIds
         for (Map.Entry<String, List<String>> pluginToLaunch : this.mapPluginAip.entrySet()) {
+            // Launch plugin by businessId
+            pluginBusinessId = pluginToLaunch.getKey();
+            aipIds = pluginToLaunch.getValue();
+            logger.debug("Launch plugin {}", pluginBusinessId);
             try {
-                // Launch plugin by businessId
-                pluginBusinessId = pluginToLaunch.getKey();
-                logger.debug("Launch plugin {}", pluginBusinessId);
                 plugin = pluginService.getPlugin(pluginBusinessId);
-                postProcessResult = plugin.postprocess(getAipById(pluginToLaunch.getValue()));
+                postProcessResult = plugin.postprocess(getAipById(aipIds));
 
                 // Check if process was interrupted
                 if (postProcessResult.getInterrupted() || Thread.currentThread().isInterrupted()) {
@@ -134,8 +134,14 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                 if (!postProcessResult.getSuccesses().isEmpty()) {
                     aipIdsSuccess.addAll(postProcessResult.getSuccesses());
                 }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                logger.error("Post processing plugin doest not exists or is not active", e);
+            } catch (Exception e) {
+                //put all requests in error
+                logger.error("Exception : ", e);
+                Map<String, Set<String>> errors = new HashMap<>();
+                for (String aipId : aipIds) {
+                    errors.put(aipId, Collections.singleton(e.getMessage()));
+                }
+                putReqError(errors);
             }
         }
 
@@ -223,12 +229,16 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
      */
     private void putReqError(Map<String, Set<String>> errorMap) {
         Long reqId;
+        String aipId;
+        Set<String> errorMsg;
         // map of aipIds - linked errors
         for (Map.Entry<String, Set<String>> error : errorMap.entrySet()) {
-            reqId = mapAipReq.get(error.getKey());
+            aipId = error.getKey();
+            reqId = mapAipReq.get(aipId);
+            errorMsg = error.getValue();
             this.requests.get(reqId).setState(InternalRequestState.ERROR);
-            this.requests.get(reqId).setErrors(error.getValue());
-
+            this.requests.get(reqId).setErrors(errorMsg);
+            logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]", reqId, aipId, String.join(",\n", errorMsg));
         }
     }
 

@@ -43,7 +43,7 @@ public class PostProcessResult {
      * Build postprocess result of sipad post processing plugin
      * @param errors map of aipId and related errors encountered during process
      */
-    public void build(Map<String, Set<String>> errors) {
+    public void buildErrors(Map<String, Set<String>> errors) {
         this.errors.putAll(errors);
     }
 
