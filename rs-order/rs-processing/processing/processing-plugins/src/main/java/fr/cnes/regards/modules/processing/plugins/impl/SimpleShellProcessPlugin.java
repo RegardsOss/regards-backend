@@ -6,19 +6,26 @@ import com.zaxxer.nuprocess.NuProcessBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
+import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.exception.ExecutionFailureException;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
+import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
+import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
+import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +39,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.cnes.regards.modules.processing.domain.PStep.newStep;
+import static io.vavr.collection.List.empty;
+import static io.vavr.collection.List.ofAll;
 
 @Plugin(
-        id = "SimpleShellProcessPlugin",
+        id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN,
         version = "1.0.0-SNAPSHOT",
         description = "Launch a shell script",
         author = "REGARDS Team",
@@ -66,6 +75,8 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessPlugin.class);
 
+    public static final String SIMPLE_SHELL_PROCESS_PLUGIN = "SimpleShellProcessPlugin";
+
     @PluginParameter(
             name = "shellScript",
             label = "Shell script name or absolute path",
@@ -89,6 +100,18 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
             ISharedStorageService storageService) {
         this.workdirService = workdirService;
         this.storageService = storageService;
+    }
+
+    @Override public ConstraintChecker<PBatch> batchChecker() {
+        return ConstraintChecker.noViolation();
+    }
+
+    @Override public ConstraintChecker<PExecution> executionChecker() {
+        return ConstraintChecker.noViolation();
+    }
+
+    @Override public String engineName() {
+        return "JOBS";
     }
 
     @Override public Seq<ExecutionParameterDescriptor> parameters() {
@@ -183,7 +206,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                 "correlationId=%s exec=%s process=%s : Exited with status code %d",
                     ctx.getBatch().getCorrelationId(),
                     ctx.getExec().getId(),
-                    processName,
+                    shellScriptName,
                     i
             );
             stepSink.next(newStep(ExecutionStatus.FAILURE, message));
@@ -194,7 +217,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
             LOGGER.info("correlationId={} exec={} process={} : Exited with status code 0",
                          ctx.getBatch().getCorrelationId(),
                          ctx.getExec().getId(),
-                         processName);
+                         shellScriptName);
             stepSink.next(newStep(ExecutionStatus.SUCCESS, "Exited with status code 0"));
 
             monoSink.success(storageService.storeResult(ctx, workdir));
@@ -205,7 +228,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
             LOGGER.info("correlationId={} exec={} process={} : {}",
                 ctx.getBatch().getCorrelationId(),
                 ctx.getExec().getId(),
-                processName,
+                shellScriptName,
                 msg
             );
         }
@@ -214,7 +237,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
             LOGGER.error("correlationId={} exec={} process={} : {}",
                 ctx.getBatch().getCorrelationId(),
                 ctx.getExec().getId(),
-                processName,
+                shellScriptName,
                 msg
             );
         }
@@ -232,5 +255,9 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
 
     public void setEnvVariableNames(List<String> envVariableNames) {
         this.envVariableNames = envVariableNames;
+    }
+
+    protected static io.vavr.collection.List<String> emptyOrAllImmutable(List<String> strings) {
+        return strings == null ? empty() : ofAll(strings);
     }
 }

@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,9 +39,9 @@ public class ProcessPluginConfigController {
             produces = APPLICATION_JSON
     )
     public Flux<PluginMetaData> listAllDetectedPlugins() {
-        setUselessTenant();
-        return Flux.fromIterable(PluginUtils.getPlugins().values())
-                .doOnError(t -> LOGGER.error(t.getMessage(), t));
+        return ReactiveSecurityContextHolder.getContext()
+            .flatMapMany(ctx -> Flux.fromIterable(PluginUtils.getPlugins().values())
+                .doOnError(t -> LOGGER.error(t.getMessage(), t)));
     }
 
     @GetMapping(
@@ -48,9 +49,9 @@ public class ProcessPluginConfigController {
             produces = APPLICATION_JSON
     )
     public Flux<PluginConfiguration> listAllPluginConfigurations() {
-        setUselessTenant();
-        return Flux.fromIterable(pluginConfigRepo.findAll())
-                .doOnError(t -> LOGGER.error(t.getMessage(), t));
+        return ReactiveSecurityContextHolder.getContext().flatMapMany(ctx ->
+                Flux.fromIterable(pluginConfigRepo.findAll())
+                .doOnError(t -> LOGGER.error(t.getMessage(), t)));
     }
 
     @PostMapping(
@@ -59,7 +60,6 @@ public class ProcessPluginConfigController {
             consumes = APPLICATION_JSON
     )
     public Mono<PluginConfiguration> create(@RequestBody PluginConfiguration config) {
-        setUselessTenant();
         return Mono.fromCallable(() -> pluginConfigRepo.save(config))
                 .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
@@ -70,7 +70,6 @@ public class ProcessPluginConfigController {
             consumes = APPLICATION_JSON
     )
     public Mono<PluginConfiguration> update(@RequestBody PluginConfiguration config) {
-        setUselessTenant();
         return Mono.fromCallable(() -> pluginConfigRepo.save(config))
                 .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
@@ -81,7 +80,6 @@ public class ProcessPluginConfigController {
             consumes = APPLICATION_JSON
     )
     public Mono<Void> delete(@PathVariable("id") Long id) {
-        setUselessTenant();
         return Mono.<Void>fromCallable(() -> { pluginConfigRepo.deleteById(id); return null; })
                 .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
@@ -91,10 +89,6 @@ public class ProcessPluginConfigController {
     public String getFallback(@RequestBody String content) {
         LOGGER.info("Received: {}", content);
         return "Fallback for POST Requests";
-    }
-
-    private void setUselessTenant() {
-        runtimeTenantResolver.forceTenant("default");
     }
 
 }

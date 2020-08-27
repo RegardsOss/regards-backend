@@ -10,6 +10,6 @@ import reactor.core.publisher.Mono;
 
 public interface IProcessService {
 
-    Flux<PProcessDTO> listAll();
+    Flux<PProcessDTO> findByTenant(String tenant);
 
 }

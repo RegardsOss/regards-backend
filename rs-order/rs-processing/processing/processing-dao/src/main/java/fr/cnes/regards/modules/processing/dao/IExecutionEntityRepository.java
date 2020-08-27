@@ -2,8 +2,7 @@ package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.entities.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entities.projections.ExecutionBatchMonitoringProjection;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;

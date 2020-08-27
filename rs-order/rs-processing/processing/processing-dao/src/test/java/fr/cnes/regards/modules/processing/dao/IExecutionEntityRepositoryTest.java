@@ -1,10 +1,10 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.entities.BatchEntity;
-import fr.cnes.regards.modules.processing.entities.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entities.Step;
-import fr.cnes.regards.modules.processing.entities.Steps;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import fr.cnes.regards.modules.processing.entity.Step;
+import fr.cnes.regards.modules.processing.entity.Steps;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,8 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has succeeded, and so, it will not be found as timed out.
         ExecutionEntity finishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcess())
+                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(SUCCESS).withTimeoutAfterMillis(1_000L).withPersisted(false).withSteps(
                         Steps.of(new Step(REGISTERED, toEpochMillisUTC(now(UTC).minusMinutes(5)), "pending"),
                                  new Step(RUNNING, toEpochMillisUTC(now(UTC).minusMinutes(4)), "running"),
@@ -43,7 +44,8 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated and has short timeout, and so, it will be found as timed out.
         ExecutionEntity shortUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcess())
+                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING).withTimeoutAfterMillis(1_000L).withPersisted(false).withSteps(
                         Steps.of(new Step(REGISTERED, toEpochMillisUTC(now(UTC).minusMinutes(5)), "pending"),
                                  new Step(RUNNING, toEpochMillisUTC(now(UTC).minusMinutes(4)), "running")));
@@ -51,7 +53,8 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated but has long timeout, and so, it will not be found as timed out.
         ExecutionEntity longUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcess())
+                .withTenant(batch.getTenant()).withUserName(batch.getUserName()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING).withTimeoutAfterMillis(1_000_000L).withPersisted(false).withSteps(
                         Steps.of(new Step(REGISTERED, toEpochMillisUTC(now(UTC).minusMinutes(5)), "pending"),
                                  new Step(RUNNING, toEpochMillisUTC(now(UTC).minusMinutes(4)), "running")));
@@ -87,7 +90,8 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
                 sink.next(randomInstance(ExecutionEntity.class)
                     .withId(UUID.randomUUID())
                     .withBatchId(batch.getId()).withTenant(batch.getTenant())
-                    .withUserName(batch.getUserName()).withProcessName(batch.getProcess())
+                    .withUserName(batch.getUserName()).withProcessName(batch.getProcessName())
+                    .withProcessBusinessId(batch.getProcessBusinessId())
                     .withVersion(0).withPersisted(false).withCreated(nowUtc()).withLastUpdated(nowUtc())
                     .withCurrentStatus(randomInstance(ExecutionStatus.class)));
             }

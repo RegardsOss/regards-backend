@@ -1,20 +1,26 @@
 package fr.cnes.regards.modules.processing.storage;
 
+import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.Set;
 import lombok.Data;
 import lombok.Value;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.function.Function;
 
 import static fr.cnes.regards.framework.utils.file.DownloadUtils.getInputStreamThroughProxy;
 
@@ -26,7 +32,7 @@ public class DownloadService implements IDownloadService {
     @Qualifier("nonProxyHosts")
     private final Set<String> nonProxyHosts;
 
-    private final IStorageRestClient storageClient;
+    private final IReactiveStorageClient storageClient;
 
     @Override public Mono<Path> download(ExecutionFileParameterValue file, Path dest) {
         return createParentFolderIfNeeded(dest)
@@ -49,11 +55,10 @@ public class DownloadService implements IDownloadService {
     private Mono<Path> internalDownload(String checksum, Path dest) {
         return Mono.fromCallable(() -> {
             Files.createDirectories(dest.getParent());
-            try (InputStream is = storageClient.downloadFile(checksum).body().asInputStream()) {
-                FileUtils.copyToFile(is, dest.toFile());
-            }
-            return dest;
-        });
+            Flux<DataBuffer> dataBufferFlux = storageClient.downloadFile(checksum);
+            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
+        })
+        .flatMap(voidMono -> voidMono.map(n -> dest));
     }
 
     private Mono<Path> externalDownload(URL url, Path dest) {

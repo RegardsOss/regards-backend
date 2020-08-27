@@ -1,9 +1,7 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.processing.entities.BatchEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 

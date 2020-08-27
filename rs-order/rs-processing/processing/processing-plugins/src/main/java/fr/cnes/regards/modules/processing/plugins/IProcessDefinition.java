@@ -5,17 +5,11 @@ import fr.cnes.regards.framework.urn.DataType;
 import io.vavr.collection.Seq;
 
 @PluginInterface(description = "Defines the quotas, rights, parameters and launching properties for a Process")
-public interface IProcessDefinition extends
-    IProcessQuotasDefinition,
-    IProcessRightsDefinition,
+public interface IProcessDefinition extends IProcessCheckerDefinition,
     IProcessParametersDefinition,
     IProcessLauncherDefinition,
     IProcessForecastDefinition
 {
-
-    String processName();
-
-    boolean isActive();
 
     Seq<DataType> requiredDataTypes();
 

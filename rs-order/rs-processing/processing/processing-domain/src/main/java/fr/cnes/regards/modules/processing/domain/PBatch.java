@@ -17,6 +17,8 @@ public class PBatch {
 
     UUID id;
 
+    UUID processBusinessId;
+
     String processName;
 
     String tenant;

@@ -14,8 +14,8 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -203,8 +203,8 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
         }
 
         @Bean
-        public IStorageRestClient storageRestClient() {
-            return Mockito.mock(IStorageRestClient.class);
+        public IReactiveRolesClient storageRestClient() {
+            return Mockito.mock(IReactiveRolesClient.class);
         }
 
     }

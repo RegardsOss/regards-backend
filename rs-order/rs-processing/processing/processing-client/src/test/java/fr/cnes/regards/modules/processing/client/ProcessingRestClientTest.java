@@ -10,19 +10,14 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
 import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import fr.cnes.regards.modules.processing.entities.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.IProcessService;
-import fr.cnes.regards.modules.processing.utils.Unit;
-import io.vavr.NotImplementedError;
 import io.vavr.collection.List;
-import io.vavr.collection.Seq;
-import io.vavr.control.Try;
 import org.junit.Before;
 import org.junit.Test;
-import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +32,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
@@ -107,14 +101,15 @@ public class ProcessingRestClientTest extends AbstractRegardsWebIT {
 
         @Bean IProcessService processService() {
             return new IProcessService() {
-                @Override public Flux<PProcessDTO> listAll() {
+
+                @Override public Flux<PProcessDTO> findByTenant(String tenant) {
                     return Flux.fromIterable(Values.processes);
                 }
             };
         }
         @Bean IBatchService batchService() {
             return new IBatchService() {
-                @Override public Mono<PBatch> checkAndCreateBatch(PBatchRequest data) {
+                @Override public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
                     return Mono.just(Values.batch);
                 }
             };

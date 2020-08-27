@@ -4,6 +4,8 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.repository.IPExecutionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +19,8 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITO
 
 @RestController
 public class PMonitoringController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringController.class);
 
     private final IPExecutionRepository execRepo;
 
@@ -34,6 +38,7 @@ public class PMonitoringController {
             @RequestParam List<ExecutionStatus> status,
             Pageable page
     ) {
+        LOGGER.info("status={}", status);
         return execRepo.findByTenantAndCurrentStatusIn(tenant, status, page);
     }
 

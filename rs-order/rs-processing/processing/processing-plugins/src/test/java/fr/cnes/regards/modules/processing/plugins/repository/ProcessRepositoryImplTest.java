@@ -6,6 +6,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
@@ -32,7 +34,6 @@ import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -46,7 +47,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -66,7 +66,10 @@ public class ProcessRepositoryImplTest {
 
     @Test public void batch_save_then_getOne() {
         // TODO
-        processRepo.findByName("WHAT");
+        processRepo.findByTenantAndProcessName(
+                "tenant",
+                "WHAT"
+        );
     }
 
     //==================================================================================================================

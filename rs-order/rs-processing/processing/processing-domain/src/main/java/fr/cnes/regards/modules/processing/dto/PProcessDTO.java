@@ -2,37 +2,37 @@ package fr.cnes.regards.modules.processing.dto;
 
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import io.vavr.collection.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.With;
+import lombok.*;
 
-@Data @With
-@AllArgsConstructor
-@Builder(toBuilder = true)
+import java.util.UUID;
 
+@Value
 public class PProcessDTO {
 
-    private final String name;
+    UUID businessId;
 
-    private final boolean active;
+    String name;
 
-    private final List<String> tenants;
+    boolean active;
 
-    private final List<String> userRoles;
+    String tenant;
 
-    private final List<String> datasets;
+    String userRoles;
 
-    private final List<ExecutionParamDTO> params;
+    List<Long> datasets;
+
+    List<ExecutionParamDTO> params;
 
     public static PProcessDTO fromProcess(PProcess p) {
-        return builder()
-                .name(p.getProcessName())
-                .tenants(p.getAllowedTenants().values().toList())
-                .userRoles(p.getAllowedUsersRoles().values().toList())
-                .datasets(p.getAllowedDatasets().values().toList())
-                .params(p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList())
-                .build();
+        return new PProcessDTO(
+                p.getBusinessId(),
+                p.getProcessName(),
+                p.isActive(),
+                p.getTenant(),
+                p.getUserRole(),
+                p.getDatasets().toList(),
+                p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList()
+        );
     }
 
 }

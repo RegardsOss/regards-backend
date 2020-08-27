@@ -33,6 +33,7 @@ public class PExecutionTest {
                                    new PStep(ExecutionStatus.RUNNING, lastUpdate, "")),
                            "tenant",
                            "user@regards.fr",
+                           UUID.randomUUID(),
                            "nameOfTheProcess",
                            registered,
                            lastUpdate,

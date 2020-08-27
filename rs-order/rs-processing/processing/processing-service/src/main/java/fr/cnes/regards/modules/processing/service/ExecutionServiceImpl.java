@@ -52,7 +52,7 @@ public class ExecutionServiceImpl implements IExecutionService {
 
     private Mono<PExecution> runEngine(PExecution exec) {
         return batchRepo.findById(exec.getBatchId()).flatMap(batch ->
-            processRepo.findByName(batch.getProcessName()).flatMap(process -> {
+            processRepo.findByBatch(batch).flatMap(process -> {
                 ExecutionContext ctx = new ExecutionContext(exec, batch, process);
                 return process.getEngine().run(ctx);
             })
@@ -75,6 +75,7 @@ public class ExecutionServiceImpl implements IExecutionService {
                 List.of(new PStep(ExecutionStatus.REGISTERED, nowUtc(), "")),
                 batch.getTenant(),
                 batch.getUser(),
+                batch.getProcessBusinessId(),
                 batch.getProcessName(),
                 null,
                 null,
@@ -83,7 +84,7 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     @Override public Mono<Duration> estimateDuration(PBatch batch, PExecutionRequestEvent request) {
-        return processRepo.findByName(batch.getProcessName())
+        return processRepo.findByBatch(batch)
             .map(PProcess::getRunningDurationForecast)
             .map(forecast -> {
                 Long totalSize = request.getInputFiles()

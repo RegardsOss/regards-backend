@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.service;
 
-import fr.cnes.regards.modules.processing.dto.ExecutionParamDTO;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +16,9 @@ public class ProcessServiceImpl implements IProcessService {
         this.processRepo = processRepo;
     }
 
-    @Override public Flux<PProcessDTO> listAll() {
-        return processRepo.findAll()
-                .map(p -> new PProcessDTO(
-                    p.getProcessName(),
-                    p.isActive(),
-                    p.getAllowedTenants().values().toList(),
-                    p.getAllowedUsersRoles().values().toList(),
-                    p.getAllowedDatasets().values().toList(),
-                    p.getParameters().map(param -> new ExecutionParamDTO(param.getName(), param.getType(), param.getDesc())).toList()));
+    public Flux<PProcessDTO> findByTenant(String tenant) {
+        return processRepo.findAllByTenant(tenant)
+                .map(PProcessDTO::fromProcess);
     }
 
 }

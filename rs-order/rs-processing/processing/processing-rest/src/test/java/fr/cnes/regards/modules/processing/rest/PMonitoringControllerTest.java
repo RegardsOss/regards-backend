@@ -14,6 +14,7 @@ import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.config.PgSqlConfig;
 import fr.cnes.regards.modules.processing.config.ProcessingDaoR2dbcConfiguration;
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -21,7 +22,6 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.utils.GsonProcessingUtils;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
@@ -41,7 +41,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -60,6 +59,7 @@ import java.util.Map;
 
 import static feign.Util.ensureClosed;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
 import static java.util.Arrays.asList;
@@ -80,7 +80,9 @@ public class PMonitoringControllerTest extends AbstractRegardsWebIT {
     @Test public void executions() {
 
         List<PExecution> response = client
-                .executions("default", asList(RUNNING), toMap(PageRequest.of(0, 10)));
+                .executions("default", asList(RUNNING, PREPARE), toMap(PageRequest.of(0, 10)));
+
+        // TODO: the actual test, now that doing nothin runs...
 
         LOGGER.info("Resp: {}", response);
 
@@ -89,8 +91,7 @@ public class PMonitoringControllerTest extends AbstractRegardsWebIT {
     private Map<String, String> toMap(Pageable page) {
         return HashMap.of(
             "page", "" + page.getPageNumber(),
-            "limit", "" + page.getPageSize(),
-            "offset", "" + page.getOffset()
+            "limit", "" + page.getPageSize()
         ).toJavaMap();
     }
 
@@ -189,8 +190,8 @@ public class PMonitoringControllerTest extends AbstractRegardsWebIT {
         }
 
         @Bean
-        public IStorageRestClient storageRestClient() {
-            return Mockito.mock(IStorageRestClient.class);
+        public IReactiveStorageClient storageRestClient() {
+            return Mockito.mock(IReactiveStorageClient.class);
         }
 
         @Bean

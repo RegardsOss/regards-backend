@@ -2,10 +2,9 @@ package fr.cnes.regards.modules.processing.dao;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.processing.domain.PBatch;
-import fr.cnes.regards.modules.processing.entities.BatchEntity;
-import fr.cnes.regards.modules.processing.entities.mapping.DomainEntityMapper;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.repository.IPBatchRepository;
 import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;

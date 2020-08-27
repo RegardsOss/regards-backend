@@ -35,7 +35,7 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
         LOGGER.info("exec={} - LaunchExecutionJob start", execId);
         execRepo.findById(execId)
             .flatMap(exec -> batchRepo.findById(exec.getBatchId())
-                 .flatMap(batch -> processRepo.findByName(batch.getProcessName())
+                 .flatMap(batch -> processRepo.findByBatch(batch)
                      .flatMap(process -> {
                          ExecutionContext ctx = new ExecutionContext(exec, batch, process);
                          return process.getEngine().run(ctx);

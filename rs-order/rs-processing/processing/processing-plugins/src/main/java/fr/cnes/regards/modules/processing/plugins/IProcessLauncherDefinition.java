@@ -4,7 +4,9 @@ import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 
 public interface IProcessLauncherDefinition {
 
-    String engineName();
+    default String engineName() {
+        return "JOBS";
+    }
 
     IExecutable executable();
 

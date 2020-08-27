@@ -30,6 +30,8 @@ public class PExecution {
 
     String userName;
 
+    UUID processBusinessId;
+
     String processName;
 
     OffsetDateTime created;

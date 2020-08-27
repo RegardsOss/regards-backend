@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.processing.domain;
 
-import fr.cnes.regards.modules.processing.domain.constraints.ExecutionQuota;
-import fr.cnes.regards.modules.processing.domain.constraints.ExecutionRights;
+import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
@@ -10,23 +9,27 @@ import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
 import io.vavr.collection.Seq;
 import lombok.Value;
 
+import java.util.UUID;
+
 @Value
 
 public class PProcess {
+
+    UUID businessId;
 
     String processName;
 
     boolean active;
 
-    ExecutionQuota<Integer> maxParallelExecutionsForUser;
+    String tenant;
 
-    ExecutionQuota<Long> maxBytesInCache;
+    String userRole;
 
-    ExecutionRights allowedUsersRoles;
+    Seq<Long> datasets;
 
-    ExecutionRights allowedDatasets;
+    ConstraintChecker<PBatch> batchChecker;
 
-    ExecutionRights allowedTenants;
+    ConstraintChecker<PExecution> executionChecker;
 
     Seq<ExecutionParameterDescriptor> parameters;
 

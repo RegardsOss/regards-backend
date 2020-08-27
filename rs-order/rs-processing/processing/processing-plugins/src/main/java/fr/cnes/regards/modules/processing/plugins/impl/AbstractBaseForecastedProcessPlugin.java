@@ -4,12 +4,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.parser.ForecastParser;
+import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.control.Try;
 
 /**
  * This process definition delegates the setting of the size/duration forecast to the admin.
  */
-public abstract class AbstractBaseForecastedProcessPlugin extends AbstractBaseProcessPlugin {
+public abstract class AbstractBaseForecastedProcessPlugin implements IProcessDefinition {
 
     @PluginParameter(
             name = "sizeForecast",

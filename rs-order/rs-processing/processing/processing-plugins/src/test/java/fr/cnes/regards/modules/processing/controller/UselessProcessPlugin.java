@@ -2,14 +2,17 @@ package fr.cnes.regards.modules.processing.controller;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
-import fr.cnes.regards.modules.processing.plugins.impl.AbstractBaseProcessPlugin;
+import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Try;
@@ -24,7 +27,7 @@ import reactor.core.publisher.Mono;
         license = "GPLv3",
         owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class UselessProcessPlugin extends AbstractBaseProcessPlugin {
+public class UselessProcessPlugin implements IProcessDefinition {
 
     @Override public Seq<DataType> requiredDataTypes() {
         return List.empty();
