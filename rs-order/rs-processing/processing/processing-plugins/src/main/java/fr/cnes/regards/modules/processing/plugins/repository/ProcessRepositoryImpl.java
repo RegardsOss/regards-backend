@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.utils.IPUserAuthFactory;
+import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
 
 @Component
 public class ProcessRepositoryImpl implements IPProcessRepository {
@@ -82,7 +85,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     }
 
     private Mono<PProcess> buildPProcess(String tenant, RightsPluginConfiguration rights) {
-        return getProcessDefinition(tenant, rights.getPluginConfig().getBusinessId())
+        return getProcessDefinition(tenant, rights.getPluginConfiguration().getBusinessId())
                 .flatMap(def -> fromPlugin(rights, def));
     }
 
@@ -97,7 +100,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     }
 
     private Mono<RightsPluginConfiguration> getByPluginConfigurationId(PluginConfiguration pc) {
-        return Mono.defer(() -> rightsPluginConfigRepo.findByPluginConfigurationId(pc.getId())
+        return Mono.defer(() -> rightsPluginConfigRepo.findByPluginConfiguration(pc)
                 .map(Mono::just)
                 .getOrElse(() -> Mono.error(new RightsPluginConfigurationNotFoundException(pc))));
     }
@@ -109,7 +112,11 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
 
     private Mono<Boolean> roleIsUnder(PUserAuth auth, String role) {
         // TODO add cache ; cache invalidation when an event on Roles is received?
-        return rolesClient.shouldAccessToResourceRequiring(auth.getAuthToken(), role);
+        return rolesClient.shouldAccessToResourceRequiring(role, authHeader(auth));
+    }
+
+    private String authHeader(PUserAuth auth) {
+        return BEARER + ": " + auth.getAuthToken();
     }
 
     private <T> Mono<T> tryToMono(Try<T> t) {
@@ -120,21 +127,24 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
         return Mono.defer(() -> tryToMono(processDef.sizeForecast())
             .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
                 .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName())
-                    .map(engine -> new PProcess(
-                        UUID.fromString(rpc.getPluginConfig().getBusinessId()),
-                        rpc.getPluginConfig().getLabel(),
-                        rpc.getPluginConfig().isActive(),
-                        rpc.getTenant(),
-                        rpc.getRole(),
-                        rpc.getDatasets(),
-                        processDef.batchChecker(),
-                        processDef.executionChecker(),
-                        processDef.parameters(),
-                        sizeForecast,
-                        durationForecast,
-                        engine,
-                        processDef.executable()
-                    ))
+                    .map(engine -> {
+                        PluginConfiguration pc = rpc.getPluginConfiguration();
+                        return new PProcess(
+                                UUID.fromString(pc.getBusinessId()),
+                                pc.getLabel(),
+                                pc.isActive(),
+                                rpc.getTenant(),
+                                rpc.getRole(),
+                                List.ofAll(rpc.getDatasets()),
+                                processDef.batchChecker(),
+                                processDef.executionChecker(),
+                                processDef.parameters(),
+                                sizeForecast,
+                                durationForecast,
+                                engine,
+                                processDef.executable()
+                        );
+                    })
                 )
             )
         );
@@ -157,7 +167,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     }
 
     private boolean withBusinessId(String processName, RightsPluginConfiguration rights) {
-        return rights.getPluginConfig().getBusinessId().equals(processName);
+        return rights.getPluginConfiguration().getBusinessId().equals(processName);
     }
 
 }

@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.processing.client;
 
-import feign.Param;
-import feign.RequestLine;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import reactivefeign.spring.config.ReactiveFeignClient;
 import reactor.core.publisher.Flux;
 
@@ -13,7 +13,7 @@ public interface IReactiveStorageClient {
 
     String DOWNLOAD_PATH = "/{checksum}/download";
 
-    @RequestLine("GET " + FILE_PATH + DOWNLOAD_PATH)
-    Flux<DataBuffer> downloadFile(@Param("checksum") String checksum);
+    @GetMapping(FILE_PATH + DOWNLOAD_PATH)
+    Flux<DataBuffer> downloadFile(@PathVariable("checksum") String checksum);
 
 }

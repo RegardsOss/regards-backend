@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -38,7 +37,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -100,13 +99,13 @@ public class SimpleShellProcessPluginTest {
                 new PluginConfiguration("label", SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN),
                 "tenant",
                 "EXPLOIT",
-                List.empty()
+                List.<Long>empty().toJavaList()
         );
     }
 
     private ProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
         IRightsPluginConfigurationRepository rightsRepo = Mockito.mock(IRightsPluginConfigurationRepository.class);
-        when(rightsRepo.findByPluginConfigurationId(anyLong())).thenAnswer(i -> makeRightsPluginConfig());
+        when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
         IReactiveRolesClient rolesClient = Mockito.mock(IReactiveRolesClient.class);
         when(rolesClient.shouldAccessToResourceRequiring(anyString(), anyString())).thenReturn(Mono.just(true));
         IPUserAuthFactory authFactory = Mockito.mock(IPUserAuthFactory.class);
