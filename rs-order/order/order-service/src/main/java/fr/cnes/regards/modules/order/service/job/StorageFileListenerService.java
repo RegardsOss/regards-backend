@@ -1,14 +1,14 @@
 package fr.cnes.regards.modules.order.service.job;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
+import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
  * Handle storage AMQP message that can be received. Empty methods concerns messages that are of no importance for rs-order
@@ -19,32 +19,17 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
     private final Set<StorageFilesJob> subscribers = new HashSet<>();
 
     @Override
-    public void onFileStored(String checksum, String storage, Collection<String> owners,
-            Collection<RequestInfo> requestInfos) {
+    public void onFileAvailable(List<FileReferenceEventDTO> available) {
+        for (FileReferenceEventDTO event : available) {
+            subscribers.forEach(subscriber -> subscriber.handle(event.getChecksum(), true));
+        }
     }
 
     @Override
-    public void onFileStoreError(String checksum, String storage, Collection<String> owners,
-            Collection<RequestInfo> requestInfos, String errorCause) {
-    }
-
-    @Override
-    public void onFileAvailable(String checksum, Collection<RequestInfo> requestInfos) {
-        subscribers.stream().forEach(subscriber -> subscriber.handle(checksum, true));
-    }
-
-    @Override
-    public void onFileNotAvailable(String checksum, Collection<RequestInfo> requestInfos, String errorCause) {
-        subscribers.stream().forEach(subscriber -> subscriber.handle(checksum, false));
-    }
-
-    @Override
-    public void onFileDeleted(String checksum, String storage, String owner, Collection<RequestInfo> requestInfos) {
-    }
-
-    @Override
-    public void onFileUpdated(String checksum, String storage, FileReference updateFile) {
-
+    public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
+        for (FileReferenceEventDTO event : availabilityError) {
+            subscribers.forEach(subscriber -> subscriber.handle(event.getChecksum(), false));
+        }
     }
 
     @Override
@@ -57,4 +42,19 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
         subscribers.remove(unscriber);
     }
 
+    @Override
+    public void onFileStored(List<FileReferenceEventDTO> stored) {
+    }
+
+    @Override
+    public void onFileStoreError(List<FileReferenceEventDTO> storedError) {
+    }
+
+    @Override
+    public void onFileDeletedForOwner(String owner, List<FileReferenceEventDTO> deletedForThisOwner) {
+    }
+
+    @Override
+    public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
+    }
 }
