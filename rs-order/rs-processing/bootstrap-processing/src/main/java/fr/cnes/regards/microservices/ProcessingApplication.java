@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.microservices;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Start microservice processing
@@ -29,14 +29,16 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "processing", version = "2.0.0-SNAPSHOT")
-public class Application {
+public class ProcessingApplication {
 
     /**
      * Microservice bootstrap method
      * @param args microservice bootstrap arguments
      */
     public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args); // NOSONAR
+        SpringApplication app = new SpringApplication(ProcessingApplication.class);
+        app.setWebApplicationType(WebApplicationType.REACTIVE);
+        app.run(args);
     }
 
 }

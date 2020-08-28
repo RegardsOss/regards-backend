@@ -9,10 +9,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>fr.cnes.regards.modules.processing</groupId>
     <artifactId>processing-client</artifactId>
 
-
     <dependencies>
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-domain</artifactId>
@@ -21,6 +22,8 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>feign-regards-starter</artifactId>
         </dependency>
+
+        <!-- Libraries -->
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
@@ -35,6 +38,11 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-rest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-dao</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

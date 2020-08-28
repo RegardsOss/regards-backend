@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>fr.cnes.regards.modules.processing</groupId>
     <artifactId>processing-engine-springbatch</artifactId>
-
 
 </project>

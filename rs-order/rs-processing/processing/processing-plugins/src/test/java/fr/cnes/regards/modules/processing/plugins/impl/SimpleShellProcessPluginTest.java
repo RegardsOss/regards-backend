@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
-import fr.cnes.regards.modules.processing.plugins.repository.ProcessRepositoryImpl;
+import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.storage.*;

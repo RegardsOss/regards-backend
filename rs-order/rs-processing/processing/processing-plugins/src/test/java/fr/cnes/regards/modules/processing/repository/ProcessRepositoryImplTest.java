@@ -1,13 +1,16 @@
-package fr.cnes.regards.modules.processing.plugins.repository;
+package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
 import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
-import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.domain.PProcess;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +23,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import reactivefeign.spring.config.EnableReactiveFeignClients;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.UUID;
 
 //@Ignore // FIXME
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
@@ -46,16 +50,29 @@ public class ProcessRepositoryImplTest extends AbstractDaoTest {
 
     public static final int ATTEMPTS = 20;
 
+    @Autowired IPluginConfigurationRepository pluginConfRepo;
     @Autowired IPProcessRepository processRepo;
 
     @Test public void batch_save_then_getOne() {
         runtimeTenantResolver.forceTenant(TENANT);
-        
+
+        PluginConfiguration pc = new PluginConfiguration("theLabel", "thePluginId");
+        pc.setVersion("1.0.0");
+        pc.setPriorityOrder(0);
+        pc.setBusinessId(UUID.randomUUID().toString());
+
+        Map<String, PluginMetaData> plugins = PluginUtils.getPlugins();
+        LOGGER.info("plugins: {}", plugins);
+
+        pc.setMetaData(plugins.get("UselessProcessPlugin"));
+        pluginConfRepo.save(pc);
+
         // TODO
-        processRepo.findByTenantAndProcessName(
-                TENANT,
-                "WHAT"
-        );
+        PProcess process = processRepo.findByTenantAndProcessName(TENANT, "theLabel")
+                .doOnError(t -> LOGGER.error(t.getMessage(), t))
+                .block();
+
+        LOGGER.info("FOund process: {}", process);
     }
 
     //==================================================================================================================

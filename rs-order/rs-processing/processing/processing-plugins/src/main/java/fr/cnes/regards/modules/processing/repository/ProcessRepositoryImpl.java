@@ -1,8 +1,9 @@
-package fr.cnes.regards.modules.processing.plugins.repository;
+package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
@@ -11,9 +12,6 @@ import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
-import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
-import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
-import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.utils.IPUserAuthFactory;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
@@ -106,7 +104,9 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     }
 
     private boolean eligibleClass(PluginConfiguration pc) {
-        try { return Class.forName(pc.getPluginClassName()).isAssignableFrom(IProcessDefinition.class); }
+        try {
+            String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
+            return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class); }
         catch(ClassNotFoundException e) { return false; }
     }
 

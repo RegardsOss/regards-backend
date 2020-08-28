@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.processing.controller;
+package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;

@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.processing.domain.engine;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.jobs.service.JobService;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
@@ -24,11 +25,11 @@ public class JobWorkloadEngine implements IWorkloadEngine {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobWorkloadEngine.class);
 
     private final IJobInfoService jobInfoService;
-    private final JobService jobService;
+    private final IJobService jobService;
     private final IWorkloadEngineRepository engineRepo;
 
     @Autowired
-    public JobWorkloadEngine(IJobInfoService jobInfoService, JobService jobService, IWorkloadEngineRepository engineRepo) {
+    public JobWorkloadEngine(IJobInfoService jobInfoService, IJobService jobService, IWorkloadEngineRepository engineRepo) {
         this.jobInfoService = jobInfoService;
         this.jobService = jobService;
         this.engineRepo = engineRepo;

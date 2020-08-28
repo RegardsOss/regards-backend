@@ -34,15 +34,7 @@
 		<!-- Regards dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
 			<artifactId>processing-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-plugins</artifactId>
 		</dependency>
 
 		<dependency>

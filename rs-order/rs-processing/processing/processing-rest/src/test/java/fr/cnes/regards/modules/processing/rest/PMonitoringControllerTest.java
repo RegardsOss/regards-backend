@@ -14,12 +14,14 @@ import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
 import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.config.PgSqlConfig;
 import fr.cnes.regards.modules.processing.config.ProcessingDaoR2dbcConfiguration;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.utils.GsonProcessingUtils;
 import io.vavr.collection.HashMap;
@@ -44,6 +46,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import reactivefeign.spring.config.EnableReactiveFeignClients;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -144,6 +147,10 @@ public class PMonitoringControllerTest extends AbstractRegardsWebIT {
         );
     }
 
+    @EnableReactiveFeignClients(basePackageClasses = {
+            IReactiveStorageClient.class,
+            IReactiveRolesClient.class
+    })
     @EnableAutoConfiguration(exclude = {
             R2dbcMigrateAutoConfiguration.class
     })
@@ -187,11 +194,6 @@ public class PMonitoringControllerTest extends AbstractRegardsWebIT {
             } catch (IOException e) {
                 throw new RuntimeException("Can not create shared storage base directory.");
             }
-        }
-
-        @Bean
-        public IReactiveStorageClient storageRestClient() {
-            return Mockito.mock(IReactiveStorageClient.class);
         }
 
         @Bean

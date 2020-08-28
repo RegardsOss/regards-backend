@@ -7,6 +7,7 @@ import feign.codec.Decoder;
 import feign.gson.GsonEncoder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.feign.autoconfigure.FeignWebMvcConfiguration;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -15,17 +16,22 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
+import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
+import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepositoryTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.SpringDocWebMvcConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -33,10 +39,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.reactive.config.EnableWebFlux;
+import reactivefeign.spring.config.EnableReactiveFeignClients;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -48,28 +57,31 @@ import java.util.List;
 import static feign.Util.ensureClosed;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_CONFIG_INSTANCES_PATH;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_CONFIG_METADATA_PATH;
+import static fr.cnes.regards.modules.processing.controller.ProcessPluginConfigControllerTest.TENANT;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=processing_plugins_config_tests" })
-@ContextConfiguration(classes = { ProcessPluginConfigControllerTest.Config.class })
 @TestPropertySource(
         properties = {
-                "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///ProcessPluginConfigControllerTest",
-                "regards.jpa.multitenant.tenants[0].tenant=default"
+                "spring.jpa.properties.hibernate.default_schema=" + TENANT,
+                "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///test",
+                "regards.jpa.multitenant.tenants[0].tenant=" + TENANT
         }
 )
+@ContextConfiguration(classes = { ProcessPluginConfigControllerTest.Config.class })
 public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigControllerTest.class);
+
+    public static final String TENANT = "test";
 
     private Client client;
 
     @Test
     public void test_list_metadata() {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        runtimeTenantResolver.forceTenant(TENANT);
 
         // LIST AVAILABLE PLUGINS
         List<PluginMetaData> pluginMetaData = client.listAllDetectedPlugins();
@@ -128,8 +140,6 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
     //==================================================================================================================
     //==================================================================================================================
 
-    private static final String DBNAME = "ProcessPluginConfigControllerTest";
-
     @Autowired
     private FeignSecurityManager feignSecurityManager;
     @Value("${server.address}")
@@ -174,14 +184,19 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
 
     @Configuration
     @EnableTransactionManagement
-    @EnableAutoConfiguration(exclude = {
-            R2dbcAutoConfiguration.class
-    })
-    @EnableJpaRepositories(excludeFilters = {
-            @ComponentScan.Filter(type = ASSIGNABLE_TYPE, classes = { ReactiveCrudRepository.class })
-    })
+    @EnableJpaRepositories
     @EnableConfigurationProperties
     @ConfigurationPropertiesScan
+    @EnableReactiveFeignClients
+    @EnableWebFlux
+    @EnableWebFluxSecurity
+    @ComponentScan(basePackages = "fr.cnes.regards.modules.processing")
+    //@EnableAutoConfiguration(exclude = {
+        //SpringDocWebMvcConfiguration.class,
+        //FeignWebMvcConfiguration.class,
+        //WebMvcAutoConfiguration.class,
+        //R2dbcAutoConfiguration.class
+    //})
     static class Config {
 
         @Bean
@@ -200,11 +215,6 @@ public class ProcessPluginConfigControllerTest extends AbstractRegardsWebIT {
             } catch (IOException e) {
                 throw new RuntimeException("Can not create shared storage base directory.");
             }
-        }
-
-        @Bean
-        public IReactiveRolesClient storageRestClient() {
-            return Mockito.mock(IReactiveRolesClient.class);
         }
 
     }
