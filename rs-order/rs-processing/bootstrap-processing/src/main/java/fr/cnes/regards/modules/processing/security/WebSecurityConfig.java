@@ -44,6 +44,7 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                .pathMatchers("/**").permitAll() // TODO restrict this?
                 .anyExchange().authenticated()
                 .and().build();
     }
