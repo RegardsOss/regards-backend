@@ -32,11 +32,7 @@ public class RightsPluginConfiguration {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pluginRightsConfSequence")
     private Long id;
 
-    @OneToOne
-    // @OneToOne constraint is borderline here.
-    // There should be only one Rights definition for each process PluginConfiguration.
-    // In practice, however, it is a "ZeroOrOneToOne" because there may be plugins for other things
-    // than processes.
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "plugin_configuration_id", foreignKey = @ForeignKey(name = "fk_rights_plugin_configuration"))
     private PluginConfiguration pluginConfiguration;
 

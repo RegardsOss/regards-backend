@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+case $1 in
+prep)
+    pushd $REGARDS_HOME/rs-order/rs-processing
+    mvn clean install -DskipTests=true
+    popd
+    ;;
+boot)
+    mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$2 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+    ;;
+deps)
+    case $2 in
+    up)
+        docker run \
+                --rm -d \
+                --name pg-docker \
+                -p 5433:5432 \
+                -e 'POSTGRES_USER=user' \
+                -e 'POSTGRES_PASSWORD=secret' \
+                -v $HOME/.regards/postgres:/var/lib/postgresql/data \
+            postgres:9.5
+
+        docker run \
+                --name rabbit-docker \
+                --rm -d \
+                -p 15672:15672 \
+                -p 5672:5672 \
+            rabbitmq:3.6.5-management
+
+        docker run \
+                --name pgadmin-docker \
+                --rm -d \
+                -p 80:80   \
+                --network host  \
+                -e 'PGADMIN_DEFAULT_EMAIL=a@a.a'     \
+                -e 'PGADMIN_DEFAULT_PASSWORD=secret'     \
+            dpage/pgadmin4
+
+        ;;
+
+    down)
+        docker kill pg-docker rabbit-docker pgadmin-docker
+        ;;
+    esac
+    ;;
+*)
+    echo '$ run boot xxx'
+    echo '    Launch spring boot app with xxx profiles'
+    echo '$ run deps up'
+    echo '    Launch docker containers for pgsql , rabbitmq'
+    echo '$ run deps down'
+    echo '    Removes docker containers for pgsql, rabbitmq'
+    ;;
+esac

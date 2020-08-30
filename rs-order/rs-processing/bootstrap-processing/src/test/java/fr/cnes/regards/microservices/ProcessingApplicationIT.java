@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ProcessingApplication.class)
-@ActiveProfiles({"default", "test"})
+@ActiveProfiles({"default", "test", "local"})
 public class ProcessingApplicationIT {
 
     @Test

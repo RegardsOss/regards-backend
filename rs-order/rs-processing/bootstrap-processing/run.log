@@ -1,7 +1,0 @@
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] ---< fr.cnes.regards.microservices.processing:bootstrap-processing >----
-[INFO] Building bootstrap-processing 1.3.0-SNAPSHOT
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] >>> spring-boot-maven-plugin:1.4.0.RELEASE:run (default-cli) > test-compile @ bootstrap-processing >>>
