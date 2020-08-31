@@ -98,6 +98,22 @@ public final class StaticProperties {
 
     public static final String FEATURE_TAGS_PATH = FEATURE_NS + FEATURE_TAGS;
 
+    // VirtualId
+
+    public static final String FEATURE_VIRTUAL_ID = "virtualId";
+
+    public static final String FEATURE_VIRTUAL_ID_PATH = FEATURE_NS + FEATURE_VIRTUAL_ID;
+
+    //Version
+    public static final String FEATURE_VERSION = "version";
+
+    public static final String FEATURE_VERSION_PATH = FEATURE_NS + FEATURE_VERSION;
+
+    // Is last version
+    public static final String FEATURE_IS_LAST_VERSION = "last";
+
+    public static final String FEATURE_IS_LAST_VERSION_PATH = FEATURE_NS + FEATURE_IS_LAST_VERSION;
+
     // Geometry
     public static final String FEATURE_GEOMETRY = "geometry";
 

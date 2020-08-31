@@ -39,7 +39,7 @@ public class CollectionFeature extends EntityFeature {
     }
 
     public CollectionFeature(String tenant, String providerId, String label) {
-        super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, tenant, UUID.randomUUID(), 1),
+        super(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, tenant, UUID.randomUUID(), 1, null, null),
               providerId, EntityType.COLLECTION, label);
     }
 }

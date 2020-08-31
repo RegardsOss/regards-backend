@@ -368,8 +368,13 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Set IpId
         if (entity.getIpId() == null) {
             entity.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.valueOf(entity.getType()),
-                    runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1));
+                    runtimeTenantResolver.getTenant(), UUID.randomUUID(), 1, null, null));
         }
+
+        // As long as their is no way to create new entity version thanks to dam,
+        // we set last flag and virtualId unconditionally
+        entity.setLast(true);
+        entity.setVirtualId();
 
         // IpIds of entities that will need an AMQP event publishing
         Set<UniformResourceName> updatedIpIds = new HashSet<>();

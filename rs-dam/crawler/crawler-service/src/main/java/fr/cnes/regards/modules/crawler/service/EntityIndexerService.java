@@ -245,6 +245,12 @@ public class EntityIndexerService implements IEntityIndexerService {
                     }
                 }
             }
+            // Lets handle virtual_id here
+            if(entity.isLast()) {
+                entity.setVirtualId();
+            } else {
+                entity.removeVirtualId();
+            }
             // Then save entity
             LOGGER.debug("Saving entity {}", entity);
             // If lastUpdateDate is provided, this means that update comes from an ingestion, in this case all data
@@ -800,6 +806,12 @@ public class EntityIndexerService implements IEntityIndexerService {
         OffsetDateTime creationDate = now;
         Set<DataObject> toSaveObjects = new HashSet<>();
         for (DataObject dataObject : objects) {
+            // Lets handle virtual_id here
+            if(dataObject.isLast()) {
+                dataObject.setVirtualId();
+            } else {
+                dataObject.removeVirtualId();
+            }
             dataObject.setDataSourceId(datasourceId);
             dataObject.setCreationDate(creationDate);
             dataObject.setLastUpdate(creationDate);

@@ -61,6 +61,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
@@ -139,7 +140,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_entity_tag", joinColumns = @JoinColumn(name = "entity_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_entity_tag_entity_id"))
+            foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
     @Column(name = "value", length = 200)
     private Set<String> tags = new HashSet<>();
 
@@ -150,7 +151,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_entity_group", joinColumns = @JoinColumn(name = "entity_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_entity_group_entity_id"))
+            foreignKey = @ForeignKey(name = "fk_entity_group_entity_id"))
     @Column(name = "name", length = 200)
     protected Set<String> groups = new HashSet<>();
 
@@ -269,7 +270,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
         feature.addTags(tags);
     }
 
-    public void removeTags(java.util.Collection<String> tags) {
+    public void removeTags(Collection<String> tags) {
         Assert.notEmpty(tags, TAGS_MUST_NOT_BE_NULL_OR_EMPTY);
         this.tags.removeAll(tags);
         // Propagate to feature
@@ -437,5 +438,33 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     public F getFeature() {
         return feature;
+    }
+
+    public boolean isLast() {
+        return feature.isLast();
+    }
+
+    public void setLast(boolean last) {
+        feature.setLast(last);
+    }
+
+    public UniformResourceName getVirtualId() {
+        return feature.getVirtualId();
+    }
+
+    public void setVirtualId() {
+        feature.setVirtualId();
+    }
+
+    public void removeVirtualId() {
+        feature.removeVirtualId();
+    }
+
+    public Integer getVersion() {
+        return feature.getVersion();
+    }
+
+    public void setVersion(Integer version) {
+        feature.setVersion(version);
     }
 }
