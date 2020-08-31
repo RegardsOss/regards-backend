@@ -45,7 +45,7 @@ public class SessionNotifier {
 
     public static final String PRODUCT_WAITING_VERSIONING_MODE = "products_waiting_versioning_mode";
 
-    public static final String PRODUCT_REPLACED = "product_replaced";
+    public static final String PRODUCT_REPLACED = "products_replaced";
 
     public static final String NEW_PRODUCT_VERSIONS = "new_product_versions";
 
