@@ -45,6 +45,10 @@ public class SessionNotifier {
 
     public static final String PRODUCT_WAITING_VERSIONING_MODE = "products_waiting_versioning_mode";
 
+    public static final String PRODUCT_REPLACED = "product_replaced";
+
+    public static final String NEW_PRODUCT_VERSIONS = "new_product_versions";
+
     private static final String SESSION_NOTIF_STEP = "oais";
 
     @SuppressWarnings("unused")
@@ -183,6 +187,22 @@ public class SessionNotifier {
                                       SessionNotificationState.OK,
                                       1);
         }
+    }
+
+    public void incrementNewProductVersion(AIPEntity aipEntity) {
+        sessionNotifier.increment(aipEntity.getSessionOwner(),
+                                  aipEntity.getSession(),
+                                  NEW_PRODUCT_VERSIONS,
+                                  SessionNotificationState.OK,
+                                  1);
+    }
+
+    public void incrementProductReplace(AIPEntity aipEntity) {
+        sessionNotifier.increment(aipEntity.getSessionOwner(),
+                                  aipEntity.getSession(),
+                                  PRODUCT_REPLACED,
+                                  SessionNotificationState.OK,
+                                  1);
     }
 
     public void incrementProductWaitingVersioningMode(IngestRequest request) {
