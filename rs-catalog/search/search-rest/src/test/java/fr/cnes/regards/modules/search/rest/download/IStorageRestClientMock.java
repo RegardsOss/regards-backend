@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import feign.Request;
 import feign.Request.Body;
 import feign.Response;
+import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
+import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -26,40 +28,32 @@ import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 public class IStorageRestClientMock implements IStorageRestClient, IStorageFileListener {
 
     @Override
-    public void onFileStored(String checksum, String storage, Collection<String> owners,
-            Collection<RequestInfo> requestInfos) {
-        // TODO Auto-generated method stub
+    public void onFileStored(List<FileReferenceEventDTO> stored) {
 
     }
 
     @Override
-    public void onFileStoreError(String checksum, String storage, Collection<String> owners,
-            Collection<RequestInfo> requestInfos, String errorCause) {
-        // TODO Auto-generated method stub
+    public void onFileStoreError(List<FileReferenceEventDTO> storedError) {
 
     }
 
     @Override
-    public void onFileAvailable(String checksum, Collection<RequestInfo> requestInfos) {
-        // TODO Auto-generated method stub
+    public void onFileAvailable(List<FileReferenceEventDTO> available) {
 
     }
 
     @Override
-    public void onFileNotAvailable(String checksum, Collection<RequestInfo> requestInfos, String errorCause) {
-        // TODO Auto-generated method stub
+    public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
 
     }
 
     @Override
-    public void onFileDeleted(String checksum, String storage, String owner, Collection<RequestInfo> requestInfos) {
-        // TODO Auto-generated method stub
+    public void onFileDeletedForOwner(String owner, List<FileReferenceEventDTO> deletedForThisOwner) {
 
     }
 
     @Override
-    public void onFileUpdated(String checksum, String storage, FileReference updateFile) {
-        // TODO Auto-generated method stub
+    public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
 
     }
 
