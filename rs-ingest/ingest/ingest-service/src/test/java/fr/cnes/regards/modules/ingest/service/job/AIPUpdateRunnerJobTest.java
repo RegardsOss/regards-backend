@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -145,7 +146,7 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
                         CATEGORIES_0);
         publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), Lists.newArrayList(STORAGE_2, STORAGE_3),
-                        SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+                        SESSION_0, SESSION_OWNER_0, Lists.newArrayList(CATEGORIES_0), Optional.empty());
 
         // useless entities for this test
         publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,

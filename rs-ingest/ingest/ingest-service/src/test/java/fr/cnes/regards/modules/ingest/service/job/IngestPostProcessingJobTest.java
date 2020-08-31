@@ -117,12 +117,12 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
 
     public long initData(String chain) throws ModuleException {
         long nbSIP = 6;
-        publishSIPEvent(create("1", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("2", TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
-        publishSIPEvent(create("3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
-        publishSIPEvent(create("5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
+        publishSIPEvent(create("1", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
+        publishSIPEvent(create("2", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
+        publishSIPEvent(create("3", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
+        publishSIPEvent(create("4", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_1, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
+        publishSIPEvent(create("5", TAG_1), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_1, CATEGORIES_0, Optional.of(chain));
+        publishSIPEvent(create("6", TAG_0), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
         return nbSIP;
     }
 

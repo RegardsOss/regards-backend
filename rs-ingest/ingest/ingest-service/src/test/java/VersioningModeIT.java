@@ -1,6 +1,7 @@
 import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -177,10 +178,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the first SIP
         publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
@@ -215,10 +217,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
@@ -293,10 +296,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the first SIP
         publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.IGNORE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
@@ -331,10 +335,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.IGNORE);
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED);
 
@@ -383,10 +388,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the first SIP
         publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.MANUAL);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
@@ -421,10 +427,11 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
 
         // lets submit the second SIP with different TAGS so it is accepted by system
         publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        STORAGE_0,
+                        Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
                         CATEGORIES_0,
+                        Optional.empty(),
                         VersioningMode.MANUAL);
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.WAITING_VERSIONING_MODE);
 
