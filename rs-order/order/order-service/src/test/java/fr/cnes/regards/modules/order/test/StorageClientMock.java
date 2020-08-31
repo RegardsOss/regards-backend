@@ -21,13 +21,18 @@ package fr.cnes.regards.modules.order.test;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -35,6 +40,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 
 public class StorageClientMock implements IStorageClient {
@@ -122,27 +129,44 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate) {
-        Collection<RequestInfo> infos = Sets.newHashSet();
-        RequestInfo ri = null;
+        Collection<String> groupIds = Sets.newHashSet();
         int count = 0;
         if (!waitMode) {
             LOGGER.info("Simulate storage responses !!!!!!!");
+            List<FileReferenceEventDTO> notAvailable = new ArrayList<>();
+            List<FileReferenceEventDTO> available = new ArrayList<>();
             for (String c : checksums) {
                 if (count > AvailabilityFlowItem.MAX_REQUEST_PER_GROUP) {
                     count = 0;
                 }
                 if (count == 0) {
-                    ri = RequestInfo.build();
-                    infos.add(ri);
+                    groupIds.add(UUID.randomUUID().toString());
                 }
                 if (!isAvailable) {
-                    listener.onFileNotAvailable(c, Sets.newHashSet(ri), "");
+                    notAvailable.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
+                                                                                        null,
+                                                                                        FileReferenceEventType.AVAILABILITY_ERROR,
+                                                                                        null,
+                                                                                        "",
+                                                                                        null,
+                                                                                        null,
+                                                                                        groupIds)));
                 } else {
-                    listener.onFileAvailable(c, Sets.newHashSet(ri));
+                    available.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
+                                                                                        null,
+                                                                                        FileReferenceEventType.AVAILABLE,
+                                                                                        null,
+                                                                                        "",
+                                                                                        null,
+                                                                                        null,
+                                                                                        groupIds)));
                 }
             }
+            listener.onFileNotAvailable(notAvailable);
+            listener.onFileAvailable(available);
         }
-        return infos;
+
+        return groupIds.stream().map(RequestInfo::build).collect(Collectors.toSet());
     }
 
     public boolean isWaitMode() {
