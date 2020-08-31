@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.urn;
 
-import java.util.StringJoiner;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
 import javax.persistence.Convert;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.springframework.lang.Nullable;
 
@@ -50,10 +50,13 @@ public class UniformResourceName {
 
     public static final int MAX_SIZE = 255;
 
+    public static final String LAST_VALUE = "LAST";
+
     /**
      * URN pattern
      */
-    public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:V\\d{1,3}(,\\d+)?(:REV.+)?";
+    public static final String URN_PATTERN =
+            "URN:[^:]+:[^:]+:[^:]+:[^:]+:(V\\d{1,3}|" + LAST_VALUE + ")(,\\d+)?(:REV.+)?";
 
     /**
      * Version prefix
@@ -116,7 +119,7 @@ public class UniformResourceName {
      */
     @Min(MIN_VERSION_VALUE)
     @Max(MAX_VERSION_VALUE)
-    private int version;
+    private Integer version;
 
     /**
      * numeric value ordering the differents element from a same identifier
@@ -128,11 +131,13 @@ public class UniformResourceName {
      */
     private String revision;
 
+    private boolean last = false;
+
     /**
      * Constructor setting the given parameters as attributes
      */
-    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId, int version,
-            @Nullable Long order, @Nullable String revision) {
+    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId,
+            Integer version, @Nullable Long order, @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
         this.tenant = tenant;
@@ -142,12 +147,26 @@ public class UniformResourceName {
         this.revision = revision;
     }
 
+    /**
+     * Constructor setting the given parameters as attributes
+     */
+    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId,
+            @Nullable Long order, @Nullable String revision) {
+        this.identifier = identifier;
+        this.entityType = entityType;
+        this.tenant = tenant;
+        this.entityId = entityId;
+        this.last = true;
+        this.order = order;
+        this.revision = revision;
+    }
+
     public UniformResourceName() {
         // Deserialization
     }
 
     public static UniformResourceName build(String identifier, EntityType entityType, String tenant, UUID entityId,
-            int version, @Nullable Long order, @Nullable String revision) {
+            @Nullable Integer version, @Nullable Long order, @Nullable String revision) {
         UniformResourceName urn = new UniformResourceName();
         urn.setIdentifier(identifier);
         urn.setEntityType(entityType);
@@ -170,19 +189,63 @@ public class UniformResourceName {
     }
 
     /**
+     * @return whether the given string is a urn or not
+     */
+    public static boolean isValidUrn(String urn) {
+        return PATTERN.matcher(urn).matches();
+    }
+
+    /**
+     * take this kind of String
+     * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
+     * and return a new instance of {@link UniformResourceName}
+     *
+     * @param urn String respecting the following regex
+     *            URN:.+:.+:.+:.+:\\d{1,3}(,\\d+)?(:REV.+)?
+     * @return a new instance of {@link UniformResourceName}
+     * @throws IllegalArgumentException if the given string does not respect the urn
+     *                                  pattern
+     */
+    public static UniformResourceName fromString(String urn) {
+        Pattern pattern = Pattern.compile(URN_PATTERN);
+        if (!pattern.matcher(urn).matches()) {
+            throw new IllegalArgumentException();
+        }
+        String[] stringFragment = urn.split(DELIMITER);
+        String identifier = stringFragment[1];
+        EntityType entityType = EntityType.valueOf(stringFragment[2]);
+        String tenant = stringFragment[3];
+        UUID entityId = UUID.fromString(stringFragment[4]);
+        String[] versionWithOrder = stringFragment[5].split(",");
+        boolean last = versionWithOrder[0].contains(LAST_VALUE);
+        Integer version = null;
+        if (!last) {
+            // if this is not a last URN then lets compute version
+            version = Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length()));
+        }
+        Long order = null;
+        String revision = null;
+        if (versionWithOrder.length == 2) {
+            order = Long.parseLong(versionWithOrder[1]);
+        }
+        if (stringFragment.length == 7) {
+            // Revision is precised
+            revision = stringFragment[6].substring(REVISION_PREFIX.length());
+        }
+        if (last) {
+            return new UniformResourceName(identifier, entityType, tenant, entityId, order, revision);
+        } else {
+            return new UniformResourceName(identifier, entityType, tenant, entityId, version, order, revision);
+        }
+    }
+
+    /**
      * By default UUID.randomUUID() must not be used. It is generating a true random
      * UUID which makes it undetectable. To avoid this, pseudo random UUID is used
      * with following format : 00000000-0000-0000-0000-&lt;random-int>
      */
     public boolean isRandomEntityId() {
         return entityId.toString().startsWith(BASE_URN_ZERO);
-    }
-
-    /**
-     * @return whether the given string is a urn or not
-     */
-    public static boolean isValidUrn(String urn) {
-        return PATTERN.matcher(urn).matches();
     }
 
     @SuppressWarnings("unchecked")
@@ -200,7 +263,7 @@ public class UniformResourceName {
     @Override
     public String toString() {
         final StringJoiner urnBuilder = new StringJoiner(":", "URN:", "");
-        urnBuilder.add(identifier.toString());
+        urnBuilder.add(identifier);
         urnBuilder.add(entityType.toString());
         urnBuilder.add(tenant);
         urnBuilder.add(entityId.toString());
@@ -210,7 +273,11 @@ public class UniformResourceName {
         }
         // order is not added with the joiner because it is "version,order" and not
         // "version:order"
-        urnBuilder.add(VERSION_PREFIX + version + orderString);
+        if (last) {
+            urnBuilder.add(LAST_VALUE + orderString);
+        } else {
+            urnBuilder.add(VERSION_PREFIX + version + orderString);
+        }
         if (revision != null) {
             urnBuilder.add(REVISION_PREFIX + revision);
         }
@@ -276,14 +343,14 @@ public class UniformResourceName {
     /**
      * @return the version
      */
-    public int getVersion() {
+    public Integer getVersion() {
         return version;
     }
 
     /**
      * Set the version
      */
-    public void setVersion(int version) {
+    public void setVersion(Integer version) {
         this.version = version;
     }
 
@@ -315,62 +382,12 @@ public class UniformResourceName {
         this.revision = revision;
     }
 
-    /**
-     * take this kind of String
-     * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
-     * and return a new instance of {@link UniformResourceName}
-     *
-     * @param urn String respecting the following regex
-     *            URN:.+:.+:.+:.+:\\d{1,3}(,\\d+)?(:REV.+)?
-     * @return a new instance of {@link UniformResourceName}
-     * @throws IllegalArgumentException if the given string does not respect the urn
-     *                                  pattern
-     */
-    public static UniformResourceName fromString(String urn) {
-        Pattern pattern = Pattern.compile(URN_PATTERN);
-        if (!pattern.matcher(urn).matches()) {
-            throw new IllegalArgumentException();
-        }
-        String[] stringFragment = urn.split(DELIMITER);
-        String identifier = stringFragment[1];
-        EntityType entityType = EntityType.valueOf(stringFragment[2]);
-        String tenant = stringFragment[3];
-        UUID entityId = UUID.fromString(stringFragment[4]);
-        String[] versionWithOrder = stringFragment[5].split(",");
-        if (versionWithOrder.length == 2) {
-            // Order is precised
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                String revisionString = stringFragment[6];
-                // so we have all fields
-                return UniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                               Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision
-                return UniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                               Long.parseLong(versionWithOrder[1]), null);
-            }
-        } else {
-            // we don't have an order specified
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                String revisionString = stringFragment[6];
-                // so we have all fields exception Order
-                return UniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null,
-                               revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision and Order
-                return UniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())), null, null);
-            }
-        }
+    public boolean isLast() {
+        return last;
+    }
+
+    public UniformResourceName toLast() {
+        return new UniformResourceName(identifier, entityType, tenant, entityId, order, revision);
     }
 
     @Override
@@ -378,42 +395,18 @@ public class UniformResourceName {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (!getClass().isAssignableFrom(o.getClass()) && !o.getClass().isAssignableFrom(getClass()))) {
+        if (o == null || (!getClass().isAssignableFrom(o.getClass()) && !o.getClass().isAssignableFrom(getClass()))) {
             return false;
         }
-
         UniformResourceName that = (UniformResourceName) o;
-
-        if (version != that.version) {
-            return false;
-        }
-        if (!identifier.equals(that.identifier)) {
-            return false;
-        }
-        if (entityType != that.entityType) {
-            return false;
-        }
-        if (!tenant.equals(that.tenant)) {
-            return false;
-        }
-        if (!entityId.equals(that.entityId)) {
-            return false;
-        }
-        if (order != null ? !order.equals(that.order) : that.order != null) {
-            return false;
-        }
-        return revision != null ? revision.equals(that.revision) : that.revision == null;
+        return last == that.last && Objects.equals(identifier, that.identifier) && entityType == that.entityType
+                && Objects.equals(tenant, that.tenant) && Objects.equals(entityId, that.entityId) && Objects
+                .equals(version, that.version) && Objects.equals(order, that.order) && Objects
+                .equals(revision, that.revision);
     }
 
     @Override
     public int hashCode() {
-        int result = identifier.hashCode();
-        result = (31 * result) + entityType.hashCode();
-        result = (31 * result) + tenant.hashCode();
-        result = (31 * result) + entityId.hashCode();
-        result = (31 * result) + version;
-        result = (31 * result) + (order != null ? order.hashCode() : 0);
-        result = (31 * result) + (revision != null ? revision.hashCode() : 0);
-        return result;
+        return Objects.hash(identifier, entityType, tenant, entityId, version, order, revision, last);
     }
 }

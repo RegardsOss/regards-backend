@@ -22,8 +22,8 @@ import java.io.IOException;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
@@ -36,6 +36,10 @@ public class UrnAdapter extends TypeAdapter<UniformResourceName> {
 
     @Override
     public UniformResourceName read(JsonReader pArg0) throws IOException {
+        if (pArg0.peek() == JsonToken.NULL) {
+            pArg0.nextNull();
+            return null;
+        }
         return UniformResourceName.fromString(pArg0.nextString());
     }
 
