@@ -96,6 +96,9 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> storages = new HashSet<>();
 
+    @Column
+    private boolean last = false;
+
     public Long getId() {
         return id;
     }
@@ -146,6 +149,14 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     public void setStorages(Set<String> storages) {
         this.storages = storages;
+    }
+
+    public boolean isLast() {
+        return last;
+    }
+
+    public void setLast(boolean last) {
+        this.last = last;
     }
 
     public static AIPEntity build(AIPState state, AIP aip) {

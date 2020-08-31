@@ -116,4 +116,5 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
 
+    SIPEntity findByProviderIdAndLast(String providerId, boolean last);
 }

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -31,6 +26,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.UniqueConstraint;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -64,12 +63,38 @@ public class IngestRequest extends AbstractRequest {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "ta_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "aip_id"),
-            uniqueConstraints = {
-                    @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
+            inverseJoinColumns = @JoinColumn(name = "aip_id"), uniqueConstraints = {
+            @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
             foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
             inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
     private List<AIPEntity> aips;
+
+    public static String generateRequestId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
+            IngestRequestStep step, SIP sip) {
+        return build(requestId, metadata, state, step, sip, null);
+    }
+
+    public static IngestRequest build(@Nullable String requestId, IngestMetadata metadata, InternalRequestState state,
+            IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
+        IngestRequest request = new IngestRequest();
+        request.setConfig(new IngestPayload());
+        request.setRequestId(requestId == null ? generateRequestId() : requestId);
+        request.setDtype(RequestTypeConstant.INGEST_VALUE);
+        request.setMetadata(metadata);
+        request.setState(state);
+        request.setStep(step);
+        request.setSip(sip);
+        request.setProviderId(sip.getId());
+        request.setSessionOwner(metadata.getSessionOwner());
+        request.setSession(metadata.getSession());
+        request.setErrors(errors);
+        request.setCreationDate(OffsetDateTime.now());
+        return request;
+    }
 
     public IngestPayload getConfig() {
         return config;
@@ -130,43 +155,6 @@ public class IngestRequest extends AbstractRequest {
 
     public void setAips(List<AIPEntity> aips) {
         this.aips = aips;
-    }
-
-    public static String generateRequestId() {
-        return UUID.randomUUID().toString();
-    }
-
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step,
-            SIP sip) {
-        return build(generateRequestId(), metadata, state, step, sip, null);
-    }
-
-    public static IngestRequest build(IngestMetadata metadata, InternalRequestState state, IngestRequestStep step,
-            SIP sip, @Nullable Set<String> errors) {
-        return build(generateRequestId(), metadata, state, step, sip, errors);
-    }
-
-    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
-            IngestRequestStep step, SIP sip) {
-        return build(requestId, metadata, state, step, sip, null);
-    }
-
-    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
-            IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
-        IngestRequest request = new IngestRequest();
-        request.setConfig(new IngestPayload());
-        request.setRequestId(requestId);
-        request.setDtype(RequestTypeConstant.INGEST_VALUE);
-        request.setMetadata(metadata);
-        request.setState(state);
-        request.setStep(step);
-        request.setSip(sip);
-        request.setProviderId(sip.getId());
-        request.setSessionOwner(metadata.getSessionOwner());
-        request.setSession(metadata.getSession());
-        request.setErrors(errors);
-        request.setCreationDate(OffsetDateTime.now());
-        return request;
     }
 
     /**

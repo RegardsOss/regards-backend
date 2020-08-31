@@ -96,4 +96,14 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
         job.getCurrentRequest().setErrors(errors);
         ingestRequestService.handleIngestJobFailed(job.getCurrentRequest(), job.getCurrentEntity(), error);
     }
+
+    protected ProcessingStepException throwProcessingStepException(String error, Exception e) {
+        addError(error);
+        return new ProcessingStepException(error, e);
+    }
+
+    protected ProcessingStepException throwProcessingStepException(String error) {
+        addError(error);
+        return new ProcessingStepException(error);
+    }
 }

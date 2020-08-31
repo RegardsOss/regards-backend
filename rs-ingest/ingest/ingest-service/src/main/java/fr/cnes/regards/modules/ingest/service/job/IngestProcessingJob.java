@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -42,6 +41,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -195,30 +195,44 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         break;
                     default:
                         logger.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
-                                     INFO_TAB, request.getSip().getId());
+                                     INFO_TAB,
+                                     request.getSip().getId());
                         break;
                 }
                 sipIngested++;
-                logger.debug("{}SIP \"{}\" ingested in {} ms", INFO_TAB, request.getSip().getId(),
+                logger.debug("{}SIP \"{}\" ingested in {} ms",
+                             INFO_TAB,
+                             request.getSip().getId(),
                              System.currentTimeMillis() - start2);
 
             } catch (ProcessingStepException e) {
-                logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
-                sipInError++;
-                String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
-                                           request.getSip().getId(), request.getRequestId());
-                notifMsg.add(msg);
-                logger.error(msg);
-                logger.error("Ingestion step error", e);
-                // Continue with following SIPs
+                if (request.getState() != InternalRequestState.WAITING_VERSIONING_MODE
+                        && request.getState() != InternalRequestState.IGNORED) {
+                    logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
+                    sipInError++;
+                    String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
+                                               request.getSip().getId(),
+                                               request.getRequestId());
+                    notifMsg.add(msg);
+                    logger.error(msg);
+                    logger.error("Ingestion step error", e);
+                    // Continue with following SIPs
+                } else {
+                    logger.debug(e.getMessage(), e);
+                }
             }
         }
 
         // notify if errors occurred
         if (sipInError > 0) {
-            notificationClient.notify(notifMsg.toString(), "Error occurred during SIPs Ingestion.",
-                                      NotificationLevel.INFO, DefaultRole.ADMIN);
-            logger.error("{}{} SIP(s) INGESTED and {} in ERROR in {} ms", INFO_TAB, sipIngested, sipInError,
+            notificationClient.notify(notifMsg.toString(),
+                                      "Error occurred during SIPs Ingestion.",
+                                      NotificationLevel.INFO,
+                                      DefaultRole.ADMIN);
+            logger.error("{}{} SIP(s) INGESTED and {} in ERROR in {} ms",
+                         INFO_TAB,
+                         sipIngested,
+                         sipInError,
                          System.currentTimeMillis() - start);
         } else {
             logger.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);

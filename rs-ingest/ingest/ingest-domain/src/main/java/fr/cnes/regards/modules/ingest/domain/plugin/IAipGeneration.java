@@ -21,8 +21,7 @@ package fr.cnes.regards.modules.ingest.domain.plugin;
 import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -39,16 +38,17 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 public interface IAipGeneration {
 
     /**
-     * Generate one or more {@link AIP} from passed {@link SIP}.
-     * @param sip {@link SIP}
-     * @param aipId the IP_ID of the generated {@link AIP} (or radical if multiple AIPs are generated. In that case, you
-     *            have to use
-     *            {@link UniformResourceName#clone(UniformResourceName, Long)} to differentiate each one with a unique
-     *            order.
-     * @param sipId SIP identifier
-     * @param providerId the provider id of the generated {@link AIP}
-     * @return generated {@link AIP}
+     * Generate one or more {@link AIP} from given {@link SIPEntity}.<br>
+     *     Know there are some rules about generating AIPs:
+     *     <ol>
+     *         <li>There can be no aip of same version using the same providerId.
+     *         We advice you to take providerId from sip and tweak it</li>
+     *         <li>AIP id must be form using tenant and entityType parameters</li>
+     *     </ol>
+     * @param sip {@link SIPEntity}
+     * @param tenant tenant to use to create AIP id
+     * @param entityType {@link EntityType} to use to create AIP id
+     * @return generated {@link AIP}s
      */
-    List<AIP> generate(SIPEntity sip, OaisUniformResourceName aipId, OaisUniformResourceName sipId, String providerId)
-            throws AIPGenerationException;
+    List<AIP> generate(SIPEntity sip, String tenant, EntityType entityType) throws AIPGenerationException;
 }

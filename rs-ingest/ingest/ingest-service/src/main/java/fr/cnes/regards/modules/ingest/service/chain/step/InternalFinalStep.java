@@ -41,9 +41,6 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  */
 public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEntity>> {
 
-    @Autowired
-    private IIngestRequestService ingestRequestService;
-
     public InternalFinalStep(IngestProcessingJob job, IngestProcessingChain ingestChain) {
         super(job, ingestChain);
     }

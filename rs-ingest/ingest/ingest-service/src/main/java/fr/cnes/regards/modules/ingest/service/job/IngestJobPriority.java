@@ -34,6 +34,14 @@ public enum IngestJobPriority {
         }
     },
 
+    CHOOSE_VERSIONING_JOB_PRIORITY {
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+    },
+
     SESSION_DELETION_JOB_PRIORITY {
 
         @Override

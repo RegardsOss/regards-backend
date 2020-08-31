@@ -59,6 +59,8 @@ public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsP
 
     private List<String> tags = Lists.newArrayList();
 
+    private Boolean last = null;
+
     /**
      * This attribute describe the {@link #aipIds} meaning of that list
      */
@@ -187,6 +189,19 @@ public abstract class AbstractSearchAIPsParameters<T extends AbstractSearchAIPsP
     public T withIpType(EntityType ipType) {
         this.ipType = ipType;
         return (T) this;
+    }
+
+    public T withLast(Boolean last) {
+        this.last = last;
+        return (T) this;
+    }
+
+    public Boolean getLast() {
+        return last;
+    }
+
+    public void setLast(Boolean last) {
+        this.last = last;
     }
 
     public AIPState getState() {

@@ -38,6 +38,8 @@ public final class IngestValidationMessages {
 
     public static final String MISSING_CATEGORIES = "Categories are required";
 
+    public static final String MISSING_VERSIONING_MODE = "Request versioning mode is required";
+
     // Common validation messages
 
     public static final String MISSING_REQUEST_ID = "Request identifier is required";

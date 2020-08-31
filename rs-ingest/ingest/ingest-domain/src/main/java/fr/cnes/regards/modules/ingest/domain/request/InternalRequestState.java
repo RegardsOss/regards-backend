@@ -29,6 +29,11 @@ public enum InternalRequestState {
      */
     CREATED,
     /**
+     * Request versioning mode is {@link fr.cnes.regards.modules.ingest.domain.sip.VersioningMode#MANUAL},
+     * so we need administrator decision to go further
+     */
+    WAITING_VERSIONING_MODE,
+    /**
      * When the request cannot be processed for now
      */
     BLOCKED,
@@ -40,5 +45,5 @@ public enum InternalRequestState {
      * When the request stopped with an error
      */
     ERROR,
-    ABORTED;
+    ABORTED, IGNORED;
 }
