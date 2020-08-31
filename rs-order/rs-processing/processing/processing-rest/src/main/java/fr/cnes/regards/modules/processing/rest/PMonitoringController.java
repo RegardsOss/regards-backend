@@ -2,20 +2,23 @@ package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.repository.IPExecutionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.ContentType.APPLICATION_JSON;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
+import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_PAGE;
+import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SIZE;
 
 @RestController
 public class PMonitoringController {
@@ -34,12 +37,29 @@ public class PMonitoringController {
                 consumes = APPLICATION_JSON,
                 produces = APPLICATION_JSON)
     public Flux<PExecution> executions(
-            @RequestParam String tenant,
-            @RequestParam List<ExecutionStatus> status,
-            Pageable page
+            @RequestParam(name = TENANT_PARAM) String tenant,
+            @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
+            @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
+            @RequestParam(name = DATE_FROM_PARAM, defaultValue = "2000-01-01T00:00Z", required = false) OffsetDateTime from,
+            @RequestParam(name = DATE_TO_PARAM, defaultValue = "2100-01-01T00:00Z", required = false) OffsetDateTime to,
+            @RequestParam(name = PAGE_PARAM, defaultValue = DEFAULT_PAGE) int page,
+            @RequestParam(name = SIZE_PARAM, defaultValue = DEFAULT_SIZE) int size
     ) {
         LOGGER.info("status={}", status);
-        return execRepo.findByTenantAndCurrentStatusIn(tenant, status, page);
+        LOGGER.info("userEmail={}", userEmail);
+        LOGGER.info("from={}", from);
+        LOGGER.info("to={}", to);
+        PageRequest paged = PageRequest.of(page, size);
+        if (userEmail == null) {
+            return execRepo.findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                    tenant, status, from, to, paged
+            );
+        }
+        else {
+            return execRepo.findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                    tenant, userEmail, status, from, to, paged
+            );
+        }
     }
 
 }

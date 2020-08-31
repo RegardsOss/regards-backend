@@ -63,24 +63,25 @@ public class ExecutionServiceImpl implements IExecutionService {
         return batchRepo.findById(request.getBatchId())
             .flatMap(batch -> estimateDuration(batch, request)
                 .map(duration -> makeExecFromBatchAndDurationAndRequest(request, batch, duration)))
-                .flatMap(execRepo::save);
+                .flatMap(execRepo::create);
     }
 
     private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch, Duration duration) {
         return new PExecution(
-                UUID.randomUUID(),
-                batch.getId(),
-                duration,
-                request.getInputFiles(),
-                List.of(new PStep(ExecutionStatus.REGISTERED, nowUtc(), "")),
-                batch.getTenant(),
-                batch.getUser(),
-                batch.getProcessBusinessId(),
-                batch.getProcessName(),
-                null,
-                null,
-                0,
-                false);
+            UUID.randomUUID(),
+            batch.getId(),
+            duration,
+            request.getInputFiles(),
+            List.of(new PStep(ExecutionStatus.REGISTERED, nowUtc(), "")),
+            batch.getTenant(),
+            batch.getUser(),
+            batch.getProcessBusinessId(),
+            batch.getProcessName(),
+            null,
+            null,
+            0,
+            false
+        );
     }
 
     @Override public Mono<Duration> estimateDuration(PBatch batch, PExecutionRequestEvent request) {
@@ -95,11 +96,11 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     @Override public Mono<PExecution> addExecutionStep(PExecution exec, PStep step) {
-        return execRepo.save(exec.addStep(step))
-                .onErrorResume(OptimisticLockingFailureException.class, e -> {
-                    LOGGER.warn("Optimistic locking failure when adding step {} to exec {}", step, exec.getId());
-                    return Mono.defer(() -> execRepo.findById(exec.getId())
-                            .flatMap(freshExec -> addExecutionStep(freshExec, step)));
-                });
+        return execRepo.update(exec.addStep(step))
+            .onErrorResume(OptimisticLockingFailureException.class, e -> {
+                LOGGER.warn("Optimistic locking failure when adding step {} to exec {}", step, exec.getId());
+                return Mono.defer(() -> execRepo.findById(exec.getId())
+                        .flatMap(freshExec -> addExecutionStep(freshExec, step)));
+            });
     }
 }

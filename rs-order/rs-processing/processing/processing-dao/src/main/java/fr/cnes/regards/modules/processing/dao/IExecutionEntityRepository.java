@@ -3,12 +3,14 @@ package fr.cnes.regards.modules.processing.dao;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import io.vavr.control.Option;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,4 +45,20 @@ import java.util.UUID;
             Pageable page
     );
 
+    Flux<ExecutionEntity> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    );
+
+    Flux<ExecutionEntity> findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String userName,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    );
 }

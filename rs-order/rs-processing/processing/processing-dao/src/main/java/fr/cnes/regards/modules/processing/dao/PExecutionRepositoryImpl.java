@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PExecutionRepositoryImpl.class);
+
     private static Cache<UUID, PExecution> cache = Caffeine.newBuilder()
             .expireAfterAccess(30, TimeUnit.MINUTES)
             .maximumSize(10000)
@@ -40,12 +42,20 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         this.mapper = mapper;
     }
 
-    @Override public Mono<PExecution> save(PExecution exec) {
+    @Override public Mono<PExecution> create(PExecution exec) {
         return entityExecRepo
             .save(mapper.toEntity(exec.withAuditDates()))
             .map(ExecutionEntity::persisted)
             .flatMap(mapper::toDomain)
             .doOnNext(e -> cache.put(e.getId(), e));
+    }
+
+
+    @Override public Mono<PExecution> update(PExecution exec) {
+        return entityExecRepo
+                .save(mapper.toEntity(exec))
+                .flatMap(mapper::toDomain)
+                .doOnNext(e -> cache.put(e.getId(), e));
     }
 
     @Override public Mono<PExecution> findById(UUID id) {
@@ -61,7 +71,29 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
-    public Flux<PExecution> findByTenantAndCurrentStatusIn(String tenant, List<ExecutionStatus> status, Pageable page) {
-        return entityExecRepo.findByTenantAndCurrentStatusIn(tenant, status, page).flatMap(mapper::toDomain);
+    public Flux<PExecution> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    ) {
+        return entityExecRepo.findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                tenant, status, from, to, page
+        ).flatMap(mapper::toDomain);
     }
+
+    @Override public Flux<PExecution> findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    ) {
+        return entityExecRepo.findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                tenant, userEmail, status, from, to, page
+        ).flatMap(mapper::toDomain);
+    }
+
 }

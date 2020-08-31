@@ -4,7 +4,9 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import io.vavr.collection.HashMap;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public class TokenGenerator {
 
@@ -21,6 +23,15 @@ public class TokenGenerator {
             false
         );
         System.out.println(token);
+    }
+
+    @Test
+    public void datetimes() {
+        OffsetDateTime y2k = OffsetDateTime.ofInstant(Instant.parse("2000-01-01T00:00:00.000Z"), ZoneId.of("UTC"));
+        OffsetDateTime y2p1k = y2k.plusYears(100L);
+        System.out.println(y2p1k.toEpochSecond());
+        System.out.println(y2p1k);
+
     }
 
 }

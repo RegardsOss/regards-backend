@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.processing.dao;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
-import fr.cnes.regards.modules.processing.domain.PStepSequence;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.micrometer.core.annotation.Timed;
 import io.vavr.collection.List;
@@ -119,14 +118,14 @@ public class PBatchRepositoryImplTest extends AbstractRepoTest {
 
     @Timed("save exec")
     private Mono<PExecution> saveExec(int i, PExecution pExec) {
-        return domainExecRepo.save(pExec)
+        return domainExecRepo.create(pExec)
                 .doOnNext(e -> LOGGER.info("ATTEMPT {}, Saved exec {}", i, e));
     }
 
     @Timed("add step to exec")
     private Mono<PExecution> addStep(int i, PExecution persistedExec, PStep step) {
         PExecution executionWithNewStep = persistedExec.addStep(step);
-        return domainExecRepo.save(executionWithNewStep)
+        return domainExecRepo.update(executionWithNewStep)
                 .doOnNext(e -> LOGGER.info("ATTEMPT {}, Added step {} into {}", i, step, e))
                 .doOnError(t -> LOGGER.error("ATTEMPT {}, Failed to save exec with new step: persisted={}, version={}, exec={}",
                      i, executionWithNewStep.isPersisted(), executionWithNewStep.getVersion(), executionWithNewStep, t));

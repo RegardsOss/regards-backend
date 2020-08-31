@@ -5,6 +5,16 @@ public interface ProcessingConstants {
     interface Path {
         interface Param {
             String PROCESS_BUSINESS_ID_PARAM = "processBusinessId";
+
+            String TENANT_PARAM = "tenant";
+            String STATUS_PARAM = "status";
+
+            String PAGE_PARAM = "page";
+            String SIZE_PARAM = "size";
+
+            String USER_EMAIL_PARAM = "email";
+            String DATE_FROM_PARAM = "from";
+            String DATE_TO_PARAM = "to";
         }
 
         String APIV1 = "/api/v1";
