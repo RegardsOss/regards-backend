@@ -71,7 +71,7 @@ public class TestService implements IService {
                                                   null));
             DataObject do2 = new DataObject(model, "pTenant", "DO2", "pLabel2");
             do2.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
-                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1));
+                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1, null, null));
             responseList = Sets.newLinkedHashSet(do1, do2);
         }
 
