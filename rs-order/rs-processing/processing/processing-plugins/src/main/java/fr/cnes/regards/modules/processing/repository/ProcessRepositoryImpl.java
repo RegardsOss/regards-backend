@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
-import fr.cnes.regards.modules.processing.utils.IPUserAuthFactory;
+import fr.cnes.regards.modules.processing.domain.factory.IPUserAuthFactory;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.slf4j.Logger;

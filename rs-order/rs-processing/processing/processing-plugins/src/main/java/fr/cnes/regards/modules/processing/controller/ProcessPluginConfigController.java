@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,14 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.ContentType.APPLICATION_JSON;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
 
 @RestController
+@RequestMapping(
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE }
+)
 public class ProcessPluginConfigController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigController.class);
@@ -41,10 +45,7 @@ public class ProcessPluginConfigController {
         this.rightsConfigService = rightsConfigService;
     }
 
-    @GetMapping(
-            path = PROCESS_CONFIG_PATH,
-            produces = APPLICATION_JSON
-    )
+    @GetMapping(path = PROCESS_CONFIG_PATH)
     public Flux<ProcessPluginConfigurationRightsDTO> findAll() {
         return withinTenantFlux((auth, tenant) -> {
             return rightsConfigService.findAllRightsPluginConfigs();
@@ -52,10 +53,7 @@ public class ProcessPluginConfigController {
     }
 
 
-    @GetMapping(
-            path = PROCESS_CONFIG_BID_PATH,
-            produces = APPLICATION_JSON
-    )
+    @GetMapping(path = PROCESS_CONFIG_BID_PATH)
     public Mono<ProcessPluginConfigurationRightsDTO> findByBusinessId(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
@@ -64,24 +62,16 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @PostMapping(
-            path = PROCESS_CONFIG_PATH,
-            produces = APPLICATION_JSON,
-            consumes = APPLICATION_JSON
-    )
-    public Mono<ProcessPluginConfigurationRightsDTO> save(
+    @PostMapping(path = PROCESS_CONFIG_PATH)
+    public Mono<ProcessPluginConfigurationRightsDTO> create(
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto
     ) {
         return withinTenantMono((auth, tenant) -> {
-            return rightsConfigService.save(tenant, rightsDto);
+            return rightsConfigService.create(tenant, rightsDto);
         });
     }
 
-    @PutMapping(
-            path = PROCESS_CONFIG_BID_PATH,
-            produces = APPLICATION_JSON,
-            consumes = APPLICATION_JSON
-    )
+    @PutMapping(path = PROCESS_CONFIG_BID_PATH)
     public Mono<ProcessPluginConfigurationRightsDTO> update(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto
@@ -91,10 +81,7 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @DeleteMapping(
-            path = PROCESS_CONFIG_BID_PATH,
-            produces = APPLICATION_JSON
-    )
+    @DeleteMapping(path = PROCESS_CONFIG_BID_PATH)
     public Mono<ProcessPluginConfigurationRightsDTO> save(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
@@ -103,10 +90,7 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @GetMapping(
-            path = PROCESS_METADATA_PATH,
-            produces = APPLICATION_JSON
-    )
+    @GetMapping(path = PROCESS_METADATA_PATH)
     public Flux<PluginMetaData> listAllDetectedPlugins() {
         return withinTenantFlux((auth, tenant) -> {
             return Flux.fromIterable(PluginUtils.getPlugins().values());
@@ -124,13 +108,9 @@ public class ProcessPluginConfigController {
                 .flatMap(ctx -> {
                     JWTAuthentication auth = (JWTAuthentication) ctx.getAuthentication();
                     String tenant = auth.getTenant();
-                    try {
-                        runtimeTenantResolver.forceTenant(tenant);
-                        return fn.apply(auth, tenant);
-                    }
-                    finally {
-                        runtimeTenantResolver.clearTenant();
-                    }
+                    runtimeTenantResolver.forceTenant(tenant);
+                    return fn.apply(auth, tenant)
+                            .doOnTerminate(runtimeTenantResolver::clearTenant);
                 })
                 .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
@@ -140,13 +120,9 @@ public class ProcessPluginConfigController {
                 .flatMapMany(ctx -> {
                     JWTAuthentication auth = (JWTAuthentication) ctx.getAuthentication();
                     String tenant = auth.getTenant();
-                    try {
-                        runtimeTenantResolver.forceTenant(tenant);
-                        return fn.apply(auth, tenant);
-                    }
-                    finally {
-                        runtimeTenantResolver.clearTenant();
-                    }
+                    runtimeTenantResolver.forceTenant(tenant);
+                    return fn.apply(auth, tenant)
+                            .doOnTerminate(runtimeTenantResolver::clearTenant);
                 })
                 .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }

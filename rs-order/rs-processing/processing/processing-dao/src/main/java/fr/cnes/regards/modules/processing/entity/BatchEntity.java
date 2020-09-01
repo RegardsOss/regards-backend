@@ -23,16 +23,16 @@ public class BatchEntity implements Persistable<UUID> {
     @Column("process_business_id") @NonNull
     private UUID processBusinessId;
 
-    @Column("correlationId") @NonNull
+    @Column("correlation_id") @NonNull
     private String correlationId;
 
     @Column("tenant") @NonNull
     private String tenant;
 
-    @Column("userName") @NonNull
-    private String userName;
+    @Column("user_email") @NonNull
+    private String userEmail;
 
-    @Column("userRole") @NonNull
+    @Column("user_role") @NonNull
     private String userRole;
 
     @Column("process_name") @NonNull

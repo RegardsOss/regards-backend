@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.storage.*;
-import fr.cnes.regards.modules.processing.utils.IPUserAuthFactory;
+import fr.cnes.regards.modules.processing.domain.factory.IPUserAuthFactory;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;

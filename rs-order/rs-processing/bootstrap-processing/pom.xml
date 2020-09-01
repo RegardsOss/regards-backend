@@ -58,6 +58,11 @@
         <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-rest</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -94,6 +99,12 @@
         <dependency>
             <groupId>fr.cnes.regards.microservices.administration</groupId>
             <artifactId>remote-authorities-provider</artifactId>
+        </dependency>
+
+        <!-- Framework -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-reactor-netty</artifactId>
         </dependency>
 
         <!-- Libraries -->

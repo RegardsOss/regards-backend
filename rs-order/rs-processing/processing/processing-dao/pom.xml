@@ -41,6 +41,10 @@
         <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-domain</artifactId>
         </dependency>
 

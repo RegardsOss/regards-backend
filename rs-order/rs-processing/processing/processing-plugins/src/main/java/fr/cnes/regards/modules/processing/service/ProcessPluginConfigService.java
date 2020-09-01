@@ -37,11 +37,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public Flux<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs() {
-        return Flux.fromIterable(pluginConfigRepo.findAll())
-                .filter(this::eligibleClass)
-                .flatMap(pc -> {
-                    RightsPluginConfiguration rights = rightsPluginConfigRepo.findByPluginConfiguration(pc)
-                            .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rights for plugin with UUID " + pc.getBusinessId() + " not found"));
+        return Flux.fromIterable(rightsPluginConfigRepo.findAll())
+                .flatMap(rights -> {
                     ProcessPluginConfigurationRightsDTO rightsDto = ProcessPluginConfigurationRightsDTO
                             .fromRightsPluginConfiguration(rights);
                     return Mono.just(rightsDto);
@@ -63,12 +60,19 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             ProcessPluginConfigurationRightsDTO rightsDto
     ) {
         return Mono.fromCallable(() -> {
-            return ProcessPluginConfigurationRightsDTO
-                    .fromRightsPluginConfiguration(rightsPluginConfigRepo.save(rightsDto.toRightsPluginConfiguration(tenant)));
+            PluginConfiguration updatedPc = pluginConfigRepo.save(rightsDto.getPluginConfiguration());
+
+            RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
+            rights.setPluginConfiguration(updatedPc);
+            rights.setDatasets(rightsDto.getRights().getDatasets().toJavaList());
+            rights.setRole(rightsDto.getRights().getRole());
+
+            RightsPluginConfiguration persistedRights = rightsPluginConfigRepo.save(rights);
+            return ProcessPluginConfigurationRightsDTO.fromRightsPluginConfiguration(persistedRights);
         });
     }
 
-    @Override public Mono<ProcessPluginConfigurationRightsDTO> save(
+    @Override public Mono<ProcessPluginConfigurationRightsDTO> create(
             String tenant,
             ProcessPluginConfigurationRightsDTO rightsDto
     ) {

@@ -28,7 +28,7 @@ public interface IPExecutionRepository {
             Pageable page
     );
 
-    Flux<PExecution> findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
             String userEmail,
             List<ExecutionStatus> status,

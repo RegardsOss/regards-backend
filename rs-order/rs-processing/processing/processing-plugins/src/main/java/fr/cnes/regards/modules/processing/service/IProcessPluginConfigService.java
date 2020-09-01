@@ -14,7 +14,7 @@ public interface IProcessPluginConfigService {
 
     Mono<ProcessPluginConfigurationRightsDTO> update(String tenant, UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto);
 
-    Mono<ProcessPluginConfigurationRightsDTO> save(String tenant, ProcessPluginConfigurationRightsDTO rightsDto);
+    Mono<ProcessPluginConfigurationRightsDTO> create(String tenant, ProcessPluginConfigurationRightsDTO rightsDto);
 
     Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId);
 }

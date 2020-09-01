@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -27,6 +28,7 @@ import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
         "logging.level.org.springframework.data.r2dbc=DEBUG"
 })
 @ContextConfiguration(classes = AbstractRepoTest.Config.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractRepoTest implements RandomUtils {
 
     @Autowired protected IPBatchRepository domainBatchRepo;

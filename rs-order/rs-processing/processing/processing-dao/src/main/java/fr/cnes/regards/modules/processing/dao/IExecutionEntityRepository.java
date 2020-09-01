@@ -14,7 +14,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@InstanceEntity @Repository public interface IExecutionEntityRepository
+@InstanceEntity
+@Repository
+public interface IExecutionEntityRepository
         extends ReactiveCrudRepository<ExecutionEntity, UUID> {
 
     /**
@@ -24,21 +26,10 @@ import java.util.UUID;
     @Query(" SELECT * "
     + " FROM t_execution AS E "
     + " WHERE (steps#>>'{values,-1,status}') = 'RUNNING' "
-    + "   AND EXTRACT(EPOCH FROM now()) - CAST(steps#>'{values,-1,epochTs}' AS BIGINT) / 1000 > (E.timeoutaftermillis / 1000) "
+    + "   AND EXTRACT(EPOCH FROM now()) - CAST(steps#>'{values,-1,epochTs}' AS BIGINT) / 1000 > (E.timeout_after_millis / 1000) "
     )
     Flux<ExecutionEntity> getTimedOutExecutions();
 
-    /*
-    @Query(
-    " SELECT"
-        + " E.id as execId, E.fileParameters AS parameters, E.batch_id as batchId, E.steps as steps,"
-        + " B.correlationId, B.process, B.userName "
-    + " FROM t_execution AS E "
-    + " INNER JOIN t_batch AS B ON B.id = E.batch_id "
-    + " WHERE (steps#>>'{values,-1,status}') IN (:status) "
-    + "   AND B.userName = :user "
-    + "   AND B.tenant = :tenant "
-    )*/
     Flux<ExecutionEntity> findByTenantAndCurrentStatusIn(
             String tenant,
             List<ExecutionStatus> status,
@@ -53,9 +44,9 @@ import java.util.UUID;
             Pageable page
     );
 
-    Flux<ExecutionEntity> findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    Flux<ExecutionEntity> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
-            String userName,
+            String userEmail,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to,

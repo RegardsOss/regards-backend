@@ -39,8 +39,8 @@ public class ExecutionEntity implements Persistable<UUID> {
     @Column("tenant") @NonNull
     private String tenant;
 
-    @Column("user_name") @NonNull
-    private String userName;
+    @Column("user_email") @NonNull
+    private String userEmail;
 
     @Column("process_business_id") @NonNull
     private UUID processBusinessId;

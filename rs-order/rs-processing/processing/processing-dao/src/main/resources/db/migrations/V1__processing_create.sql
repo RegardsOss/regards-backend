@@ -1,13 +1,14 @@
 create table t_batch (
     id uuid not null,
     process_business_id uuid,
-    correlationId text,
+    process_name text,
+    correlation_id text,
     filesets jsonb,
     parameters jsonb,
     process text,
     tenant text,
-    userName text,
-    userRole text,
+    user_email text,
+    user_role text,
     primary key (id)
 );
 create table t_execution (
@@ -20,7 +21,7 @@ create table t_execution (
     process_business_id uuid,
     process_name text,
     tenant text,
-    user_name text,
+    user_email text,
     version int8,
     created timestamptz,
     last_updated timestamptz,

@@ -83,7 +83,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         ).flatMap(mapper::toDomain);
     }
 
-    @Override public Flux<PExecution> findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    @Override public Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
             String userEmail,
             List<ExecutionStatus> status,
@@ -91,7 +91,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     ) {
-        return entityExecRepo.findByTenantAndUserNameAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+        return entityExecRepo.findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                 tenant, userEmail, status, from, to, page
         ).flatMap(mapper::toDomain);
     }

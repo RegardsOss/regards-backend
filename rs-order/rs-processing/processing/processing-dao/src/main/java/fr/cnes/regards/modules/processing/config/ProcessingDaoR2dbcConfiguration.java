@@ -26,8 +26,11 @@ import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.transaction.ReactiveTransactionManager;
 
+import java.time.Duration;
 import java.util.Collections;
 
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
@@ -54,6 +57,8 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
     @Bean public ConnectionFactory connectionFactory() {
         Builder builder = builder()
                 .option(DRIVER, "pool")
+                .option(ACQUIRE_RETRY, 5)
+                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
                 .option(PROTOCOL, "postgresql")
                 .option(HOST, pgSqlConfig.getHost())
                 .option(PORT, pgSqlConfig.getPort())
