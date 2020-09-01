@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -42,15 +43,16 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  *
  */
 @Entity
-@Table(name = "t_feature_deletion_request",
-        indexes = { @Index(name = "idx_feature_deletion_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
-                @Index(name = "idx_feature_deletion_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
-                @Index(name = "idx_feature_deletion_step_registration_priority",
-                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
-                                + AbstractRequest.COLUMN_PRIORITY),
-                @Index(name = "idx_feature_deletion_request_urn", columnList = AbstractRequest.COLUMN_URN) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_deletion_request_id",
-                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+//@Table(name = "t_feature_deletion_request",
+//        indexes = { @Index(name = "idx_feature_deletion_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
+//                @Index(name = "idx_feature_deletion_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
+//                @Index(name = "idx_feature_deletion_step_registration_priority",
+//                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
+//                                + AbstractRequest.COLUMN_PRIORITY),
+//                @Index(name = "idx_feature_deletion_request_urn", columnList = AbstractRequest.COLUMN_URN) },
+//        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_deletion_request_id",
+//                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+@DiscriminatorValue(AbstractFeatureRequest.DELETION)
 public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     @Id

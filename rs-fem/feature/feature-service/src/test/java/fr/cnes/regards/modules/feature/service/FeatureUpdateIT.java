@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
@@ -38,12 +40,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.ILightFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.LightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -77,7 +77,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     private IFeatureDeletionService featureDeletionService;
 
     @Autowired
-    private ILightFeatureUpdateRequestRepository lightFeatureUpdateRequestRepository;
+    private IFeatureUpdateRequestRepository featureUpdateRequestRepository;
 
     /**
      * Test update scheduler we will create 4 {@link FeatureUpdateRequest}
@@ -114,20 +114,20 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         this.featureDeletionService.scheduleRequests();
 
         // prepare and save update request
-        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build("1", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED,
                                                                null, toUpdate.getFeature(), PriorityLevel.NORMAL,
                                                                FeatureRequestStep.LOCAL_DELAYED);
 
         FeatureUpdateRequest fur2 = FeatureUpdateRequest
-                .build("2", "owner", OffsetDateTime.now(), RequestState.GRANTED, null, updatingByScheduler.getFeature(),
+                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null, updatingByScheduler.getFeature(),
                        PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_SCHEDULED);
 
         //this update cannot be scheduled because fur2 is already scheduled and on the same feature
-        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build("3", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED,
                                                                null, updatingByScheduler.getFeature(),
                                                                PriorityLevel.NORMAL, FeatureRequestStep.LOCAL_DELAYED);
 
-        FeatureUpdateRequest fur4 = FeatureUpdateRequest.build("4", "owner", OffsetDateTime.now(), RequestState.GRANTED,
+        FeatureUpdateRequest fur4 = FeatureUpdateRequest.build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED,
                                                                null, toDelete.getFeature(), PriorityLevel.NORMAL,
                                                                FeatureRequestStep.LOCAL_DELAYED);
 
@@ -222,9 +222,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         this.featureUpdateService.scheduleRequests();
         this.waitUpdateRequestDeletion(properties.getMaxBulkSize() / 2, 10000);
 
-        List<LightFeatureUpdateRequest> scheduled = this.lightFeatureUpdateRequestRepository
+        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository
                 .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
-                                        PageRequest.of(0, properties.getMaxBulkSize()), OffsetDateTime.now());
+                                        PageRequest.of(0, properties.getMaxBulkSize()), OffsetDateTime.now()).getContent();
         // half of scheduled should be with priority HIGH
         assertEquals(properties.getMaxBulkSize().intValue() / 2, scheduled.size());
         // check that remaining FeatureUpdateRequest all their their priority not to high

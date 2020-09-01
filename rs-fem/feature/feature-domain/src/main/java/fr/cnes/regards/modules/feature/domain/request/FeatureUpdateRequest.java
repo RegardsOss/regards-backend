@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotBlank;
 import java.time.OffsetDateTime;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -36,23 +35,37 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Marc SORDI
  *
  */
 @Entity
-@Table(name = "t_feature_update_request",
-        indexes = { @Index(name = "idx_feature_update_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
-                @Index(name = "idx_feature_update_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
-                @Index(name = "idx_feature_update_request_urn", columnList = "urn"),
-                @Index(name = "idx_feature_update_step_registration_priority",
-                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
-                                + AbstractRequest.COLUMN_PRIORITY) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_update_request_id",
-                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+//@Table(name = "t_feature_update_request",
+//        indexes = { @Index(name = "idx_feature_update_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
+//                @Index(name = "idx_feature_update_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
+//                @Index(name = "idx_feature_update_request_urn", columnList = "urn"),
+//                @Index(name = "idx_feature_update_step_registration_priority",
+//                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
+//                                + AbstractRequest.COLUMN_PRIORITY) },
+//        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_update_request_id",
+//                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+@DiscriminatorValue(AbstractFeatureRequest.UPDATE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-public class FeatureUpdateRequest extends AbstractFeatureUpdateRequest {
+public class FeatureUpdateRequest extends AbstractFeatureRequest {
+
+    @Column(name = "provider_id", nullable = false)
+    @NotBlank(message = "Provider id is required")
+    private String providerId;
+
+    /**
+     * Information Package ID for REST request
+     */
+    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
+    @Convert(converter = FeatureUrnConverter.class)
+    private FeatureUniformResourceName urn;
 
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
     @Type(type = "jsonb")
@@ -67,6 +80,22 @@ public class FeatureUpdateRequest extends AbstractFeatureUpdateRequest {
         request.setUrn(feature.getUrn());
         request.setFeature(feature);
         return request;
+    }
+
+    public FeatureUniformResourceName getUrn() {
+        return urn;
+    }
+
+    public void setUrn(FeatureUniformResourceName urn) {
+        this.urn = urn;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public Feature getFeature() {

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
-import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
@@ -43,16 +42,24 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  *
  */
 @Entity
-@Table(name = "t_feature_creation_request",
-        indexes = { @Index(name = "idx_feature_creation_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
-                @Index(name = "idx_feature_creation_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
-                @Index(name = "idx_feature_step_registration_priority",
-                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
-                                + AbstractRequest.COLUMN_PRIORITY),
-                @Index(name = "idx_feature_creation_group_id", columnList = AbstractFeatureRequest.GROUP_ID) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_creation_request_id",
-                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
-public class FeatureCreationRequest extends AbstractFeatureCreationRequest {
+@DiscriminatorValue(AbstractFeatureRequest.CREATION)
+//@Table(name = "t_feature_creation_request",
+//        indexes = { @Index(name = "idx_feature_creation_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
+//                @Index(name = "idx_feature_creation_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
+//                @Index(name = "idx_feature_step_registration_priority",
+//                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
+//                                + AbstractRequest.COLUMN_PRIORITY),
+//                @Index(name = "idx_feature_creation_group_id", columnList = AbstractFeatureRequest.GROUP_ID) },
+//        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_creation_request_id",
+//                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+public class FeatureCreationRequest extends AbstractFeatureRequest {
+
+    @Column(name = "provider_id", nullable = false)
+    @NotBlank(message = "Provider id is required")
+    private String providerId;
+
+    @Embedded
+    private FeatureCreationMetadataEntity metadata;
 
     @Column(columnDefinition = "jsonb", name = "feature", nullable = false)
     @Type(type = "jsonb")
@@ -88,6 +95,22 @@ public class FeatureCreationRequest extends AbstractFeatureCreationRequest {
 
     public void setFeatureEntity(FeatureEntity featureEntity) {
         this.featureEntity = featureEntity;
+    }
+
+    public FeatureCreationMetadataEntity getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(FeatureCreationMetadataEntity metadata) {
+        this.metadata = metadata;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
 }

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import com.google.common.collect.Lists;
+import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -29,7 +32,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,11 +41,9 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.ILightFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.LightFeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
@@ -60,9 +60,6 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
                 "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
 public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
-
-    @Autowired
-    protected ILightFeatureCreationRequestRepository featureCreationRequestLightRepo;
 
     @SpyBean
     private IPublisher publisherSpy;
@@ -270,11 +267,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         // check that half of the FeatureCreationRequest with step to LOCAL_SCHEDULED
         // have their priority to HIGH and half to AVERAGE
-        Page<LightFeatureCreationRequest> scheduled = this.featureCreationRequestLightRepo
+        Page<ILightFeatureCreationRequest> scheduled = this.featureCreationRequestRepo
                 .findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize()));
         int highPriorityNumber = 0;
         int otherPriorityNumber = 0;
-        for (LightFeatureCreationRequest request : scheduled) {
+        for (ILightFeatureCreationRequest request : scheduled) {
             if (request.getPriority().equals(PriorityLevel.HIGH)) {
                 highPriorityNumber++;
             } else {

@@ -27,19 +27,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.modules.feature.dao.ILightFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version"
+//        , "spring.jpa.show-sql=true"
+})
 @ActiveProfiles(value = { "noscheduler", "nohandler" })
 public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
-
-    @Autowired
-    protected ILightFeatureCreationRequestRepository featureCreationRequestLightRepo;
 
     @Autowired
     private IFeatureCreationService featureService;

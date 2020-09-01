@@ -18,19 +18,59 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 @Repository
 public interface IFeatureCreationRequestRepository extends JpaRepository<FeatureCreationRequest, Long> {
 
-    public Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
+    Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
 
     @Query("select distinct fcr.requestId from FeatureCreationRequest fcr")
-    public Set<String> findRequestId();
+    Set<String> findRequestId();
+
+
+    Page<ILightFeatureCreationRequest> findByStep(FeatureRequestStep step, Pageable page);
+
+    /**
+     * Get a page of {@link ILightFeatureCreationRequest} with specified step.
+     * A creation request cannot be scheduled if one is already scheduled with same provider id.
+     * @param now current date we not schedule future request
+     * @return a list of {@link ILightFeatureCreationRequest}
+     */
+    @Query("select request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
+            + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
+            + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
+            + " request.id as id, request.errors as errors, request.groupId as groupId"
+            + " from FeatureCreationRequest request where request.providerId not in ("
+            + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
+            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
+    Page<ILightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
+            @Param("now") OffsetDateTime now, Pageable page);
+
+    /**
+     * Update {@link FeatureRequestStep} step
+     * @param step new {@link FeatureRequestStep}
+     * @param ids id of {@link FeatureCreationRequest} to update
+     */
+    @Modifying
+    @Query("update FeatureCreationRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
+    void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 }

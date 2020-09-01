@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -42,13 +43,9 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  *
  */
 @Entity
-@Table(name = "t_feature_copy_request")
-public class FeatureCopyRequest extends AbstractRequest {
-
-    @Id
-    @SequenceGenerator(name = "featureCopyRequest", initialValue = 1, sequenceName = "seq_feature_copy_request")
-    @GeneratedValue(generator = "featureCopyRequest", strategy = GenerationType.SEQUENCE)
-    private Long id;
+//@Table(name = "t_feature_copy_request")
+@DiscriminatorValue(AbstractFeatureRequest.COPY)
+public class FeatureCopyRequest extends AbstractFeatureRequest {
 
     @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
     @Convert(converter = FeatureUrnConverter.class)
@@ -80,14 +77,6 @@ public class FeatureCopyRequest extends AbstractRequest {
 
     public void setUrn(FeatureUniformResourceName urn) {
         this.urn = urn;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getStorage() {

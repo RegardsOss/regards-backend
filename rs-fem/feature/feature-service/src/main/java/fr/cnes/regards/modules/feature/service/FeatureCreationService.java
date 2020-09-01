@@ -57,13 +57,12 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.ILightFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.LightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -104,9 +103,6 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Autowired
     private IFeatureCreationRequestRepository featureCreationRequestRepo;
-
-    @Autowired
-    private ILightFeatureCreationRequestRepository featureCreationRequestLightRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -248,14 +244,14 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         Set<JobParameter> jobParameters = Sets.newHashSet();
         Set<String> featureIdsScheduled = new HashSet<>();
         Set<Long> requestIds = new HashSet<>();
-        List<LightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
+        List<ILightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
-        List<LightFeatureCreationRequest> dbRequests = this.featureCreationRequestLightRepo
+        List<ILightFeatureCreationRequest> dbRequests = this.featureCreationRequestRepo
                 .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
-                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate")))).getContent();
 
         if (!dbRequests.isEmpty()) {
-            for (LightFeatureCreationRequest request : dbRequests) {
+            for (ILightFeatureCreationRequest request : dbRequests) {
                 // we will schedule only one feature request for a feature id
                 if (!featureIdsScheduled.contains(request.getProviderId())) {
                     metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_SCHEDULED);
@@ -264,7 +260,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                     featureIdsScheduled.add(request.getProviderId());
                 }
             }
-            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
+            featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
             jobParameters.add(new JobParameter(FeatureCreationJob.IDS_PARAMETER, requestIds));
 
