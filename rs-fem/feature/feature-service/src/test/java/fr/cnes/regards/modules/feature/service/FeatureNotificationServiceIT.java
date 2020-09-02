@@ -78,7 +78,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // use it only to initialize Feature
         List<FeatureCreationRequestEvent> list = new ArrayList<>();
-        initFeatureCreationRequestEvent(list, 2);
+        initFeatureCreationRequestEvent(list, 2, true);
         list.get(0).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                    EntityType.DATA, "tenant", 1));
         list.get(1).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,

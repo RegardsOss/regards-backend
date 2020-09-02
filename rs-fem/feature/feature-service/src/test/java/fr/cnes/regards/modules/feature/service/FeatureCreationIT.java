@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
@@ -28,6 +30,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -83,8 +86,9 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize());
-
+        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize(), true);
+        // lets add one feature which is the same as the first to test versioning code
+        super.initFeatureCreationRequestEvent(events, 1, false);
         // clear file to test notifications without files
         events.stream().forEach(request -> request.getFeature().getFiles().clear());
         this.featureCreationService.registerRequests(events);
@@ -110,6 +114,38 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         Mockito.verify(publisherSpy).publish(recordsCaptor.capture());
         assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getValue().size());
+
+        events.clear();
+        // lets add one feature which is the same as the first to test versioning code
+        super.initFeatureCreationRequestEvent(events, 1, false);
+        // clear file to test notifications without files
+        events.stream().forEach(request -> request.getFeature().getFiles().clear());
+        this.featureCreationService.registerRequests(events);
+
+        assertEquals(1, this.featureCreationRequestRepo.count());
+
+        this.featureCreationService.scheduleRequests();
+
+        cpt = 0;
+        do {
+            featureNumberInDatabase = this.featureRepo.count();
+            Thread.sleep(1000);
+            cpt++;
+        } while ((cpt < 100) && (featureNumberInDatabase != (properties.getMaxBulkSize()+1)));
+
+        assertEquals(properties.getMaxBulkSize() +1, this.featureRepo.count());
+
+
+        // in that case all features hasn't been saved
+        if (cpt == 100) {
+            fail("Doesn't have all features at the end of time");
+        }
+
+        // id0 come from super.init
+        List<IUrnVersionByProvider> urnsForId1 = featureRepo
+                .findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0"));
+        Assert.assertTrue(featureRepo.findByUrn(urnsForId1.get(0).getUrn()).getFeature().isLast());
+        Assert.assertFalse(featureRepo.findByUrn(urnsForId1.get(1).getUrn()).getFeature().isLast());
     }
 
     @Test
@@ -120,7 +156,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize());
+        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize(), true);
 
         // clear file to test notifications without files and put the same request id
         events.stream().forEach(request -> {
@@ -156,7 +192,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize());
+        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize(), true);
 
         Feature f = events.get(0).getFeature();
         f.setEntityType(null);
@@ -235,7 +271,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2));
+        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
+                                              true);
 
         // we will set all priority to low for the (properties.getMaxBulkSize() / 2) last event
         for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize()
