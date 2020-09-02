@@ -51,18 +51,7 @@ public abstract class AbstractFeatureUpdateRequest extends AbstractFeatureReques
 
     @Column(name = "provider_id", nullable = false)
     @NotBlank(message = "Provider id is required")
-    private String providerId;
-
-    /**
-     * Information Package ID for REST request
-     */
-    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
-    @Convert(converter = FeatureUrnConverter.class)
-    private FeatureUniformResourceName urn;
-
-    @ManyToOne
-    @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_id"))
-    private FeatureEntity featureEntity;
+    protected String providerId;
 
     @Override
     public Long getId() {
@@ -73,14 +62,6 @@ public abstract class AbstractFeatureUpdateRequest extends AbstractFeatureReques
         this.id = id;
     }
 
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
-    }
-
     public String getProviderId() {
         return providerId;
     }
@@ -89,11 +70,4 @@ public abstract class AbstractFeatureUpdateRequest extends AbstractFeatureReques
         this.providerId = providerId;
     }
 
-    public FeatureEntity getFeatureEntity() {
-        return featureEntity;
-    }
-
-    public void setFeatureEntity(FeatureEntity featureEntity) {
-        this.featureEntity = featureEntity;
-    }
 }

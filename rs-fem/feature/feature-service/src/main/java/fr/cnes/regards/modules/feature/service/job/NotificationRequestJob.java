@@ -46,7 +46,15 @@ import io.micrometer.core.instrument.Timer;
  */
 public class NotificationRequestJob extends AbstractJob<Void> {
 
-    public static final String IDS_PARAMETER = "ids";
+    public static final String NOTIFICATION_REQUEST_IDS = "notification_request_ids";
+
+    public static final String DELETION_REQUEST_IDS = "deletion_request_ids";
+
+    public static final String COPY_REQUEST_IDS = "copy_request_ids";
+
+    public static final String UPDATE_REQUEST_IDS = "update_request_ids";
+
+    public static final String CREATION_REQUEST_IDS = "creation_request_ids";
 
     private List<NotificationRequest> notificationRequests;
 
@@ -65,7 +73,8 @@ public class NotificationRequestJob extends AbstractJob<Void> {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
-        notificationRequests = this.notificationRequestRepo.findAllById(getValue(parameters, IDS_PARAMETER, type));
+        notificationRequests = this.notificationRequestRepo.findAllById(getValue(parameters,
+                                                                                 NOTIFICATION_REQUEST_IDS, type));
     }
 
     @Override

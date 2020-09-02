@@ -120,6 +120,10 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         List<FeatureDeletionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
         // FIXME changer ce fonctionnement!
+        this.creationRequestRepo.findRequestId();
+        this.creationRequestRepo.findRequestId();
+        this.creationRequestRepo.findRequestId();
+        this.creationRequestRepo.findRequestId();
         Set<String> existingRequestIds = this.deletionRepo.findRequestId();
 
         events.forEach(item -> prepareFeatureDeletionRequest(item, grantedRequests, requestInfo, existingRequestIds));
@@ -280,7 +284,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
                         .build(unknown, unknown, fdr.getUrn(), IGeometry.unlocated(), EntityType.DATA, unknown);
                 fdr.setToNotify(fakeFeature);
                 fdr.setAlreadyDeleted(true);
-                fdr.setStep(FeatureRequestStep.TO_BE_NOTIFIED);
+                fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
             }
             deletionRepo.saveAll(requestsAlreadyDeleted);
 
@@ -323,7 +327,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests) {
         // PREPARE PROPAGATION to NOTIFIER
         for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
-            entry.getKey().setStep(FeatureRequestStep.TO_BE_NOTIFIED);
+            entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
             entry.getKey().setAlreadyDeleted(false);
             entry.getKey().setToNotify(entry.getValue().getFeature());
         }

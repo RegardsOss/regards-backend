@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -225,7 +226,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     public int scheduleRequests() {
 
         long scheduleStart = System.currentTimeMillis();
-        List<LightFeatureUpdateRequest> requestsToSchedule = this.lightFeatureUpdateRequestRepo.findRequestsToSchedule(
+        Page<LightFeatureUpdateRequest> requestsToSchedule = this.lightFeatureUpdateRequestRepo.findRequestsToSchedule(
                 FeatureRequestStep.LOCAL_DELAYED,
                 OffsetDateTime.now(),
                 PageRequest.of(0, this.properties.getMaxBulkSize()),
@@ -233,7 +234,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         if (!requestsToSchedule.isEmpty()) {
 
-            filterUrnInDeletion(requestsToSchedule);
+            filterUrnInDeletion(requestsToSchedule.getContent());
             if (!requestsToSchedule.isEmpty()) {
 
                 // Compute request ids
@@ -252,14 +253,14 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // the job priority will be set according the priority of the first request to schedule
                 JobInfo jobInfo = new JobInfo(false,
-                                              requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                              requestsToSchedule.getContent().get(0).getPriority().getPriorityLevel(),
                                               jobParameters,
                                               authResolver.getUser(),
                                               FeatureUpdateJob.class.getName());
                 jobInfoService.createAsQueued(jobInfo);
 
                 LOGGER.trace("------------->>> {} update requests scheduled in {} ms",
-                             requestsToSchedule.size(),
+                             requestsToSchedule.getNumberOfElements(),
                              System.currentTimeMillis() - scheduleStart);
                 return requestIds.size();
             }
@@ -374,7 +375,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         featureRepo.saveAll(entities);
         featureUpdateRequestRepo.saveAll(errorRequests);
-        lightFeatureUpdateRequestRepo.updateStep(FeatureRequestStep.TO_BE_NOTIFIED, successfulRequestIds);
+        lightFeatureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequestIds);
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms",
                      requests.size(),

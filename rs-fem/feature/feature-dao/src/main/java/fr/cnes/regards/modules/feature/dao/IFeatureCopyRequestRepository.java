@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -41,12 +41,12 @@ public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopy
 
     /**
      * Get a page of {@link FeatureCopyRequest} with specified step.
-     * @param now current date we will not schedule future requests
+     * @param requestDate current date we will not schedule future requests
      * @return a list of {@link FeatureCopyRequest}
      */
-    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :localDelayed and fcr.requestDate <= :now")
-    List<FeatureCopyRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
-            @Param("now") OffsetDateTime now, Pageable page);
+    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :step and fcr.requestDate <= :requestDate")
+    Page<FeatureCopyRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("requestDate") OffsetDateTime requestDate,
+            Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step
@@ -55,5 +55,5 @@ public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopy
      */
     @Modifying
     @Query("update FeatureCopyRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
-    public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
+    void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 }

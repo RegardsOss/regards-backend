@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Kevin Marchois
@@ -62,12 +60,8 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @GeneratedValue(generator = "featureDeleteRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
-    @Convert(converter = FeatureUrnConverter.class)
-    private FeatureUniformResourceName urn;
-
     /**
-     * Should be null until it reaches {@link FeatureRequestStep#TO_BE_NOTIFIED}
+     * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
      */
     @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
     @Type(type = "jsonb")
@@ -88,14 +82,6 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         request.setPriority(priority);
 
         return request;
-    }
-
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
     }
 
     @Override

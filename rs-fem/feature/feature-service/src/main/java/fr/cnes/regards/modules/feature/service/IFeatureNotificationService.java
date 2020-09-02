@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
+import java.util.Set;
 
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
@@ -37,8 +39,9 @@ public interface IFeatureNotificationService extends IFeatureDeniedService {
     int registerRequests(List<NotificationRequestEvent> events);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * @return number of {@link NotificationRequest} scheduled
+     * Schedule one {@link fr.cnes.regards.modules.feature.service.job.NotificationRequestJob} for each request type
+     * that has requests {@link fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
+     * @return number of requests scheduled
      */
     int scheduleRequests();
 
@@ -49,7 +52,7 @@ public interface IFeatureNotificationService extends IFeatureDeniedService {
 
     int sendToNotifier();
 
-    void handleNotificationSuccess();
+    void handleNotificationSuccess(Set<AbstractFeatureRequest> success);
 
     void handleNotificationError();
 }

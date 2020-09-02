@@ -40,14 +40,14 @@ public abstract class AbstractFeatureCreationRequest extends AbstractFeatureRequ
     @SequenceGenerator(name = "featureCreationRequestSequence", initialValue = 1,
             sequenceName = "seq_feature_creation_request")
     @GeneratedValue(generator = "featureCreationRequestSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
+    protected Long id;
 
     @Column(name = "provider_id", nullable = false)
     @NotBlank(message = "Provider id is required")
-    private String providerId;
+    protected String providerId;
 
     @Embedded
-    private FeatureCreationMetadataEntity metadata;
+    protected FeatureCreationMetadataEntity metadata;
 
     @Override
     public Long getId() {

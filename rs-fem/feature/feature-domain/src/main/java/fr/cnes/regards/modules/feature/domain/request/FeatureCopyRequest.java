@@ -43,16 +43,12 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  */
 @Entity
 @Table(name = "t_feature_copy_request")
-public class FeatureCopyRequest extends AbstractRequest {
+public class FeatureCopyRequest extends AbstractFeatureRequest {
 
     @Id
     @SequenceGenerator(name = "featureCopyRequest", initialValue = 1, sequenceName = "seq_feature_copy_request")
     @GeneratedValue(generator = "featureCopyRequest", strategy = GenerationType.SEQUENCE)
     private Long id;
-
-    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
-    @Convert(converter = FeatureUrnConverter.class)
-    private FeatureUniformResourceName urn;
 
     @Column(name = "storage", nullable = false)
     private String storage;
@@ -72,14 +68,6 @@ public class FeatureCopyRequest extends AbstractRequest {
         request.setChecksum(checksum);
 
         return request;
-    }
-
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
     }
 
     public Long getId() {

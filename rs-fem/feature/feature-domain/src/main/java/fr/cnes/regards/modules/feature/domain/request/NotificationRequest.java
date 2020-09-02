@@ -45,16 +45,12 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
         indexes = { @Index(name = "idx_notification_request_urn", columnList = AbstractRequest.COLUMN_URN) },
         uniqueConstraints = { @UniqueConstraint(name = "uk_notification_request_id",
                 columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
-public class NotificationRequest extends AbstractRequest {
+public class NotificationRequest extends AbstractFeatureRequest {
 
     @Id
     @SequenceGenerator(name = "notificationRequest", initialValue = 1, sequenceName = "seq_notification_request")
     @GeneratedValue(generator = "notificationRequest", strategy = GenerationType.SEQUENCE)
     private Long id;
-
-    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
-    @Convert(converter = FeatureUrnConverter.class)
-    private FeatureUniformResourceName urn;
 
     public static NotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
@@ -65,14 +61,6 @@ public class NotificationRequest extends AbstractRequest {
         request.setPriority(priority);
 
         return request;
-    }
-
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
     }
 
     @Override

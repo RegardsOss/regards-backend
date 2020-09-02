@@ -59,29 +59,29 @@ public abstract class AbstractRequest {
     protected static final String COLUMN_STATE = "state";
 
     @Column(name = COLUMN_REQUEST_ID, length = 36, nullable = false, updatable = false)
-    private String requestId;
+    protected String requestId;
 
     @Column(name = COLUMN_REQUEST_OWNER, length = 128, nullable = false, updatable = false)
-    private String requestOwner;
+    protected String requestOwner;
 
     @NotNull(message = "Feature request state is required")
     @Enumerated(EnumType.STRING)
     @Column(name = COLUMN_STATE, length = 50, nullable = false)
-    private RequestState state;
+    protected RequestState state;
 
     /**
      * External request registration date
      */
     @Column(name = COLUMN_REQUEST_TIME, nullable = false, updatable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime requestDate;
+    protected OffsetDateTime requestDate;
 
     /**
      * Internal request registration date
      */
     @Column(name = COLUMN_REGISTRATION_DATE, nullable = false, updatable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime registrationDate;
+    protected OffsetDateTime registrationDate;
 
     /**
      * All internal request steps including local and remote ones
@@ -89,12 +89,12 @@ public abstract class AbstractRequest {
     @NotNull(message = "Feature request step is required")
     @Enumerated(EnumType.STRING)
     @Column(name = COLUMN_STEP, length = 50, nullable = false)
-    private FeatureRequestStep step;
+    protected FeatureRequestStep step;
 
     @NotNull(message = "Priority of the request")
     @Enumerated(EnumType.ORDINAL)
     @Column(name = COLUMN_PRIORITY, length = 50, nullable = false)
-    private PriorityLevel priority;
+    protected PriorityLevel priority;
 
     @SuppressWarnings("unchecked")
     protected <T extends AbstractRequest> T with(String requestId, String requestOwner, OffsetDateTime requestDate,

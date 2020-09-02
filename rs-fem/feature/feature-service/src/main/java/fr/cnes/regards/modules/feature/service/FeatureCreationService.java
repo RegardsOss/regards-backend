@@ -393,7 +393,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
         if (!requestWithoutFilesIds.isEmpty()) {
             // notify creation of feature without files
-            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.TO_BE_NOTIFIED, requestWithoutFilesIds);
+            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, requestWithoutFilesIds);
 
         }
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",

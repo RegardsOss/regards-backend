@@ -48,7 +48,8 @@ public enum FeatureRequestStep {
     REMOTE_STORAGE_REQUESTED(true, true),
 
     // this request handling still needs to be notified
-    TO_BE_NOTIFIED,
+    LOCAL_TO_BE_NOTIFIED,
+    LOCAL_NOTIFICATION_SCHEDULED,
     REMOTE_NOTIFICATION_REQUESTED(true, true),
     REMOTE_NOTIFICATION_SUCCESS, REMOTE_NOTIFICATION_ERROR;
 

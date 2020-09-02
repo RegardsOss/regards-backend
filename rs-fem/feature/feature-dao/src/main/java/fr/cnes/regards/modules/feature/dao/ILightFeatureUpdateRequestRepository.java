@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -52,7 +54,7 @@ public interface ILightFeatureUpdateRequestRepository extends JpaRepository<Ligh
     @Query("select request from LightFeatureUpdateRequest request where request.urn not in ("
             + " select scheduledRequest.urn from LightFeatureUpdateRequest scheduledRequest"
             + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
-    public List<LightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
+    Page<LightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime now, Pageable page, @Param("delay") OffsetDateTime delay);
 
     /**
@@ -62,6 +64,5 @@ public interface ILightFeatureUpdateRequestRepository extends JpaRepository<Ligh
      */
     @Modifying
     @Query("update LightFeatureUpdateRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
-    public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
-
+    void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 }
