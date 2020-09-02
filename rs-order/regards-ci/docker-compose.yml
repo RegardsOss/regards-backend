@@ -6,7 +6,7 @@ services:
       - regards_IT_network
 
   rs-postgres:
-    image: postgres:9.6
+    image: postgres:11.5
     environment:
       - POSTGRES_PASSWORD=azertyuiop123456789
       - POSTGRES_USER=azertyuiop123456789

@@ -63,11 +63,11 @@ public class AbstractProcessingTest {
 
     protected static final String DBNAME = "testdb";
 
-    protected static final String PGSQL_USER = "user";
+    protected static final String PGSQL_USER = "azertyuiop123456789";
 
-    protected static final String PGSQL_SECRET = "secret";
+    protected static final String PGSQL_SECRET = "azertyuiop123456789";
 
-    protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:9.6.2")
+    protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5")
             .withDatabaseName(DBNAME).withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
 
     protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.6.5-management")
@@ -119,19 +119,19 @@ public class AbstractProcessingTest {
                 Try.run(() -> {
                     LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
                     Container.ExecResult resultA = postgreSQLContainer
-                            .execInContainer("createdb", "-U", "user", "db_" + TENANT_PROJECTA);
+                            .execInContainer("createdb", "-U", PGSQL_USER, "db_" + TENANT_PROJECTA);
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}", TENANT_PROJECTA,
                                 resultA.getExitCode(), resultA.getStdout(), resultA.getStderr());
 
                     LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
                     Container.ExecResult resultB = postgreSQLContainer
-                            .execInContainer("createdb", "-U", "user", "db_" + TENANT_PROJECTB);
+                            .execInContainer("createdb", "-U", PGSQL_USER, "db_" + TENANT_PROJECTB);
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}", TENANT_PROJECTB,
                                 resultB.getExitCode(), resultB.getStdout(), resultB.getStderr());
 
                     LOGGER.info("################## Creating DB for r2dbc");
                     Container.ExecResult r2dbc = postgreSQLContainer
-                            .execInContainer("createdb", "-U", "user", "r2dbcdb");
+                            .execInContainer("createdb", "-U", PGSQL_USER, "r2dbcdb");
                     LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}", r2dbc.getExitCode(),
                                 r2dbc.getStdout(), r2dbc.getStderr());
                 }).onFailure(t -> LOGGER.error(t.getMessage(), t));
@@ -201,8 +201,10 @@ public class AbstractProcessingTest {
                 "regards.amqp.microservice.instanceIdentifier=rs-processing-" + new Random().nextInt(100_000_000),
 
                 "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
-                "cloud.config.address=localhost", "cloud.config.port=9031",
-                "cloud.config.searchLocations=classpath:/regards", "cloud.registry.host=localhost",
+                "cloud.config.address=localhost",
+                "cloud.config.port=9031",
+                "cloud.config.searchLocations=classpath:/regards",
+                "cloud.registry.host=localhost",
                 "cloud.registry.port=9032"
             ).applyTo(applicationContext);
         }
