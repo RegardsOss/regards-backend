@@ -247,7 +247,8 @@ public class AbstractProcessingTest {
 
     private static boolean onCi() {
         return checkSocketHostPortAvailability("rs-postgres", 5432)
-            && checkHttpHostPortAvailability("rs-rabbitmq", 15762);
+        //    && checkHttpHostPortAvailability("rs-rabbitmq", 15762)
+        ;
     }
 
     private static boolean checkSocketHostPortAvailability(String host, int port) {
