@@ -211,7 +211,7 @@ public class AbstractProcessingTest {
     }
 
     private static boolean onCi() {
-        return checkHostPortAvailability("rs-postgres", 5432) && checkHostPortAvailability("rs-rabbitmq", 5762);
+        return checkHostPortAvailability("rs-postgres", 5432) && checkHostPortAvailability("rs-rabbitmq", 15762);
     }
 
     private static boolean checkHostPortAvailability(String host, int port) {
