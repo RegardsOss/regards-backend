@@ -107,7 +107,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
         try {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class); }
-        catch(ClassNotFoundException e) { return false; }
+        catch(Exception e) { return false; }
     }
 
     private Mono<Boolean> roleIsUnder(PUserAuth auth, String role) {
