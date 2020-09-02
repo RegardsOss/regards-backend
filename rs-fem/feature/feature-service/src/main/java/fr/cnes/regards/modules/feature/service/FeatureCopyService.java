@@ -41,7 +41,6 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -106,12 +105,14 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
 
         copies.forEach(item -> validateFeatureCopyRequest(item, grantedRequests, requestInfo));
-        LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests prepared in {} ms",
+                     grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
         featureCopyRequestRepo.saveAll(grantedRequests);
-        LOGGER.trace("------------->>> {} creation requests registered in {} ms", grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests registered in {} ms",
+                     grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -132,14 +133,22 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
-                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        null,
+                                                        null,
+                                                        RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
-                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED,
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
+                                                    item.getRequestId(),
+                                                    item.getRequestOwner(),
+                                                    null,
+                                                    item.getUrn(),
+                                                    RequestState.GRANTED,
                                                     null));
 
         grantedRequests.add(item);
@@ -155,8 +164,11 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
         Set<Long> requestIds = new HashSet<>();
 
         List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo
-                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
-                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+                .findByStep(FeatureRequestStep.LOCAL_DELAYED,
+                            OffsetDateTime.now(),
+                            PageRequest.of(0,
+                                           properties.getMaxBulkSize(),
+                                           Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
         requestIds.addAll(requestsToSchedule.stream().map(request -> request.getId()).collect(Collectors.toList()));
         if (!requestsToSchedule.isEmpty()) {
 
@@ -165,11 +177,15 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             jobParameters.add(new JobParameter(FeatureCopyJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                    jobParameters, authResolver.getUser(), FeatureCopyJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false,
+                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          jobParameters,
+                                          authResolver.getUser(),
+                                          FeatureCopyJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms", requestsToSchedule.size(),
+            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms",
+                         requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
 
             return requestIds.size();
@@ -187,7 +203,7 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
         // map of FeatureEntity by urn
         Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = this.featureRepo
                 .findByUrnIn(requests.stream().map(FeatureCopyRequest::getUrn).collect(Collectors.toList())).stream()
-                .map(Function.identity()).collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
         for (FeatureCopyRequest request : requests) {
             if (entitiesToUpdate.get(request.getUrn()) != null) {
                 updateFeature(entitiesToUpdate.get(request.getUrn()).getFeature(), request, successCopyRequest);
@@ -199,11 +215,12 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
 
         // update those with a error status
         this.featureCopyRequestRepo.saveAll(requests.stream().filter(request -> !successCopyRequest.contains(request))
-                .collect(Collectors.toList()));
+                                                    .collect(Collectors.toList()));
         // Successful requests are deleted now!
         this.featureCopyRequestRepo.deleteInBatch(successCopyRequest);
 
-        LOGGER.trace("------------->>> {} copy request treated in {} ms", successCopyRequest.size(),
+        LOGGER.trace("------------->>> {} copy request treated in {} ms",
+                     successCopyRequest.size(),
                      System.currentTimeMillis() - processStart);
     }
 

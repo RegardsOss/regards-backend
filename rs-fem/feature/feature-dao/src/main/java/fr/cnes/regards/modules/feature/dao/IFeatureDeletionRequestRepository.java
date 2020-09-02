@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureDeletionRequestRepository extends IAbstractFeatureRequest {
+public interface IFeatureDeletionRequestRepository extends IAbstractFeatureRequestRepository<FeatureDeletionRequest> {
 
     Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
 

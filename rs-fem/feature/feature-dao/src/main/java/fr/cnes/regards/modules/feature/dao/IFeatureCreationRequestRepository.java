@@ -19,27 +19,21 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 @Repository
-public interface IFeatureCreationRequestRepository extends IAbstractFeatureRequest {
+public interface IFeatureCreationRequestRepository extends IAbstractFeatureRequestRepository<FeatureCreationRequest> {
 
     Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
 

@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Repository
-public interface IAbstractFeatureRequest extends JpaRepository<AbstractFeatureRequest, Long> {
+public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequest> extends JpaRepository<T, Long> {
 
     @Query("select distinct afr.requestId from AbstractFeatureRequest afr")
     Set<String> findRequestId();

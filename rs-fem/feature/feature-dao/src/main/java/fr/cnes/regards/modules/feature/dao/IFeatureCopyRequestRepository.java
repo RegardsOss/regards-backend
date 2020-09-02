@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,7 +36,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureCopyRequestRepository extends IAbstractFeatureRequest {
+public interface IFeatureCopyRequestRepository extends IAbstractFeatureRequestRepository<FeatureCopyRequest> {
 
     /**
      * Get a page of {@link FeatureCopyRequest} with specified step.

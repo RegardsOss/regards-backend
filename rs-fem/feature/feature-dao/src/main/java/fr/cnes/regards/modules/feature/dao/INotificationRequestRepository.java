@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,7 +37,7 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
  *
  */
 @Repository
-public interface INotificationRequestRepository extends IAbstractFeatureRequest {
+public interface INotificationRequestRepository extends IAbstractFeatureRequestRepository<NotificationRequest> {
 
     @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= :now")
     Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step,
