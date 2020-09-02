@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.FlywayDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import io.vavr.collection.Stream;
 import io.vavr.control.Try;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,6 +33,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Random;
 
 @RunWith(SpringRunner.class)
@@ -134,6 +138,30 @@ public class AbstractProcessingTest {
                             .execInContainer("createdb", "-U", PGSQL_USER, "r2dbcdb");
                     LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}", r2dbc.getExitCode(),
                                 r2dbc.getStdout(), r2dbc.getStderr());
+                }).onFailure(t -> LOGGER.error(t.getMessage(), t));
+            }
+            else {
+                Try.run(() -> {
+                    Connection connection = DriverManager.getConnection(
+                            "jdbc:postgresql://rs-postgres:5432/postgres",
+                            PGSQL_USER, PGSQL_SECRET
+                    );
+
+                    Stream.of("db_" + TENANT_PROJECTA, "db_" + TENANT_PROJECTB, "r2dbc")
+                            .forEach(dbName -> {
+                                try {
+                                    LOGGER.info("################## Creating DB {}", dbName);
+                                    Statement statement = connection.createStatement();
+                                    int resultA = statement.executeUpdate("CREATE DATABASE " + dbName + ";");
+                                    statement.close();
+                                    LOGGER.info("################## Created DB {}", dbName);
+                                }
+                                catch(Exception e) {
+                                    LOGGER.error("################## Error creating DB {}", dbName, e);
+                                }
+                            });
+
+                    connection.close();
                 }).onFailure(t -> LOGGER.error(t.getMessage(), t));
             }
 
