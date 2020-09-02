@@ -38,13 +38,13 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
  *
  */
 @Repository
-public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
+public interface INotificationRequestRepository extends IAbstractFeatureRequest {
 
     @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= :now")
-    public Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step,
+    Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime now, Pageable page);
 
-    public void deleteByIdIn(Set<Long> ids);
+    void deleteByIdIn(Set<Long> ids);
 
     /**
      * Update {@link NotificationRequest} step
@@ -53,8 +53,5 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
      */
     @Modifying
     @Query("update NotificationRequest nr set nr.step = :newStep where nr.id in :ids ")
-    public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
-
-    @Query("select distinct fcr.requestId from NotificationRequest fcr")
-    public Set<String> findRequestId();
+    void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 }

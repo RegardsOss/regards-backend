@@ -39,13 +39,9 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 @Repository
-public interface IFeatureCreationRequestRepository extends JpaRepository<FeatureCreationRequest, Long> {
+public interface IFeatureCreationRequestRepository extends IAbstractFeatureRequest {
 
     Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
-
-    @Query("select distinct fcr.requestId from FeatureCreationRequest fcr")
-    Set<String> findRequestId();
-
 
     Page<ILightFeatureCreationRequest> findByStep(FeatureRequestStep step, Pageable page);
 

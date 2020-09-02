@@ -34,18 +34,18 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 @Repository
 public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long> {
 
-    public FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
+    FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
-    public FeatureEntity findByUrn(FeatureUniformResourceName urn);
+    FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
-    public void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
+    void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
 
-    public List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
+    List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
 
-    public void deleteByIdIn(Set<Long> ids);
+    void deleteByIdIn(Set<Long> ids);
 
     // FIXME remove just for test
-    public long countByLastUpdateGreaterThan(OffsetDateTime from);
+    long countByLastUpdateGreaterThan(OffsetDateTime from);
 
     /**
      * List existing provider identifiers in specified list

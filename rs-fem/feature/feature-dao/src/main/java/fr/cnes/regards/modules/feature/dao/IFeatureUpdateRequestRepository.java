@@ -42,16 +42,13 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  *
  */
 @Repository
-public interface IFeatureUpdateRequestRepository extends JpaRepository<FeatureUpdateRequest, Long> {
+public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest {
 
     /**
      * Retrieve update requests to process sorted by request date.<br/>
      * Sorting requests is useful to manage several update requests on a same target entity!
      */
     List<FeatureUpdateRequest> findAllByIdInOrderByRequestDateAsc(Set<Long> ids);
-
-    @Query("select distinct fur.requestId from FeatureUpdateRequest fur")
-    Set<String> findRequestId();
 
 
     /**

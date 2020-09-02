@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopyRequest, Long> {
+public interface IFeatureCopyRequestRepository extends IAbstractFeatureRequest {
 
     /**
      * Get a page of {@link FeatureCopyRequest} with specified step.
