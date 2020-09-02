@@ -220,14 +220,14 @@ public class AbstractProcessingTest {
             socket.setReuseAddress(true);
             SocketAddress socketAddress = new InetSocketAddress(host, port);
             try {
-                socket.connect(socketAddress, 500);
+                socket.connect(socketAddress, 2000);
                 LOGGER.info("{}:{} available", host, port);
                 return true;
             } finally {
                 socket.close();
             }
         } catch (Exception e) {
-            LOGGER.info("{}:{} not available", host, port);
+            LOGGER.info("{}:{} not available", host, port, e);
             return false;
         }
     }
