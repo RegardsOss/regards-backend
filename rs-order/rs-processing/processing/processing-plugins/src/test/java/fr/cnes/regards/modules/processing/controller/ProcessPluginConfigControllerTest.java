@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.testutils.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.testutils.GsonLoggingEncoder;
+import io.vavr.control.Try;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -88,7 +89,7 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
         List<ProcessPluginConfigurationRightsDTO> pluginConfigsWithUseless2 = client.findAll();
         pluginConfigsWithUseless2.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginConfiguration().getPluginId(), pc));
         assertThat(pluginConfigsWithUseless2).hasSize(initSize + 1);
-        assertThat(pluginConfigsWithUseless2).anyMatch(pc -> pc.getPluginConfiguration().getParameter("processName").getValue().equals("useless-processName-2"));
+        assertThat(pluginConfigsWithUseless2).anyMatch(pc -> Try.of(() -> pc.getPluginConfiguration().getParameter("processName").getValue().equals("useless-processName-2")).getOrElse(false));
 
         // NOW DELETE IT
         ProcessPluginConfigurationRightsDTO toBeDeleted = pluginConfigsWithUseless2.get(0);
