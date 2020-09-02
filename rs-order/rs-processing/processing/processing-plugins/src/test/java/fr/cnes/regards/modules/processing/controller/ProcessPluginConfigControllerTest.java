@@ -11,7 +11,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
@@ -28,7 +27,6 @@ import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
@@ -52,8 +50,7 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
 
         // LIST AVAILABLE CONFIGURATIONS: NOTHING YET...
         List<ProcessPluginConfigurationRightsDTO> pluginConfigs = client.findAll();
-        pluginConfigs.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginConfiguration().getPluginId(), pc));
-        assertThat(pluginConfigs).hasSize(0);
+        int initSize = pluginConfigs.size();
 
         // CREATE A CONFIG
         PluginConfiguration useless1Config = new PluginConfiguration("useless1 label", UselessProcessPlugin.class.getSimpleName());
@@ -69,7 +66,7 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
 
         String tenant = runtimeTenantResolver.getTenant();
 
-        // LIST AGAIN: THERE IS ONE CONFIG!
+        // THERE IS THE CONFIG IN THE DATABASE!
         ProcessPluginConfigurationRightsDTO fetched = client.findByUUID(UUID.fromString(created.getPluginConfiguration().getBusinessId()));
         assertThat(fetched.getPluginConfiguration().getParameter("processName").getValue()).isEqualTo("useless-processName-1");
 
@@ -90,7 +87,7 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
         // LIST AGAIN: THERE IS ONE CONFIG!
         List<ProcessPluginConfigurationRightsDTO> pluginConfigsWithUseless2 = client.findAll();
         pluginConfigsWithUseless2.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginConfiguration().getPluginId(), pc));
-        assertThat(pluginConfigsWithUseless2).hasSize(1);
+        assertThat(pluginConfigsWithUseless2).hasSize(initSize + 1);
         assertThat(pluginConfigsWithUseless2).anyMatch(pc -> pc.getPluginConfiguration().getParameter("processName").getValue().equals("useless-processName-2"));
 
         // NOW DELETE IT
@@ -100,7 +97,7 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
         // LIST AVAILABLE CONFIGURATIONS: NOTHING ANYMORE...
         List<ProcessPluginConfigurationRightsDTO> pluginConfigsFinal = client.findAll();
         pluginConfigsFinal.forEach(pc -> LOGGER.info("Found pc {}: {}", pc.getPluginConfiguration().getPluginId(), pc));
-        assertThat(pluginConfigsFinal).hasSize(0);
+        assertThat(pluginConfigsFinal).hasSize(initSize);
 
     }
 
@@ -117,10 +114,6 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
             .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port, feignSecurityManager));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         FeignSecurityManager.asSystem();
-    }
-
-    interface Values {
-        io.vavr.collection.List<PProcessDTO> processes = randomList(PProcessDTO.class, 20);
     }
 
     @RestClient(name = "rs-processing-config", contextId = "rs-processing.rest.plugin-conf.client")

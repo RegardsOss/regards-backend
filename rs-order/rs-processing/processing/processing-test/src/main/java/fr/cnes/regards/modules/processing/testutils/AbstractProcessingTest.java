@@ -18,6 +18,7 @@ import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -27,10 +28,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -160,7 +163,7 @@ public class AbstractProcessingTest {
                                     LOGGER.info("################## Created DB {}: {}", dbName, resultA);
                                 }
                                 catch(Exception e) {
-                                    LOGGER.error("################## Error creating DB {}", dbName, e);
+                                    LOGGER.error("################## Error creating DB {}: {}", dbName, e.getMessage());
                                 }
                             });
 
@@ -243,10 +246,11 @@ public class AbstractProcessingTest {
     }
 
     private static boolean onCi() {
-        return checkHostPortAvailability("rs-postgres", 5432);// && checkHostPortAvailability("rs-rabbitmq", 15762);
+        return checkSocketHostPortAvailability("rs-postgres", 5432)
+            && checkHttpHostPortAvailability("rs-rabbitmq", 15762);
     }
 
-    private static boolean checkHostPortAvailability(String host, int port) {
+    private static boolean checkSocketHostPortAvailability(String host, int port) {
         try {
             Socket socket = new Socket();
             socket.setReuseAddress(true);
@@ -263,5 +267,16 @@ public class AbstractProcessingTest {
             return false;
         }
     }
+
+    private static boolean checkHttpHostPortAvailability(String host, int port) {
+        try {
+            new URL("http://" + host + ":" + port).openStream();
+            return true;
+        } catch (Exception e) {
+            LOGGER.info("http://{}:{} not available", host, port, e);
+            return false;
+        }
+    }
+
 
 }
