@@ -61,18 +61,19 @@ public class AbstractProcessingTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProcessingTest.class);
 
-    protected static final String TENANT_PROJECTA = "PROJECTA";
+    protected static final String R2DBCDB_NAME = "r2dbcdb";
 
-    protected static final String TENANT_PROJECTB = "PROJECTB";
+    protected static final String TENANT_PROJECTA = "projecta";
 
-    protected static final String DBNAME = "testdb";
+    protected static final String TENANT_PROJECTB = "projectb";
 
     protected static final String PGSQL_USER = "azertyuiop123456789";
 
     protected static final String PGSQL_SECRET = "azertyuiop123456789";
 
+
     protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5")
-            .withDatabaseName(DBNAME).withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
+            .withDatabaseName("postgres").withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
 
     protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.6.5-management")
             .withUser("guest", "guest");
@@ -104,7 +105,7 @@ public class AbstractProcessingTest {
     }
 
     @PostConstruct public void setup() {
-        migrationHelper.migrate(dataSource, DBNAME);
+        migrationHelper.migrate(dataSource, R2DBCDB_NAME);
     }
 
     @AfterClass public static void stopContainers() {
@@ -123,19 +124,19 @@ public class AbstractProcessingTest {
                 Try.run(() -> {
                     LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
                     Container.ExecResult resultA = postgreSQLContainer
-                            .execInContainer("createdb", "-U", PGSQL_USER, "db_" + TENANT_PROJECTA);
+                            .execInContainer("createdb", "-U", PGSQL_USER, TENANT_PROJECTA);
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}", TENANT_PROJECTA,
                                 resultA.getExitCode(), resultA.getStdout(), resultA.getStderr());
 
                     LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
                     Container.ExecResult resultB = postgreSQLContainer
-                            .execInContainer("createdb", "-U", PGSQL_USER, "db_" + TENANT_PROJECTB);
+                            .execInContainer("createdb", "-U", PGSQL_USER, TENANT_PROJECTB);
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}", TENANT_PROJECTB,
                                 resultB.getExitCode(), resultB.getStdout(), resultB.getStderr());
 
                     LOGGER.info("################## Creating DB for r2dbc");
                     Container.ExecResult r2dbc = postgreSQLContainer
-                            .execInContainer("createdb", "-U", PGSQL_USER, "r2dbcdb");
+                            .execInContainer("createdb", "-U", PGSQL_USER, R2DBCDB_NAME);
                     LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}", r2dbc.getExitCode(),
                                 r2dbc.getStdout(), r2dbc.getStderr());
                 }).onFailure(t -> LOGGER.error(t.getMessage(), t));
@@ -147,14 +148,16 @@ public class AbstractProcessingTest {
                             PGSQL_USER, PGSQL_SECRET
                     );
 
-                    Stream.of("db_" + TENANT_PROJECTA, "db_" + TENANT_PROJECTB, "r2dbc")
+                    Stream.of(TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME)
                             .forEach(dbName -> {
                                 try {
                                     LOGGER.info("################## Creating DB {}", dbName);
                                     Statement statement = connection.createStatement();
-                                    int resultA = statement.executeUpdate("CREATE DATABASE " + dbName + ";");
+                                    int resultA = statement.executeUpdate(
+                                            "DROP DATABASE IF EXISTS " + dbName + "; " +
+                                            "CREATE DATABASE " + dbName + ";");
                                     statement.close();
-                                    LOGGER.info("################## Created DB {}", dbName);
+                                    LOGGER.info("################## Created DB {}: {}", dbName, resultA);
                                 }
                                 catch(Exception e) {
                                     LOGGER.error("################## Error creating DB {}", dbName, e);
@@ -197,19 +200,19 @@ public class AbstractProcessingTest {
                 "regards.cipher.iv=1234567812345678",
 
                 "regards.test.tenant=" + TENANT_PROJECTA,
-                "spring.jpa.properties.hibernate.default_schema=" + DBNAME,
+                "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
 
                 "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
 
                 "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                          + "/db_" + TENANT_PROJECTA,
+                          + "/" + TENANT_PROJECTA,
                 "regards.jpa.multitenant.tenants[0].tenant=" + TENANT_PROJECTA,
                 "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
                 "regards.jpa.multitenant.tenants[0].userName=" + PGSQL_USER,
                 "regards.jpa.multitenant.tenants[0].password=" + PGSQL_SECRET,
 
                 "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                          + "/db_" + TENANT_PROJECTB,
+                          + "/" + TENANT_PROJECTB,
                 "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTB,
                 "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
                 "regards.jpa.multitenant.tenants[1].userName=" + PGSQL_USER,
@@ -218,7 +221,8 @@ public class AbstractProcessingTest {
                 "regards.processing.r2dbc.host=" + pgHost, "regards.processing.r2dbc.port=" + pgPort,
                 "regards.processing.r2dbc.username=" + PGSQL_USER,
                 "regards.processing.r2dbc.password=" + PGSQL_SECRET,
-                "regards.processing.r2dbc.dbname=r2dbcdb", "regards.processing.r2dbc.schema=public",
+                "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
+                "regards.processing.r2dbc.schema=public",
 
                 "spring.rabbitmq.host=" + rabbitHost,
                 "spring.rabbitmq.port=" + rabbitPort,
