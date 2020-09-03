@@ -51,7 +51,6 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
  * @author Marc SORDI
  *
  */
-@Ignore
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
         locations = { "classpath:regards_local.properties", "classpath:batch.properties",

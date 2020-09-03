@@ -50,13 +50,12 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
-import fr.cnes.regards.modules.feature.dao.ILightFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.LightFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -105,9 +104,6 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
     @Autowired
     private IFeatureUpdateRequestRepository featureUpdateRequestRepo;
-
-    @Autowired
-    private ILightFeatureUpdateRequestRepository lightFeatureUpdateRequestRepo;
 
     @Autowired
     private IFeatureDeletionRequestRepository featureDeletionRepo;
@@ -226,15 +222,14 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     public int scheduleRequests() {
 
         long scheduleStart = System.currentTimeMillis();
-        Page<LightFeatureUpdateRequest> requestsToSchedule = this.lightFeatureUpdateRequestRepo.findRequestsToSchedule(
-                FeatureRequestStep.LOCAL_DELAYED,
-                OffsetDateTime.now(),
-                PageRequest.of(0, this.properties.getMaxBulkSize()),
-                OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing()));
+        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
+                                        PageRequest.of(0, this.properties.getMaxBulkSize()),
+                                        OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
 
         if (!requestsToSchedule.isEmpty()) {
 
-            filterUrnInDeletion(requestsToSchedule.getContent());
+            requestsToSchedule = filterUrnInDeletion(requestsToSchedule);
             if (!requestsToSchedule.isEmpty()) {
 
                 // Compute request ids
@@ -245,7 +240,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 });
 
                 // Switch to next step
-                lightFeatureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
+                featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
                 // Schedule job
                 Set<JobParameter> jobParameters = Sets.newHashSet();
@@ -253,14 +248,14 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
                 // the job priority will be set according the priority of the first request to schedule
                 JobInfo jobInfo = new JobInfo(false,
-                                              requestsToSchedule.getContent().get(0).getPriority().getPriorityLevel(),
+                                              requestsToSchedule.get(0).getPriority().getPriorityLevel(),
                                               jobParameters,
                                               authResolver.getUser(),
                                               FeatureUpdateJob.class.getName());
                 jobInfoService.createAsQueued(jobInfo);
 
                 LOGGER.trace("------------->>> {} update requests scheduled in {} ms",
-                             requestsToSchedule.getNumberOfElements(),
+                             requestsToSchedule.size(),
                              System.currentTimeMillis() - scheduleStart);
                 return requestIds.size();
             }
@@ -269,22 +264,27 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     }
 
     /**
-     * From a list of {@link LightFeatureUpdateRequest} to schedule remove those it have their urn
+     * From a list of {@link ILightFeatureUpdateRequest} to schedule remove those it have their urn
      * in a {@link FeatureDeletionRequest} at the step REMOTE_STORAGE_DELETION_REQUESTED
-     * For those {@link LightFeatureUpdateRequest} We will set their status to error and save them
+     * For those {@link ILightFeatureUpdateRequest} We will set their status to error and save them
      * @param requestsToSchedule list to filter
+     * @return filtered list
      */
-    private void filterUrnInDeletion(List<LightFeatureUpdateRequest> requestsToSchedule) {
+    private List<ILightFeatureUpdateRequest> filterUrnInDeletion(List<ILightFeatureUpdateRequest> requestsToSchedule) {
+        // request from db are stored into an unmodifiable collection so we need to create a new list to remove errors
+        List<ILightFeatureUpdateRequest> toSchedule = new ArrayList<>(requestsToSchedule);
         Set<FeatureUniformResourceName> deletionUrnScheduled = this.featureDeletionRepo
                 .findByStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, OffsetDateTime.now()).stream()
                 .map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet());
-        Set<LightFeatureUpdateRequest> errors = requestsToSchedule.stream()
+        Set<ILightFeatureUpdateRequest> errors = requestsToSchedule.stream()
                 .filter(request -> deletionUrnScheduled.contains(request.getUrn())).collect(Collectors.toSet());
-        errors.forEach(request -> request.setState(RequestState.ERROR));
+        Set<Long> errorIds = errors.stream().map(IAbstractFeatureRequest::getId).collect(Collectors.toSet());
+        if(!errorIds.isEmpty()) {
+            this.featureUpdateRequestRepo.updateState(RequestState.ERROR, errorIds);
+        }
 
-        this.lightFeatureUpdateRequestRepo.saveAll(errors);
-
-        requestsToSchedule.removeAll(errors);
+        toSchedule.removeAll(errors);
+        return toSchedule;
     }
 
     @Override
@@ -296,8 +296,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
 
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
-                .findByUrnIn(requests.stream().map(AbstractFeatureUpdateRequest::getUrn).collect(Collectors.toList()))
-                .stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+                .findByUrnIn(requests.stream().map(FeatureUpdateRequest::getUrn).collect(Collectors.toList())).stream()
+                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
         // Update feature
         for (FeatureUpdateRequest request : requests) {
 
@@ -375,7 +375,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         featureRepo.saveAll(entities);
         featureUpdateRequestRepo.saveAll(errorRequests);
-        lightFeatureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequestIds);
+        featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequestIds);
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms",
                      requests.size(),

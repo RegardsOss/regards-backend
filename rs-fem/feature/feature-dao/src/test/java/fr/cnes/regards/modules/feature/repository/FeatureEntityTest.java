@@ -62,7 +62,7 @@ public class FeatureEntityTest extends AbstractDaoTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEntityTest.class);
 
-    private static final Integer NB_FEATURES = 10000;
+    private static final Integer NB_FEATURES = 1000;
 
     private static final Integer BULK_SIZE = 1000;
 

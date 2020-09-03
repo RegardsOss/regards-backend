@@ -64,6 +64,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     @SpyBean
     private IPublisher publisher;
 
+
     @Autowired
     private Gson gson;
 
@@ -78,7 +79,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // use it only to initialize Feature
         List<FeatureCreationRequestEvent> list = new ArrayList<>();
-        initFeatureCreationRequestEvent(list, 2);
+        initFeatureCreationRequestEvent(list, 2, true);
         list.get(0).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
                                                                                    EntityType.DATA, "tenant", 1));
         list.get(1).getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
@@ -100,7 +101,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.publisher.publish(NotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
 
         this.waitRequest(notificationRepo, 2, 30000);
-        assertEquals(2, notificationService.scheduleRequests());
+        assertEquals(2, notificationService.sendToNotifier());
         this.waitRequest(notificationRepo, 0, 30000);
 
         Mockito.verify(publisher).publish(recordsCaptor.capture());

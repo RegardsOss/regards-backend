@@ -81,6 +81,8 @@ public class FeatureLogger {
 
     private static final String NOTIFICATION_SUCCESS_FORMAT = PREFIX + "Feature NOTIFIED" + PX3;
 
+    private static final String NOTIFICATION_ERROR_FORMAT = PREFIX + "Feature Notification ERROR" + PX3;
+
     public static void creationDenied(String requestOwner, String requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, requestId, providerId, errors));
     }
@@ -150,5 +152,9 @@ public class FeatureLogger {
 
     public static void notificationSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.trace(String.format(NOTIFICATION_SUCCESS_FORMAT, requestOwner, requestId, urn));
+    }
+
+    public static void notificationError(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.trace(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
     }
 }

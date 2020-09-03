@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -41,16 +42,8 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  *
  */
 @Entity
-@Table(name = "t_notification_request",
-        indexes = { @Index(name = "idx_notification_request_urn", columnList = AbstractRequest.COLUMN_URN) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_notification_request_id",
-                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+@DiscriminatorValue(AbstractFeatureRequest.NOTIFICATION)
 public class NotificationRequest extends AbstractFeatureRequest {
-
-    @Id
-    @SequenceGenerator(name = "notificationRequest", initialValue = 1, sequenceName = "seq_notification_request")
-    @GeneratedValue(generator = "notificationRequest", strategy = GenerationType.SEQUENCE)
-    private Long id;
 
     public static NotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
@@ -64,12 +57,7 @@ public class NotificationRequest extends AbstractFeatureRequest {
     }
 
     @Override
-    public Long getId() {
-        return id;
+    public <U> U accept(IAbstractFeatureRequestVisitor<U> visitor) {
+        return visitor.visitNotificationRequest(this);
     }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
 }

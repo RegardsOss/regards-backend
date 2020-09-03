@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,23 +36,5 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureCopyRequestRepository extends JpaRepository<FeatureCopyRequest, Long> {
-
-    /**
-     * Get a page of {@link FeatureCopyRequest} with specified step.
-     * @param requestDate current date we will not schedule future requests
-     * @return a list of {@link FeatureCopyRequest}
-     */
-    @Query("select fcr from FeatureCopyRequest fcr where fcr.step = :step and fcr.requestDate <= :requestDate")
-    Page<FeatureCopyRequest> findByStep(@Param("step") FeatureRequestStep step, @Param("requestDate") OffsetDateTime requestDate,
-            Pageable page);
-
-    /**
-     * Update {@link FeatureRequestStep} step
-     * @param step new {@link FeatureRequestStep}
-     * @param ids id of {@link FeatureCopyRequest} to update
-     */
-    @Modifying
-    @Query("update FeatureCopyRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
-    void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
+public interface IFeatureCopyRequestRepository extends IAbstractFeatureRequestRepository<FeatureCopyRequest> {
 }

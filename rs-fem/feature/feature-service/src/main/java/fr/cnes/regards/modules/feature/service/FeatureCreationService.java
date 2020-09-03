@@ -42,6 +42,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -55,13 +56,12 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.ILightFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.LightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -100,9 +100,6 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Autowired
     private IFeatureCreationRequestRepository featureCreationRequestRepo;
-
-    @Autowired
-    private ILightFeatureCreationRequestRepository featureCreationRequestLightRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -260,16 +257,14 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         Set<JobParameter> jobParameters = Sets.newHashSet();
         Set<String> featureIdsScheduled = new HashSet<>();
         Set<Long> requestIds = new HashSet<>();
-        List<LightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
+        List<ILightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
-        List<LightFeatureCreationRequest> dbRequests = this.featureCreationRequestLightRepo.findRequestsToSchedule(
-                FeatureRequestStep.LOCAL_DELAYED,
-                OffsetDateTime.now(),
-                PageRequest
-                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
+        List<ILightFeatureCreationRequest> dbRequests = this.featureCreationRequestRepo
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
+                        .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate")))).getContent();
 
         if (!dbRequests.isEmpty()) {
-            for (LightFeatureCreationRequest request : dbRequests) {
+            for (ILightFeatureCreationRequest request : dbRequests) {
                 // we will schedule only one feature request for a feature id
                 if (!featureIdsScheduled.contains(request.getProviderId())) {
                     metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_SCHEDULED);
@@ -278,7 +273,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                     featureIdsScheduled.add(request.getProviderId());
                 }
             }
-            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
+            featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
             jobParameters.add(new JobParameter(FeatureCreationJob.IDS_PARAMETER, requestIds));
 
@@ -331,7 +326,11 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         LOGGER.trace("------------->>> {} feature saved in {} ms",
                      entities.size(),
                      System.currentTimeMillis() - subProcessStart);
-
+        Set<String> previousUrns = entities.stream().filter(entity -> entity.getPreviousVersionUrn() != null)
+                .map(entity -> entity.getPreviousVersionUrn().toString()).collect(Collectors.toSet());
+        if (!previousUrns.isEmpty()) {
+            this.featureRepo.updateLastByUrnIn(false, previousUrns);
+        }
         // Update requests with feature setted for each of them + publish files to storage
         subProcessStart = System.currentTimeMillis();
         long nbRequestWithFiles = requests.stream()
@@ -393,7 +392,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
         if (!requestWithoutFilesIds.isEmpty()) {
             // notify creation of feature without files
-            featureCreationRequestLightRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, requestWithoutFilesIds);
+            featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, requestWithoutFilesIds);
 
         }
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
@@ -479,14 +478,13 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                         runtimeTenantResolver.getTenant(),
                                                         uuid,
                                                         computeNextVersion(previousVersion)));
-
-        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(),
-                                                    fcr.getMetadata().getSession(),
-                                                    feature,
-                                                    previousUrn,
-                                                    fcr.getFeature().getModel());
+        // as version compute is previous + 1, this feature is forcibly the last
+        feature.setLast(true);
+        FeatureEntity created = FeatureEntity.build(fcr.getMetadata().getSessionOwner(), fcr.getMetadata().getSession(),
+                                                    feature, previousUrn, fcr.getFeature().getModel());
         created.setVersion(feature.getUrn().getVersion());
         fcr.setFeatureEntity(created);
+        fcr.setUrn(created.getUrn());
 
         metrics.count(fcr.getProviderId(), created.getUrn(), FeatureCreationState.FEATURE_INITIALIZED);
 

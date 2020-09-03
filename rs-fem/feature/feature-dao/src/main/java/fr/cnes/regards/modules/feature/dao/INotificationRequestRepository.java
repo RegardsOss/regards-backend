@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,23 +37,6 @@ import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
  *
  */
 @Repository
-public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
+public interface INotificationRequestRepository extends IAbstractFeatureRequestRepository<NotificationRequest> {
 
-    @Query("select fcr from NotificationRequest fcr where fcr.step = :step and fcr.requestDate <= :now")
-    public Page<NotificationRequest> findByStep(@Param("step") FeatureRequestStep step,
-            @Param("now") OffsetDateTime now, Pageable page);
-
-    public void deleteByIdIn(Set<Long> ids);
-
-    /**
-     * Update {@link NotificationRequest} step
-     * @param step new {@link FeatureRequestStep}
-     * @param ids id of {@link NotificationRequest} to update
-     */
-    @Modifying
-    @Query("update NotificationRequest nr set nr.step = :newStep where nr.id in :ids ")
-    public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
-
-    @Query("select distinct fcr.requestId from NotificationRequest fcr")
-    public Set<String> findRequestId();
 }

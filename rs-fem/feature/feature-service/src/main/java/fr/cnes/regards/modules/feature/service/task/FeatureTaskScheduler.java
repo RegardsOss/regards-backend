@@ -164,7 +164,7 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private final Task notificationRequestHandlingTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        int nb = this.featureNotificationService.scheduleRequests();
+        int nb = this.featureNotificationService.sendToNotifier();
         if (nb != 0) {
             LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, NOTIFICATION_REQUESTS, System.currentTimeMillis() - start);
         }

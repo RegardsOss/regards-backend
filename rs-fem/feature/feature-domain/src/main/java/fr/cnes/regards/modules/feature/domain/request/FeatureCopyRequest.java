@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -42,13 +43,8 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  *
  */
 @Entity
-@Table(name = "t_feature_copy_request")
+@DiscriminatorValue(AbstractFeatureRequest.COPY)
 public class FeatureCopyRequest extends AbstractFeatureRequest {
-
-    @Id
-    @SequenceGenerator(name = "featureCopyRequest", initialValue = 1, sequenceName = "seq_feature_copy_request")
-    @GeneratedValue(generator = "featureCopyRequest", strategy = GenerationType.SEQUENCE)
-    private Long id;
 
     @Column(name = "storage", nullable = false)
     private String storage;
@@ -70,14 +66,6 @@ public class FeatureCopyRequest extends AbstractFeatureRequest {
         return request;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getStorage() {
         return storage;
     }
@@ -92,5 +80,10 @@ public class FeatureCopyRequest extends AbstractFeatureRequest {
 
     public void setChecksum(String checksum) {
         this.checksum = checksum;
+    }
+
+    @Override
+    public <U> U accept(IAbstractFeatureRequestVisitor<U> visitor) {
+        return visitor.visitCopyRequest(this);
     }
 }

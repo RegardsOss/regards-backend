@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Convert;
 
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
@@ -58,6 +60,19 @@ public class FeatureUniformResourceName extends UniformResourceName {
         return urn;
     }
 
+    public FeatureUniformResourceName(FeatureIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
+            int version, Long order, String revision) {
+        super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, revision);
+    }
+
+    public FeatureUniformResourceName() {
+        // for testing purpose
+    }
+
+    public FeatureUniformResourceName(FeatureIdentifier identifier, EntityType entityType, String tenant, UUID entityId, Long order, String revision) {
+        super(identifier.name(), entityType, tenant, entityId, order, revision);
+    }
+
     /**
      * take this kind of String
      * URN:OAISIdentifier:entityType:tenant:UUID(entityId):version[,order][:REVrevision]
@@ -70,50 +85,35 @@ public class FeatureUniformResourceName extends UniformResourceName {
      *                                  pattern
      */
     public static FeatureUniformResourceName fromString(String urn) {
-        final Pattern pattern = Pattern.compile(URN_PATTERN);
+        Pattern pattern = Pattern.compile(URN_PATTERN);
         if (!pattern.matcher(urn).matches()) {
             throw new IllegalArgumentException();
         }
-        final String[] stringFragment = urn.split(DELIMITER);
-        final FeatureIdentifier identifier = FeatureIdentifier.valueOf(stringFragment[1]);
-        final EntityType entityType = EntityType.valueOf(stringFragment[2]);
-        final String tenant = stringFragment[3];
-        final UUID entityId = UUID.fromString(stringFragment[4]);
-        final String[] versionWithOrder = stringFragment[5].split(",");
+        String[] stringFragment = urn.split(DELIMITER);
+        FeatureIdentifier identifier = FeatureIdentifier.valueOf(stringFragment[1]);
+        EntityType entityType = EntityType.valueOf(stringFragment[2]);
+        String tenant = stringFragment[3];
+        UUID entityId = UUID.fromString(stringFragment[4]);
+        String[] versionWithOrder = stringFragment[5].split(",");
+        boolean last = versionWithOrder[0].contains(LAST_VALUE);
+        Integer version = null;
+        if(!last) {
+            // if this is not a last URN then lets compute version
+            version = Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length()));
+        }
+        Long order = null;
+        String revision = null;
         if (versionWithOrder.length == 2) {
-            // Order is precised
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                final String revisionString = stringFragment[6];
-                // so we have all fields
-                return FeatureUniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())))
-                        .withOrder(Long.parseLong(versionWithOrder[1]))
-                        .withRevision(revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision
-                return FeatureUniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())))
-                        .withOrder(Long.parseLong(versionWithOrder[1]));
-            }
+            order = Long.parseLong(versionWithOrder[1]);
+        }
+        if (stringFragment.length == 7) {
+            // Revision is precised
+            revision = stringFragment[6].substring(REVISION_PREFIX.length());
+        }
+        if(last) {
+            return new FeatureUniformResourceName(identifier, entityType, tenant, entityId, order, revision);
         } else {
-            // we don't have an order specified
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                final String revisionString = stringFragment[6];
-                // so we have all fields exception Order
-                return FeatureUniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())))
-                        .withRevision(revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision and Order
-                return FeatureUniformResourceName
-                        .build(identifier, entityType, tenant, entityId,
-                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
-            }
+            return new FeatureUniformResourceName(identifier, entityType, tenant, entityId, version, order, revision);
         }
     }
 

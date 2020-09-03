@@ -25,6 +25,9 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -34,18 +37,18 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 @Repository
 public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long> {
 
-    public FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
+    FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
-    public FeatureEntity findByUrn(FeatureUniformResourceName urn);
+    FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
-    public void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
+    void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
 
-    public List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
+    List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
 
-    public void deleteByIdIn(Set<Long> ids);
+    void deleteByIdIn(Set<Long> ids);
 
     // FIXME remove just for test
-    public long countByLastUpdateGreaterThan(OffsetDateTime from);
+    long countByLastUpdateGreaterThan(OffsetDateTime from);
 
     /**
      * List existing provider identifiers in specified list
@@ -55,4 +58,8 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     Page<FeatureEntity> findByModelAndLastUpdateAfter(String model, OffsetDateTime date, Pageable page);
 
     Page<FeatureEntity> findByModel(String model, Pageable page);
+
+    @Modifying
+    @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
+    void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
 }
