@@ -182,7 +182,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         //Wait order in waiting user status
         int loop = 0;
-        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 20)) {
+        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
             Thread.sleep(1_000);
             loop++;
         }
@@ -204,7 +204,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         // Wait order ends.
         loop = 0;
-        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 20)) {
+        while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
             Thread.sleep(1_000);
             loop++;
         }
