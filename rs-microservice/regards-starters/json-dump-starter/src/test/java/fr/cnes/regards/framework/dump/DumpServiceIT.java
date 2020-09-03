@@ -20,26 +20,48 @@
 
 package fr.cnes.regards.framework.dump;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  *
  * @author Iliana Ghazali
  */
-
+@RunWith(SpringJUnit4ClassRunner.class)
+@ComponentScan(basePackages = { "fr.cnes.regards.framework" })
+@EnableAutoConfiguration
+@TestPropertySource(properties = {"spring.application.name=test", "ppté=15"})
 public class DumpServiceIT {
 
+    @Autowired
+    private DumpService dumpService;
+
     @Test
-    public void testGenerateJsonZips() {
+    public void testGenerateJsonZips() throws IOException {
         //create test data
         int numOfJson = 1000000;
         ArrayList<ObjectDump> jsonEntities = TestData.buildJsonCollection(numOfJson);
 
         //create zip files
-        DumpService dump = new DumpService();
-        dump.generateJsonZips(jsonEntities,"target/dump");
+        dumpService.generateJsonZips(jsonEntities, "target/dump");
+
+        // todo assert
+        Assert.assertTrue("target dir should exists", Files.exists(Paths.get("target", "dump")));
+
+
+        //TODO nettoyage
+
     }
 
 }

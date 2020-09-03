@@ -20,10 +20,11 @@
 
 package fr.cnes.regards.framework.dump;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  *
@@ -46,8 +47,13 @@ public class TestData {
             numDate = i % 4;
             ContentObject contentObject = new ContentObject();
             contentObject.setContent("This is the content of example " + i);
-            jsonList.add(new ObjectDump(setTest.get(numDate), "json" + i, contentObject));
+            jsonList.add(new ObjectDump(setTest.get(numDate), "json"+i, contentObject));
         }
+
+        ContentObject contentObject = new ContentObject();
+        contentObject.setContent("This is the content of example " + 0);
+        jsonList.add(new ObjectDump(setTest.get(1), "json"+0, contentObject));
+
         return jsonList;
     }
 

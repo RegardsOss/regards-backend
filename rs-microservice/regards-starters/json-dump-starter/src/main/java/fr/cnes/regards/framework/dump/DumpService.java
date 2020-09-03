@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.dump;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.*;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 
@@ -43,17 +45,16 @@ import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
  *
  * @author Iliana Ghazali
  */
-//TODO rename DumpService + annotate Service for spring support
 @Service
 public class DumpService {
 
     @Autowired
     private Gson gson;
-    //TODO autowired Gson => dependence vers gson-regards-starter - X --> ??
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DumpService.class);
 
-    private static final int MAX_FILES_PER_ZIP = 1000;
+    @Value("${regards.json.dump.max.per.sub.zip:1000}")
+    private int MAX_FILES_PER_ZIP;
 
     private String folderPathPattern = "yyyy/MM/dd";
 
@@ -65,97 +66,124 @@ public class DumpService {
      * @param dumpCollection data to zip
      * @param zipLocation
      */
-    public void generateJsonZips(List<ObjectDump> dumpCollection, String zipLocation) throws IOException {
+    public List<ObjectDump> generateJsonZips(List<ObjectDump> dumpCollection, String zipLocation) throws IOException {
         // check unique name
+        List<ObjectDump> listErrorDumps = checkJsonNamesUnicity(dumpCollection);
+        //remove duplicated entries in dumpCollection
+        dumpCollection.removeAll(listErrorDumps);
+
         // Locals Vars
-        DateTimeFormatter folderPathFormatter = DateTimeFormatter.ofPattern(folderPathPattern);
-        //FIXME use same format than everything else in REGARDS (OffsetDateTimeAdapter) - IMPLEMENTED --> OffsetDateTimeAdapter imported with mvn
-
-        String firstDate, lastDate, zipName, filePath, filename, fileContent;
-        ZipEntry zipEntry;
-        ObjectDump currentFile;
-        ArrayList<String> zipCreatedList = new ArrayList<>();
-        int indexName, startSetIndex, endSetIndex;
-
-        //Params
-        int nbFiles = dumpCollection.size();
-        int nbSets = (int) Math.ceil((double) nbFiles / MAX_FILES_PER_ZIP);
-        int nbFilesInSet = MAX_FILES_PER_ZIP;
+        String firstDate, lastDate, zipName;
+        List<List<ObjectDump>> zipGlobal;
+        ArrayList<String> subZipNameList = new ArrayList<>();
+        int indexName, sizeCollection = dumpCollection.size();
 
         // Sort dump collection by date
         Collections.sort(dumpCollection);
 
-        List<List<ObjectDump>> zipGlobal = new ArrayList<>();
+        // Create datasets
+        zipGlobal = createSets(dumpCollection, sizeCollection);
 
-        // Check if zip location exists
+        // Create zip location if not existing
         Files.createDirectories(Paths.get(zipLocation));
 
-        // FIXME try/catch with outputstreams - IMPLEMENTED --> TO CHECK
         // Create Root Zip
-        lastDate = OffsetDateTimeAdapter.format(dumpCollection.get(nbFiles - 1).getCreationDate());
-        zipName = "dump_json_" + microservice + "_" + lastDate;
+        zipName = "dump_json_" + microservice + "_" + OffsetDateTimeAdapter.format(OffsetDateTime.now());
         try (ZipOutputStream rootZip = new ZipOutputStream(
                 new FileOutputStream(new File(zipLocation + "/" + zipName + ".zip")));) {
 
-            for(List<ObjectDump> zipInterrieur: zipGlobal) {
-            //for each sets of files
-                for(ObjectDump file: zipInterrieur) {
-            for (int numSet = 0; numSet < nbSets; numSet++) {
-
-                if ((numSet + 1) * MAX_FILES_PER_ZIP > nbFiles) {
-                    nbFilesInSet = nbFiles % MAX_FILES_PER_ZIP;
+            for (List<ObjectDump> dataSet : zipGlobal) {
+                // Retrieve first and last date of set
+                firstDate = OffsetDateTimeAdapter.format(dataSet.get(0).getCreationDate());
+                lastDate = OffsetDateTimeAdapter.format(dataSet.get(dataSet.size() - 1).getCreationDate());
+                zipName = firstDate + "_" + lastDate + ".zip";
+                // Handle not unique zip names by adding index
+                if (subZipNameList.contains(zipName)) {
+                    indexName = 0;
+                    do {
+                        zipName = firstDate + "_" + lastDate + "_" + indexName + ".zip";
+                        indexName++;
+                    } while (subZipNameList.contains(zipName));
                 }
+                subZipNameList.add(zipName);
 
-                // Create Sub Zip
-                try (ByteArrayOutputStream subZipByte = new ByteArrayOutputStream();
-                        ZipOutputStream subZip = new ZipOutputStream(new BufferedOutputStream(subZipByte));) {
-                    startSetIndex = numSet * MAX_FILES_PER_ZIP;
-                    endSetIndex = numSet * MAX_FILES_PER_ZIP + nbFilesInSet - 1;
+                // Add subzip to rootzip
+                addSubZip(dataSet, rootZip, zipName, zipLocation);
 
-                    // Retrieve first and last date of set
-                    zipInterrieur.get(0);
-                            zipInterrieur.get(zipInterrieur.size()-1);
-                    firstDate = OffsetDateTimeAdapter.format(dumpCollection.get(startSetIndex).getCreationDate());
-                    lastDate = OffsetDateTimeAdapter.format(dumpCollection.get(endSetIndex).getCreationDate());
-                    zipName = firstDate + "_" + lastDate + ".zip";
-
-                    // Handle not unique zip names by adding index
-                    if (zipCreatedList.contains(zipName)) {
-                        indexName = 0;
-                        do {
-                            zipName = firstDate + "_" + lastDate + "_" + indexName + ".zip";
-                            indexName++;
-                        } while (zipCreatedList.contains(zipName));
-                    }
-                    zipCreatedList.add(zipName);
-
-                    // Add Files to Sub Zip
-                    for (int numFile = 0; numFile < nbFilesInSet; numFile++) {
-                        currentFile = dumpCollection.get(startSetIndex + numFile);
-                        filename = currentFile.getJsonName() + ".json";
-                        filePath = folderPathFormatter.format(currentFile.getCreationDate()) + "/" + filename;
-                        fileContent = this.gson.toJson(currentFile.getJsonContent());
-                        //Add File to Sub Zip
-                        zipEntry = new ZipEntry(filePath);
-                        subZip.putNextEntry(zipEntry);
-                        subZip.write(fileContent.getBytes());
-                        subZip.closeEntry();
-                    }
-
-                    // Close Sub Zip
-                    subZip.close();
-
-                    // Add Sub Zip to Root Zip
-                    zipEntry = new ZipEntry(zipName);
-                    rootZip.putNextEntry(zipEntry);
-                    rootZip.write(subZipByte.toByteArray());
-                    rootZip.closeEntry();
-                } catch (Exception e) {
-                    LOGGER.error("Error while generating zip at {}", zipLocation, e);
-                    return;
-                }
             }
         }
+        //return list of object not processed
+        return listErrorDumps;
+    }
+
+    private List<List<ObjectDump>> createSets(List<ObjectDump> dumpCollection, int sizeCollection) {
+        // Init
+        List<List<ObjectDump>> zipGlobal = new ArrayList<>();
+        List<ObjectDump> tmpObj = new ArrayList<>();
+        int nbFilesPerSet = 0, indexList = 0;
+        // Create set of objects to process with MAX_FILES_PER_ZIP
+        for (ObjectDump objectDump : dumpCollection) {
+            // Create object datasets
+            tmpObj.add(objectDump);
+            nbFilesPerSet++;
+            if (nbFilesPerSet >= MAX_FILES_PER_ZIP || indexList == sizeCollection - 1) {
+                zipGlobal.add(new ArrayList<>(tmpObj));
+                tmpObj.clear();
+                nbFilesPerSet = 0;
+            }
+            indexList++;
+        }
+        return zipGlobal;
+    }
+
+    private void addSubZip(List<ObjectDump> dataSet, ZipOutputStream rootZip, String zipName, String zipLocation) {
+        // Create zips in global zip
+        String filename, filePath, fileContent;
+        DateTimeFormatter folderPathFormatter = DateTimeFormatter.ofPattern(folderPathPattern);
+        ZipEntry zipEntry, fileEntry;
+        try (ByteArrayOutputStream subZipByte = new ByteArrayOutputStream();
+                ZipOutputStream subZip = new ZipOutputStream(new BufferedOutputStream(subZipByte));) {
+            // For each set of files, create file in subZip
+            for (ObjectDump file : dataSet) {
+                filename = file.getJsonName() + ".json";
+                filePath = folderPathFormatter.format(file.getCreationDate()) + "/" + filename;
+                fileContent = this.gson.toJson(file.getJsonContent());
+                // Add File to Sub Zip
+                fileEntry = new ZipEntry(filePath);
+                subZip.putNextEntry(fileEntry);
+                subZip.write(fileContent.getBytes());
+                subZip.closeEntry();
+            }
+            // Close Sub Zip
+            subZip.close();
+
+            // Add Sub Zip to Root Zip
+            zipEntry = new ZipEntry(zipName);
+            rootZip.putNextEntry(zipEntry);
+            rootZip.write(subZipByte.toByteArray());
+            rootZip.closeEntry();
+        } catch (IOException e) {
+            LOGGER.error("Error while generating zips at {}", zipLocation, e);
+        }
+    }
+
+    private List<ObjectDump> checkJsonNamesUnicity(List<ObjectDump> dumpCollection) {
+        // init errorList
+        List<ObjectDump> listErrorDumps = new ArrayList<>();
+        // Create multimap with jsonNames
+        ImmutableListMultimap<String, ObjectDump> dumpMultimap = Multimaps
+                .index(dumpCollection, ObjectDump::getJsonName);
+        // If duplicated keys were found, jsonNames are not uniques in collection
+        if (dumpCollection.size() != dumpMultimap.keySet().size()) {
+            dumpMultimap.asMap().forEach((key, collection) -> {
+                if (collection.size() > 1) {
+                    listErrorDumps.addAll(collection);
+                }
+            });
+        }
+
+        //return objectDumps with duplicated jsonNames
+        return listErrorDumps;
     }
 
 }

@@ -21,6 +21,7 @@
 package fr.cnes.regards.framework.dump;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import org.springframework.util.Assert;
 
@@ -65,7 +66,25 @@ public class ObjectDump implements Comparable<ObjectDump> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ObjectDump that = (ObjectDump) o;
+        return creationDate.equals(that.creationDate) && jsonName.equals(that.jsonName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(creationDate, jsonName);
+    }
+
+    @Override
     public int compareTo(ObjectDump d) {
+        if(Objects.equals(this, d)) {
+            return 0;
+        }
         return getCreationDate().compareTo(d.getCreationDate());
     }
 }
