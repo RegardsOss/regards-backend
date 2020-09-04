@@ -87,6 +87,21 @@
 				spring-cloud-starter-netflix-eureka-client
 			</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.accessrights</groupId>
+            <artifactId>accessrights-client</artifactId>
+        </dependency>
+
+        <!-- Libraries -->
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- TEST dependencies -->
 		<dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
@@ -98,5 +113,11 @@
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.10.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
