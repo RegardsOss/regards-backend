@@ -29,10 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.hamcrest.text.MatchesPattern;
 import org.junit.Assert;
@@ -82,7 +79,10 @@ import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
-import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.metalink.schema.FileType;
@@ -92,7 +92,6 @@ import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
-import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
@@ -160,7 +159,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
+               .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
@@ -267,10 +266,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("label",
                                               "command label, 1 to 50 characters, must be unique for current user (generated when not provided)")
-                           .optional().type(JSON_STRING_TYPE));
+                                    .optional().type(JSON_STRING_TYPE));
         fields.add(constrainedFields.withPath("onSuccessUrl",
                                               "url used by frontend to display a page if order creation has succeeded")
-                           .optional().type(JSON_STRING_TYPE));
+                                    .optional().type(JSON_STRING_TYPE));
         return PayloadDocumentation.relaxedRequestFields(fields);
     }
 
@@ -336,10 +335,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
         fileMultimapF2.put(DataType.RAWDATA, feat1File1);
         feat2.setFiles(fileMultimapF2);
 
-        Mockito.when(searchClient.searchDataObjects(Mockito.any())).thenReturn(new ResponseEntity<>(
-                new FacettedPagedModel<>(new HashSet<>(),
-                                         Lists.newArrayList(new EntityModel<>(feat1), new EntityModel<>(feat2)),
-                                         new PagedModel.PageMetadata(2, 0, 2, 1)), HttpStatus.OK));
+        Mockito.when(searchClient.searchDataObjects(Mockito.any()))
+               .thenReturn(// First answer: non empty
+                           new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(), Lists.newArrayList(
+                                   new EntityModel<>(feat1), new EntityModel<>(feat2)),
+                                                                         new PagedModel.PageMetadata(2, 0, 2, 1)),
+                                                HttpStatus.OK),
+                           new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(), Collections.emptyList(),
+                                                                         new PagedModel.PageMetadata(0, 1, 2, 1)),
+                                                HttpStatus.OK));
+
     }
 
     private void deleteBaskets() {
@@ -351,8 +356,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Pre: create a basket for default user
         insertDefaultUserBasket();
         // Expectations
-        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED).expectValue("content.owner", getDefaultUserEmail())
-                .expectValue("content.label", "myCommand");
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expectValue("content.label", "myCommand");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
@@ -367,13 +373,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Pre: create a basket for default user
         insertDefaultUserBasket();
         // Expectations
-        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED).expectValue("content.owner", getDefaultUserEmail())
-                .expect(MockMvcResultMatchers.jsonPath("content.label", MatchesPattern.matchesPattern("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}"))); // value should match generated pattern
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expect(MockMvcResultMatchers.jsonPath("content.label",
+                                                                                                 MatchesPattern
+                                                                                                         .matchesPattern(
+                                                                                                                 "Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}"))); // value should match generated pattern
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
-        performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest(null, "http://perdu.com"), customizer, "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(null, "http://perdu.com"),
+                           customizer, "error");
         // After: delete basket
         deleteBaskets();
     }
@@ -383,18 +393,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Pre: create a basket for default user
         insertDefaultUserBasket();
         // First request expectations: OK
-        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED).expectValue("content.owner", getDefaultUserEmail())
-                .expectValue("content.label", "myDoubleCommand");
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
+                                                          .expectValue("content.owner", getDefaultUserEmail())
+                                                          .expectValue("content.label", "myDoubleCommand");
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu.com"), customizer, "error");
+                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu.com"), customizer,
+                           "error");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Second request expectations: NOK (label already used by a command for that user)
-        RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY).expectValue("messages[0]", OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
+        RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+                                                           .expectValue("messages[0]",
+                                                                        OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER
+                                                                                .toString());
         // Send second request
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"), customizer2, "error");
+                           new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"), customizer2,
+                           "error");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // After: delete basket
@@ -406,15 +422,20 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Pre: create a basket for default user
         insertDefaultUserBasket();
         // Expectations
-        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY).expectValue("messages[0]", OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+                                                          .expectValue("messages[0]",
+                                                                       OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL
+                                                                               .toString());
         // Add doc
         customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
-                           new OrderController.OrderRequest("this-label-has-too-many-characters-if-we-append(51)", "http://perdu.com"), customizer, "error");
+                           new OrderController.OrderRequest("this-label-has-too-many-characters-if-we-append(51)",
+                                                            "http://perdu.com"), customizer, "error");
         // After: delete basket
         deleteBaskets();
     }
+
     @Test
     public void testCreateNOKNoBasket() {
         RequestBuilderCustomizer customizer = customizer().expectStatusNoContent();
@@ -516,8 +537,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(
                 RequestDocumentation.parameterWithName("orderToken").optional()
-                        .description("token generated at order creation and sent by email to user.")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
+                                    .description("token generated at order creation and sent by email to user.")
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
 
         // Try downloading file as if, with token given into public file url
         performDefaultGet(OrderController.PUBLIC_METALINK_DOWNLOAD_PATH, customizer, "Should return result");
@@ -569,14 +590,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(
                 RequestDocumentation.parameterWithName("page").optional().description("page number (from 0)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
                 RequestDocumentation.parameterWithName("size").optional().description("page size")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         customizer.document(RequestDocumentation.pathParameters(
                 RequestDocumentation.parameterWithName("datasetId").description("dataset task id (from order)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")),
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")),
                 RequestDocumentation.parameterWithName("orderId").description("order id")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
 
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDataFile.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -686,20 +707,21 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
             customizer.document(RequestDocumentation.relaxedRequestParameters(
                     RequestDocumentation.parameterWithName("orderToken").optional()
-                            .description("token generated at order creation and sent by email to user.")
-                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
+                                        .description("token generated at order creation and sent by email to user.")
+                                        .attributes(
+                                                Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
 
             customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("aipId")
-                                                                            .description(
-                                                                                    "IP_ID of data object of which file belongs to")
-                                                                            .attributes(Attributes
-                                                                                                .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                .value("String")),
+                                                                                        .description(
+                                                                                                "IP_ID of data object of which file belongs to")
+                                                                                        .attributes(Attributes
+                                                                                                            .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                            .value("String")),
                                                                     RequestDocumentation.parameterWithName("dataFileId")
-                                                                            .description("file id ").attributes(
-                                                                            Attributes
-                                                                                    .key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                    .value("Long"))));
+                                                                                        .description("file id ")
+                                                                                        .attributes(Attributes
+                                                                                                            .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                            .value("Long"))));
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
@@ -889,11 +911,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.document(RequestDocumentation.relaxedRequestParameters(
                 RequestDocumentation.parameterWithName("user").optional().description(
                         "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
                 RequestDocumentation.parameterWithName("page").optional().description("page number (from 0)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
                 RequestDocumentation.parameterWithName("size").optional().description("page size")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -914,9 +936,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // request parameters
         customizer.document(RequestDocumentation.relaxedRequestParameters(
                 RequestDocumentation.parameterWithName("page").optional().description("page number (from 0)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
                 RequestDocumentation.parameterWithName("size").optional().description("page size")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -954,13 +976,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         createSeveralOrdersWithDifferentOwners();
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .addHeader(HttpConstants.CONTENT_TYPE, "application/json").addHeader(HttpConstants.ACCEPT, "text/csv");
+                                                          .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                                                          .addHeader(HttpConstants.ACCEPT, "text/csv");
 
         ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV, customizer,
                                                   "error");
         // Just test headers are present and CSV format is ok
         Assert.assertTrue(results.andReturn().getResponse().getContentAsString()
-                                  .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
+                                 .startsWith("ORDER_ID;CREATION_DATE;EXPIRATION_DATE"));
         // now let check that optional parameter are correctly parsed
         // First status
         performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV,
@@ -979,7 +1002,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
     }
 
     private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, FileState state,
-                                              boolean online) throws URISyntaxException {
+            boolean online) throws URISyntaxException {
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setFilename(filename);
