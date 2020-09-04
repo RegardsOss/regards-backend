@@ -92,6 +92,7 @@ import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 
 /**
@@ -273,7 +274,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         return PayloadDocumentation.relaxedRequestFields(fields);
     }
 
-    private void insertDefaultUserBasket() throws URISyntaxException {
+    private void initForNextOrder() throws URISyntaxException {
         BasketSelectionRequest selectionRequest = new BasketSelectionRequest();
         selectionRequest.setDatasetUrn("URN:DATASET:EXAMPLE-DATASET:V1");
         selectionRequest.setEngineType("legacy");
@@ -336,25 +337,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
         feat2.setFiles(fileMultimapF2);
 
         Mockito.when(searchClient.searchDataObjects(Mockito.any()))
-               .thenReturn(// First answer: non empty
-                           new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(), Lists.newArrayList(
-                                   new EntityModel<>(feat1), new EntityModel<>(feat2)),
-                                                                         new PagedModel.PageMetadata(2, 0, 2, 1)),
-                                                HttpStatus.OK),
-                           new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(), Collections.emptyList(),
-                                                                         new PagedModel.PageMetadata(0, 1, 2, 1)),
-                                                HttpStatus.OK));
-
+               .thenAnswer(invocationOnMock -> {
+                   ComplexSearchRequest cSR = invocationOnMock.getArgument(0, ComplexSearchRequest.class);
+                   int page = cSR == null ? 0 : cSR.getPage();
+                   return new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(),
+                            page == 0 ? Lists.newArrayList(new EntityModel<>(feat1), new EntityModel<>(feat2)) : Collections.emptyList(),
+                            new PagedModel.PageMetadata(page == 0 ? 2 : 0, page, 2, 1)), page == 0 ? HttpStatus.OK : HttpStatus.NO_CONTENT);
+               });
     }
 
-    private void deleteBaskets() {
+    private void clearForPreviousOrder() {
         basketRepos.deleteAll();
+        Mockito.reset(searchClient);
     }
 
     @Test
     public void testCreateOKSimpleLabel() throws URISyntaxException {
-        // Pre: create a basket for default user
-        insertDefaultUserBasket();
+        // Before: clear basket for next order and mock search client results
+        initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
                                                           .expectValue("content.owner", getDefaultUserEmail())
@@ -364,14 +364,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("myCommand", "http://perdu.com"), customizer, "error");
-        // After: delete basket
-        deleteBaskets();
+        // After: clear
+        clearForPreviousOrder();
     }
 
     @Test
     public void testCreateOKGenLabel() throws URISyntaxException {
-        // Pre: create a basket for default user
-        insertDefaultUserBasket();
+        // Before: clear basket for next order and mock search client results
+        initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
                                                           .expectValue("content.owner", getDefaultUserEmail())
@@ -384,14 +384,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(null, "http://perdu.com"),
                            customizer, "error");
-        // After: delete basket
-        deleteBaskets();
+        // After: clear
+        clearForPreviousOrder();
     }
 
     @Test
     public void testCreateNOKLabelNonUnique() throws URISyntaxException {
-        // Pre: create a basket for default user
-        insertDefaultUserBasket();
+        // Before: clear basket for next order and mock search client results
+        initForNextOrder();
         // First request expectations: OK
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
                                                           .expectValue("content.owner", getDefaultUserEmail())
@@ -413,14 +413,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
                            "error");
         // Add doc
         customizer.document(getCreateOrderDocumentation());
-        // After: delete basket
-        deleteBaskets();
+        // After: clear
+        clearForPreviousOrder();
     }
 
     @Test
     public void testCreateNOKLabelTooLong() throws URISyntaxException {
-        // Pre: create a basket for default user
-        insertDefaultUserBasket();
+        // Before: clear basket for next order and mock search client results
+        initForNextOrder();
         // Expectations
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
                                                           .expectValue("messages[0]",
@@ -432,8 +432,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("this-label-has-too-many-characters-if-we-append(51)",
                                                             "http://perdu.com"), customizer, "error");
-        // After: delete basket
-        deleteBaskets();
+        // After: clear
+        clearForPreviousOrder();
     }
 
     @Test
