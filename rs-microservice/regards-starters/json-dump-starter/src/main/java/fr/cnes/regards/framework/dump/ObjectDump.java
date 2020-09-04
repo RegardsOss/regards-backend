@@ -46,7 +46,6 @@ public class ObjectDump implements Comparable<ObjectDump> {
         this.jsonContent = jsonContent;
     }
 
-
     public OffsetDateTime getCreationDate() {
         return creationDate;
     }
@@ -82,7 +81,7 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     @Override
     public int compareTo(ObjectDump d) {
-        if(Objects.equals(this, d)) {
+        if (Objects.equals(this, d)) {
             return 0;
         }
         return getCreationDate().compareTo(d.getCreationDate());

@@ -25,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
@@ -37,30 +38,31 @@ public class TestData {
         ArrayList<ObjectDump> jsonList = new ArrayList<>();
         int numDate;
 
-        ArrayList<OffsetDateTime> setTest = new ArrayList<>();
-        setTest.add(OffsetDateTime.of(2019, 1, 31, 15, 15, 50, 345875000, ZoneOffset.of("+02:00")));
-        setTest.add(OffsetDateTime.of(2019, 1, 31, 0, 0, 55, 345875000, ZoneOffset.of("+06:00")));
-        setTest.add(OffsetDateTime.of(1980, 4, 9, 20, 12, 45, 345875000, ZoneOffset.of("+01:00")));
-        setTest.add(OffsetDateTime.of(2020, 12, 22, 23, 11, 55, 345875000, ZoneOffset.of("+07:00")));
+        ArrayList<OffsetDateTime> dateSet = getDateSet();
 
         for (int i = 0; i < numOfJson; i++) {
             numDate = i % 4;
             ContentObject contentObject = new ContentObject();
             contentObject.setContent("This is the content of example " + i);
-            jsonList.add(new ObjectDump(setTest.get(numDate), "json"+i, contentObject));
+            jsonList.add(new ObjectDump(dateSet.get(numDate), "json"+i, contentObject));
         }
 
         ContentObject contentObject = new ContentObject();
         contentObject.setContent("This is the content of example " + 0);
-        jsonList.add(new ObjectDump(setTest.get(1), "json"+0, contentObject));
-
         return jsonList;
     }
 
+    public static ArrayList<OffsetDateTime> getDateSet(){
+        ArrayList<OffsetDateTime> dateSet = new ArrayList<>();
+        dateSet.add(OffsetDateTime.of(2019, 1, 31, 15, 15, 50, 345875000, ZoneOffset.of("+02:00")));
+        dateSet.add(OffsetDateTime.of(2019, 1, 31, 0, 0, 55, 345875000, ZoneOffset.of("+06:00")));
+        dateSet.add(OffsetDateTime.of(1980, 4, 9, 20, 12, 45, 345875000, ZoneOffset.of("+01:00")));
+        dateSet.add(OffsetDateTime.of(2020, 12, 22, 23, 11, 55, 345875000, ZoneOffset.of("+07:00")));
+        return dateSet;
+    }
+
     public static class ContentObject {
-
         private String content;
-
         public void setContent(String content) {
             this.content = content;
         }
