@@ -20,7 +20,10 @@ package fr.cnes.regards.modules.order.rest;
 
 import java.util.NoSuchElementException;
 
+import fr.cnes.regards.modules.order.domain.dto.OrderDto;
+import fr.cnes.regards.modules.order.domain.exception.*;
 import org.springframework.core.annotation.Order;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,13 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
  * @author oroussel
@@ -46,6 +42,11 @@ public class OrderControllerAdvice {
     @ExceptionHandler(EmptySelectionException.class)
     public ResponseEntity<ServerErrorResponse> handleEmptySelectionException(EmptySelectionException ebe) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage(), ebe));
+    }
+
+    @ExceptionHandler(EmptyBasketException.class)
+    public ResponseEntity<ServerErrorResponse> handleEmptySelectionException(EmptyBasketException ebe) {
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @ExceptionHandler(NotYetAvailableException.class)

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -174,7 +175,7 @@ public class OrderServiceUnvalableFilesIT {
     }
 
     @Test
-    public void testBucketsJobswithUnavalableFiles() throws IOException, InterruptedException {
+    public void testBucketsJobswithUnavalableFiles() throws IOException, InterruptedException, EntityInvalidException {
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -187,7 +188,7 @@ public class OrderServiceUnvalableFilesIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "http://perdu.com");
+        Order order = orderService.createOrder(basket, "perdu","http://perdu.com");
         Thread.sleep(5_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());

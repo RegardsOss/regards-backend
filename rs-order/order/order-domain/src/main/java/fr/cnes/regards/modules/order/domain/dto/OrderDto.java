@@ -38,6 +38,8 @@ public class OrderDto {
 
     private String owner;
 
+    private String label;
+
     private OffsetDateTime creationDate;
 
     private OffsetDateTime expirationDate;
@@ -70,6 +72,14 @@ public class OrderDto {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public OffsetDateTime getCreationDate() {

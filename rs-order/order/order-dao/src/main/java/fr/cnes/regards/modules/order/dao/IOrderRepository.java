@@ -34,6 +34,14 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     @EntityGraph("graph.order.simple")
     Order findSimpleById(Long id);
 
+    /**
+     * Find by label and owner (allows checking unicity before inserting)
+     * @param label
+     * @param owner
+     * @return
+     */
+    Optional<Order> findByLabelAndOwner(String label, String owner);
+
     @EntityGraph("graph.order.simple")
     Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest);
 

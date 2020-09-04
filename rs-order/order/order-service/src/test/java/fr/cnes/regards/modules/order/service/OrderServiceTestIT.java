@@ -18,33 +18,9 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -67,52 +43,63 @@ import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.order.test.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
-@ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
+@ActiveProfiles(value = {"default", "test", "testAmqp"}, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true" })
+        properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
-
+    private static boolean firstInit = true;
     @Autowired
     private IOrderService orderService;
-
     @Autowired
     private IOrderRepository orderRepos;
-
     @Autowired
     private IOrderDataFileRepository dataFileRepos;
-
     @Autowired
     private IOrderDataFileService dataFileService;
-
     @Autowired
     private IBasketRepository basketRepos;
-
     @Autowired
     private IJobInfoRepository jobInfoRepos;
-
     @Autowired
     private IAuthenticationResolver authResolver;
-
     @Autowired
     private IProjectsClient projectsClient;
-
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
     @Autowired
     private StorageClientMock storageClientMock;
-
-    private static boolean firstInit = true;
 
     public void clean() {
         basketRepos.deleteAll();
@@ -139,7 +126,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void simpleOrder() throws InterruptedException {
+    public void simpleOrder() throws InterruptedException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
         String orderOwner = "simpleOrder";
         Basket basket = new Basket(orderOwner);
@@ -153,7 +140,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "http://frontend.com");
+        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
 
         LOGGER.info("Order has been created !!");
         // Wait order ends.
@@ -167,7 +154,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void multipleDsOrder() throws InterruptedException {
+    public void multipleDsOrder() throws InterruptedException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
         String orderOwner = "multipleDsOrder";
         Basket basket = new Basket(orderOwner);
@@ -190,7 +177,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "http://frontend.com");
+        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         //Wait order in waiting user status
@@ -227,7 +214,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void simpleOrderPause() throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException {
+    public void simpleOrderPause() throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
         String orderOwner = "simpleOrderPause";
         storageClientMock.setWaitMode(true);
@@ -242,7 +229,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "http://frontend.com");
+        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order ends.
@@ -274,7 +261,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     @Test
     public void multipleDsOrderPause()
-            throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException {
+            throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
         String orderOwner = "multipleDsOrderPause";
         Basket basket = new Basket(orderOwner);
@@ -297,7 +284,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "http://frontend.com");
+        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
@@ -348,7 +335,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     @Test
     public void multipleDsOrderPauseAndDelete() throws InterruptedException, CannotPauseOrderException,
-            CannotResumeOrderException, CannotDeleteOrderException, CannotRemoveOrderException {
+            CannotResumeOrderException, CannotDeleteOrderException, CannotRemoveOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
         String orderOwner = "multipleDsOrderPauseAndDelete";
         Basket basket = new Basket(orderOwner);
@@ -371,7 +358,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "http://frontend.com");
+        Order order = orderService.createOrder(basket, "a command","http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
@@ -423,7 +410,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     }
 
     private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
-            String query) {
+                                                                 String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
         item.setFilesSize(filesSize);

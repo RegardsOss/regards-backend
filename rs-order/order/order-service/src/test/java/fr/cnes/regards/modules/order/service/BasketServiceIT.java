@@ -22,6 +22,7 @@ import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
 import static fr.cnes.regards.modules.order.test.SearchClientMock.DS2_IP_ID;
 import static fr.cnes.regards.modules.order.test.SearchClientMock.DS3_IP_ID;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +109,7 @@ public class BasketServiceIT {
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException {
+    public void test() throws EmptyBasketException, EmptySelectionException, InterruptedException, EntityInvalidException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -194,7 +195,7 @@ public class BasketServiceIT {
             }
         }
 
-        orderService.createOrder(basket, "http://perdu.com");
+        orderService.createOrder(basket, "perdu", "http://perdu.com");
 
         // manage periodic email notifications
         orderService.sendPeriodicNotifications();

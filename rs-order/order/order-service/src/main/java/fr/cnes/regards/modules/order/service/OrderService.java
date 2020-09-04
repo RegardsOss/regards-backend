@@ -18,41 +18,46 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.*;
+import com.google.common.io.ByteStreams;
+import feign.Response;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.dao.OrderSpecifications;
+import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.metalink.schema.*;
+import fr.cnes.regards.modules.order.service.job.*;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.templates.service.TemplateService;
+import freemarker.template.TemplateException;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
@@ -73,66 +78,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
-import com.google.common.collect.TreeMultimap;
-import com.google.common.io.ByteStreams;
-
-import feign.Response;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.file.DownloadUtils;
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.dao.OrderSpecifications;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
-import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.metalink.schema.FileType;
-import fr.cnes.regards.modules.order.metalink.schema.FilesType;
-import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
-import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
-import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
-import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import fr.cnes.regards.modules.order.service.job.SubOrderAvailabilityPeriodJobParameter;
-import fr.cnes.regards.modules.order.service.job.UserJobParameter;
-import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.client.IComplexSearchClient;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.templates.service.TemplateService;
-import freemarker.template.TemplateException;
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+import java.io.*;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -151,6 +115,16 @@ public class OrderService implements IOrderService {
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
     private static final int MAX_EXTERNAL_BUCKET_FILE_COUNT = 1_000;
+
+    /**
+     * Format for generated order label
+     */
+    private static final String ORDER_GENERATED_LABEL_FORMAT = "Order of %s";
+
+    /**
+     * Date formatter for order generated label
+     */
+    private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd 'at' HH:mm:ss");
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
 
@@ -246,8 +220,8 @@ public class OrderService implements IOrderService {
         // Compute storageBucketSize from storageBucketSizeMb filled by Spring
         storageBucketSize = storageBucketSizeMb * 1024L * 1024L;
         LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
-                + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
-                    daysBeforeSendingNotifEmail);
+                        + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
+                daysBeforeSendingNotifEmail);
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
@@ -257,11 +231,29 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Order createOrder(Basket basket, String url) {
+    public Order createOrder(Basket basket, String label, String url) throws EntityInvalidException {
+        LOGGER.info("Generate and / or check label is unique for owner before creating back");
+        // generate label when none is provided
+        String orderLabel = label;
+        if (Strings.isNullOrEmpty(orderLabel)) {
+            orderLabel = String.format(OrderService.ORDER_GENERATED_LABEL_FORMAT,
+                    OrderService.ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now()));
+        }
+        // check length (>0 is already checked above)
+        if (orderLabel.length() > Order.LABEL_FIELD_LENGTH){
+            throw new EntityInvalidException(OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
+        } else { // check unique for current owner
+            Optional<Order> sameOrderLabelOpt = repos.findByLabelAndOwner(orderLabel, basket.getOwner());
+            if (sameOrderLabelOpt.isPresent()){
+                throw new EntityInvalidException(OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
+            }
+        }
+        // In any case: check generated label is unique for owner
         LOGGER.info("Creating order with owner {}", basket.getOwner());
         Order order = new Order();
         order.setCreationDate(OffsetDateTime.now());
         order.setOwner(basket.getOwner());
+        order.setLabel(orderLabel);
         order.setFrontendUrl(url);
         order.setStatus(OrderStatus.PENDING);
         // expiration date is set during asyncCompleteOrderCreation execution
@@ -310,7 +302,7 @@ public class OrderService implements IOrderService {
                     // For each DataObject
                     for (EntityFeature feature : features) {
                         dispatchFeatureFilesInBuckets(basket, order, role, feature, storageBucketFiles,
-                                                      externalBucketFiles);
+                                externalBucketFiles);
                         // If sum of files size > storageBucketSize, add a new bucket
                         if (storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize) {
                             internalFilesCount += storageBucketFiles.size();
@@ -404,7 +396,7 @@ public class OrderService implements IOrderService {
      * Dispatch {@link DataFile}s of given {@link EntityFeature} into internal or external buckets.
      */
     private void dispatchFeatureFilesInBuckets(Basket basket, Order order, String role, EntityFeature feature,
-            Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
+                                               Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
         for (DataFile dataFile : feature.getFiles().values()) {
             // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS
             if (DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType())) {
@@ -419,7 +411,7 @@ public class OrderService implements IOrderService {
     }
 
     private void addExternalFileToExternalBucket(Order order, Set<OrderDataFile> externalBucketFiles, DataFile datafile,
-            EntityFeature feature) {
+                                                 EntityFeature feature) {
         OrderDataFile orderDataFile = new OrderDataFile(datafile, feature.getId(), order.getId());
         // An external file is immediately set to AVAILABLE status because it needs
         // nothing more to be doswnloaded
@@ -429,7 +421,7 @@ public class OrderService implements IOrderService {
     }
 
     private void addInternalFileToStorageBucket(Basket basket, Order order, String role,
-            Set<OrderDataFile> storageBucketFiles, DataFile dataFile, EntityFeature feature) {
+                                                Set<OrderDataFile> storageBucketFiles, DataFile dataFile, EntityFeature feature) {
         OrderDataFile orderDataFile = new OrderDataFile(dataFile, feature.getId(), order.getId());
         storageBucketFiles.add(orderDataFile);
         // Send a very useful notification if file is bigger than bucket size
@@ -447,8 +439,8 @@ public class OrderService implements IOrderService {
      */
     private String generateToken4PublicEndpoint(Order order) {
         return jwtService.generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(),
-                                        authResolver.getUser(), authResolver.getRole(), order.getExpirationDate(),
-                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
+                authResolver.getUser(), authResolver.getRole(), order.getExpirationDate(),
+                Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
     }
 
     private void sendOrderCreationEmail(Order order) {
@@ -466,7 +458,7 @@ public class OrderService implements IOrderService {
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
-        dataMap.put("order_id", order.getId().toString());
+        dataMap.put("order_label", order.getId().toString());
         dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
                 + "&scope=" + runtimeTenantResolver.getTenant());
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
@@ -483,7 +475,7 @@ public class OrderService implements IOrderService {
         // Send it
         FeignSecurityManager.asSystem();
         emailClient.sendEmail(message, String.format("Order number %d is confirmed", order.getId()), null,
-                              order.getOwner());
+                order.getOwner());
         FeignSecurityManager.reset();
     }
 
@@ -506,7 +498,7 @@ public class OrderService implements IOrderService {
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
     private void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
-            String role, int priority) {
+                                       String role, int priority) {
         LOGGER.info("Creating storage sub-order of {} files", bucketFiles.size());
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -516,8 +508,8 @@ public class OrderService implements IOrderService {
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
-                                     new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
-                                     new UserJobParameter(order.getOwner()), new UserRoleJobParameter(role));
+                new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
+                new UserJobParameter(order.getOwner()), new UserRoleJobParameter(role));
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName(StorageFilesJob.class.getName());
         storageJobInfo.setPriority(priority);
@@ -531,7 +523,7 @@ public class OrderService implements IOrderService {
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
     private void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-            Order order) {
+                                        Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -630,8 +622,8 @@ public class OrderService implements IOrderService {
         return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .filter(ft -> ft.getJobInfo() != null).count() == 0)
                 || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                        .filter(ft -> ft.getJobInfo() != null).map(ft -> ft.getJobInfo().getStatus().getStatus())
-                        .allMatch(JobStatus::isFinished);
+                .filter(ft -> ft.getJobInfo() != null).map(ft -> ft.getJobInfo().getStatus().getStatus())
+                .allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -678,7 +670,7 @@ public class OrderService implements IOrderService {
     public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
             throws IOException {
         List<Order> orders = repos.findAll(OrderSpecifications.search(status, from, to),
-                                           Sort.by(Sort.Direction.ASC, "id"));
+                Sort.by(Sort.Direction.ASC, "id"));
         writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
@@ -714,7 +706,7 @@ public class OrderService implements IOrderService {
             zos.setCreateUnicodeExtraFields(ZipArchiveOutputStream.UnicodeExtraFieldPolicy.NOT_ENCODEABLE);
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
-            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext();) {
+            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 // Externally downloadable
                 if (dataFile.isReference()) {
@@ -723,12 +715,12 @@ public class OrderService implements IOrderService {
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
                     try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                                   noProxyHosts, timeout)) {
+                            noProxyHosts, timeout)) {
                         readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
                     } catch (IOException e) {
                         LOGGER.error(String.format("Error while downloading external file (url : %s)",
-                                                   dataFile.getUrl()),
-                                     e);
+                                dataFile.getUrl()),
+                                e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
                         dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
@@ -759,7 +751,7 @@ public class OrderService implements IOrderService {
                         downloadErrorFiles.add(dataFile);
                         i.remove();
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
-                                    dataFile.getChecksum());
+                                dataFile.getChecksum());
                         dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
                                 + (response == null ? "null" : response.toString()));
                     } else { // Download ok
@@ -787,8 +779,8 @@ public class OrderService implements IOrderService {
     }
 
     private void readInputStreamAndAddToZip(List<OrderDataFile> downloadErrorFiles, ZipArchiveOutputStream zos,
-            Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, String dataObjectIpId,
-            InputStream is) throws IOException {
+                                            Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, String dataObjectIpId,
+                                            InputStream is) throws IOException {
         // Add filename to multiset
         String filename = dataFile.getFilename();
         if (filename == null) {
@@ -817,7 +809,7 @@ public class OrderService implements IOrderService {
                 downloadErrorFiles.add(dataFile);
                 i.remove();
                 LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId, dataFile.getFilename());
+                        dataObjectIpId, dataFile.getFilename());
                 dataFile.setDownloadError("Cannot completely download data file from storage, only " + copiedBytes + "/"
                         + dataFile.getFilesize() + " bytes");
             }
@@ -941,7 +933,7 @@ public class OrderService implements IOrderService {
         List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
         Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
-                                                                    Comparator.comparing(Order::getCreationDate));
+                Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner
