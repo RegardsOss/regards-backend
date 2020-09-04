@@ -4,13 +4,12 @@ import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
-import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.IProcessService;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
@@ -86,9 +85,8 @@ public class ProcessingRestClientTest extends AbstractProcessingTest {
                 }
             };
         }
-
-        @Bean public IPProcessRepository processRepository() {
-            return Mockito.mock(IPProcessRepository.class);
+        @Bean public IWorkloadEngineRepository engineRepo() {
+            return Mockito.mock(IWorkloadEngineRepository.class);
         }
     }
 

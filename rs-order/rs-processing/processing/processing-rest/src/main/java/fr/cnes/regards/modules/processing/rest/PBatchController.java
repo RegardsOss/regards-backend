@@ -3,7 +3,7 @@ package fr.cnes.regards.modules.processing.rest;
 import fr.cnes.regards.modules.processing.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.service.IBatchService;
-import fr.cnes.regards.modules.processing.domain.factory.IPUserAuthFactory;
+import fr.cnes.regards.modules.processing.service.IPUserAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -23,10 +23,10 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_
 public class PBatchController {
 
     private final IBatchService batchService;
-    private final IPUserAuthFactory authFactory;
+    private final IPUserAuthService authFactory;
 
     @Autowired
-    public PBatchController(IBatchService batchService, IPUserAuthFactory authFactory) {
+    public PBatchController(IBatchService batchService, IPUserAuthService authFactory) {
         this.batchService = batchService;
         this.authFactory = authFactory;
     }

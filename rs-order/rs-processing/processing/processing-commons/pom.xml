@@ -67,6 +67,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-reactor-netty</artifactId>
         </dependency>
+        <dependency>
+            <groupId>name.nkonev.r2dbc-migrate</groupId>
+            <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
+            <version>1.3.2</version>
+        </dependency>
 
         <!-- Libraries -->
         <dependency>
@@ -100,9 +105,16 @@
             <version>2.0.15</version>
         </dependency>
         <dependency>
-            <groupId>name.nkonev.r2dbc-migrate</groupId>
-            <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
-            <version>1.3.2</version>
+            <groupId>org.jeasy</groupId>
+            <artifactId>easy-random-core</artifactId>
+            <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc7</version>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 </project>

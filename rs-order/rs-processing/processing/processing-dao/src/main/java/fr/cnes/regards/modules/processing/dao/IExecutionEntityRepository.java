@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.processing.dao;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import io.vavr.control.Option;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
@@ -25,8 +24,8 @@ public interface IExecutionEntityRepository
      */
     @Query(" SELECT * "
     + " FROM t_execution AS E "
-    + " WHERE (steps#>>'{values,-1,status}') = 'RUNNING' "
-    + "   AND EXTRACT(EPOCH FROM now()) - CAST(steps#>'{values,-1,epochTs}' AS BIGINT) / 1000 > (E.timeout_after_millis / 1000) "
+    + " WHERE E.current_status = 'RUNNING' "
+    + "   AND EXTRACT(EPOCH FROM now()) - EXTRACT(EPOCH FROM E.last_updated) > (E.timeout_after_millis / 1000) "
     )
     Flux<ExecutionEntity> getTimedOutExecutions();
 

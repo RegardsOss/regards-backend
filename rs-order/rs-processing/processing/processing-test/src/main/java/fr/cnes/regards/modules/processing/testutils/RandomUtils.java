@@ -1,14 +1,17 @@
 package fr.cnes.regards.modules.processing.testutils;
 
+import fr.cnes.regards.modules.processing.utils.TypedRandomizer;
 import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
 import io.vavr.collection.List;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.api.Randomizer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ServiceLoader;
 
 public interface RandomUtils {
 
@@ -35,9 +38,13 @@ public interface RandomUtils {
         vavrWrappersRegistry.setEasyRandom(generator);
 
         parameters.collectionSizeRange(0, 10)
-                .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
-                .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
-                .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
+            .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
+            .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
+            .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
+
+        ServiceLoader<TypedRandomizer> loader = ServiceLoader.load(TypedRandomizer.class);
+        loader.iterator().forEachRemaining(tr -> parameters.randomize(tr.type(), tr.randomizer(generator)));
+
         return generator;
     }
 

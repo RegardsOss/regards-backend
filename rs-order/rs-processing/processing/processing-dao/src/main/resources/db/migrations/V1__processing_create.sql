@@ -1,30 +1,71 @@
-create table t_batch (
-    id uuid not null,
-    process_business_id uuid,
-    process_name text,
-    correlation_id text,
-    filesets jsonb,
-    parameters jsonb,
-    process text,
-    tenant text,
-    user_email text,
-    user_role text,
+---------------------
+-- BATCHES
+CREATE TABLE t_batch (
+    id                  uuid         NOT NULL,
+    process_business_id uuid         NOT NULL,
+    tenant              varchar(255) NOT NULL,
+    user_email          varchar(255) NOT NULL,
+    user_role           varchar(255) NOT NULL,
+    process_name        varchar(255) NOT NULL,
+    correlation_id      text         NOT NULL,
+    filesets            jsonb        NOT NULL,
+    parameters          jsonb        NOT NULL,
     primary key (id)
 );
-create table t_execution (
-    id uuid not null,
-    batch_id uuid,
-    timeout_after_millis int8,
-    current_status varchar(10),
-    steps jsonb,
-    file_parameters jsonb,
-    process_business_id uuid,
-    process_name text,
-    tenant text,
-    user_email text,
-    version int8,
-    created timestamptz,
-    last_updated timestamptz,
+CREATE INDEX ON t_batch (tenant);
+CREATE INDEX ON t_batch (user_role);
+CREATE INDEX ON t_batch (process_business_id);
+CREATE INDEX ON t_batch (process_name);
+
+---------------------
+-- EXECUTIONS
+CREATE TABLE t_execution (
+    timeout_after_millis int8         NOT NULL,
+    version              int8         NOT NULL,
+    created              timestamptz  NOT NULL,
+    last_updated         timestamptz  NOT NULL,
+    id                   uuid         NOT NULL,
+    batch_id             uuid         NOT NULL,
+    process_business_id  uuid         NOT NULL,
+    current_status       varchar(10)  NOT NULL,
+    process_name         varchar(255) NOT NULL,
+    tenant               varchar(255) NOT NULL,
+    user_email           varchar(255) NOT NULL,
+    steps                jsonb        NOT NULL,
+    file_parameters      jsonb        NOT NULL,
     primary key (id)
 );
-alter table t_execution add constraint fk_batch foreign key (batch_id) references t_batch;
+
+ALTER TABLE t_execution
+    ADD CONSTRAINT fk_exec_batch
+    FOREIGN KEY (batch_id)
+    REFERENCES t_batch;
+
+CREATE INDEX ON t_execution (last_updated);
+CREATE INDEX ON t_execution (current_status);
+CREATE INDEX ON t_execution (user_email);
+CREATE INDEX ON t_execution (tenant);
+
+---------------------
+-- OUTPUT FILES
+CREATE TABLE t_outputfile (
+    downloaded      boolean     NOT NULL,
+    deleted         boolean     NOT NULL,
+    size_bytes      int8        NOT NULL,
+    created         timestamptz NOT NULL,
+    id              uuid        NOT NULL,
+    exec_id         uuid        NOT NULL,
+    checksum_method varchar(10) NOT NULL,
+    checksum_value  varchar(64) NOT NULL,
+    name            text        NOT NULL,
+    url             text        NOT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE t_outputfile
+    ADD CONSTRAINT fk_outputfile_exec
+    FOREIGN KEY (exec_id)
+    REFERENCES t_execution;
+
+CREATE INDEX ON t_outputfile (checksum_value);
+CREATE INDEX ON t_outputfile (url);

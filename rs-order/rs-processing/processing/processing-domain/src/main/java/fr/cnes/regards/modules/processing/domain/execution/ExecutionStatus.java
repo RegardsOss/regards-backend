@@ -41,4 +41,8 @@ public enum ExecutionStatus {
     public Seq<ExecutionStatus> getNextStates() {
         return nextStates;
     }
+
+    public boolean isFinalStep() {
+        return getNextStates().isEmpty();
+    }
 }

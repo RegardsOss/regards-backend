@@ -9,9 +9,9 @@ import java.util.List;
 
 public class Steps {
 
-    List<Step> values;
+    List<StepEntity> values;
 
-    public static Steps of(Step... steps) {
+    public static Steps of(StepEntity... steps) {
         return new Steps(Arrays.asList(steps));
     }
 }

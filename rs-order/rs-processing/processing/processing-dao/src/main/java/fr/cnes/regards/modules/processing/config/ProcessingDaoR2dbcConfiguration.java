@@ -1,14 +1,11 @@
 package fr.cnes.regards.modules.processing.config;
 
-import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
-import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
-import fr.cnes.regards.modules.processing.dao.PBatchRepositoryImpl;
-import fr.cnes.regards.modules.processing.dao.PExecutionRepositoryImpl;
+import fr.cnes.regards.modules.processing.dao.*;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entity.mapping.DaoCustomConverters;
-import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapperImpl;
-import fr.cnes.regards.modules.processing.utils.GsonProcessingUtils;
+import fr.cnes.regards.modules.processing.entity.converter.DaoCustomConverters;
+import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
+import fr.cnes.regards.modules.processing.utils.ProcessingGsonUtils;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import name.nkonev.r2dbc.migrate.core.Dialect;
@@ -37,21 +34,22 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @Configuration
 @EnableR2dbcRepositories(basePackageClasses = {
         IBatchEntityRepository.class,
-        IExecutionEntityRepository.class
+        IExecutionEntityRepository.class,
+        IOutputFileEntityRepository.class
 })
 @EntityScan(basePackageClasses = { BatchEntity.class, ExecutionEntity.class })
 @ComponentScan(basePackageClasses = {
-        DomainEntityMapperImpl.class,
+        BatchMapper.class,
         PBatchRepositoryImpl.class,
         PExecutionRepositoryImpl.class
 })
 public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingDaoR2dbcConfiguration.class);
-    @Autowired private final PgSqlConfig pgSqlConfig;
+    @Autowired private final PgSqlProperties pgSqlProperties;
 
-    public ProcessingDaoR2dbcConfiguration(PgSqlConfig pgSqlConfig) {
-        this.pgSqlConfig = pgSqlConfig;
+    public ProcessingDaoR2dbcConfiguration(PgSqlProperties pgSqlProperties) {
+        this.pgSqlProperties = pgSqlProperties;
     }
 
     @Bean public ConnectionFactory connectionFactory() {
@@ -60,21 +58,21 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
                 .option(ACQUIRE_RETRY, 5)
                 .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
                 .option(PROTOCOL, "postgresql")
-                .option(HOST, pgSqlConfig.getHost())
-                .option(PORT, pgSqlConfig.getPort())
-                .option(DATABASE, pgSqlConfig.getDbname())
-                .option(SCHEMA, pgSqlConfig.getSchema());
-        if (pgSqlConfig.getUser() != null) {
-               builder = builder.option(USER, pgSqlConfig.getUser());
+                .option(HOST, pgSqlProperties.getHost())
+                .option(PORT, pgSqlProperties.getPort())
+                .option(DATABASE, pgSqlProperties.getDbname())
+                .option(SCHEMA, pgSqlProperties.getSchema());
+        if (pgSqlProperties.getUser() != null) {
+               builder = builder.option(USER, pgSqlProperties.getUser());
         }
-        if (pgSqlConfig.getPassword() != null) {
-               builder = builder.option(PASSWORD, pgSqlConfig.getPassword());
+        if (pgSqlProperties.getPassword() != null) {
+               builder = builder.option(PASSWORD, pgSqlProperties.getPassword());
         }
         return ConnectionFactories.get(builder.build());
     }
 
     protected java.util.List<Object> getCustomConverters() {
-        return DaoCustomConverters.getCustomConverters(GsonProcessingUtils.gson());
+        return DaoCustomConverters.getCustomConverters(ProcessingGsonUtils.gson());
     }
 
     @Bean(name = "reactiveTransactionManager")

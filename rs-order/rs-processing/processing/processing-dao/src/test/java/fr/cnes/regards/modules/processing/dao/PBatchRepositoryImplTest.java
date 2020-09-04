@@ -5,7 +5,6 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.micrometer.core.annotation.Timed;
-import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import org.junit.Test;
@@ -16,12 +15,14 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
+import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
+import static io.vavr.collection.List.empty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
@@ -57,8 +58,7 @@ public class PBatchRepositoryImplTest extends AbstractRepoTest {
                     // TESTING EXEC SAVE/FIND
                     //////////////////////////
                     // GIVEN
-                    PExecution newExec = randomInstance(PExecution.class).asNew()
-                            .withSteps(List.empty())
+                    PExecution newExec = asNew(randomInstance(PExecution.class))
                             .withBatchId(persistedBatch.getId())
                             .withExpectedDuration(Duration.ofSeconds(10));
 
@@ -73,8 +73,7 @@ public class PBatchRepositoryImplTest extends AbstractRepoTest {
                             // ADDING A STEP TO EXEC
                             //////////////////////////
                             // GIVEN
-                            PStep newStep = randomInstance(PStep.class)
-                                    .withTime(OffsetDateTime.now(ZoneId.of("UTC")).withNano(0));
+                            PStep newStep = randomInstance(PStep.class).clean().withTime(nowUtc().withNano(0));
 
                             // WHEN
                             return addStep(i, persistedExec, newStep).flatMap(exec -> {
@@ -83,10 +82,9 @@ public class PBatchRepositoryImplTest extends AbstractRepoTest {
                                 PStep foundStep = steps.last();
                                 asserts.add(() -> {
                                     assertThat(steps).hasSize(1);
-                                    assertThat(foundStep.toUTC()).isEqualTo(newStep.toUTC());
+                                    assertThat(foundStep).isEqualTo(newStep);
                                 });
-
-                                return Mono.just(Unit.UNIT);
+                                return Unit.mono();
                             });
                         });
                     });
@@ -141,6 +139,17 @@ public class PBatchRepositoryImplTest extends AbstractRepoTest {
     private Mono<PExecution> findExec(int i, PExecution pExec) {
         return domainExecRepo.findById(pExec.getId())
                 .doOnNext(e -> LOGGER.info("ATTEMPT {}, Found exec {}", i, e));
+    }
+
+    private static PExecution asNew(PExecution exec) {
+        OffsetDateTime lastUpdated = nowUtc();
+        return exec
+                .withSteps(empty())
+                .withId(UUID.randomUUID())
+                .withPersisted(false)
+                .withVersion(0)
+                .withCreated(lastUpdated)
+                .withLastUpdated(lastUpdated);
     }
 
 }

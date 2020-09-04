@@ -9,27 +9,19 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
-import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
-import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
+import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-import fr.cnes.regards.modules.processing.domain.exception.ExecutionFailureException;
+import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
-import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
-import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
-import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
-import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
@@ -37,9 +29,14 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
-import static fr.cnes.regards.modules.processing.domain.PStep.newStep;
-import static io.vavr.collection.List.empty;
+import static fr.cnes.regards.modules.processing.domain.PStep.failure;
+import static fr.cnes.regards.modules.processing.domain.PStep.running;
+import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
+import static fr.cnes.regards.modules.processing.domain.engine.IExecutable.sendEvent;
+import static fr.cnes.regards.modules.processing.storage.Executables.prepareWorkdir;
+import static fr.cnes.regards.modules.processing.storage.Executables.storeOutputFiles;
 import static io.vavr.collection.List.ofAll;
 
 @Plugin(
@@ -92,15 +89,14 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
     )
     private List<String> envVariableNames;
 
-    private final IExecutionLocalWorkdirService workdirService;
-    private final ISharedStorageService storageService;
-
-    @Autowired
-    public SimpleShellProcessPlugin(IExecutionLocalWorkdirService workdirService,
-            ISharedStorageService storageService) {
-        this.workdirService = workdirService;
-        this.storageService = storageService;
+    public void setShellScriptName(String shellScriptName) {
+        this.shellScriptName = shellScriptName;
     }
+
+    public void setEnvVariableNames(List<String> envVariableNames) {
+        this.envVariableNames = envVariableNames;
+    }
+
 
     @Override public ConstraintChecker<PBatch> batchChecker() {
         return ConstraintChecker.noViolation();
@@ -131,77 +127,53 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
     }
 
     @Override public IExecutable executable() {
-        return new IExecutable() {
-            @Override
-            public Mono<Seq<POutputFile>> execute(ExecutionContext ctx, FluxSink<PStep> stepSink) {
-                NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
-                pb.environment().putAll(ctx.getBatch().getUserSuppliedParameters()
-                    .toJavaMap(v -> Tuple.of(v.getName(), v.getValue())));
-                AtomicReference<NuProcess> nuProcessRef = new AtomicReference<>();
-
-                return workdirService
-                    .makeWorkdir(ctx)
-                    .flatMap(workdir -> workdirService.writeInputFilesToWorkdirInput(workdir, ctx.getExec().getInputFiles())
-                        .flatMap(unit -> {
-                            return Mono.<Mono<Seq<POutputFile>>>create(sink -> {
-                                try {
-                                    ShellScriptNuProcessHandler handler = new ShellScriptNuProcessHandler(ctx, workdir,
-                                                                                                          stepSink, sink);
-                                    pb.setProcessListener(handler);
-                                    pb.setCwd(workdir.getBasePath());
-
-                                    NuProcess process = pb.start();
-                                    nuProcessRef.set(process);
-                                }
-                                catch(Exception e) {
-                                    LOGGER.error(e.getMessage(), e);
-                                    sink.error(e);
-                                }
-                            })
-                            .flatMap(mono -> mono)
-                            .doOnCancel(() -> {
-                                nuProcessRef.getAndUpdate(p -> { if (p != null) { p.destroy(true); } return null; });
-                                stepSink.next(newStep(ExecutionStatus.CANCELLED, ""));
-                            })
-                            .log("ShellScriptNuProcessHandler mono");
-                        }));
-            }
-        };
+        return sendEvent(prepareEvent())
+            .andThen(prepareWorkdir())
+            .andThen(sendEvent(runningEvent()))
+            .andThen(new SimpleShellProcessExecutable())
+            .andThen(storeOutputFiles())
+            .onError(failureEvent());
     }
+
+    private Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
+        return (ctx, t) -> ctx.sendEvent(() -> event(failure(t.getMessage())));
+    }
+
+    private Supplier<ExecutionEvent> runningEvent() {
+        return () -> event(running("Launch script"));
+    }
+
+    private Supplier<ExecutionEvent> prepareEvent() {
+        return () -> event(PStep.prepare("Load input file to workdir"));
+    }
+
+    private <T> io.vavr.collection.List<T> empty() {
+        return io.vavr.collection.List.empty();
+    }
+
 
 
     class ShellScriptNuProcessHandler extends NuAbstractProcessHandler {
 
         private final ExecutionContext ctx;
         private final ExecutionLocalWorkdir workdir;
-        private final FluxSink<PStep> stepSink;
-        private final MonoSink<Mono<Seq<POutputFile>>> monoSink;
+        private final MonoSink<ExecutionContext> sink;
 
-        private NuProcess nuProcess;
-
-        ShellScriptNuProcessHandler(ExecutionContext ctx, ExecutionLocalWorkdir workdir, FluxSink<PStep> stepSink,
-                MonoSink<Mono<Seq<POutputFile>>> monoSink) {
+        ShellScriptNuProcessHandler(
+                ExecutionContext ctx,
+                MonoSink<ExecutionContext> sink
+        ) {
             this.ctx = ctx;
-            this.workdir = workdir;
-            this.stepSink = stepSink;
-            this.monoSink = monoSink;
+            this.workdir = ctx.getWorkdir();
+            this.sink = sink;
         }
 
-        @Override public void onPreStart(NuProcess nuProcess) {
-            LOGGER.debug("nu process prestart"); // TODO cleanup
-            this.nuProcess = nuProcess;
-        }
-        @Override public void onStart(NuProcess nuProcess) {
-            LOGGER.debug("nu process start"); // TODO cleanup
-            this.stepSink.next(newStep(ExecutionStatus.RUNNING));
-        }
         @Override public void onExit(int i) {
             if (i == 0) { this.onSuccess(); }
             else { this.onFailure(i); }
         }
 
         private void onFailure(int i) {
-            LOGGER.debug("nu process exit"); // TODO cleanup
             String message = String.format(
                 "correlationId=%s exec=%s process=%s : Exited with status code %d",
                     ctx.getBatch().getCorrelationId(),
@@ -209,8 +181,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                     shellScriptName,
                     i
             );
-            stepSink.next(newStep(ExecutionStatus.FAILURE, message));
-            monoSink.error(new ExecutionFailureException(message));
+            sink.error(new SimpleShellProcessExecutionException(message));
         }
 
         private void onSuccess() {
@@ -218,9 +189,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
                          ctx.getBatch().getCorrelationId(),
                          ctx.getExec().getId(),
                          shellScriptName);
-            stepSink.next(newStep(ExecutionStatus.SUCCESS, "Exited with status code 0"));
-
-            monoSink.success(storageService.storeResult(ctx, workdir));
+            sink.success(ctx);
         }
 
         @Override public void onStdout(ByteBuffer byteBuffer, boolean b) {
@@ -248,16 +217,42 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedProcessPlugi
         }
     }
 
+    class SimpleShellProcessExecutable implements IExecutable {
 
-    public void setShellScriptName(String shellScriptName) {
-        this.shellScriptName = shellScriptName;
+        @Override
+        public Mono<ExecutionContext> execute(ExecutionContext ctx) {
+
+            NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
+            pb.environment().putAll(ctx.getBatch().getUserSuppliedParameters()
+                                            .toJavaMap(v -> Tuple.of(v.getName(), v.getValue())));
+            AtomicReference<NuProcess> nuProcessRef = new AtomicReference<>();
+
+            IExecutionEventNotifier eventNotifier = ctx.getEventNotifier();
+            ExecutionLocalWorkdir workdir = ctx.getWorkdir();
+
+            return Mono.create(sink -> {
+                try {
+                    ShellScriptNuProcessHandler handler = new ShellScriptNuProcessHandler(ctx, sink);
+                    pb.setProcessListener(handler);
+                    pb.setCwd(workdir.getBasePath());
+
+                    NuProcess process = pb.start();
+                    nuProcessRef.set(process);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                    eventNotifier.apply(event(failure(e.getMessage())));
+                }
+            });
+        }
     }
 
-    public void setEnvVariableNames(List<String> envVariableNames) {
-        this.envVariableNames = envVariableNames;
+    public static class SimpleShellProcessExecutionException extends Exception {
+        public SimpleShellProcessExecutionException(String s) {
+            super(s);
+        }
     }
 
     protected static io.vavr.collection.List<String> emptyOrAllImmutable(List<String> strings) {
-        return strings == null ? empty() : ofAll(strings);
+        return strings == null ? io.vavr.collection.List.empty() : ofAll(strings);
     }
 }

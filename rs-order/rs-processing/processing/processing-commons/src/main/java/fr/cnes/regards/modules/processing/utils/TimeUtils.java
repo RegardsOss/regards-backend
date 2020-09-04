@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.processing.utils;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 public class TimeUtils {
 
@@ -21,7 +22,10 @@ public class TimeUtils {
     }
 
     public static long toEpochMillisUTC(OffsetDateTime date) {
-        return date.atZoneSameInstant(UTC).toInstant().toEpochMilli();
+        return toUtc(date).toInstant().toEpochMilli();
     }
 
+    public static OffsetDateTime toUtc(OffsetDateTime date) {
+        return date.withOffsetSameInstant(ZoneOffset.UTC);
+    }
 }

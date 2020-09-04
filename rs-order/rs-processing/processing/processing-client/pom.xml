@@ -45,5 +45,20 @@
             <artifactId>processing-dao</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-plugins</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-storage</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-service</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -33,20 +33,22 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     private final IExecutionEntityRepository entityExecRepo;
 
-    private final DomainEntityMapper mapper;
+    private final DomainEntityMapper.Execution mapper;
 
     @Autowired
-    public PExecutionRepositoryImpl(IExecutionEntityRepository entityExecRepo,
-            DomainEntityMapper mapper) {
+    public PExecutionRepositoryImpl(
+            IExecutionEntityRepository entityExecRepo,
+            DomainEntityMapper.Execution mapper
+    ) {
         this.entityExecRepo = entityExecRepo;
         this.mapper = mapper;
     }
 
     @Override public Mono<PExecution> create(PExecution exec) {
         return entityExecRepo
-            .save(mapper.toEntity(exec.withAuditDates()))
+            .save(mapper.toEntity(exec))
             .map(ExecutionEntity::persisted)
-            .flatMap(mapper::toDomain)
+            .map(mapper::toDomain)
             .doOnNext(e -> cache.put(e.getId(), e));
     }
 
@@ -54,7 +56,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     @Override public Mono<PExecution> update(PExecution exec) {
         return entityExecRepo
                 .save(mapper.toEntity(exec))
-                .flatMap(mapper::toDomain)
+                .map(mapper::toDomain)
                 .doOnNext(e -> cache.put(e.getId(), e));
     }
 
@@ -62,12 +64,12 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         return Option.of(cache.getIfPresent(id))
             .map(Mono::just)
             .getOrElse(() -> entityExecRepo.findById(id)
-                .flatMap(mapper::toDomain)
+                .map(mapper::toDomain)
                 .doOnNext(e -> cache.put(e.getId(), e)));
     }
 
     @Override public Flux<PExecution> getTimedOutExecutions() {
-        return entityExecRepo.getTimedOutExecutions().flatMap(mapper::toDomain);
+        return entityExecRepo.getTimedOutExecutions().map(mapper::toDomain);
     }
 
     @Override
@@ -80,7 +82,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     ) {
         return entityExecRepo.findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                 tenant, status, from, to, page
-        ).flatMap(mapper::toDomain);
+        ).map(mapper::toDomain);
     }
 
     @Override public Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
@@ -93,7 +95,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     ) {
         return entityExecRepo.findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                 tenant, userEmail, status, from, to, page
-        ).flatMap(mapper::toDomain);
+        ).map(mapper::toDomain);
     }
 
 }

@@ -31,7 +31,7 @@
 	</parent>
 
 	<dependencies>
-		<!-- Regards dependencies -->
+		<!-- Regards -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.processing</groupId>
 			<artifactId>processing-domain</artifactId>
@@ -50,15 +50,13 @@
 			<artifactId>hateoas-regards</artifactId>
 		</dependency>
 
-		<!-- External Libraries -->
+		<!-- Framework -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.batch</groupId>
-			<artifactId>spring-batch-core</artifactId>
-		</dependency>
+
+		<!-- Libraries -->
 		<dependency>
 			<groupId>io.vavr</groupId>
 			<artifactId>vavr</artifactId>
@@ -81,10 +79,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.processing</groupId>
 			<artifactId>processing-test</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-			<artifactId>jobs-service</artifactId>
 		</dependency>
 	</dependencies>
 

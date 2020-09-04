@@ -12,7 +12,7 @@ import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
-import fr.cnes.regards.modules.processing.domain.factory.IPUserAuthFactory;
+import fr.cnes.regards.modules.processing.service.IPUserAuthService;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
@@ -38,12 +38,12 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
     private final IRuntimeTenantResolver tenantResolver;
     private final IReactiveRolesClient rolesClient;
-    private final IPUserAuthFactory authFactory;
+    private final IPUserAuthService authFactory;
 
     @Autowired
     public ProcessRepositoryImpl(IPluginService pluginService, IWorkloadEngineRepository enginRepo,
             IRightsPluginConfigurationRepository rightsPluginConfigRepo, IRuntimeTenantResolver tenantResolver,
-            IReactiveRolesClient rolesClient, IPUserAuthFactory authFactory) {
+            IReactiveRolesClient rolesClient, IPUserAuthService authFactory) {
         this.pluginService = pluginService;
         this.enginRepo = enginRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;

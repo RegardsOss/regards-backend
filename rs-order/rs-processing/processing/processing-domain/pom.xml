@@ -36,6 +36,7 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-commons</artifactId>
         </dependency>
+
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards</artifactId>
@@ -65,6 +66,10 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
         </dependency>
@@ -86,6 +91,10 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service-annotations</artifactId>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -99,24 +108,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jeasy</groupId>
-            <artifactId>easy-random-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.xshadov</groupId>
-            <artifactId>easy-random-vavr-extension</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-test</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
 
     </dependencies>
 
@@ -125,41 +119,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${org.mapstruct.version}</version>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.5.0</version>
-                <executions>
-                    <execution>
-                        <id>xjc</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <packageName>fr.cnes.regards.modules.processing.metalink.schema</packageName>
-                    <sources>
-                        <source>src/main/resources</source>
-                    </sources>
-                </configuration>
             </plugin>
         </plugins>
     </build>

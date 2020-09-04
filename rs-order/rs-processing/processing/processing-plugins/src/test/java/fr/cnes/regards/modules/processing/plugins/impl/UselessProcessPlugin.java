@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Try;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
@@ -42,12 +43,7 @@ public class UselessProcessPlugin implements IProcessDefinition {
     }
 
     @Override public IExecutable executable() {
-        return new IExecutable() {
-            @Override
-            public Mono<Seq<POutputFile>> execute(ExecutionContext context, FluxSink<PStep> stepSink) {
-                return Mono.empty();
-            }
-        };
+        return IExecutable.wrap(Mono::just);
     }
 
     @Override public Seq<ExecutionParameterDescriptor> parameters() {

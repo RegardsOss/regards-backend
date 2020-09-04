@@ -2,20 +2,23 @@ package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import reactor.core.publisher.Mono;
+import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
+import fr.cnes.regards.modules.processing.entity.StepEntity;
 
-public interface DomainEntityMapper {
+public interface DomainEntityMapper<D, E> {
 
-    BatchEntity toEntity(PBatch batch);
+    E toEntity(D domain);
 
-    Mono<PBatch> toDomain(BatchEntity batch);
+    D toDomain(E entity);
 
-
-    ExecutionEntity toEntity(PExecution exec);
-
-    Mono<PExecution> toDomain(ExecutionEntity exec);
+    interface Batch extends DomainEntityMapper<PBatch, BatchEntity> {}
+    interface Execution extends DomainEntityMapper<PExecution, ExecutionEntity> {}
+    interface OutputFile extends DomainEntityMapper<POutputFile, OutputFileEntity> {}
+    interface Step extends DomainEntityMapper<PStep, StepEntity> {}
 
 }
 

@@ -6,8 +6,8 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.service.IExecutionService;
-import fr.cnes.regards.modules.processing.service.events.PExecutionRequestEvent;
-import fr.cnes.regards.modules.processing.service.events.PExecutionResultEvent;
+import fr.cnes.regards.modules.processing.events.PExecutionRequestEvent;
+import fr.cnes.regards.modules.processing.events.PExecutionResultEvent;
 import io.vavr.collection.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,17 +44,18 @@ public class ExecutionRequestEventHandler
         runtimeTenantResolver.forceTenant(tenant); // Needed in order to publish events
 
         LOGGER.info("exec={} - Execution request received", message.getExecutionId());
+
         execService.launchExecution(message)
             .subscribe(
                 exec -> LOGGER.info("exec={} - Execution request registered correctly", message.getExecutionId()),
                 err -> {
                     LOGGER.error("exec={} - Execution request error: {}", message.getExecutionId(), err.getMessage());
                     publisher.publish(new PExecutionResultEvent(
-                            message.getExecutionId(),
-                            message.getBatchId(),
-                            ExecutionStatus.FAILURE,
-                            List.empty(),
-                            List.of(err.getClass().getName(), err.getMessage())
+                        message.getExecutionId(),
+                        message.getBatchId(),
+                        ExecutionStatus.FAILURE,
+                        List.empty(),
+                        List.of(err.getClass().getName(), err.getMessage())
                     ));
                 }
             );

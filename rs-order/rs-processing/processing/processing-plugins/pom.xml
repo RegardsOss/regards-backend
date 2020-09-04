@@ -23,6 +23,14 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-dao</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
@@ -116,6 +124,10 @@
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-storage</artifactId>
         </dependency>
 
     </dependencies>

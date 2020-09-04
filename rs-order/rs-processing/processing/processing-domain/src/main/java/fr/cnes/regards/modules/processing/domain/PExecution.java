@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.processing.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
+import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import lombok.Value;
 import lombok.With;
@@ -9,8 +9,6 @@ import lombok.With;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
 @Value @With
 
@@ -38,21 +36,39 @@ public class PExecution {
 
     OffsetDateTime lastUpdated;
 
-    @JsonIgnore
     int version;
 
-    @JsonIgnore
-    boolean persisted;
+    transient boolean persisted;
+
+    public static PExecution create(
+            UUID batchId,
+            Duration expectedDuration,
+            Seq<ExecutionFileParameterValue> inputFiles,
+            String tenant,
+            String userName,
+            UUID processBusinessId,
+            String processName
+    ) {
+        PStep registered = PStep.registered("");
+        return new PExecution(
+            UUID.randomUUID(),
+            batchId,
+            expectedDuration,
+            inputFiles,
+            List.of(registered),
+            tenant,
+            userName,
+            processBusinessId,
+            processName,
+            registered.getTime(),
+            registered.getTime(),
+            0,
+            false
+        );
+    }
 
     public PExecution addStep(PStep step) {
         return withSteps(this.steps.append(step)).withLastUpdated(step.getTime());
     }
 
-    public PExecution withAuditDates() {
-        if (persisted) { return this; }
-        OffsetDateTime now = nowUtc();
-        return this.withCreated(now).withLastUpdated(now);
-    }
-
-    public PExecution asNew() { return this.withId(UUID.randomUUID()).withPersisted(false).withVersion(0).withAuditDates(); }
 }

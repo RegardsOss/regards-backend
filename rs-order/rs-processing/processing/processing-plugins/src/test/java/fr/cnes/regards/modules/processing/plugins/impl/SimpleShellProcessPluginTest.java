@@ -11,13 +11,14 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
-import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
-import fr.cnes.regards.modules.processing.storage.*;
-import fr.cnes.regards.modules.processing.domain.factory.IPUserAuthFactory;
+import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
+import fr.cnes.regards.modules.processing.service.IPUserAuthService;
+import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.HashMap;
-import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.jetbrains.annotations.NotNull;
@@ -25,10 +26,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.Proxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,45 +51,39 @@ public class SimpleShellProcessPluginTest {
 
         Path tempWorkdirBase = Files.createTempDirectory("workdirs");
         Path tempStorageBase = Files.createTempDirectory("storage");
+        ExecutionLocalWorkdir workdir = new ExecutionLocalWorkdir(tempWorkdirBase);
 
-        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(
-                tempWorkdirBase,
-                new DownloadService(
-                    Proxy.NO_PROXY,
-                    HashSet.empty(),
-                    null
-                )
-        );
-        ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
+        IExecutionLocalWorkdirService workdirService = Mockito.mock(IExecutionLocalWorkdirService.class);
+        ISharedStorageService storageService = Mockito.mock(ISharedStorageService.class);
 
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         ProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessPlugin shellProcessPlugin = makePlugin(workdirService, storageService);
+        SimpleShellProcessPlugin shellProcessPlugin = makePlugin();
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin).block();
         PBatch batch = makeBatch(batchId, process);
         PExecution exec = makeExec(execId, batchId, batch.getProcessBusinessId());
-        ExecutionContext ctx = new ExecutionContext(exec, batch, process);
+        AtomicReference<Seq<PStep>> steps = new AtomicReference<>(List.empty());
 
 
-        AtomicReference<Seq<POutputFile>> outputFiles = new AtomicReference<>();
+        ExecutionContext ctx = new ExecutionContext(
+                workdirService,
+                storageService,
+                exec,
+                batch,
+                process,
+                workdir,
+                s ->  Mono
+                    .fromCallable(() -> steps.getAndUpdate(ss -> s.step().map(ss::append).getOrElse(ss)))
+                    .map(exec::withSteps)
+        );
+
         IExecutable executable = shellProcessPlugin.executable();
-        Flux.<PStep>create(sink -> {
-                executable
-                    .execute(ctx, sink)
-                    .doOnTerminate(sink::complete)
-                    .subscribe(
-                        outputFiles::set,
-                        e -> LOGGER.error(e.getMessage(), e)
-                    );
-            })
-            .doOnSubscribe(s -> LOGGER.info("Flux subscription: {}", s))
-            .doOnError(t -> LOGGER.error(t.getMessage(), t))
-            .doOnNext(s -> LOGGER.info("Step received: {}", s))
-            .collect(List.collector())
-            .block();
+        executable.execute(ctx);
+
+        LOGGER.info("Steps during execution: {}", steps.get());
     }
 
     @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
@@ -108,7 +101,7 @@ public class SimpleShellProcessPluginTest {
         when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
         IReactiveRolesClient rolesClient = Mockito.mock(IReactiveRolesClient.class);
         when(rolesClient.shouldAccessToResourceRequiring(anyString(), anyString())).thenReturn(Mono.just(true));
-        IPUserAuthFactory authFactory = Mockito.mock(IPUserAuthFactory.class);
+        IPUserAuthService authFactory = Mockito.mock(IPUserAuthService.class);
         when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
                 .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
 
@@ -145,10 +138,8 @@ public class SimpleShellProcessPluginTest {
         };
     }
 
-    private SimpleShellProcessPlugin makePlugin(IExecutionLocalWorkdirService workdirService,
-            ISharedStorageService storageService) {
-        SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin(workdirService,
-                                                                                         storageService);
+    private SimpleShellProcessPlugin makePlugin() {
+        SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin();
         // TODO: try removing these two setters to fix a cast exception
         shellProcessPlugin.setDurationForecast("10min");
         shellProcessPlugin.setSizeForecast("*1");

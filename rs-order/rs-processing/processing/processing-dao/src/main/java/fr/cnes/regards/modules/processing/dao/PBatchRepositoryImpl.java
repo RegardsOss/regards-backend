@@ -24,10 +24,13 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
 
     private final IBatchEntityRepository delegate;
 
-    private final DomainEntityMapper mapper;
+    private final DomainEntityMapper.Batch mapper;
 
     @Autowired
-    public PBatchRepositoryImpl(IBatchEntityRepository delegate, DomainEntityMapper mapper) {
+    public PBatchRepositoryImpl(
+            IBatchEntityRepository delegate,
+            DomainEntityMapper.Batch mapper
+    ) {
         this.delegate = delegate;
         this.mapper = mapper;
     }
@@ -36,7 +39,7 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
         return delegate
             .save(mapper.toEntity(domain))
             .map(BatchEntity::persisted)
-            .flatMap(mapper::toDomain)
+            .map(mapper::toDomain)
             .doOnNext(b -> cache.put(b.getId(), b));
     }
 
@@ -46,7 +49,7 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
             .getOrElse(() -> delegate
                 .findById(id)
                 .map(BatchEntity::persisted)
-                .flatMap(mapper::toDomain)
+                .map(mapper::toDomain)
                 .doOnNext(b -> cache.put(b.getId(), b))
             );
     }

@@ -13,8 +13,6 @@ import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.testutils.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.testutils.GsonLoggingEncoder;
 import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
-import fr.cnes.regards.modules.processing.utils.TimeUtils;
-import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
@@ -25,16 +23,12 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.reactive.config.EnableWebFlux;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Map;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
@@ -42,7 +36,6 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
 import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 import static java.util.Arrays.asList;
 
 @ContextConfiguration(
