@@ -25,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,10 +54,11 @@ public interface IOrderService {
     /**
      * Create an order
      * @param basket basket from which order is created
+     * @param label label, generated when null
      * @param url frontent URL
      * @return copletely loaded order
      */
-    Order createOrder(Basket basket, String url);
+    Order createOrder(Basket basket, String label, String url) throws EntityInvalidException;
 
     /**
      * Asynchronous method called by createOrder to complete order creation. This method cannot be transactional (due

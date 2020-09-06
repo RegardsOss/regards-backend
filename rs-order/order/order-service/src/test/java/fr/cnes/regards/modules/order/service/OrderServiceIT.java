@@ -28,12 +28,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
@@ -55,6 +52,7 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -72,16 +70,12 @@ import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -96,6 +90,22 @@ import fr.cnes.regards.modules.project.domain.Project;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @DirtiesContext
 public class OrderServiceIT {
+
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName
+            .build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+
+    private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
+
+    private static SimpleMailMessage mailMessage;
 
     @Autowired
     private IOrderService orderService;
@@ -142,22 +152,6 @@ public class OrderServiceIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
-    private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
-
-    private static SimpleMailMessage mailMessage;
-
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
     @Before
     public void init() {
         clean();
@@ -189,7 +183,7 @@ public class OrderServiceIT {
     }
 
     private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
-            String query) {
+                                                                 String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
         item.setFilesSize(filesSize);
@@ -201,7 +195,7 @@ public class OrderServiceIT {
     }
 
     @Test
-    public void test1() throws Exception {
+    public void testCreateOKLabelProvided() throws Exception {
         Basket basket = new Basket();
         basket.setOwner(USER_EMAIL);
 
@@ -214,14 +208,84 @@ public class OrderServiceIT {
         dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
-        Order order = orderService.createOrder(basket, "http://perdu.com");
+        Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com");
         Assert.assertNotNull(order);
+        Assert.assertEquals("myCommand", order.getLabel());
+    }
+
+    @Test
+    public void testCreateOKLabelGen() throws Exception {
+        Basket basket = new Basket();
+        basket.setOwner(USER_EMAIL);
+
+        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
+        dsSelection.setDatasetLabel("DS1");
+        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
+        dsSelection.setFilesSize(1_000_000l);
+        dsSelection.setFilesCount(1);
+        dsSelection.setObjectsCount(1);
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        basket.addDatasetSelection(dsSelection);
+        basket = basketRepos.save(basket);
+        Order order = orderService.createOrder(basket, null, "http://perdu.com");
+        Assert.assertTrue("Label should be generated using current date (up to second)",
+                          Pattern.matches("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}",
+                                          order.getLabel()));
+    }
+
+    @Test
+    public void testCreateNOKLabelTooLong() throws Exception {
+        Basket basket = new Basket();
+        basket.setOwner(USER_EMAIL);
+
+        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
+        dsSelection.setDatasetLabel("DS1");
+        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
+        dsSelection.setFilesSize(1_000_000l);
+        dsSelection.setFilesCount(1);
+        dsSelection.setObjectsCount(1);
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        basket.addDatasetSelection(dsSelection);
+        basket = basketRepos.save(basket);
+        try {
+            Order order = orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)", "http://perdu.com");
+            Assert.fail("An exception should have been thrown as label is too long");
+        } catch(EntityInvalidException e){
+            Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
+                                OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
+        }
+    }
+
+    @Test
+    public void testCreateNOKLabelAlreadyUsed() throws Exception {
+        Basket basket = new Basket();
+        basket.setOwner(USER_EMAIL);
+
+        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
+        dsSelection.setDatasetLabel("DS1");
+        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
+        dsSelection.setFilesSize(1_000_000l);
+        dsSelection.setFilesCount(1);
+        dsSelection.setObjectsCount(1);
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        basket.addDatasetSelection(dsSelection);
+        basket = basketRepos.save(basket);
+        orderService.createOrder(basket, "myCommand", "http://perdu.com");
+        try {
+            // create a second time with same label: label should be already used by that owner
+            orderService.createOrder(basket, "myCommand", "http://perdu2.com");
+            Assert.fail("An exception should have been thrown as label is too long");
+        } catch(EntityInvalidException e){
+            Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
+                                OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
+        }
     }
 
     @Test
     public void testMapping() throws URISyntaxException {
         Order order = new Order();
         order.setOwner(USER_EMAIL);
+        order.setLabel("ds1 order");
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(OffsetDateTime.now().plus(3, ChronoUnit.DAYS));
         order = orderRepos.save(order);
@@ -294,7 +358,7 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_ARC_470")
     @Requirement("REGARDS_DSL_STO_ARC_490")
-    public void testBucketsJobs() throws IOException, InterruptedException {
+    public void testBucketsJobs() throws IOException, InterruptedException, EntityInvalidException {
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -307,7 +371,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "http://perdu.com");
+        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com");
         Thread.sleep(5_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
@@ -349,7 +413,7 @@ public class OrderServiceIT {
 
     @Test
     @Ignore
-    public void testExpiredOrders() throws IOException, InterruptedException {
+    public void testExpiredOrders() throws IOException, InterruptedException, EntityInvalidException {
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
@@ -361,7 +425,7 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "http://perdu.com");
+        Order order = orderService.createOrder(basket, "perdu", "http://perdu.com");
         order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
         orderRepos.save(order);
 
@@ -390,6 +454,7 @@ public class OrderServiceIT {
         order.setCreationDate(OffsetDateTime.now());
         order.setExpirationDate(order.getCreationDate().plus(3, ChronoUnit.DAYS));
         order.setOwner(USER_EMAIL);
+        order.setLabel("Ego");
         order.setStatus(OrderStatus.PENDING);
         order = orderRepos.save(order);
 
@@ -418,10 +483,10 @@ public class OrderServiceIT {
             Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
             // Check that email text has been interpreted before being sent
             SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-            Assert.assertTrue(mailMessage.getText()
-                    .contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
-            Assert.assertTrue(mailMessage.getText()
-                    .contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+            Assert.assertTrue(
+                    mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+            Assert.assertTrue(
+                    mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
             Assert.assertFalse(mailMessage.getText().contains("${order}"));
         }
