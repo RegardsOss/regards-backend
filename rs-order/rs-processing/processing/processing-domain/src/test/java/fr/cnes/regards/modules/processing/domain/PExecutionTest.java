@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
-import fr.cnes.regards.modules.processing.utils.ProcessingGsonUtils;
+import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
 import io.vavr.collection.List;
 import org.junit.Test;
 import org.slf4j.Logger;

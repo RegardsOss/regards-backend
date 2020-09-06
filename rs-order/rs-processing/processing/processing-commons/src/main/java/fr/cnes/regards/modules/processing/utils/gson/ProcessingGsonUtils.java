@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.processing.utils;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
@@ -9,7 +9,6 @@ import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
 import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
 import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
 import io.vavr.gson.VavrGson;
-import org.jeasy.random.api.Randomizer;
 import org.springframework.boot.actuate.beans.BeansEndpoint;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;

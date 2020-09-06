@@ -18,7 +18,8 @@ public class OutputFileMapper implements DomainEntityMapper.OutputFile {
                 domain.getSize(),
                 domain.getCreated(),
                 domain.isDownloaded(),
-                domain.isDeleted()
+                domain.isDeleted(),
+                domain.isPersisted()
         );
     }
 
@@ -32,7 +33,8 @@ public class OutputFileMapper implements DomainEntityMapper.OutputFile {
                 entity.getSizeInBytes(),
                 entity.getCreated(),
                 entity.isDownloaded(),
-                entity.isDeleted()
+                entity.isDeleted(),
+                entity.isPersisted()
         );
     }
 

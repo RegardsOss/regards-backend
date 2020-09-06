@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.processing.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -15,7 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 
 @Table("t_outputfile")
-public class OutputFileEntity {
+public class OutputFileEntity implements Persistable<UUID> {
 
     private @Id UUID id;
 
@@ -44,4 +46,20 @@ public class OutputFileEntity {
     /** Whether the file has been deleted or not */
     private @Column("deleted") boolean deleted;
 
+    /**
+     * Because the R2DBC driver has no post-load / post-persist hook for the moment,
+     * this property is dealt with manually in the domain repository implementation.
+     */
+    @EqualsAndHashCode.Exclude
+    @Transient
+    private boolean persisted;
+
+    public OutputFileEntity persisted() {
+        this.persisted = true;
+        return this;
+    }
+
+    @Override public boolean isNew() {
+        return !persisted;
+    }
 }

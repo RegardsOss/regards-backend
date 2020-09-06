@@ -27,7 +27,13 @@ public class ProcessingExecutionException extends ProcessingException {
         this.exec = exec;
     }
 
+    @Override public final String getMessage() {
+        return String.format("id=%s type=%s exec=%s batch=%s message=%s",
+             this.exceptionId, this.type, this.exec.getId(), this.exec.getBatchId(), this.desc);
+    }
+
     public PExecution getExec() {
         return exec;
     }
+
 }

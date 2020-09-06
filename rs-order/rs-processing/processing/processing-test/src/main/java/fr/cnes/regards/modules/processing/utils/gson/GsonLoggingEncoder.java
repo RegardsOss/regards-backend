@@ -1,7 +1,6 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
-import feign.Request;
 import feign.RequestTemplate;
 import feign.codec.Encoder;
 import org.slf4j.Logger;

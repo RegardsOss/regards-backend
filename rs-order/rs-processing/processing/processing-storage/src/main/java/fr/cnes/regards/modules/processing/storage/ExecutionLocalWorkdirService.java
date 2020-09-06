@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.WORKDIR_CREATION_ERROR;
 
 @Service
@@ -41,7 +42,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
             Files.createDirectories(executionLocalWorkdir.outputFolder());
             return executionLocalWorkdir;
         })
-        .onErrorMap(t -> new MakeWorkdirException(exec, "Unable to create workdir", t));
+        .onErrorMap(mustWrap(), t -> new MakeWorkdirException(exec, "Unable to create workdir", t));
     }
 
     public Mono<ExecutionLocalWorkdir> writeInputFilesToWorkdirInput(

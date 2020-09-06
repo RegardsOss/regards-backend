@@ -1,7 +1,7 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
-import fr.cnes.regards.modules.processing.utils.ProcessingGsonUtils;
+import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
 
 public class GsonProcessingTestUtils {
 

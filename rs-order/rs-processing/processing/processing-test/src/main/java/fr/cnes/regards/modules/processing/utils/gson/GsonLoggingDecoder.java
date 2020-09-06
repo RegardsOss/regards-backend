@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;

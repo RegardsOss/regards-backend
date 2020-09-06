@@ -1,8 +1,9 @@
-package fr.cnes.regards.modules.processing.domain.step;
+package fr.cnes.regards.modules.processing.utils.random;
 
 import com.google.auto.service.AutoService;
 import fr.cnes.regards.modules.processing.domain.PStep;
-import fr.cnes.regards.modules.processing.utils.TypedRandomizer;
+import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
+import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.api.Randomizer;
 

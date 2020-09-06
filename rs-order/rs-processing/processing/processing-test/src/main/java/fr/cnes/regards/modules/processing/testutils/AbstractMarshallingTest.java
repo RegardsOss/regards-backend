@@ -1,11 +1,12 @@
 package fr.cnes.regards.modules.processing.testutils;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.modules.processing.utils.gson.GsonProcessingTestUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractMarshallingTest<T> {

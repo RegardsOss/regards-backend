@@ -8,7 +8,6 @@ import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.IProcessService;
@@ -28,8 +27,8 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ContextConfiguration(classes = { TestSpringConfiguration.class, ProcessingRestClientTest.Config.class })

@@ -36,7 +36,7 @@ public class PExecution {
 
     OffsetDateTime lastUpdated;
 
-    int version;
+    transient int version;
 
     transient boolean persisted;
 

@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.EXTERNAL_DOWNLOAD_ERROR;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.INTERNAL_DOWNLOAD_ERROR;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
@@ -68,7 +69,7 @@ public class DownloadService implements IDownloadService {
             return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
         })
         .flatMap(voidMono -> voidMono.map(n -> dest))
-        .onErrorResume(errorWithContextMono(
+        .onErrorResume(mustWrap(), errorWithContextMono(
             PExecution.class,
             (exec, t) -> new InternalDownloadException(
                 exec,
@@ -85,7 +86,7 @@ public class DownloadService implements IDownloadService {
             }
             return dest;
         })
-        .onErrorResume(errorWithContextMono(
+        .onErrorResume(mustWrap(), errorWithContextMono(
             PExecution.class,
             (exec, t) -> new ExternalDownloadException(
                 exec,

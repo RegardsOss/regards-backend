@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.processing.storage;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.Seq;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 /**
@@ -13,4 +14,5 @@ public interface ISharedStorageService {
 
     Mono<Seq<POutputFile>> storeResult(ExecutionContext ctx);
 
+    Mono<POutputFile> delete(POutputFile outFile);
 }

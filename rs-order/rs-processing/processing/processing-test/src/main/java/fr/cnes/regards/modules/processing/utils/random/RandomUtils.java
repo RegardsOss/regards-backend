@@ -1,11 +1,11 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.random;
 
-import fr.cnes.regards.modules.processing.utils.TypedRandomizer;
+import fr.cnes.regards.modules.processing.utils.random.TypedRandomizer;
+import fr.cnes.regards.modules.processing.utils.random.VavrWrappersRegistry;
 import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
 import io.vavr.collection.List;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
-import org.jeasy.random.api.Randomizer;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

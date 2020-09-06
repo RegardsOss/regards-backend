@@ -4,30 +4,24 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import fr.cnes.regards.modules.processing.entity.StepEntity;
-import fr.cnes.regards.modules.processing.entity.Steps;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomInstance;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.toEpochMillisUTC;
 import static java.time.OffsetDateTime.now;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
-
-    public static final ZoneId UTC = ZoneId.of("UTC");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IExecutionEntityRepositoryTest.class);
 
@@ -41,7 +35,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
                 .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(SUCCESS)
-                .withLastUpdated(now(UTC).minusMinutes(3))
+                .withLastUpdated(nowUtc().minusMinutes(3))
                 .withTimeoutAfterMillis(1_000L)
                 .withPersisted(false)
                 ;
@@ -51,7 +45,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
                 .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
-                .withLastUpdated(now(UTC).minusMinutes(4))
+                .withLastUpdated(nowUtc().minusMinutes(4))
                 .withTimeoutAfterMillis(1_000L)
                 .withPersisted(false)
                 ;
@@ -62,7 +56,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
                 .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
-                .withLastUpdated(now(UTC).minusMinutes(4))
+                .withLastUpdated(nowUtc().minusMinutes(4))
                 .withTimeoutAfterMillis(1_000_000L)
                 .withPersisted(false)
                 ;

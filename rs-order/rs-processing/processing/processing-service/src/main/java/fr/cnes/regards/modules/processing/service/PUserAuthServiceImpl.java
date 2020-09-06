@@ -11,12 +11,12 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PUserAuthService implements IPUserAuthService {
+public class PUserAuthServiceImpl implements IPUserAuthService {
 
     private final FeignSecurityManager feignSecurityManager;
 
     @Autowired
-    public PUserAuthService(FeignSecurityManager feignSecurityManager) {
+    public PUserAuthServiceImpl(FeignSecurityManager feignSecurityManager) {
         this.feignSecurityManager = feignSecurityManager;
     }
 

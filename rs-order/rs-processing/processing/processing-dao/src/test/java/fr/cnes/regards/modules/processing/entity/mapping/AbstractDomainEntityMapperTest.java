@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.processing.entity.mapping;
 
 import org.junit.Test;
 
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractDomainEntityMapperTest<D, E> {

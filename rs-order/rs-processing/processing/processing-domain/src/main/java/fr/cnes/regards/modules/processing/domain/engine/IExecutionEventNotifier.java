@@ -15,8 +15,10 @@ import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.ev
  */
 public interface IExecutionEventNotifier extends Function1<ExecutionEvent, Mono<PExecution>> {
 
-    default Mono<PExecution> notifyEvent(ExecutionEvent event) {
-        return apply(event);
+    Mono<PExecution> notifyEvent(ExecutionEvent event);
+
+    default Mono<PExecution> apply(ExecutionEvent event) {
+        return notifyEvent(event);
     }
 
     default  Mono<PExecution> notifyEvent(PStepFinal step) {

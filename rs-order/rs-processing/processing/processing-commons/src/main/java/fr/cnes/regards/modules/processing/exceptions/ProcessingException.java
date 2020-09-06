@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public abstract class ProcessingException extends Exception {
 
@@ -11,22 +12,21 @@ public abstract class ProcessingException extends Exception {
 
     protected final UUID exceptionId;
     protected final ProcessingExceptionType type;
-    protected final String causeMessage;
+    protected final String desc;
 
-    public ProcessingException(ProcessingExceptionType type, String message) {
-        super(message);
+    public ProcessingException(ProcessingExceptionType type, String desc) {
+        super();
         this.exceptionId = UUID.randomUUID();
         this.type = type;
-        this.causeMessage = "";
+        this.desc = desc;
     }
 
-    public ProcessingException(ProcessingExceptionType type, String message, Throwable throwable) {
-        super(message, throwable);
-        this.exceptionId = UUID.randomUUID();
-        this.type = type;
-        this.causeMessage = throwable.getClass().getSimpleName() + ": " + throwable.getMessage();
+    public ProcessingException(ProcessingExceptionType type, String desc, Throwable throwable) {
+        this(type, desc);
         LOGGER.error("Processing error {} cause by:", exceptionId, throwable);
     }
+
+    public abstract String getMessage();
 
     public UUID getExceptionId() {
         return exceptionId;
@@ -36,7 +36,7 @@ public abstract class ProcessingException extends Exception {
         return type;
     }
 
-    public String getCauseMessage() {
-        return causeMessage;
+    public static <T extends Throwable> Predicate<T> mustWrap() {
+        return ProcessingException.class::isInstance;
     }
 }

@@ -1,12 +1,12 @@
-package fr.cnes.regards.modules.processing.domain.step;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.auto.service.AutoService;
 import com.google.gson.*;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.utils.TypedGsonTypeAdapter;
+import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
+import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 
-import java.lang.reflect.Type;
 import java.time.OffsetDateTime;
 
 @AutoService(TypedGsonTypeAdapter.class)

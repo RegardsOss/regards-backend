@@ -10,8 +10,8 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
-import fr.cnes.regards.modules.processing.testutils.GsonLoggingDecoder;
-import fr.cnes.regards.modules.processing.testutils.GsonLoggingEncoder;
+import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
+import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;
 import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
@@ -35,7 +35,7 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITO
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
-import static fr.cnes.regards.modules.processing.testutils.RandomUtils.randomList;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static java.util.Arrays.asList;
 
 @ContextConfiguration(

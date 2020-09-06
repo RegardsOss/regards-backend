@@ -5,7 +5,7 @@ import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.converter.DaoCustomConverters;
 import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
-import fr.cnes.regards.modules.processing.utils.ProcessingGsonUtils;
+import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import name.nkonev.r2dbc.migrate.core.Dialect;

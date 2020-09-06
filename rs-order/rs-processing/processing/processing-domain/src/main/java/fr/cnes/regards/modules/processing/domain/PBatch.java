@@ -31,8 +31,7 @@ public class PBatch {
 
     Map<String, FileSetStatistics> filesetsByDataset;
 
-    boolean persisted;
-
+    transient boolean persisted;
 
     public PBatch asNew() { return this.withId(UUID.randomUUID()).withPersisted(false); }
 

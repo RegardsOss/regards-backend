@@ -5,9 +5,13 @@ import com.google.common.io.Files;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
+import fr.cnes.regards.modules.processing.domain.exception.ProcessingOutputFileException;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -19,11 +23,14 @@ import reactor.core.scheduler.Schedulers;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.DELETE_OUTPUTFILE_ERROR;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.STORE_OUTPUTFILE_ERROR;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.fromEpochMillisUTC;
@@ -32,6 +39,8 @@ import static java.nio.file.Files.*;
 
 @Service
 public class SharedStorageService implements ISharedStorageService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SharedStorageService.class);
 
     static final Scheduler fileCopyScheduler = Schedulers.boundedElastic();
 
@@ -72,6 +81,19 @@ public class SharedStorageService implements ISharedStorageService {
         });
     }
 
+    @Override public Mono<POutputFile> delete(POutputFile outFile) {
+        LOGGER.info("outFile={} - Deleting", outFile.getId());
+        return Mono.fromCallable(() -> {
+            Path path = Paths.get(outFile.getUrl().toURI());
+            FileUtils.forceDelete(path.toFile());
+            return outFile;
+        })
+        .onErrorResume(t -> {
+            DeleteOutputfileException err = new DeleteOutputfileException(outFile, "Failed to delete file", t);
+            LOGGER.error(err.getMessage());
+            return Mono.just(outFile);
+        });
+    }
 
     private Mono<POutputFile> createOutputFile(UUID execId, Path outputtedFile, Path storageExecPath) {
         return Mono.fromCallable(() -> {
@@ -89,10 +111,11 @@ public class SharedStorageService implements ISharedStorageService {
                 size,
                 creationTime(storedFilePath),
                 false,
+                false,
                 false
             );
         })
-        .onErrorResume(errorWithContextMono(
+        .onErrorResume(mustWrap(), errorWithContextMono(
             PExecution.class,
             (exec, t) -> new StoreOutputfileException(
                 exec,
@@ -118,6 +141,7 @@ public class SharedStorageService implements ISharedStorageService {
         }
     }
 
+
     public static class StoreOutputfileException extends ProcessingExecutionException {
         public StoreOutputfileException(PExecution exec, String message,
                 Throwable throwable) {
@@ -125,4 +149,9 @@ public class SharedStorageService implements ISharedStorageService {
         }
     }
 
+    public static class DeleteOutputfileException extends ProcessingOutputFileException {
+        public DeleteOutputfileException(POutputFile outFile, String message, Throwable throwable) {
+            super(DELETE_OUTPUTFILE_ERROR, outFile, message, throwable);
+        }
+    }
 }

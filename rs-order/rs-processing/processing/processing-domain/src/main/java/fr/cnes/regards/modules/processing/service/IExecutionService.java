@@ -13,14 +13,10 @@ import java.util.UUID;
 
 public interface IExecutionService {
 
-    Mono<ExecutionContext> createContext(PExecution exec, PBatch batch, PProcess process);
-
     Mono<PExecution> launchExecution(PExecutionRequestEvent request);
-
-    Mono<Duration> estimateDuration(PBatch batch, Seq<ExecutionFileParameterValue> inputFiles);
 
     Mono<PExecution> runExecutable(UUID execId);
 
-    IExecutionEventNotifier notifierFor(PExecution exec);
+    void scheduledTimeoutNotify();
 
 }

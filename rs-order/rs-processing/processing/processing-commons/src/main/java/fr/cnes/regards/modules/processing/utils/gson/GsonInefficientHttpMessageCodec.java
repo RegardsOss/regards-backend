@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.processing.utils;
+package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
 import org.reactivestreams.Publisher;

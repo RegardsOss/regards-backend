@@ -81,7 +81,10 @@ public class SimpleShellProcessPluginTest {
         );
 
         IExecutable executable = shellProcessPlugin.executable();
-        executable.execute(ctx);
+        executable.execute(ctx).subscribe(
+            c -> LOGGER.info("Success: {}", c),
+            e -> LOGGER.error("Failure", e)
+        );
 
         LOGGER.info("Steps during execution: {}", steps.get());
     }

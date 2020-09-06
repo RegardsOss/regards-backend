@@ -1,6 +1,9 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.random;
 
 import com.google.common.reflect.TypeToken;
+import fr.cnes.regards.modules.processing.utils.random.VavrEitherRandomizer;
+import fr.cnes.regards.modules.processing.utils.random.VavrOptionRandomizer;
+import fr.cnes.regards.modules.processing.utils.random.VavrTryRandomizer;
 import io.github.xshadov.easyrandom.vavr.factory.VavrRandomizerFactory;
 import io.vavr.control.Either;
 import io.vavr.control.Option;

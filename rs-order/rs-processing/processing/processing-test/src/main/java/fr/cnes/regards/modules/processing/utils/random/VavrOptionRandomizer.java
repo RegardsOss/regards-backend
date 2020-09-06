@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.processing.testutils;
+package fr.cnes.regards.modules.processing.utils.random;
 
 import io.vavr.control.Option;
 import org.jeasy.random.api.Randomizer;

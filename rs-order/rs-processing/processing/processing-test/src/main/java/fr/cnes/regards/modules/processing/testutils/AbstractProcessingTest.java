@@ -229,7 +229,8 @@ public class AbstractProcessingTest {
 
                 "spring.rabbitmq.host=" + rabbitHost,
                 "spring.rabbitmq.port=" + rabbitPort,
-                "spring.rabbitmq.username=guest", "spring.rabbitmq.password=guest",
+                "spring.rabbitmq.username=guest",
+                "spring.rabbitmq.password=guest",
                 "regards.amqp.management.host=" + rabbitHost,
                 "regards.amqp.management.port=" + rabbitManagementPort,
                 "regards.amqp.microservice.typeIdentifier=rs-procesing",
