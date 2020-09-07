@@ -65,7 +65,8 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
 @DirtiesContext
-//@TestPropertySource(properties = { "regards.tenant=orderdata", "spring.jpa.properties.hibernate.default_schema=orderdata" })
+@TestPropertySource(
+        properties = { "regards.tenant=orderdata", "spring.jpa.properties.hibernate.default_schema=orderdata" })
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired
