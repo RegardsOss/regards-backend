@@ -12,12 +12,12 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParamet
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
-import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.service.IPUserAuthService;
-import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
-import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
+import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.domain.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.domain.storage.ISharedStorageService;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;

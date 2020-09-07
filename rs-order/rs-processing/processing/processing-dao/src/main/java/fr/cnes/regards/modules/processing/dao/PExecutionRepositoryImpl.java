@@ -6,7 +6,7 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
-import fr.cnes.regards.modules.processing.repository.IPExecutionRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

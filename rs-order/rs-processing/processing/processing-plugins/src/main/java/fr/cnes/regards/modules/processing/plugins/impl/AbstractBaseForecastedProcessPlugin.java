@@ -1,9 +1,9 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
-import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
-import fr.cnes.regards.modules.processing.parser.ForecastParser;
+import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
+import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
+import fr.cnes.regards.modules.processing.forecast.ForecastParser;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.control.Try;
 

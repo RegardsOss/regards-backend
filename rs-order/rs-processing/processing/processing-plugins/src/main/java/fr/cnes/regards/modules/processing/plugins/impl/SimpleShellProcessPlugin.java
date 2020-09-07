@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
-import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
 import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;

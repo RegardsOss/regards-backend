@@ -16,7 +16,7 @@
         <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-domain</artifactId>
+            <artifactId>processing-domain-data</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

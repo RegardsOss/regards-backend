@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import fr.cnes.regards.modules.processing.service.IProcessService;
+import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

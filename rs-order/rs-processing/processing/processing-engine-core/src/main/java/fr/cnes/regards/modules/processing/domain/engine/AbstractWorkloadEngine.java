@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

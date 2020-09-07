@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import fr.cnes.regards.modules.processing.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import io.vavr.control.Option;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

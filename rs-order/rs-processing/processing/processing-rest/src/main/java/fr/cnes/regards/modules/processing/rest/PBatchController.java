@@ -1,9 +1,9 @@
 package fr.cnes.regards.modules.processing.rest;
 
-import fr.cnes.regards.modules.processing.dto.PBatchRequest;
-import fr.cnes.regards.modules.processing.dto.PBatchResponse;
-import fr.cnes.regards.modules.processing.service.IBatchService;
-import fr.cnes.regards.modules.processing.service.IPUserAuthService;
+import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
+import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
+import fr.cnes.regards.modules.processing.domain.service.IBatchService;
+import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;

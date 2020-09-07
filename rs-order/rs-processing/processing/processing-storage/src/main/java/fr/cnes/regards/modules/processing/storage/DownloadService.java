@@ -5,6 +5,7 @@ import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
+import fr.cnes.regards.modules.processing.domain.storage.IDownloadService;
 import io.vavr.collection.Set;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;

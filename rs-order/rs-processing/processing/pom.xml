@@ -104,6 +104,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-domain-data</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-plugins</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -127,6 +132,17 @@
                 <artifactId>processing-engine-jobs</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-spring-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-reactive-clients</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
@@ -210,16 +226,19 @@
 
     <modules>
         <module>processing-commons</module>
+        <module>processing-domain-data</module>
         <module>processing-domain</module>
-        <module>processing-storage</module>
-        <module>processing-client</module>
         <module>processing-dao</module>
+        <module>processing-reactive-clients</module>
         <module>processing-plugins</module>
-        <module>processing-rest</module>
+        <module>processing-storage</module>
         <module>processing-service</module>
-        <module>processing-test</module>
+        <module>processing-rest</module>
+        <module>processing-engine-core</module>
         <module>processing-engine-jobs</module>
         <module>processing-engine-springbatch</module>
-        <module>processing-engine-core</module>
+        <module>processing-spring-config</module>
+        <module>processing-client</module>
+        <module>processing-test</module>
     </modules>
 </project>

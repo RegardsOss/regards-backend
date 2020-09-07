@@ -47,6 +47,11 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-spring-config</artifactId>
+        </dependency>
+
 
         <!-- Framework -->
         <dependency>

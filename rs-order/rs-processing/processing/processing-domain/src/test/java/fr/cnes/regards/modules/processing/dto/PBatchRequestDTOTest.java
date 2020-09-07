@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.processing.dto;
 
+import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 
 public class PBatchRequestDTOTest extends AbstractMarshallingTest<PBatchRequest> {

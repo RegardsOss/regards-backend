@@ -7,6 +7,8 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingOutputFileException;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
+import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.domain.storage.ISharedStorageService;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.apache.commons.io.FileUtils;

@@ -1,7 +1,8 @@
 package fr.cnes.regards.modules.processing.service;
 
-import fr.cnes.regards.modules.processing.dto.PProcessDTO;
-import fr.cnes.regards.modules.processing.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

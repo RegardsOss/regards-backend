@@ -16,7 +16,7 @@
         <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-commons</artifactId>
+            <artifactId>processing-spring-config</artifactId>
         </dependency>
 
         <dependency>

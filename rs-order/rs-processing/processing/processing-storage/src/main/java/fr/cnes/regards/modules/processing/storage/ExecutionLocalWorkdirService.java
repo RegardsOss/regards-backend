@@ -3,6 +3,9 @@ package fr.cnes.regards.modules.processing.storage;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
+import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.domain.storage.IDownloadService;
+import fr.cnes.regards.modules.processing.domain.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
@@ -27,7 +30,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
 
     private final Path basePath;
 
-    private final DownloadService downloadService;
+    private final IDownloadService downloadService;
 
     public ExecutionLocalWorkdirService(@Qualifier("executionWorkdirParentPath") Path basePath, DownloadService downloadService) {
         this.basePath = basePath;

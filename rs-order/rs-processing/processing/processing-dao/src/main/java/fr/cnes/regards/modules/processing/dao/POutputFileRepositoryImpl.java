@@ -1,10 +1,9 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
-import fr.cnes.regards.modules.processing.repository.IPOutputFilesRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import io.vavr.collection.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

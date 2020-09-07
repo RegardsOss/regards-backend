@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.processing.plugins;
 
-import fr.cnes.regards.modules.processing.domain.duration.IRunningDurationForecast;
-import fr.cnes.regards.modules.processing.domain.size.IResultSizeForecast;
-import io.vavr.control.Option;
+import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
+import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import io.vavr.control.Try;
 
 public interface IProcessForecastDefinition {

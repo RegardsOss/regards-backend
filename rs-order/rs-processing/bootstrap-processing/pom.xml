@@ -55,6 +55,11 @@
         <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-spring-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
