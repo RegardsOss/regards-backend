@@ -37,7 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 
@@ -89,29 +90,32 @@ public class DumpService {
 
         // Create Root Zip
         zipName = "dump_json_" + microservice + "_" + OffsetDateTimeAdapter.format(OffsetDateTime.now());
-        try (ZipOutputStream rootZip = new ZipOutputStream(
-                new FileOutputStream(new File(zipLocation + "/" + zipName + ".zip")));) {
+        if (!zipGlobal.isEmpty()) {
+            try (ZipOutputStream rootZip = new ZipOutputStream(
+                    new FileOutputStream(new File(zipLocation + "/" + zipName + ".zip")));) {
 
-            for (List<ObjectDump> dataSet : zipGlobal) {
-                // Retrieve first and last date of set
-                firstDate = OffsetDateTimeAdapter.format(dataSet.get(0).getCreationDate());
-                lastDate = OffsetDateTimeAdapter.format(dataSet.get(dataSet.size() - 1).getCreationDate());
-                zipName = firstDate + "_" + lastDate + ".zip";
-                // Handle not unique zip names by adding index
-                if (subZipNameList.contains(zipName)) {
-                    indexName = 0;
-                    do {
-                        zipName = firstDate + "_" + lastDate + "_" + indexName + ".zip";
-                        indexName++;
-                    } while (subZipNameList.contains(zipName));
+                for (List<ObjectDump> dataSet : zipGlobal) {
+                    // Retrieve first and last date of set
+                    firstDate = OffsetDateTimeAdapter.format(dataSet.get(0).getCreationDate());
+                    lastDate = OffsetDateTimeAdapter.format(dataSet.get(dataSet.size() - 1).getCreationDate());
+                    zipName = firstDate + "_" + lastDate + ".zip";
+                    // Handle not unique zip names by adding index
+                    if (subZipNameList.contains(zipName)) {
+                        indexName = 0;
+                        do {
+                            zipName = firstDate + "_" + lastDate + "_" + indexName + ".zip";
+                            indexName++;
+                        } while (subZipNameList.contains(zipName));
+                    }
+                    subZipNameList.add(zipName);
+
+                    // Add subzip to rootzip
+                    addSubZip(dataSet, rootZip, zipName, zipLocation);
+
                 }
-                subZipNameList.add(zipName);
-
-                // Add subzip to rootzip
-                addSubZip(dataSet, rootZip, zipName, zipLocation);
-
             }
         }
+
         //return list of object not processed
         return listErrorDumps;
     }

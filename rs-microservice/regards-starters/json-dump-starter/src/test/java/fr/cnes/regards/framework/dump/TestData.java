@@ -20,12 +20,9 @@
 
 package fr.cnes.regards.framework.dump;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  *
@@ -44,15 +41,29 @@ public class TestData {
             numDate = i % 4;
             ContentObject contentObject = new ContentObject();
             contentObject.setContent("This is the content of example " + i);
-            jsonList.add(new ObjectDump(dateSet.get(numDate), "json"+i, contentObject));
+            jsonList.add(new ObjectDump(dateSet.get(numDate), "json" + i, contentObject));
         }
 
         ContentObject contentObject = new ContentObject();
-        contentObject.setContent("This is the content of example " + 0);
+        contentObject.setContent("This is the content of example " + 15);
+        jsonList.add(new ObjectDump(dateSet.get(3), "json" + 15, contentObject));
         return jsonList;
     }
 
-    public static ArrayList<OffsetDateTime> getDateSet(){
+    public static ArrayList<ObjectDump> buildErrorJsonCollection(int numOfJson) {
+        ArrayList<ObjectDump> jsonList = new ArrayList<>();
+        int numDate;
+        ArrayList<OffsetDateTime> dateSet = getDateSet();
+
+        for (int i = 0; i < numOfJson; i++) {
+            ContentObject contentObject = new ContentObject();
+            contentObject.setContent("This is the content of example " + 0);
+            jsonList.add(new ObjectDump(dateSet.get(0), "json" + 0, contentObject));
+        }
+        return jsonList;
+    }
+
+    public static ArrayList<OffsetDateTime> getDateSet() {
         ArrayList<OffsetDateTime> dateSet = new ArrayList<>();
         dateSet.add(OffsetDateTime.of(2019, 1, 31, 15, 15, 50, 345875000, ZoneOffset.of("+02:00")));
         dateSet.add(OffsetDateTime.of(2019, 1, 31, 0, 0, 55, 345875000, ZoneOffset.of("+06:00")));
@@ -62,7 +73,9 @@ public class TestData {
     }
 
     public static class ContentObject {
+
         private String content;
+
         public void setContent(String content) {
             this.content = content;
         }

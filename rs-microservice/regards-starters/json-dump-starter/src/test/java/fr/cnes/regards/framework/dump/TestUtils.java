@@ -20,12 +20,13 @@
 
 package fr.cnes.regards.framework.dump;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 
@@ -73,22 +74,20 @@ public class TestUtils {
 
     public static Map<String, List<ZipEntry>> readZipEntries(File parentFileZip) {
         Map<String, List<ZipEntry>> mapZipEntries = new LinkedHashMap<>();
-        ZipFile parentZip;
         ZipEntry fileEntry, subZipEntry;
         String subZipName;
 
-        try {
-            parentZip = new ZipFile(parentFileZip.getPath());
+        try (ZipFile parentZip = new ZipFile(parentFileZip.getPath())) {
             Enumeration<? extends ZipEntry> subZipsEntries = parentZip.entries();
 
             while (subZipsEntries.hasMoreElements()) {
                 subZipEntry = subZipsEntries.nextElement();
                 subZipName = subZipEntry.getName();
                 ZipInputStream subZipInputStream = new ZipInputStream(parentZip.getInputStream(subZipEntry));
+                if (!mapZipEntries.containsKey(subZipName)) {
+                    mapZipEntries.put(subZipName, new LinkedList<>());
+                }
                 while ((fileEntry = subZipInputStream.getNextEntry()) != null) {
-                    if (!mapZipEntries.containsKey(subZipName)) {
-                        mapZipEntries.put(subZipName, new LinkedList<>());
-                    }
                     mapZipEntries.get(subZipName).add(fileEntry);
                 }
 
@@ -98,5 +97,103 @@ public class TestUtils {
             e.printStackTrace();
         }
         return mapZipEntries;
+    }
+
+    /**
+     * Check the creation of the zip
+     * @param parentFileZip folder that contains the zip
+     * @return potential error
+     */
+    public static String checkZipCreation(File parentFileZip) {
+        String errorMsg = "";
+        // expected pattern
+        String dateRegex = "((?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])\\.([0-9]{1,6})Z";
+        String microserviceProperty = "test";
+        String zipNameRegex = "^dump_json_" + microserviceProperty + "_" + dateRegex + "\\.zip$";
+        // check zip name
+        String zipName = parentFileZip.getName();
+        if (!zipName.matches(zipNameRegex)) {
+            errorMsg = "the name of the created zip \"" + zipName
+                    + "\" is incorrect and should match the following pattern : dump_json_microservice_dumpdate ("
+                    + zipNameRegex + ")";
+        }
+        return errorMsg;
+    }
+
+    /**
+     * Check if the creation of subzips inside a global zip is as expected
+     * @param parentFileZip global zip
+     * @param sets sets of object dump
+     * @return list of potential errors
+     */
+    public static LinkedList<String> checkSubZipCreation(File parentFileZip, List<List<ObjectDump>> sets) {
+
+        boolean flagError = false;
+        LinkedList<String> errorReasons = new LinkedList<>();
+        Map<String, List<ZipEntry>> mapSubZips = readZipEntries(parentFileZip);
+
+        // Check the number of created zips in the global zip
+        if (sets.size() != mapSubZips.size()) {
+            return new LinkedList<>(Collections.singleton("The number of created subzips is unexpected (for example : "
+                                                                  + "the json files were not grouped by regards.json.dump.max.per.sub.zip "
+                                                                  + "or not all json were dumped"));
+        }
+
+        // Local vars
+        String firstDate, lastDate;
+        String validSubZipName, validPath;
+        DateTimeFormatter pathFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+        int nbSubZips = sets.size(), validNbFiles, createdNbFiles;
+        int indexSubZip = 0, indexFile = 0;
+
+        List<ObjectDump> validSubZip;
+        ObjectDump validFile;
+
+        List<ZipEntry> createdSubZip;
+        String createdSubZipName;
+        LinkedList<String> createdSubZipNames = new LinkedList<>(mapSubZips.keySet());
+
+        // Verifications
+        while (indexSubZip < nbSubZips && !flagError) {
+            validSubZip = sets.get(indexSubZip);
+            createdSubZipName = createdSubZipNames.get(indexSubZip);
+            createdSubZip = mapSubZips.get(createdSubZipName);
+
+            // Verify number of created files in a subZip
+            validNbFiles = validSubZip.size();
+            createdNbFiles = createdSubZip.size();
+            if (validNbFiles != createdNbFiles) {
+                errorReasons.add("The number of json files in subzip \"" + createdSubZipName + " is unexpected, "
+                                         + createdNbFiles + " were created instead of " + validNbFiles);
+                break;
+            }
+
+            // Verify name of subZip
+            firstDate = OffsetDateTimeAdapter.format(validSubZip.get(0).getCreationDate());
+            lastDate = OffsetDateTimeAdapter.format(validSubZip.get(validNbFiles - 1).getCreationDate());
+            validSubZipName = firstDate + "_" + lastDate + "(_[0-9]+)?\\.zip$";
+
+            if (!createdSubZipNames.get(indexSubZip).matches(validSubZipName)) {
+                errorReasons.add("The name of the created subzip \"" + createdSubZipNames.get(indexSubZip)
+                                         + "\" does not match the expected format : " + validSubZipName);
+                break;
+            }
+
+            // Verify created paths
+            while (indexFile < validNbFiles && !flagError) {
+                validFile = validSubZip.get(indexFile);
+                validPath = validFile.getCreationDate().format(pathFormatter) + "/" + validFile.getJsonName() + ".json";
+                if (!validPath.equals(createdSubZip.get(indexFile).getName())) {
+                    flagError = true;
+                    errorReasons.add("Expected path \"" + validPath + "\", found path \"" + createdSubZip.get(indexFile)
+                            .getName() + "\" instead");
+                }
+                indexFile++;
+            }
+            indexFile = 0;
+            indexSubZip++;
+        }
+        return errorReasons;
     }
 }

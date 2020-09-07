@@ -36,7 +36,7 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     private Object jsonContent;
 
-    private final String jsonName;
+    private String jsonName;
 
     public ObjectDump(OffsetDateTime creationDate, String jsonName, Object jsonContent) {
         Assert.notNull(creationDate, "Objects cannot be dumped without creation date, Please provide one!");
