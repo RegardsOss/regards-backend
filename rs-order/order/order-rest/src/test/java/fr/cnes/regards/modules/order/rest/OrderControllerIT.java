@@ -100,7 +100,7 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
-@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
+//@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
 public class OrderControllerIT extends AbstractRegardsIT {
 
     public static final UniformResourceName DS1_IP_ID = UniformResourceName

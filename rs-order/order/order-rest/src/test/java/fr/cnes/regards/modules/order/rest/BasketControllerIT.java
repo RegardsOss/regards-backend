@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
-@TestPropertySource(properties = { "regards.tenant=basket", "spring.jpa.properties.hibernate.default_schema=basket" })
+//@TestPropertySource(properties = { "regards.tenant=basket", "spring.jpa.properties.hibernate.default_schema=basket" })
 public class BasketControllerIT extends AbstractRegardsIT {
 
     @Autowired
