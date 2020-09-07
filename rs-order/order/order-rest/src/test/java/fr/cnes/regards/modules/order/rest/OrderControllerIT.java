@@ -172,9 +172,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Basket basket = new Basket();
         basket.setOwner(getDefaultUserEmail());
         basketRepos.save(basket);
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
+        // Add doc
+        customizer.document(getCreateOrderDocumentation());
         // Test POST with empty order => 201, an order creation cannot fail
-        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
-                           customizer().expectStatusCreated(), "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(), customizer, "error");
     }
 
     @Test
@@ -341,8 +343,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
                    ComplexSearchRequest cSR = invocationOnMock.getArgument(0, ComplexSearchRequest.class);
                    int page = cSR == null ? 0 : cSR.getPage();
                    return new ResponseEntity<>(new FacettedPagedModel<>(new HashSet<>(),
-                            page == 0 ? Lists.newArrayList(new EntityModel<>(feat1), new EntityModel<>(feat2)) : Collections.emptyList(),
-                            new PagedModel.PageMetadata(page == 0 ? 2 : 0, page, 2, 1)), page == 0 ? HttpStatus.OK : HttpStatus.NO_CONTENT);
+                                                                        page == 0 ?
+                                                                                Lists.newArrayList(
+                                                                                        new EntityModel<>(feat1),
+                                                                                        new EntityModel<>(feat2)) :
+                                                                                Collections.emptyList(),
+                                                                        new PagedModel.PageMetadata(page == 0 ? 2 : 0,
+                                                                                                    page, 2, 1)),
+                                               page == 0 ? HttpStatus.OK : HttpStatus.NO_CONTENT);
                });
     }
 
@@ -396,12 +404,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.CREATED)
                                                           .expectValue("content.owner", getDefaultUserEmail())
                                                           .expectValue("content.label", "myDoubleCommand");
+        // Add doc
+        customizer.document(getCreateOrderDocumentation());
         // Send
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("myDoubleCommand", "http://perdu.com"), customizer,
                            "error");
-        // Add doc
-        customizer.document(getCreateOrderDocumentation());
         // Second request expectations: NOK (label already used by a command for that user)
         RequestBuilderCustomizer customizer2 = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY)
                                                            .expectValue("messages[0]",
@@ -411,8 +419,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         performDefaultPost(OrderController.USER_ROOT_PATH,
                            new OrderController.OrderRequest("myDoubleCommand", "http://perdu2.com"), customizer2,
                            "error");
-        // Add doc
-        customizer.document(getCreateOrderDocumentation());
         // After: clear
         clearForPreviousOrder();
     }
