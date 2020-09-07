@@ -91,6 +91,11 @@
 				<artifactId>feature-rest</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.feature</groupId>
+				<artifactId>feature-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

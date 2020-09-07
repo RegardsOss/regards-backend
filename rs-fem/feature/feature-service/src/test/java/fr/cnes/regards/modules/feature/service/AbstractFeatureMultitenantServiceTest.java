@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -272,8 +273,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         }
     }
 
-    protected void initFeatureCreationRequestEvent(List<FeatureCreationRequestEvent> events, int featureNumberToCreate,
-            boolean override) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override) {
+        List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
         Feature featureToAdd;
         FeatureFile file;
@@ -307,6 +308,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
             events.add(toAdd);
         }
+        return events;
     }
 
     public IComputationPluginService getCps() {
@@ -325,7 +327,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             boolean prepareFeatureWithFiles, Integer featureToCreateNumber) throws InterruptedException {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        initFeatureCreationRequestEvent(events, featureToCreateNumber, true);
+        initFeatureCreationRequestEvent(featureToCreateNumber, true);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features

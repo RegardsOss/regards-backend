@@ -67,7 +67,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getFeature().setId("id");
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
@@ -116,7 +116,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getFeature().setId("id");
         events.get(0).getFeature().setFiles(new ArrayList<>());
         publisher.publish(events);
@@ -150,7 +150,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -188,7 +188,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
         // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");

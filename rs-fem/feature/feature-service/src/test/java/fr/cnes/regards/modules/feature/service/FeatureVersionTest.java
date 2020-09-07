@@ -47,7 +47,7 @@ public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
 
         // Init 2 requests
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
-        super.initFeatureCreationRequestEvent(events, 2, true);
+        super.initFeatureCreationRequestEvent(2, true);
         featureService.registerRequests(events);
 
         // V1 & V2 for first feature

@@ -92,7 +92,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
 
-        super.initFeatureCreationRequestEvent(events, 3, true);
+        super.initFeatureCreationRequestEvent(3, true);
         this.featureService.registerRequests(events);
 
         this.featureService.scheduleRequests();
@@ -166,7 +166,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeaturePriority() throws InterruptedException {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
-        super.initFeatureCreationRequestEvent(events, properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
+        super.initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
                                               true);
 
         this.featureService.registerRequests(events);
