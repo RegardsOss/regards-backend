@@ -31,11 +31,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.google.common.collect.Lists;
 import static fr.cnes.regards.framework.dump.TestUtils.*;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
@@ -52,6 +54,9 @@ public class DumpServiceIT {
     @Autowired
     private DumpService dumpService;
 
+    @Value("${regards.json.dump.max.per.sub.zip}")
+    private int maxFilesPerSubZip;
+
     @Test
     @Purpose("Verify the creation of object dump zips inside of a global zip")
     public void testGenerateJsonZips() throws IOException {
@@ -59,7 +64,6 @@ public class DumpServiceIT {
         // PREPARE AND LAUNCH TESTS
         // parameters
         int numOfJson = 16;
-        int maxFilesPerSubZip = 4;
 
         // create test data
         ArrayList<ObjectDump> dumpCollection = TestData.buildJsonCollection(numOfJson);
@@ -79,7 +83,7 @@ public class DumpServiceIT {
         // CHECK RESULTS
         // regroup object dumps per sets of regards.json.dump.max.per.sub.zip
         List<List<ObjectDump>> sets = TestUtils
-                .createSets(dumpCollection, dumpCollection.size(), maxFilesPerSubZip); // Nb of sets expected = 4
+                .createSets(dumpCollection, dumpCollection.size(), this.maxFilesPerSubZip); // Nb of sets expected = 4
 
         // check if destination folder was created
         File[] listZip = zipFolder.listFiles();
@@ -93,7 +97,7 @@ public class DumpServiceIT {
 
         // check subzips creation
         LinkedList<String> errorReasons = checkSubZipCreation(parentFileZip, sets);
-        Assert.assertFalse("The zip was not created correctly. Reasons : " + errorReasons, !errorReasons.isEmpty());
+        Assert.assertFalse("The zip was not created properly. Reasons : " + errorReasons, !errorReasons.isEmpty());
     }
 
     @Test
@@ -122,5 +126,6 @@ public class DumpServiceIT {
         Assert.assertEquals(numOfJson, errorDumps.size());
 
     }
+
 
 }

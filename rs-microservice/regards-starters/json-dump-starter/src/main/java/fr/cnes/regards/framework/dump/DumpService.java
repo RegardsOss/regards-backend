@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -83,7 +84,7 @@ public class DumpService {
         Collections.sort(dumpCollection);
 
         // Create datasets
-        zipGlobal = createSets(dumpCollection, sizeCollection);
+        zipGlobal = Lists.partition(dumpCollection, MAX_FILES_PER_ZIP);
 
         // Create zip location if not existing
         Files.createDirectories(Paths.get(zipLocation));
@@ -118,26 +119,6 @@ public class DumpService {
 
         //return list of object not processed
         return listErrorDumps;
-    }
-
-    private List<List<ObjectDump>> createSets(List<ObjectDump> dumpCollection, int sizeCollection) {
-        // Init
-        List<List<ObjectDump>> zipGlobal = new ArrayList<>();
-        List<ObjectDump> tmpObj = new ArrayList<>();
-        int nbFilesPerSet = 0, indexList = 0;
-        // Create set of objects to process with MAX_FILES_PER_ZIP
-        for (ObjectDump objectDump : dumpCollection) {
-            // Create object datasets
-            tmpObj.add(objectDump);
-            nbFilesPerSet++;
-            if (nbFilesPerSet >= MAX_FILES_PER_ZIP || indexList == sizeCollection - 1) {
-                zipGlobal.add(new ArrayList<>(tmpObj));
-                tmpObj.clear();
-                nbFilesPerSet = 0;
-            }
-            indexList++;
-        }
-        return zipGlobal;
     }
 
     private void addSubZip(List<ObjectDump> dataSet, ZipOutputStream rootZip, String zipName, String zipLocation) {
