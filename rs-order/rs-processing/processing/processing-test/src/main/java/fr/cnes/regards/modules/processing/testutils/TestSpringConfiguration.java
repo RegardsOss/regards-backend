@@ -18,7 +18,9 @@ import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.modules.processing.config.ProcessingGsonConfiguration;
 import fr.cnes.regards.modules.processing.utils.gson.GsonInefficientHttpMessageCodec;
+import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
@@ -67,6 +69,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
@@ -151,8 +154,13 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
                         Optional.ofNullable(properties),
                         Optional.ofNullable(applicationContext)
                 );
+                ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
+                loader.iterator().forEachRemaining(tr -> {
+                    builder.registerTypeAdapter(tr.type(), tr.serializer());
+                    builder.registerTypeAdapter(tr.type(), tr.deserializer());
+                });
                 VavrGson.registerAll(builder);
-                return builder;
+                return builder.setPrettyPrinting();
             }
         };
     }

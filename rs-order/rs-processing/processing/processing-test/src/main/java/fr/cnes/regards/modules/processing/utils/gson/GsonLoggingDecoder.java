@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+import com.google.gson.JsonParseException;
 import feign.Request;
 import feign.Response;
 import feign.codec.Decoder;
@@ -27,21 +28,27 @@ public class GsonLoggingDecoder implements Decoder {
 
     @Override
     public Object decode(Response response, Type type) throws IOException {
-        if (response.body() == null)
-            return null;
-        Reader reader = response.body().asReader();
-        String content = IOUtils.toString(reader);
-        Request request = response.request();
-        LOGGER.info("{} {}\n>>>\n{}\n<<<", request.httpMethod().name(), request.url(), content);
         try {
-            return gson.fromJson(content, type);
-        } catch (JsonIOException e) {
-            if (e.getCause() != null && e.getCause() instanceof IOException) {
-                throw IOException.class.cast(e.getCause());
+            if (response.body() == null)
+                return null;
+            Reader reader = response.body().asReader();
+            String content = IOUtils.toString(reader);
+            Request request = response.request();
+            LOGGER.info("{} {}\n>>>\n{}\n<<<", request.httpMethod().name(), request.url(), content);
+            try {
+                return gson.fromJson(content, type);
+            } catch (JsonIOException e) {
+                if (e.getCause() != null && e.getCause() instanceof IOException) {
+                    throw IOException.class.cast(e.getCause());
+                }
+                throw e;
+            } finally {
+                ensureClosed(reader);
             }
-            throw e;
-        } finally {
-            ensureClosed(reader);
+        }
+        catch(Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new JsonParseException("wups", e);
         }
     }
 }

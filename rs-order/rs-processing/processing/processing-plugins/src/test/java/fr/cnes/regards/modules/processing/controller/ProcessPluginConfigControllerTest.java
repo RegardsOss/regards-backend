@@ -18,6 +18,8 @@ import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;
+import io.vavr.collection.Map;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,20 +127,23 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
         // Nobody knows the init dataset yet
         assertThat(extractIds(client.getDatasetAssociatedProcesses(newDataset))).isEmpty();
 
-        ProcessesByDatasetsDTO processesByDatasetsA = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
-        assertThat(extractIds(processesByDatasetsA.getMap().get(initDataset).get().asJava()))
+        Map<String, io.vavr.collection.List<ProcessLabelDTO>> map = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
+        Option<io.vavr.collection.List<ProcessLabelDTO>> lists = map.get(initDataset);
+        io.vavr.collection.List<ProcessLabelDTO> processLabelDTOS = lists
+                .get();
+        assertThat(extractIds(processLabelDTOS.asJava()))
                 .containsExactlyInAnyOrder(idFor(rpc1), idFor(rpc2), idFor(rpc3));
-        assertThat(processesByDatasetsA.getMap().get(newDataset).get()).isEmpty();
+        assertThat(map.get(newDataset).get()).isEmpty();
 
         // Set the dataset to be referenced by rpc 1 and 2
         client.attachDatasetToProcesses(newDataset, extractIds(rpc1, rpc2));
         assertThat(extractIds(client.getDatasetAssociatedProcesses(newDataset)))
                 .containsExactlyInAnyOrder(idFor(rpc1), idFor(rpc2));
 
-        ProcessesByDatasetsDTO processesByDatasetsB = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
-        assertThat(extractIds(processesByDatasetsB.getMap().get(initDataset).get().asJava()))
+        Map<String, io.vavr.collection.List<ProcessLabelDTO>> processesByDatasetsB = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
+        assertThat(extractIds(processesByDatasetsB.get(initDataset).get().asJava()))
                 .containsExactlyInAnyOrder(idFor(rpc1), idFor(rpc2), idFor(rpc3));
-        assertThat(extractIds(processesByDatasetsB.getMap().get(newDataset).get().asJava()))
+        assertThat(extractIds(processesByDatasetsB.get(newDataset).get().asJava()))
                 .containsExactlyInAnyOrder(idFor(rpc1), idFor(rpc2));
 
         // Reset the dataset to be referenced by rpc 2 and 3
@@ -146,10 +151,10 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
         assertThat(extractIds(client.getDatasetAssociatedProcesses(newDataset)))
                 .containsExactlyInAnyOrder(idFor(rpc2), idFor(rpc3));
 
-        ProcessesByDatasetsDTO processesByDatasetsC = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
-        assertThat(extractIds(processesByDatasetsC.getMap().get(initDataset).get().asJava()))
+        Map<String, io.vavr.collection.List<ProcessLabelDTO>> processesByDatasetsC = client.findProcessesByDatasets(list(initDataset, newDataset).toJavaList());
+        assertThat(extractIds(processesByDatasetsC.get(initDataset).get().asJava()))
                 .containsExactlyInAnyOrder(idFor(rpc1), idFor(rpc2), idFor(rpc3));
-        assertThat(extractIds(processesByDatasetsC.getMap().get(newDataset).get().asJava()))
+        assertThat(extractIds(processesByDatasetsC.get(newDataset).get().asJava()))
                 .containsExactlyInAnyOrder(idFor(rpc2), idFor(rpc3));
     }
 
@@ -235,9 +240,8 @@ public class ProcessPluginConfigControllerTest  extends AbstractProcessingTest {
                 List<UUID> processBusinessIds
         );
 
-        @RequestLine("GET " + PROCESS_BY_DATASETS_PATH + "?datasets={datasets}")
-        ProcessesByDatasetsDTO findProcessesByDatasets(@Param("datasets") List<String> datasets);
-
+        @RequestLine("POST " + PROCESS_BY_DATASETS_PATH )
+        Map<String, io.vavr.collection.List<ProcessLabelDTO>> findProcessesByDatasets(List<String> datasets);
 
         @RequestLine("GET " + PROCESS_LINKDATASET_PATH)
         List<ProcessLabelDTO> getDatasetAssociatedProcesses (

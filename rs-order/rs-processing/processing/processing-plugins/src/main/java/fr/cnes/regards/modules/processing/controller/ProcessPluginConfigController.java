@@ -9,6 +9,7 @@ import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDT
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import io.vavr.Function2;
+import io.vavr.collection.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,12 +111,12 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @GetMapping(path = PROCESS_BY_DATASETS_PATH)
-    public Mono<ProcessesByDatasetsDTO> findProcessesByDatasets(
-            @RequestParam("datasets") List<String> datasets
+    @PostMapping(path = PROCESS_BY_DATASETS_PATH)
+    public Mono<Map<String, io.vavr.collection.List<ProcessLabelDTO>>> findProcessesByDatasets(
+            @RequestBody List<String> datasets
     ) {
         return withinTenantMono((auth, tenant) -> {
-            return rightsConfigService.findProcessesByDatasets(datasets);
+            return rightsConfigService.findProcessesByDatasets(datasets).map(ProcessesByDatasetsDTO::getMap);
         });
     }
 
