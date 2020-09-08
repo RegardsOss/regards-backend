@@ -25,7 +25,7 @@ public class PProcess {
 
     String userRole;
 
-    Seq<Long> datasets;
+    Seq<String> datasets;
 
     ConstraintChecker<PBatch> batchChecker;
 

@@ -2,10 +2,8 @@ package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
-import io.vavr.collection.List;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +25,15 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
         PluginConfiguration conf = new PluginConfiguration("some_label", "some_plugin_ID");
         conf.setVersion("1.0.0");
         conf.setPriorityOrder(0);
-        conf.setBusinessId(UUID.randomUUID().toString());
-
+        UUID bid = UUID.randomUUID();
+        conf.setBusinessId(bid.toString());
         RightsPluginConfiguration rights = new RightsPluginConfiguration(
                 null,
                 conf,
+                bid,
                 TENANT_PROJECTA,
                 "EXPLOIT",
-                List.of(1L, 2L).toJavaList()
+                new String[]{ randomDataset(), randomDataset() }
         );
         RightsPluginConfiguration persistedRights = rightsRepo.save(rights);
 
@@ -42,4 +41,7 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
 
     }
 
+    public String randomDataset() {
+        return "URN:DATASET:tenant:" + UUID.randomUUID();
+    }
 }

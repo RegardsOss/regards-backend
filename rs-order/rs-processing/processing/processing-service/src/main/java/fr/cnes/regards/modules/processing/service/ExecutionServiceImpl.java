@@ -151,11 +151,4 @@ public class ExecutionServiceImpl implements IExecutionService {
         return new ExecutionEventNotifierImpl(execRepo, outputFilesRepo, execResultSender, execution);
     }
 
-    public static class NotifyTimeoutException extends ProcessingExecutionException {
-        public NotifyTimeoutException(PExecution exec, String message,
-                Throwable throwable) {
-            super(NOTIFY_TIMEOUT_ERROR, exec, message, throwable);
-        }
-    }
-
 }

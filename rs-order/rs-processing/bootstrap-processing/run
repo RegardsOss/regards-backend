@@ -7,7 +7,14 @@ prep)
     popd
     ;;
 boot)
-    mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$2 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+    case $2 in
+    debug)
+        mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$3 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+        ;;
+        *)
+        mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$2"
+        ;;
+    esac
     ;;
 deps)
     case $2 in
@@ -18,8 +25,7 @@ deps)
                 -p 5433:5432 \
                 -e 'POSTGRES_USER=user' \
                 -e 'POSTGRES_PASSWORD=secret' \
-                -v $HOME/.regards/postgres:/var/lib/postgresql/data \
-            postgres:9.5
+            postgres:11.5
 
         docker run \
                 --name rabbit-docker \
@@ -37,6 +43,15 @@ deps)
                 -e 'PGADMIN_DEFAULT_PASSWORD=secret'     \
             dpage/pgadmin4
 
+        sleep 2
+
+        echo "Create databases"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "DROP DATABASE processing_projecta_gandrieu"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "DROP DATABASE processing_projectb_gandrieu"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "DROP DATABASE r2dbcdb"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "CREATE DATABASE processing_projecta_gandrieu"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "CREATE DATABASE processing_projectb_gandrieu"
+        PGPASSWORD='secret' psql -h localhost -p 5433 -U user -c "CREATE DATABASE r2dbcdb"
         ;;
 
     down)

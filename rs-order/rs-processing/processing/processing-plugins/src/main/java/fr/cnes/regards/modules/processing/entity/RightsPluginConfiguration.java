@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.processing.entity;
 
-import com.vladmihalcea.hibernate.type.array.ListArrayType;
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * This class decorates a PluginConfiguration, corresponding to a Process plugin,
@@ -20,8 +22,8 @@ import java.util.List;
  */
 @Data @NoArgsConstructor @AllArgsConstructor
 @TypeDef(
-        name = "list-array",
-        typeClass = ListArrayType.class
+        name = "string-array",
+        typeClass = StringArrayType.class
 )
 @Entity
 @Table(name = "t_rights_plugin_configuration")
@@ -36,6 +38,9 @@ public class RightsPluginConfiguration {
     @JoinColumn(name = "plugin_configuration_id", foreignKey = @ForeignKey(name = "fk_rights_plugin_configuration"))
     private PluginConfiguration pluginConfiguration;
 
+    @Column(name = "process_business_id")
+    private UUID processBusinessId;
+
     /** Redundant information which is however somewhat useful for filtering in certain cases. */
     @Column(name = "tenant")
     private String tenant;
@@ -43,8 +48,11 @@ public class RightsPluginConfiguration {
     @Column(name = "user_role", columnDefinition = "text")
     private String role;
 
-    @Column(name = "datasets", columnDefinition = "int8[]")
-    @Type(type = "list-array")
-    private List<Long> datasets;
+    @Column(name = "datasets", columnDefinition = "varchar(128)[]")
+    @Type(type = "string-array")
+    private String[] datasets;
 
+    public List<String> getDatasets() {
+        return Arrays.asList(datasets);
+    }
 }

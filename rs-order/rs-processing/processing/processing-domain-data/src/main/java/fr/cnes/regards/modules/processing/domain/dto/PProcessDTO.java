@@ -19,7 +19,7 @@ public class PProcessDTO {
 
     String userRoles;
 
-    List<Long> datasets;
+    List<String> datasets;
 
     List<ExecutionParamDTO> params;
 

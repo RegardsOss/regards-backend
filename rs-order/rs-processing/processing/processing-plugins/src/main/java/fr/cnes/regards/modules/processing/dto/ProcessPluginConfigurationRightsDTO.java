@@ -7,6 +7,8 @@ import io.vavr.collection.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+import java.util.UUID;
+
 @Value
 @AllArgsConstructor(onConstructor_={@JsonCreator})
 public class ProcessPluginConfigurationRightsDTO {
@@ -15,7 +17,7 @@ public class ProcessPluginConfigurationRightsDTO {
     @AllArgsConstructor(onConstructor_={@JsonCreator})
     public static class Rights {
         String role;
-        List<Long> datasets;
+        List<String> datasets;
     }
 
     PluginConfiguration pluginConfiguration;
@@ -23,11 +25,24 @@ public class ProcessPluginConfigurationRightsDTO {
 
 
     public static ProcessPluginConfigurationRightsDTO fromRightsPluginConfiguration(RightsPluginConfiguration rights) {
-        return new ProcessPluginConfigurationRightsDTO(rights.getPluginConfiguration(), new Rights(rights.getRole(), List.ofAll(rights.getDatasets())));
+        return new ProcessPluginConfigurationRightsDTO(
+            rights.getPluginConfiguration(),
+            new Rights(
+                rights.getRole(),
+                List.ofAll(rights.getDatasets())
+            )
+        );
     }
 
     public RightsPluginConfiguration toRightsPluginConfiguration(String tenant) {
-        return new RightsPluginConfiguration(null, pluginConfiguration, tenant, rights.role, rights.datasets.toJavaList());
+        return new RightsPluginConfiguration(
+            null,
+            pluginConfiguration,
+            UUID.fromString(pluginConfiguration.getBusinessId()),
+            tenant,
+            rights.role,
+            rights.datasets.toJavaArray(String[]::new)
+        );
     }
 
 }

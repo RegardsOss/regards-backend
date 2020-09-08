@@ -25,4 +25,7 @@ public enum ProcessingExceptionType {
         this(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    public HttpStatus getStatus() {
+        return status;
+    }
 }

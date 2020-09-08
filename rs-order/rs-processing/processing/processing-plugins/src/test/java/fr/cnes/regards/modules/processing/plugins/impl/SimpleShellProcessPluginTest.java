@@ -90,12 +90,16 @@ public class SimpleShellProcessPluginTest {
     }
 
     @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
+        UUID bid = UUID.randomUUID();
+        PluginConfiguration pc = new PluginConfiguration("label",
+                                                            SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN);
+        pc.setBusinessId(bid.toString());
+
         return new RightsPluginConfiguration(
-                1L,
-                new PluginConfiguration("label", SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN),
+                1L, pc, bid,
                 "tenant",
                 "EXPLOIT",
-                List.<Long>empty().toJavaList()
+                new String[]{}
         );
     }
 

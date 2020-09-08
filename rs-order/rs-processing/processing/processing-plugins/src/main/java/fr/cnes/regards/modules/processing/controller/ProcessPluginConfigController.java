@@ -4,7 +4,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
+import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import io.vavr.Function2;
 import org.slf4j.Logger;
@@ -19,10 +21,12 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.websocket.server.PathParam;
+import java.util.List;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
 
 @RestController
 @RequestMapping(
@@ -45,7 +49,7 @@ public class ProcessPluginConfigController {
         this.rightsConfigService = rightsConfigService;
     }
 
-    @GetMapping(path = PROCESS_CONFIG_PATH)
+    @GetMapping(path = PROCESS_CONFIG_PATH, consumes = MediaType.ALL_VALUE)
     public Flux<ProcessPluginConfigurationRightsDTO> findAll() {
         return withinTenantFlux((auth, tenant) -> {
             return rightsConfigService.findAllRightsPluginConfigs();
@@ -53,7 +57,7 @@ public class ProcessPluginConfigController {
     }
 
 
-    @GetMapping(path = PROCESS_CONFIG_BID_PATH)
+    @GetMapping(path = PROCESS_CONFIG_BID_PATH, consumes = MediaType.ALL_VALUE)
     public Mono<ProcessPluginConfigurationRightsDTO> findByBusinessId(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
@@ -81,7 +85,7 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @DeleteMapping(path = PROCESS_CONFIG_BID_PATH)
+    @DeleteMapping(path = PROCESS_CONFIG_BID_PATH, consumes = MediaType.ALL_VALUE)
     public Mono<ProcessPluginConfigurationRightsDTO> save(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
@@ -90,10 +94,48 @@ public class ProcessPluginConfigController {
         });
     }
 
-    @GetMapping(path = PROCESS_METADATA_PATH)
+    @GetMapping(path = PROCESS_METADATA_PATH, consumes = MediaType.ALL_VALUE)
     public Flux<PluginMetaData> listAllDetectedPlugins() {
         return withinTenantFlux((auth, tenant) -> {
             return Flux.fromIterable(PluginUtils.getPlugins().values());
+        });
+    }
+
+    @GetMapping(path = PROCESS_LINKDATASET_PATH)
+    public Flux<ProcessLabelDTO> findProcessesByDataset(
+            @PathVariable(DATASET_PARAM) String dataset
+    ) {
+        return withinTenantFlux((auth, tenant) -> {
+            return rightsConfigService.getDatasetLinkedProcesses(dataset);
+        });
+    }
+
+    @GetMapping(path = PROCESS_BY_DATASETS_PATH)
+    public Mono<ProcessesByDatasetsDTO> findProcessesByDatasets(
+            @RequestParam("datasets") List<String> datasets
+    ) {
+        return withinTenantMono((auth, tenant) -> {
+            return rightsConfigService.findProcessesByDatasets(datasets);
+        });
+    }
+
+    @PutMapping(path = PROCESS_LINKDATASET_PATH)
+    public Mono<Void> attachDatasetToProcesses (
+            @RequestBody List<UUID> processBusinessIds,
+            @PathVariable(DATASET_PARAM) String dataset
+    ) {
+        return withinTenantMono((auth, tenant) -> {
+            return rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset);
+        });
+    }
+
+    @PutMapping(path = PROCESS_CONFIG_BID_USERROLE_PATH, consumes = MediaType.ALL_VALUE)
+    public Mono<Void> attachRoleToProcess (
+            @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
+            @RequestParam(USER_ROLE_PARAM) String userRole
+    ) {
+        return withinTenantMono((auth, tenant) -> {
+            return rightsConfigService.attachRoleToProcess(processBusinessId, userRole);
         });
     }
 
