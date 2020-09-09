@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version"
-//        , "spring.jpa.show-sql=true"
+        //        , "spring.jpa.show-sql=true"
 })
 @ActiveProfiles(value = { "noscheduler", "nohandler" })
 public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
@@ -46,8 +45,7 @@ public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
     public void multipleVersionTest() {
 
         // Init 2 requests
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-        super.initFeatureCreationRequestEvent(2, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(2, true);
         featureService.registerRequests(events);
 
         // V1 & V2 for first feature
@@ -72,8 +70,11 @@ public class FeatureVersionTest extends AbstractFeatureMultitenantServiceTest {
 
         for (int i = 1; i <= versionNumber; i++) {
             // Version 1
-            feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(),
-                                                            runtimeTenantResolver.getTenant(), uuid, i));
+            feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                            feature.getEntityType(),
+                                                            runtimeTenantResolver.getTenant(),
+                                                            uuid,
+                                                            i));
             featureRepo.save(FeatureEntity.build("sessionOwner", "session", feature, null, "model"));
         }
     }

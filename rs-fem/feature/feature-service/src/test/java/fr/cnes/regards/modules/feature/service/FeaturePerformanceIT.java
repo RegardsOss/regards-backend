@@ -20,17 +20,25 @@ package fr.cnes.regards.modules.feature.service;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -44,6 +52,11 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
 /**
  * Test feature mutation based on null property values.
@@ -58,11 +71,36 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 @ActiveProfiles(value = { "testAmqp" })
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@ContextConfiguration(classes = { FeaturePerformanceIT.Config.class })
 public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest {
+
+    @Configuration
+    public static class Config {
+
+        @Bean
+        @Primary
+        public INotifierClient notifierClient(INotifierRequestListener notifierRequestListener) {
+            return new INotifierClient() {
+
+                @Override
+                public void sendNotifications(List<NotificationActionEvent> notification) {
+                    ExecutorService exe
+                    notifierRequestListener.onRequestSuccess(notification.stream()
+                                                                     .map(notifEvent -> new NotifierEvent(notifEvent
+                                                                                                                  .getRequestId(),
+                                                                                                          NotificationState.SUCCESS))
+                                                                     .collect(Collectors.toList()));
+                }
+            };
+        }
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceIT.class);
 
     private static final Integer NB_FEATURES = 10_000;
+
+    @Autowired
+    private INotifierRequestListener notifierRequestListener;
 
     @Test
     public void createAndUpdateTest() throws InterruptedException {
@@ -72,53 +110,79 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
         // Register creation requests
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
                 .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
-        String modelName = mockModelClient("feature_mutation_model.xml", this.getCps(), this.getFactory(),
-                                           this.getDefaultTenant(), this.getModelAttrAssocClientMock());
+        String modelName = mockModelClient("feature_mutation_model.xml",
+                                           this.getCps(),
+                                           this.getFactory(),
+                                           this.getDefaultTenant(),
+                                           this.getModelAttrAssocClientMock());
 
         Thread.sleep(5_000);
 
         long creationStart = System.currentTimeMillis();
+        List<FeatureCreationRequestEvent> creationRequestEvents = new ArrayList<>();
         for (int i = 1; i <= NB_FEATURES; i++) {
-            Feature feature = Feature.build(String.format(format, i), "owner", null, IGeometry.unlocated(),
-                                            EntityType.DATA, modelName);
+            Feature feature = Feature
+                    .build(String.format(format, i), "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
-            publisher.publish(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
+            creationRequestEvents.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
         }
+        publisher.publish(creationRequestEvents);
 
         // Wait for feature creation
         waitFeature(NB_FEATURES, null, 300_000);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
+
+//        //FIXME:
+//        Mockito.doAnswer(invocation -> {
+//            // schedulers being active, we just need to add behaviour on call to publish notification event to notifier and simulate a success
+//            List<NotifierEvent> events = new ArrayList<>();
+//            NotificationActionEvent eventSent = invocation.getArgument(0);
+//            events.add(new NotifierEvent(eventSent.getRequestId(), NotificationState.SUCCESS));
+//            notifierRequestListener.onRequestSuccess(events);
+//            return;
+//        }).when(publisher).publish(Mockito.any(NotificationActionEvent.class));
+//        mockNotificationSuccess();
 
         // Register update requests
 
         long updateStart = System.currentTimeMillis();
         OffsetDateTime requestDate = OffsetDateTime.now();
+        List<FeatureUpdateRequestEvent> featureUpdateRequestEvents = new ArrayList<>();
         for (int i = 1; i <= NB_FEATURES; i++) {
             String id = String.format(format, i);
             Feature feature = Feature.build(id, "owner", getURN(id), IGeometry.unlocated(), EntityType.DATA, modelName);
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.FALSE),
                                                       IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
-            publisher.publish(FeatureUpdateRequestEvent
-                    .build("sessionOwner", FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), feature,
-                           requestDate));
+            featureUpdateRequestEvents.add(FeatureUpdateRequestEvent.build("sessionOwner",
+                                                              FeatureMetadata
+                                                                      .build(PriorityLevel.NORMAL, new ArrayList<>()),
+                                                              feature,
+                                                              requestDate));
         }
+        publisher.publish(featureUpdateRequestEvents);
 
         // Wait for feature update
-        waitFeature(NB_FEATURES, requestDate, 300_000);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms", NB_FEATURES,
+        waitFeature(NB_FEATURES, requestDate, 300_000_000);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms", NB_FEATURES,
-                    NB_FEATURES, System.currentTimeMillis() - creationStart);
+//        mockNotificationSuccess();
+
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms",
+                    NB_FEATURES,
+                    NB_FEATURES,
+                    System.currentTimeMillis() - creationStart);
     }
 
     private FeatureUniformResourceName getURN(String id) {
         UUID uuid = UUID.nameUUIDFromBytes(id.getBytes());
-        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid,
-                                                1);
+        return FeatureUniformResourceName
+                .build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid, 1);
     }
 }

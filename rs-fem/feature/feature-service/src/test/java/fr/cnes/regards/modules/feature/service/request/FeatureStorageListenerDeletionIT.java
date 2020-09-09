@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +28,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Kevin Marchois
@@ -66,13 +67,13 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         prepareData();
         this.featureCreationRequestRepo.deleteAll();
 
-        List<FeatureDeletionRequest> toDelete = this.featureDeletionRepo.findAll();
-        requestService.handleDeletionSuccess(toDelete.stream().map(request -> request.getGroupId())
-                .collect(Collectors.toSet()));
-
+        List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
+        requestService.handleDeletionSuccess(toDelete.stream().map(AbstractFeatureRequest::getGroupId)
+                                                     .collect(Collectors.toSet()));
+        mockNotificationSuccess();
         // Feature entity and FeatureDeletionRequest must be deleted
         assertEquals(0, this.featureRepo.count());
-        assertEquals(0, this.featureDeletionRepo.count());
+        assertEquals(0, this.featureDeletionRequestRepo.count());
 
     }
 
@@ -89,24 +90,25 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
 
         this.featureCreationRequestRepo.deleteAll();
 
-        List<FeatureDeletionRequest> toDelete = this.featureDeletionRepo.findAll();
-        requestService.handleDeletionError(toDelete.stream().map(request -> request.getGroupId())
-                .collect(Collectors.toSet()));
+        List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
+        requestService.handleDeletionError(toDelete.stream().map(AbstractFeatureRequest::getGroupId)
+                                                   .collect(Collectors.toSet()));
 
         // Feature entity and FeatureDeletionRequest must be deleted
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
-        assertEquals(properties.getMaxBulkSize().intValue(), this.featureDeletionRepo.count());
+        assertEquals(properties.getMaxBulkSize().intValue(), this.featureDeletionRequestRepo.count());
 
         // all FeatureDeletionRequest must have their state to ERROR
-        toDelete = this.featureDeletionRepo.findAll();
+        toDelete = this.featureDeletionRequestRepo.findAll();
         assertTrue(toDelete.stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
     }
 
     private void prepareData() throws InterruptedException {
         String deletionOwner = "deleter";
-        long featureNumberInDatabase;
+        long deletionRequestWaitingForStorageResponseCount;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+                                                                           true,
                                                                            properties.getMaxBulkSize());
 
         this.featureDeletionService.registerRequests(events);
@@ -114,21 +116,14 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         this.featureDeletionService.scheduleRequests();
 
         do {
-            featureNumberInDatabase = this.featureDeletionRepo.count();
+            deletionRequestWaitingForStorageResponseCount = this.featureDeletionRequestRepo
+                    .findByStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, OffsetDateTime.now()).size();
             Thread.sleep(100);
             cpt++;
-        } while ((cpt < 100)
-                && ((featureNumberInDatabase != properties.getMaxBulkSize().intValue()) || !this.featureDeletionRepo
-                        .findAll().stream().allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED
-                                .equals(request.getStep()))));
+        } while ((cpt < 100) && deletionRequestWaitingForStorageResponseCount != properties.getMaxBulkSize());
         // in that case all features hasn't be deleted
-        if (cpt == 1000) {
+        if (cpt == 100) {
             fail("Some FeatureDeletionRequest have been deleted");
-        }
-
-        if (!this.featureDeletionRepo.findAll().stream()
-                .allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED.equals(request.getStep()))) {
-            fail("Some FeatureDeletionRequest have a wrong status");
         }
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());

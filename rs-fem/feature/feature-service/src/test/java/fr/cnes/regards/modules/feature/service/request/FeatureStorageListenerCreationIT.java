@@ -98,7 +98,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onStoreSuccess(Sets.newHashSet(info));
-
+        mockNotificationSuccess();
         // the FeatureCreationRequest must be deleted
         assertEquals(0, fcrRepo.count());
         // the FeatureEntity must remain
@@ -132,6 +132,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onReferenceSuccess(Sets.newHashSet(info));
+        mockNotificationSuccess();
 
         // the FeatureCreationRequest must be deleted
         assertEquals(0, fcrRepo.count());

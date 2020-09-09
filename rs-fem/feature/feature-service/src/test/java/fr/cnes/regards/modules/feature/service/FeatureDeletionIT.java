@@ -77,7 +77,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
         this.featureDeletionService.scheduleRequests();
         do {
-            featureNumberInDatabase = this.featureDeletionRepo.count();
+            featureNumberInDatabase = this.featureRepo.count();
             Thread.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 0));
@@ -86,6 +86,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         if (cpt == 100) {
             fail("Doesn't have all features haven't be deleted");
         }
+
+        mockNotificationSuccess();
 
         assertEquals(0, this.featureRepo.count());
         // the publisher must be called 2 times one for feature creation and one for feature deletion
@@ -120,11 +122,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
         this.featureDeletionService.scheduleRequests();
         do {
-            featureNumberInDatabase = this.featureDeletionRepo.count();
+            featureNumberInDatabase = this.featureDeletionRequestRepo.count();
             Thread.sleep(100);
             cpt++;
         } while ((cpt < 100)
-                && ((featureNumberInDatabase != properties.getMaxBulkSize().intValue()) || !this.featureDeletionRepo
+                && ((featureNumberInDatabase != properties.getMaxBulkSize().intValue()) || !this.featureDeletionRequestRepo
                         .findAll().stream().allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED
                                 .equals(request.getStep()))));
         // in that case all features hasn't be deleted
@@ -132,7 +134,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
             fail("Some FeatureDeletionRequest have been deleted");
         }
 
-        if (!this.featureDeletionRepo.findAll().stream()
+        if (!this.featureDeletionRequestRepo.findAll().stream()
                 .allMatch(request -> FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED.equals(request.getStep()))) {
             fail("Some FeatureDeletionRequest have a wrong status");
         }
@@ -164,7 +166,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         this.featureDeletionService.scheduleRequests();
 
         do {
-            featureNumberInDatabase = this.featureDeletionRepo.count();
+            featureNumberInDatabase = this.featureRepo.count();
             Thread.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != (properties.getMaxBulkSize() / 2)));
@@ -173,10 +175,13 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         if (cpt == 100) {
             fail("Doesn't have all features at the end of time");
         }
+        // first feature batch has been successfully deleted, now let simulate notification success
+        mockNotificationSuccess();
 
-        List<FeatureDeletionRequest> scheduled = this.featureDeletionRepo.findAll();
+        // there should remain properties.getMaxBulkSize / 2 request to be handled (scheduleRequest only schedule properties.getMaxBulkSize requests)
+        List<FeatureDeletionRequest> notScheduled = this.featureDeletionRequestRepo.findAll();
 
-        assertEquals(properties.getMaxBulkSize() / 2, scheduled.size());
-        assertTrue(scheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
+        assertEquals(properties.getMaxBulkSize() / 2, notScheduled.size());
+        assertTrue(notScheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
     }
 }

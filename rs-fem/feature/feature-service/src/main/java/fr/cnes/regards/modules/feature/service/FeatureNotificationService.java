@@ -179,13 +179,13 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                 PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
                 .getContent();
-        List<NotificationActionEvent> eventToSend = requestsToSend.stream()
-                .map(r -> r.accept(new CreateNotificationActionEventVisitor(gson, featureRepo)))
-                .collect(Collectors.toList());
-        effectivelySend(sendingStart, eventToSend);
-        abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
-                                              requestsToSend.stream().map(AbstractFeatureRequest::getId)
-                                                      .collect(Collectors.toSet()));
+        if(!requestsToSend.isEmpty()) {
+            List<NotificationActionEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(new CreateNotificationActionEventVisitor(gson, featureRepo)))
+                    .collect(Collectors.toList());
+            effectivelySend(sendingStart, eventToSend);
+            abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
+                                                  requestsToSend.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+        }
         return requestsToSend.size();
     }
 

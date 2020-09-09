@@ -1,8 +1,5 @@
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -10,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -21,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -39,12 +38,15 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.dao.INotificationRequestRepository;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -75,6 +77,8 @@ import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
@@ -105,19 +109,13 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IFeatureUpdateRequestRepository featureUpdateRequestRepo;
 
     @Autowired
-    protected IFeatureDeletionRequestRepository featureDeletionRepo;
+    protected IFeatureDeletionRequestRepository featureDeletionRequestRepo;
 
     @Autowired
-    protected INotificationRequestRepository notificationRepo;
+    protected INotificationRequestRepository notificationRequestRepo;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
-
-    @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
 
     @Autowired
     protected FeatureConfigurationProperties properties;
@@ -134,13 +132,25 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Autowired
     protected IPublisher publisher;
 
+    @Autowired
+    protected IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
+
+    @Autowired
+    protected IFeatureNotificationService featureNotificationService;
+
+    @Autowired(required = false)
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired(required = false)
+    private IRabbitVirtualHostAdmin vhostAdmin;
+
     @Before
     public void before() throws InterruptedException {
         this.featureCreationRequestRepo.deleteAllInBatch();
         this.featureUpdateRequestRepo.deleteAllInBatch();
-        this.featureDeletionRepo.deleteAllInBatch();
+        this.featureDeletionRequestRepo.deleteAllInBatch();
         this.featureRepo.deleteAllInBatch();
-        this.notificationRepo.deleteAllInBatch();
+        this.notificationRequestRepo.deleteAllInBatch();
         simulateApplicationReadyEvent();
     }
 
@@ -210,14 +220,17 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
+                    LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ",
+                                               expected,
                                                entityCount));
-                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ", expected,
+                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ",
+                                              expected,
                                               entityCount));
 
                 }
             } else {
-                LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
+                LOGGER.error(String.format("Thread interrupted %s expected in database, %s really ",
+                                           expected,
                                            entityCount));
                 Assert.fail("Timeout");
             }
@@ -273,12 +286,16 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         }
     }
 
-    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate, boolean override) {
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
+            boolean override) {
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
         Feature featureToAdd;
         FeatureFile file;
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml",
+                                       cps,
+                                       factory,
+                                       this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
         try {
@@ -289,19 +306,30 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
         // create events to publish
         for (int i = 0; i < featureNumberToCreate; i++) {
-            file = FeatureFile.build(
-                                     FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
-                                                                 1024l, "MD5", "checksum"),
+            file = FeatureFile.build(FeatureFileAttributes.build(DataType.DESCRIPTION,
+                                                                 new MimeType("mime"),
+                                                                 "toto",
+                                                                 1024l,
+                                                                 "MD5",
+                                                                 "checksum"),
                                      FeatureFileLocation.build("www.google.com", "GPFS"));
-            featureToAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                         EntityType.DATA, model)
-                    .withFiles(file);
+            featureToAdd = Feature.build("id" + i,
+                                         "owner",
+                                         null,
+                                         IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                         EntityType.DATA,
+                                         model).withFiles(file);
             featureToAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             featureToAdd.addProperty(IProperty.buildObject("file_characterization",
                                                            IProperty.buildBoolean("valid", Boolean.TRUE)));
 
-            toAdd = FeatureCreationRequestEvent.build("owner", FeatureCreationSessionMetadata
-                    .build("owner", "session", PriorityLevel.NORMAL, Lists.emptyList(), override), featureToAdd);
+            toAdd = FeatureCreationRequestEvent.build("owner",
+                                                      FeatureCreationSessionMetadata.build("owner",
+                                                                                           "session",
+                                                                                           PriorityLevel.NORMAL,
+                                                                                           Lists.emptyList(),
+                                                                                           override),
+                                                      featureToAdd);
             toAdd.setRequestId(String.valueOf(i));
             toAdd.setFeature(featureToAdd);
             toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
@@ -325,9 +353,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
     protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner,
             boolean prepareFeatureWithFiles, Integer featureToCreateNumber) throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-
-        initFeatureCreationRequestEvent(featureToCreateNumber, true);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, true);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
@@ -359,6 +385,12 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             fail("Doesn't have all features at the end of time");
         }
 
+        mockNotificationSuccess();
+        // if they are several page to create
+        for (int i = 0; i < (featureToCreateNumber % properties.getMaxBulkSize()); i++) {
+            mockNotificationSuccess();
+        }
+
         // get urn from feature we just created
         List<FeatureUniformResourceName> entityCreatedUrn = this.featureRepo.findAll().stream()
                 .map(feature -> feature.getUrn()).collect(Collectors.toList());
@@ -378,6 +410,31 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
         return deletionEvents;
 
+    }
+
+    protected void mockNotificationSuccess() {
+        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
+                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                OffsetDateTime.now().plusDays(1),
+                PageRequest.of(0,
+                               properties.getMaxBulkSize(),
+                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
+        if (!requestsToSend.isEmpty()) {
+            featureNotificationService.sendToNotifier();
+            //simulate that notification has been handle with success
+            featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
+        }
+        for (int i = 1; i < requestsToSend.getTotalPages(); i++) {
+            requestsToSend = abstractFeatureRequestRepo
+                    .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                           OffsetDateTime.now().plusDays(1),
+                                                           requestsToSend.nextPageable());
+            if (!requestsToSend.isEmpty()) {
+                featureNotificationService.sendToNotifier();
+                //simulate that notification has been handle with success
+                featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
+            }
+        }
     }
 
     @After

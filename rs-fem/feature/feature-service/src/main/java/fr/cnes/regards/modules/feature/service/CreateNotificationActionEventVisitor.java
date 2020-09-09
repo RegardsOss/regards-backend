@@ -16,7 +16,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
  */
 public class CreateNotificationActionEventVisitor implements IAbstractFeatureRequestVisitor<NotificationActionEvent> {
 
-    private static class NotificationActionEventMetadata {
+    public static class NotificationActionEventMetadata {
 
         private String action;
 
