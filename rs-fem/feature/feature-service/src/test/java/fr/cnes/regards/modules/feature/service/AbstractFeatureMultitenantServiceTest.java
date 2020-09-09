@@ -182,7 +182,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
                     Assert.fail("Thread interrupted");
                 }
             } else {
-                Assert.fail("Timeout");
+                Assert.fail("Timeout only " + entityCount + " feature in database instead of " + expected);
             }
         } while (true);
     }

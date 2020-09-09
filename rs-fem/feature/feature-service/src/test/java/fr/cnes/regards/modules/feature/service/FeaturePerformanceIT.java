@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,7 @@ import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 @ActiveProfiles(value = { "testAmqp" })
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@Ignore("warning this test might not pass according to your setup for better perf test see FeatureGeodeIT")
 @ContextConfiguration(classes = { FeaturePerformanceIT.Config.class })
 public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest {
 
@@ -84,12 +86,12 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
 
                 @Override
                 public void sendNotifications(List<NotificationActionEvent> notification) {
-                    ExecutorService exe
-                    notifierRequestListener.onRequestSuccess(notification.stream()
-                                                                     .map(notifEvent -> new NotifierEvent(notifEvent
-                                                                                                                  .getRequestId(),
-                                                                                                          NotificationState.SUCCESS))
-                                                                     .collect(Collectors.toList()));
+                    ExecutorService executorToMockSubscribeThread = Executors.newSingleThreadExecutor();
+                    executorToMockSubscribeThread.submit(() -> notifierRequestListener
+                            .onRequestSuccess(notification.stream()
+                                                      .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(),
+                                                                                           NotificationState.SUCCESS))
+                                                      .collect(Collectors.toList())));
                 }
             };
         }
@@ -136,17 +138,6 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                     NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
 
-//        //FIXME:
-//        Mockito.doAnswer(invocation -> {
-//            // schedulers being active, we just need to add behaviour on call to publish notification event to notifier and simulate a success
-//            List<NotifierEvent> events = new ArrayList<>();
-//            NotificationActionEvent eventSent = invocation.getArgument(0);
-//            events.add(new NotifierEvent(eventSent.getRequestId(), NotificationState.SUCCESS));
-//            notifierRequestListener.onRequestSuccess(events);
-//            return;
-//        }).when(publisher).publish(Mockito.any(NotificationActionEvent.class));
-//        mockNotificationSuccess();
-
         // Register update requests
 
         long updateStart = System.currentTimeMillis();
@@ -159,20 +150,20 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                                                       IProperty.buildBoolean("valid", Boolean.FALSE),
                                                       IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
             featureUpdateRequestEvents.add(FeatureUpdateRequestEvent.build("sessionOwner",
-                                                              FeatureMetadata
-                                                                      .build(PriorityLevel.NORMAL, new ArrayList<>()),
-                                                              feature,
-                                                              requestDate));
+                                                                           FeatureMetadata.build(PriorityLevel.NORMAL,
+                                                                                                 new ArrayList<>()),
+                                                                           feature,
+                                                                           requestDate));
         }
         publisher.publish(featureUpdateRequestEvents);
 
         // Wait for feature update
-        waitFeature(NB_FEATURES, requestDate, 300_000_000);
+        waitFeature(NB_FEATURES, requestDate, 300_000);
         LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms",
                     NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
-//        mockNotificationSuccess();
+        //        mockNotificationSuccess();
 
         LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms",
                     NB_FEATURES,
