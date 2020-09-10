@@ -26,7 +26,7 @@ import java.util.Objects;
 import org.springframework.util.Assert;
 
 /**
- *
+ * Object used to dump data
  * @author Iliana Ghazali
  */
 
@@ -36,14 +36,18 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     private Object jsonContent;
 
-    private String jsonName;
+    private final String jsonName;
 
-    public ObjectDump(OffsetDateTime creationDate, String jsonName, Object jsonContent) {
-        Assert.notNull(creationDate, "Objects cannot be dumped without creation date, Please provide one!");
-        Assert.notNull(jsonName, "Objects cannot be dumped without a proper name, Please provide one!");
+    private final String dumpId;
+
+    public ObjectDump(OffsetDateTime creationDate, String jsonName, Object jsonContent, String aipId) {
+        Assert.notNull(creationDate, "Objects cannot be dumped without creation date, Please provide one.");
+        Assert.notNull(jsonName, "Objects cannot be dumped without a proper name, Please provide one.");
+        Assert.notNull(aipId, "Objects cannot be dumped without a an object id, Please provide one.");
         this.creationDate = creationDate;
         this.jsonName = jsonName;
         this.jsonContent = jsonContent;
+        this.dumpId = aipId;
     }
 
     public OffsetDateTime getCreationDate() {
@@ -58,10 +62,14 @@ public class ObjectDump implements Comparable<ObjectDump> {
         return jsonName;
     }
 
+    public String getDumpId() {
+        return dumpId;
+    }
+
     @Override
     public String toString() {
-        return "JsonEntity{" + "creationDate=" + creationDate.toString() + ", jsonContent='" + jsonContent + '\''
-                + ", jsonName='" + jsonName + '\'' + '}';
+        return "ObjectDump{" + "creationDate=" + creationDate + ", jsonContent=" + jsonContent + ", jsonName='"
+                + jsonName + '\'' + ", aipId='" + dumpId + '\'' + '}';
     }
 
     @Override
@@ -70,13 +78,14 @@ public class ObjectDump implements Comparable<ObjectDump> {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        ObjectDump that = (ObjectDump) o;
-        return creationDate.equals(that.creationDate) && jsonName.equals(that.jsonName);
+        ObjectDump objectDump = (ObjectDump) o;
+        return this.creationDate.equals(objectDump.creationDate) && this.jsonName.equals(objectDump.jsonName)
+                && this.dumpId.equals(dumpId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(creationDate, jsonName);
+        return Objects.hash(creationDate, jsonName, dumpId);
     }
 
     @Override

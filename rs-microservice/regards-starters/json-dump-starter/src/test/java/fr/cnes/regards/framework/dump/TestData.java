@@ -41,16 +41,13 @@ public class TestData {
             numDate = i % 4;
             ContentObject contentObject = new ContentObject();
             contentObject.setContent("This is the content of example " + i);
-            jsonList.add(new ObjectDump(dateSet.get(numDate), "json" + i, contentObject));
+            jsonList.add(new ObjectDump(dateSet.get(numDate), "json" + i, contentObject, Integer.toString(i)));
         }
 
-        ContentObject contentObject = new ContentObject();
-        contentObject.setContent("This is the content of example " + 15);
-        jsonList.add(new ObjectDump(dateSet.get(3), "json" + 15, contentObject));
         return jsonList;
     }
 
-    public static ArrayList<ObjectDump> buildErrorJsonCollection(int numOfJson) {
+    public static ArrayList<ObjectDump> buildDuplicatedJsonCollection(int numOfJson) {
         ArrayList<ObjectDump> jsonList = new ArrayList<>();
         int numDate;
         ArrayList<OffsetDateTime> dateSet = getDateSet();
@@ -58,7 +55,7 @@ public class TestData {
         for (int i = 0; i < numOfJson; i++) {
             ContentObject contentObject = new ContentObject();
             contentObject.setContent("This is the content of example " + 0);
-            jsonList.add(new ObjectDump(dateSet.get(0), "json" + 0, contentObject));
+            jsonList.add(new ObjectDump(dateSet.get(0), "json" + 0, contentObject, Integer.toString(i)));
         }
         return jsonList;
     }
