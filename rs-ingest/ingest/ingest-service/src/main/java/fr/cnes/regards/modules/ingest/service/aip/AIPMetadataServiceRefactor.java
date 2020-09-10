@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.dump.DumpService;
@@ -80,34 +81,40 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
         OffsetDateTime dateRequest = aipSaveMetadataRequest.getCreationDate();
         //get all aipIds between these dates
         Page<IdsOnly> aipToDump = aipRepository
-                .findByLastUpdateBetweenOrderByCreationDateAsc(lastDumpDate, dateRequest, PageRequest.of(0, saveMetadataIterationLimit));
+                .findByLastUpdateBetween(lastDumpDate, dateRequest, PageRequest.of(0, saveMetadataIterationLimit, Sort
+                        .by(Sort.Order.asc("creationDate"))));
 
         Set<String> aipIds = new HashSet<>();
         Set<AIPEntity> aipEntities;
         List<ObjectDump> objectDumps;
         List<String> duplicatedJsonNames;
 
+        // FIXME generate DUMP
         while (aipToDump.hasNext()) {
-            //get aipIds
-            aipToDump.getContent().forEach(id -> aipIds.add(id.getId().toString()));
-            //retrieve all aips
-            aipEntities = aipRepository.findByAipIdIn(aipIds);
-            objectDumps = convertAipToObjectDump(aipEntities);
-            //check if names are unique in the collection
-            duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
-            //create zips
-            if (duplicatedJsonNames.isEmpty()) {
-                try {
-                    dumpService.generateJsonZips(objectDumps, "target/dump");
-                } catch (IOException e) {
-                    LOGGER.error("Error during zip creation",e);
-                }
+            {
+                // FIXME handle one page and write result on job workspace
+                //get aipIds
+                aipToDump.getContent().forEach(id -> aipIds.add(id.getId().toString()));
+                //retrieve all aips
+                aipEntities = aipRepository.findByAipIdIn(aipIds);
+                objectDumps = convertAipToObjectDump(aipEntities);
+                //check if names are unique in the collection
+                duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
+                //create zips
+                if (duplicatedJsonNames.isEmpty()) {
+                    try {
+                        // FIXME generate only one ZIP
+                        dumpService.generateJsonZips(objectDumps, "target/dump");
+                    } catch (IOException e) {
+                        LOGGER.error("Error during zip creation", e);
+                    }
 
-                if (aipToDump.hasNext()) {
-                    aipToDump.nextPageable();
+                    if (aipToDump.hasNext()) {
+                        aipToDump.nextPageable();
+                    }
+                } else {
+                    //TODO ?
                 }
-            } else {
-                //TODO ?
             }
         }
     }

@@ -52,6 +52,8 @@ public class AIPUpdateJobScheduler {
      */
     @Scheduled(fixedDelayString = "${regards.ingest.aip.update.bulk.delay:10000}")
     protected void handleQueue() {
+        //TODO what the fuck? create all job of one tenant and only then get to the next tenant?
+        // it is better not to do the do-while and decrease delay or invert for and do-while place
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

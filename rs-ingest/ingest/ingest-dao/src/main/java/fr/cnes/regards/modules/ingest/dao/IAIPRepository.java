@@ -85,6 +85,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Query(value = "UPDATE AIPEntity SET last = :last WHERE id = :id")
     int updateLast(@Param("id") Long id, @Param("last") boolean last);
 
-
-    Page<IdsOnly> findByLastUpdateBetweenOrderByCreationDateAsc(OffsetDateTime lastDumpDate, OffsetDateTime now, Pageable pageable);
+    Page<IdsOnly> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
+            Pageable pageable);
 }

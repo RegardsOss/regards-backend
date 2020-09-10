@@ -50,6 +50,8 @@ public class AIPSaveMetaDataJobScheduler {
      */
     @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:10000}", initialDelay = 1_000)
     protected void schduleAIPSaveMetaDataJobs() {
+        //TODO what the fuck? create all job of one tenant and only then get to the next tenant?
+        // it is better not to do the do-while and decrease delay or invert for and do-while place
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

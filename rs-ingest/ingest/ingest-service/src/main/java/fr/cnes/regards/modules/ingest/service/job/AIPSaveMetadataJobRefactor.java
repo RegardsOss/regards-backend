@@ -49,8 +49,6 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
 
     private List<AIPSaveMetadataRequestRefactor> requests;
 
-    private Set<Long> updatedAipIds;
-
     @Autowired
     private IAIPSaveMetadataRequestServiceRefactor aipSaveMetadataRequestServiceRefactor;
 
@@ -69,6 +67,7 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
 
         }.getType();
         List<Long> saveMetadataRequestIds = getValue(parameters, SAVE_METADATA_REQUESTS_IDS, type);
+        // TODO use directly aipStoreMetaDataRepositoryRefactor.findAllById(ids)
         requests = aipSaveMetadataRequestServiceRefactor.search(saveMetadataRequestIds);
     }
 
@@ -84,17 +83,10 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
             advanceCompletion();
             interrupted = Thread.currentThread().isInterrupted();
         }
-
-        // use interrupted() to remove the flag just the time to save handle state
-        interrupted = Thread.interrupted();
-        if (interrupted) {
-            requests.forEach(r -> r.setState(
-                    InternalRequestState.ABORTED)); //TODO : check if all req should be put to ABORTED (or only those not processed ??)
-            aipSaveMetadataRepositoryRefactor.saveAll(requests);
-            Thread.currentThread().interrupt();
-        }
         logger.debug("[AIP SAVE META JOB] Job handled for {} AIPSaveMetaDataRequest(s) requests in {}ms",
                      requests.size(), System.currentTimeMillis() - start);
+
+        // there is only one request per job so interruption can be ignored i.e this job(i.e. request) will be fully handled.
     }
 
 }
