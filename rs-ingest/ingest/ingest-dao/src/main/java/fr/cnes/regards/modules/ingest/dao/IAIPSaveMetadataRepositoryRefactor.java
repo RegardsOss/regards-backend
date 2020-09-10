@@ -36,13 +36,5 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataReq
 @Repository
 public interface IAIPSaveMetadataRepositoryRefactor extends JpaRepository<AIPSaveMetadataRequestRefactor, Long> {
 
-    default Page<AIPSaveMetadataRequestRefactor> findWaitingRequest(Pageable pageRequest) {
-        return findAllByState(InternalRequestState.CREATED, pageRequest);
-    }
-
-    Page<AIPSaveMetadataRequestRefactor> findAllByState(InternalRequestState step, Pageable page);
-
-    List<AIPSaveMetadataRequestRefactor> findAllByAipIdIn(List<Long> aips);
-
 }
 

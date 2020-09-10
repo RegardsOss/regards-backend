@@ -18,46 +18,31 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.dump.DumpService;
-import fr.cnes.regards.framework.dump.ObjectDump;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
-import fr.cnes.regards.modules.ingest.service.request.AIPSaveMetadataRequestServiceRefactor;
-import fr.cnes.regards.modules.ingest.service.request.IAIPSaveMetadataRequestServiceRefactor;
-import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 
 /**
- * @author Léo Mieulet
+ * @author Iliana Ghazali
  */
 public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
 
-    public static final String SAVE_METADATA_REQUESTS_IDS = "SAVE_METADATA_REQUESTS_IDS";
+    public static final String SAVE_METADATA_REQUEST = "SAVE_METADATA_REQUEST";
 
-    private List<AIPSaveMetadataRequestRefactor> requests;
-
-    @Autowired
-    private IAIPSaveMetadataRequestServiceRefactor aipSaveMetadataRequestServiceRefactor;
-
-    @Autowired
-    private IAIPSaveMetadataRepositoryRefactor aipSaveMetadataRepositoryRefactor;
+    private AIPSaveMetadataRequestRefactor request;
 
     @Autowired
     private IAIPMetadataServiceRefactor aipMetadataServiceRefactor;
-
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -66,25 +51,19 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
         Type type = new TypeToken<List<Long>>() {
 
         }.getType();
-        List<Long> saveMetadataRequestIds = getValue(parameters, SAVE_METADATA_REQUESTS_IDS, type);
-        // TODO use directly aipStoreMetaDataRepositoryRefactor.findAllById(ids)
-        requests = aipSaveMetadataRequestServiceRefactor.search(saveMetadataRequestIds);
+        this.request = getValue(parameters, SAVE_METADATA_REQUEST, type);
     }
 
     @Override
     public void run() {
-        logger.debug("[AIP SAVE METADATA JOB] Running job for {} AIPStoreMetaDataRequest(s) requests", requests.size());
+        logger.debug("[AIP SAVE METADATA JOB] Running job for 1 AIPSaveMetaDataRequest request");
         long start = System.currentTimeMillis();
-        boolean interrupted = Thread.currentThread().isInterrupted();
-        Iterator<AIPSaveMetadataRequestRefactor> requestIter = requests.iterator();
-        while (requestIter.hasNext() && !interrupted) {
-            AIPSaveMetadataRequestRefactor request = requestIter.next();
-            aipMetadataServiceRefactor.dumpObject(request);
-            advanceCompletion();
-            interrupted = Thread.currentThread().isInterrupted();
+        boolean result = aipMetadataServiceRefactor.writeZips(request);
+        if (!result) {
+            aipMetadataServiceRefactor.writeDump(request);
         }
-        logger.debug("[AIP SAVE META JOB] Job handled for {} AIPSaveMetaDataRequest(s) requests in {}ms",
-                     requests.size(), System.currentTimeMillis() - start);
+        logger.debug("[AIP SAVE META JOB] Job handled for 1 AIPSaveMetaDataRequest request in {}ms",
+                     System.currentTimeMillis() - start);
 
         // there is only one request per job so interruption can be ignored i.e this job(i.e. request) will be fully handled.
     }

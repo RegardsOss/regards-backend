@@ -55,10 +55,7 @@ public class AIPSaveMetaDataJobSchedulerRefactor {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                boolean stop = false;
-                do {
-                    stop = aipSaveMetadataServiceRefactor.scheduleJobs() == null;
-                } while (!stop);
+                aipSaveMetadataServiceRefactor.scheduleJobs();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.manifest;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -27,14 +29,26 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
 /**
  * Storing info that a metadata should be saved on storage
- * @author Léo Mieulet
+ * @author Iliana Ghazali
  */
 @Entity(name = RequestTypeConstant.STORE_METADATA_VALUE)
 public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
 
+    @NotNull(message = "Last dump date")
+    @Column(name = "last_dump_date", nullable = false)
+    private OffsetDateTime lastDumpDate;
+
+    public OffsetDateTime getLastDumpDate() {
+        return lastDumpDate;
+    }
+
+    public void setLastDumpDate(OffsetDateTime lastDumpDate) {
+        this.lastDumpDate = lastDumpDate;
+    }
 
     public static AIPSaveMetadataRequestRefactor build(OffsetDateTime lastDumpDate) {
         AIPSaveMetadataRequestRefactor smdr = new AIPSaveMetadataRequestRefactor();
+        smdr.lastDumpDate = lastDumpDate;
         smdr.setState(InternalRequestState.TO_SCHEDULE);
         smdr.setDtype(RequestTypeConstant.STORE_METADATA_VALUE);
         smdr.setCreationDate(OffsetDateTime.now());

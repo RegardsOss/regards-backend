@@ -18,18 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
@@ -37,8 +31,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
+import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
@@ -60,47 +54,34 @@ public class AIPSaveMetadataServiceRefactor {
     private IAIPSaveMetadataRepositoryRefactor aipSaveMetadataRepositoryRefactor;
 
     @Autowired
-    private JobInfoService jobInfoService;
+    private IAIPDumpMetadataRepositoryRefactor aipDumpMetadataRepositoryRefactor;
 
     @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
-
-    /**
-     * Limit number of AIPs to retrieve in one page.
-     */
-    @Value("${regards.aips.save-metadata.scan.iteration-limit:2000}")
-    private Integer saveRequestIterationLimit;
+    private JobInfoService jobInfoService;
 
     /**
      * Schedule Jobs
      */
-    public JobInfo scheduleJobs() {
-        JobInfo jobInfo = null;
+    public void scheduleJobs() {
         LOGGER.trace("[SAVE METADATA SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
-        Pageable pageRequest = PageRequest.of(0, saveRequestIterationLimit, Sort.Direction.ASC, "id");
 
-        // Fetch the first list of update request to handle
-        Page<AIPSaveMetadataRequestRefactor> waitingRequest = aipSaveMetadataRepositoryRefactor
-                .findWaitingRequest(pageRequest);
+        // Create request
+        // find last dump date and create request
+        OffsetDateTime lastDumpDate = aipDumpMetadataRepositoryRefactor.findLastDumpDate();
+        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = AIPSaveMetadataRequestRefactor.build(lastDumpDate);
+        aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
+        aipSaveMetadataRepositoryRefactor.save(aipSaveMetadataRequest);
 
-        if (!waitingRequest.isEmpty()) {
-            // Make a list of content ids
-            List<Long> requestIds = waitingRequest.getContent().stream().map(AIPSaveMetadataRequestRefactor::getId)
-                    .collect(Collectors.toList());
-            // Change these requests state
-            abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
+        // Schedule save metadata job
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(AIPSaveMetadataJobRefactor.SAVE_METADATA_REQUEST, aipSaveMetadataRequest));
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
+                                      jobParameters, null, AIPSaveMetadataJobRefactor.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+        LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
+                     System.currentTimeMillis() - start);
 
-            // Schedule save metadata job
-            Set<JobParameter> jobParameters = Sets.newHashSet();
-            jobParameters.add(new JobParameter(AIPSaveMetadataJobRefactor.SAVE_METADATA_REQUESTS_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
-                                  jobParameters, null, AIPSaveMetadataJobRefactor.class.getName());
-            jobInfoService.createAsQueued(jobInfo);
-            LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for {} AIPSaveMetaDataRequest(s) in {} ms",
-                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
-        }
-        return jobInfo;
     }
 
 }
