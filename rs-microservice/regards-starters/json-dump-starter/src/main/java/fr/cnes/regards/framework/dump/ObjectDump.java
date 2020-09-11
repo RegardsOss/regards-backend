@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 /**
  * Object used to dump data
  * @author Iliana Ghazali
+ * @author Sylvain VISSIERE-GUERINET
  */
 
 public class ObjectDump implements Comparable<ObjectDump> {

@@ -20,12 +20,7 @@
 
 package fr.cnes.regards.framework.dump;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,9 +47,10 @@ import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- * The purpose of this service is to created a zip of zips. These zips contain a limited number of json files
+ * The purpose of this service is to created a zip of zips (dump). These zips contain a limited number of json files
  * distributed according to a temporal tree structure
  * @author Iliana Ghazali
+ * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 public class DumpService {
@@ -149,7 +145,7 @@ public class DumpService {
                 tmpZip.write(fileContent.getBytes());
                 tmpZip.closeEntry();
             }
-            // we have to close the zip here so that we can properly access zipEntry
+            // close the zip here so zipEntry can be properly accessed
             tmpZip.close();
 
             // write zip
@@ -179,19 +175,20 @@ public class DumpService {
             Path dumpLocationPerTenant = Paths.get(dumpLocation, runtimeTenantResolver.getTenant());
             Files.createDirectories(dumpLocationPerTenant);
 
-            try (ZipOutputStream dumpZip = new ZipOutputStream(new FileOutputStream(dumpLocationPerTenant
-                                                                                            .resolve(dumpName)
-                                                                                            .toFile()))) {
+            try (ZipOutputStream dumpZip = new ZipOutputStream(
+                    new FileOutputStream(dumpLocationPerTenant.resolve(dumpName).toFile()))) {
                 // Zip content from tmpDumpFolder
                 for (File file : zipArray) {
                     // Get zip file
                     zipEntry = new ZipEntry(file.getName());
                     dumpZip.putNextEntry(zipEntry);
-                    // Read the input file by chucks of 1024 bytes and write the read bytes to the zip stream
+                    // Read the input file by chucks of 8192 bytes and write the read bytes to the zip stream
                     try (FileInputStream fileInputStream = new FileInputStream(file)) {
                         ByteStreams.copy(fileInputStream, dumpZip);
                     }
                     dumpZip.closeEntry();
+                    // Delete processed zip
+                    Files.delete(file.toPath());
                 }
             }
         }
