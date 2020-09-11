@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -79,6 +81,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @SuppressWarnings("javadoc")
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
+
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private ApplicationEventPublisher springPublisher;
