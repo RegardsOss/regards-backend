@@ -34,14 +34,13 @@ import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
-import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetaDataJob;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJobRefactor;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 
 /**
- * Service to handle {@link AIPSaveMetaDataJob}s
+ * Service to handle {@link AIPSaveMetadataJobRefactor}s
  * @author Iliana Ghazali
- *
+ * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 @MultitenantTransactional

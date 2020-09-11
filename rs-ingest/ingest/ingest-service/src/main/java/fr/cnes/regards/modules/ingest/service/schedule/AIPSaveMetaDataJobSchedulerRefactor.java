@@ -28,9 +28,9 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataServiceRefactor;
 
 /**
- * This component scans the AIPSaveMetaDataRepo and schedule jobs
- *
- * @author Leo Mieulet
+ * This component schedule jobs
+ * @author Iliana Ghazali
+ * @author Sylvain VISSIERE-GUERINET
  */
 @Profile("!noschedule")
 @Component

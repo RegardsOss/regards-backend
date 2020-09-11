@@ -28,23 +28,32 @@ import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameExcept
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
 
 /**
- * Manage AIP storage
+ * Manage AIP dumps
  * @author Iliana Ghazali
+ * @author Sylvain VISSIERE-GUERINET
  */
 public interface IAIPMetadataServiceRefactor {
 
-    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
-
-    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
-
-    void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, String errorMessage);
-
-    void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
-
     /**
+     * Get set of aips to zip and zip their content in workspace
      * @return next pageable if exist null otherwise
      * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
     Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
             Path workspace) throws IOException, DuplicateUniqueNameException;
+
+
+    /** Write zip in workspace  */
+    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
+
+    /** Create zip of zips in workspace (dump) */
+    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
+
+    /** Handle request in error and notify client */
+    void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, String errorMessage);
+
+    /** Handle request in success */
+    void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
+
+
 }

@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
 
 /**
  * @author Iliana Ghazali
+ * @author Sylvain VISSIERE-GUERINET
  */
 public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
 

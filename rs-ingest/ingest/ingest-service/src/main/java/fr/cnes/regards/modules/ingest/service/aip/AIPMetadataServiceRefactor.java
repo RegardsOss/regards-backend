@@ -52,16 +52,15 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
 
 /**
+ * Service to dump aips
  * @author Iliana Ghazali
- *
+ * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 @MultitenantTransactional
 public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataServiceRefactor.class);
-
-    private static final String DUMP_LOCATION = "target/dump"; //FIXME to change
 
     @Autowired
     private DumpService dumpService;
@@ -115,18 +114,15 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
     private List<ObjectDump> convertAipToObjectDump(Collection<AIPEntity> aipEntities) {
         return aipEntities.stream().map(aipEntity -> new ObjectDump(aipEntity.getCreationDate(),
                                                                     aipEntity.getProviderId() + "-" + aipEntity
-                                                                            .getVersion(),
-                                                                    aipEntity.getAip(),
+                                                                            .getVersion(), aipEntity.getAip(),
                                                                     aipEntity.getAipId())).collect(Collectors.toList());
     }
 
     @Override
     public void handleError(AIPSaveMetadataRequestRefactor dumpRequest, String errorMessage) {
-        notificationClient.notify(errorMessage,
-                                  String.format("Error while dumping AIPs for period %s to %s",
-                                                dumpRequest.getLastDumpDate(),
-                                                dumpRequest.getCreationDate()),
-                                  NotificationLevel.ERROR,
+        notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
+                                                              dumpRequest.getLastDumpDate(),
+                                                              dumpRequest.getCreationDate()), NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
         dumpRequest.addError(errorMessage);
         dumpRequest.setState(InternalRequestState.ERROR);
@@ -149,16 +145,14 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
         Page<AIPEntity> aipToDump = aipRepository
                 .findByLastUpdateBetween(aipSaveMetadataRequestRefactor.getLastDumpDate(),
-                                         aipSaveMetadataRequestRefactor.getCreationDate(),
-                                         pageToRequest);
+                                         aipSaveMetadataRequestRefactor.getCreationDate(), pageToRequest);
         objectDumps = convertAipToObjectDump(aipToDump.getContent());
 
         // Check if names are unique in the collection
         duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
         if (!duplicatedJsonNames.isEmpty()) {
             String errorMessage = duplicatedJsonNames.stream().map(ObjectDump::getJsonName).collect(Collectors.joining(
-                    ", ",
-                    "Some AIPs to dump had same generated names "
+                    ", ", "Some AIPs to dump had same generated names "
                             + "(providerId-version.json) which should be unique: ",
                     ". Please edit your AIPs so there is no duplicates."));
             handleError(aipSaveMetadataRequestRefactor, errorMessage);
