@@ -119,6 +119,7 @@
 		<modules.dam.version>${regards.version}</modules.dam.version>
 		<modules.model.version>${regards.version}</modules.model.version>
 		<modules.feature.version>${regards.version}</modules.feature.version>
+		<modules.featureprovider.version>${regards.version}</modules.featureprovider.version>
 		<modules.emails.version>${regards.version}</modules.emails.version>
 		<modules.notifier.version>${regards.version}</modules.notifier.version>
 		<modules.notification.version>${regards.version}</modules.notification.version>
@@ -828,6 +829,32 @@
 				<artifactId>feature-client</artifactId>
 				<version>${modules.feature.version}</version>
 			</dependency>
+			<!-- Feature provider -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
+				<artifactId>featureprovider-dao</artifactId>
+				<version>${modules.featureprovider.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
+				<artifactId>featureprovider-domain</artifactId>
+				<version>${modules.featureprovider.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
+				<artifactId>featureprovider-rest</artifactId>
+				<version>${modules.featureprovider.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
+				<artifactId>featureprovider-service</artifactId>
+				<version>${modules.featureprovider.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.featureprovider</groupId>
+				<artifactId>featureprovider-client</artifactId>
+				<version>${modules.featureprovider.version}</version>
+			</dependency>
             <!-- Crawler -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
@@ -1103,17 +1130,22 @@
 				<version>${fr.cnes.regards.framework.notification.version}</version>
 			</dependency>
             <!-- Notifier -->
-            <dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.notifier</groupId>
+				<artifactId>notifier-client</artifactId>
+				<version>${modules.notifier.version}</version>
+			</dependency>
+			<dependency>
                 <groupId>fr.cnes.regards.modules.notifier</groupId>
                 <artifactId>notifier-rest</artifactId>
                 <version>${modules.notifier.version}</version>
             </dependency>
-            <dependency>
+			<dependency>
                 <groupId>fr.cnes.regards.modules.notifier</groupId>
                 <artifactId>notifier-domain</artifactId>
                 <version>${modules.notifier.version}</version>
             </dependency>
-            <dependency>
+			<dependency>
                 <groupId>fr.cnes.regards.modules.notifier</groupId>
                 <artifactId>notifier-dao</artifactId>
                 <version>${modules.notifier.version}</version>
