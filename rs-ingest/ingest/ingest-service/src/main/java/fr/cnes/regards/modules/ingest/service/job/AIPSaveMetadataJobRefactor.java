@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
 
@@ -45,6 +46,11 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
     private IAIPMetadataServiceRefactor aipMetadataServiceRefactor;
 
     @Override
+    public boolean needWorkspace() {
+        return true;
+    }
+
+    @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
@@ -58,9 +64,12 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
     public void run() {
         logger.debug("[AIP SAVE METADATA JOB] Running job for 1 AIPSaveMetaDataRequest request");
         long start = System.currentTimeMillis();
-        boolean result = aipMetadataServiceRefactor.writeZips(request);
-        if (!result) {
-            aipMetadataServiceRefactor.writeDump(request);
+        aipMetadataServiceRefactor.writeZips(request, getWorkspace());
+        try {
+            aipMetadataServiceRefactor.writeDump(request, getWorkspace());
+        } catch (RsRuntimeException e) {
+            aipMetadataServiceRefactor.handleError(request, e.getMessage());
+            throw e;
         }
         logger.debug("[AIP SAVE META JOB] Job handled for 1 AIPSaveMetaDataRequest request in {}ms",
                      System.currentTimeMillis() - start);

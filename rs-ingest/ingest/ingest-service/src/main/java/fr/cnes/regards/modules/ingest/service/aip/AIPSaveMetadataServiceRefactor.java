@@ -68,7 +68,7 @@ public class AIPSaveMetadataServiceRefactor {
         // Create request
         // find last dump date and create request
         OffsetDateTime lastDumpDate = aipDumpMetadataRepositoryRefactor.findLastDumpDate();
-        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = AIPSaveMetadataRequestRefactor.build(lastDumpDate);
+        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(lastDumpDate);
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         aipSaveMetadataRepositoryRefactor.save(aipSaveMetadataRequest);
 

@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.util.*;
+import java.io.IOException;
+import java.nio.file.Path;
 
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.dump.ObjectDump;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
 
 /**
@@ -32,20 +33,18 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataReq
  */
 public interface IAIPMetadataServiceRefactor {
 
-    boolean writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
+    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
 
-    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
+    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
 
-    //**** UTILS ****
-
-    List<ObjectDump> convertAipToObjectDump(Set<AIPEntity> aipEntities);
-
-    void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
+    void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, String errorMessage);
 
     void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
 
     /**
      * @return next pageable if exist null otherwise
+     * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
-    Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest);
+    Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
+            Path workspace) throws IOException, DuplicateUniqueNameException;
 }

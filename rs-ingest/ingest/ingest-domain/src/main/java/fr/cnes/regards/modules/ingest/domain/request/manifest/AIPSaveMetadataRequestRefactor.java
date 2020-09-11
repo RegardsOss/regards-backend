@@ -24,7 +24,6 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
 /**
@@ -35,8 +34,15 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
 
     @NotNull(message = "Last dump date")
-    @Column(name = "last_dump_date", nullable = false)
+    @Column(name = "last_dump_date")
     private OffsetDateTime lastDumpDate;
+
+    public AIPSaveMetadataRequestRefactor(OffsetDateTime lastDumpDate) {
+        // session information are specific to AIP subset defined by users, the same goes for session owner. ProviderId is aip specific.
+        // AIPSaveMetadataRequests are not related to sessions but subset AIPs only by date
+        super(null, null, null);
+        this.lastDumpDate = lastDumpDate;
+    }
 
     public OffsetDateTime getLastDumpDate() {
         return lastDumpDate;
@@ -44,14 +50,5 @@ public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
 
     public void setLastDumpDate(OffsetDateTime lastDumpDate) {
         this.lastDumpDate = lastDumpDate;
-    }
-
-    public static AIPSaveMetadataRequestRefactor build(OffsetDateTime lastDumpDate) {
-        AIPSaveMetadataRequestRefactor smdr = new AIPSaveMetadataRequestRefactor();
-        smdr.lastDumpDate = lastDumpDate;
-        smdr.setState(InternalRequestState.TO_SCHEDULE);
-        smdr.setDtype(RequestTypeConstant.STORE_METADATA_VALUE);
-        smdr.setCreationDate(OffsetDateTime.now());
-        return smdr;
     }
 }

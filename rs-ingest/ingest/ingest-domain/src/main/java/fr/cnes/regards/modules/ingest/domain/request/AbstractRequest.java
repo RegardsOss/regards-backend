@@ -81,7 +81,7 @@ public abstract class AbstractRequest {
     private JobInfo jobInfo;
 
     @NotNull(message = "Creation date is required")
-    @Column(name = "creation_date", nullable = false)
+    @Column(name = "creation_date")
     private OffsetDateTime creationDate;
 
     /**
@@ -112,6 +112,17 @@ public abstract class AbstractRequest {
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private InternalRequestState state;
+
+    public AbstractRequest() {
+    }
+
+    public AbstractRequest(String sessionOwner, String session, String providerId) {
+        this.creationDate = OffsetDateTime.now();
+        this.sessionOwner = sessionOwner;
+        this.session = session;
+        this.providerId = providerId;
+        this.state = InternalRequestState.TO_SCHEDULE;
+    }
 
     public Long getId() {
         return id;
