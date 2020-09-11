@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,10 +73,10 @@ public class AIPSaveMetadataServiceRefactor {
         aipSaveMetadataRepositoryRefactor.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(AIPSaveMetadataJobRefactor.SAVE_METADATA_REQUEST, aipSaveMetadataRequest));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
-                                      jobParameters, null, AIPSaveMetadataJobRefactor.class.getName());
+                                      Sets.newHashSet(new JobParameter(AIPSaveMetadataJobRefactor.SAVE_METADATA_REQUEST,
+                                                                       aipSaveMetadataRequest)), null,
+                                      AIPSaveMetadataJobRefactor.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
                      System.currentTimeMillis() - start);

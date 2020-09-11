@@ -18,27 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.*;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.dump.ObjectDump;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.modules.ingest.domain.IdsOnly;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * Manage AIP storage
@@ -58,4 +44,8 @@ public interface IAIPMetadataServiceRefactor {
 
     void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
 
+    /**
+     * @return next pageable if exist null otherwise
+     */
+    Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest);
 }

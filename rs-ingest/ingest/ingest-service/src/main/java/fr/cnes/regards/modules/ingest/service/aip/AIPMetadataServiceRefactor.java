@@ -29,10 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.dump.DumpService;
 import fr.cnes.regards.framework.dump.ObjectDump;
@@ -72,56 +76,23 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     private static final String DUMP_LOCATION = "target/dump"; //FIXME to change
 
+    @Autowired
+    private IAIPMetadataServiceRefactor self;
+
+    @Override
     public boolean writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
         boolean flagError = false;
 
-        // Get all aipIds between lastDumpDate/creationDate
-        OffsetDateTime lastDumpDate = aipSaveMetadataRequestRefactor.getLastDumpDate();
-        OffsetDateTime creationDate = aipSaveMetadataRequestRefactor.getCreationDate();
-        Page<IdsOnly> aipToDump = aipRepository.findByLastUpdateBetween(lastDumpDate, creationDate, PageRequest
-                .of(0, saveMetadataIterationLimit, Sort.by(Sort.Order.asc("creationDate"))));
-
-        // Write Zips
-        Set<String> aipIds = new HashSet<>();
-        Set<AIPEntity> aipEntities;
-        List<ObjectDump> objectDumps;
-        List<String> duplicatedJsonNames;
+        Pageable pageToRequest = PageRequest.of(0, saveMetadataIterationLimit, Sort.by(Sort.Order.asc("creationDate")));
 
         //TODO : how to handle unique json names for all pages ?
-        while (aipToDump.hasNext()) {
-            {
-                // Retrieve all aips by id and convert to object dump
-                aipToDump.getContent().forEach(id -> aipIds.add(id.getId().toString()));
-                aipEntities = aipRepository.findByAipIdIn(aipIds);
-                objectDumps = convertAipToObjectDump(aipEntities);
-
-                // Check if names are unique in the collection
-                duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
-
-                // Create zip
-                if (duplicatedJsonNames.isEmpty()) {
-                    try {
-                        // FIXME handle one page and write result on job workspace
-                        dumpService.generateJsonZip(objectDumps, TMP_DUMP_LOCATION);
-                    } catch (IOException e) {
-                        LOGGER.error("Error during zip creation", e);
-                        flagError = true;
-                        handleError(aipSaveMetadataRequestRefactor);
-                        break;
-                    }
-                    if (aipToDump.hasNext()) {
-                        aipToDump.nextPageable();
-                    }
-                } else {
-                    flagError = true;
-                    handleError(aipSaveMetadataRequestRefactor);
-                    break;
-                }
-            }
-        }
+        do {
+            pageToRequest = self.dumpOnePage(aipSaveMetadataRequestRefactor, pageToRequest);
+        } while (pageToRequest != null);
         return flagError;
     }
 
+    @Override
     public void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
         OffsetDateTime creationDate = aipSaveMetadataRequestRefactor.getCreationDate();
         try {
@@ -135,6 +106,7 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     //**** UTILS ****
 
+    @Override
     public List<ObjectDump> convertAipToObjectDump(Set<AIPEntity> aipEntities) {
         List objectDumps = new ArrayList();
         AIP aip;
@@ -150,6 +122,7 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
         return objectDumps;
     }
 
+    @Override
     public void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
         aipSaveMetadataRequestRefactor.setState(InternalRequestState.ERROR);
         aipSaveMetadataRepositoryRefactor.save(aipSaveMetadataRequestRefactor);
@@ -157,9 +130,50 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     }
 
+    @Override
     public void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
         aipSaveMetadataRepositoryRefactor.delete(aipSaveMetadataRequestRefactor);
         //TODO : clean workspace
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest) {
+        // Write Zips
+        Set<String> aipIds = new HashSet<>();
+        Set<AIPEntity> aipEntities;
+        List<ObjectDump> objectDumps;
+        List<String> duplicatedJsonNames;
+
+        Page<IdsOnly> aipToDump = aipRepository
+                .findByLastUpdateBetween(aipSaveMetadataRequestRefactor.getLastDumpDate(),
+                                         aipSaveMetadataRequestRefactor.getCreationDate(), pageToRequest);
+        // Retrieve all aips by id and convert to object dump
+        aipToDump.getContent().forEach(id -> aipIds.add(id.getId().toString()));
+        aipEntities = aipRepository.findByAipIdIn(aipIds);
+        objectDumps = convertAipToObjectDump(aipEntities);
+
+        // Check if names are unique in the collection
+        duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
+
+        // Create zip
+        if (duplicatedJsonNames.isEmpty()) {
+            try {
+                // FIXME handle one page and write result on job workspace
+                dumpService.generateJsonZip(objectDumps, TMP_DUMP_LOCATION);
+            } catch (IOException e) {
+                LOGGER.error("Error during zip creation", e);
+                flagError = true;
+                handleError(aipSaveMetadataRequestRefactor);
+            }
+            if (aipToDump.hasNext()) {
+                aipToDump.nextPageable();
+            }
+        } else {
+            flagError = true;
+            handleError(aipSaveMetadataRequestRefactor);
+        }
+        return null;
     }
 
 }
