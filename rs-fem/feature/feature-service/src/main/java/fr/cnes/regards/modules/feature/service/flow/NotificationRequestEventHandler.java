@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
-import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
@@ -99,12 +99,9 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     }
 
     @Override
-    public IFeatureDeniedService getFeatureService() {
+    public IRequestDeniedService getFeatureService() {
         return notificationService;
     }
 
-    @Override
-    public FeatureRequestType getFeatureRequestType() {
-        return FeatureRequestType.NOTIFICATION;
-    }
+
 }

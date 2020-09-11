@@ -69,12 +69,6 @@ public class FeatureLogger {
 
     private static final String DELETION_SUCCESS_FORMAT = PREFIX + "Feature DELETED" + PX3;
 
-    private static final String REFERENCE_DENIED_FORMAT = PREFIX + "Feature EXTRACTION DENIED" + PX3;
-
-    private static final String REFERENCE_GRANTED_FORMAT = PREFIX + "Feature EXTRACTION GRANTED" + PX2;
-
-    private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
-
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
     private static final String NOTIFICATION_GRANTED_FORMAT = PREFIX + "Feature NOTIFICATION GRANTED" + PX3;
@@ -127,18 +121,6 @@ public class FeatureLogger {
 
     public static void deletionSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, requestId, urn));
-    }
-
-    public static void referenceDenied(String requestOwner, String requestId, Set<String> errors) {
-        LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errors));
-    }
-
-    public static void referenceGranted(String requestOwner, String requestId) {
-        LOGGER.trace(String.format(REFERENCE_GRANTED_FORMAT, requestOwner, requestId));
-    }
-
-    public static void referenceError(String requestOwner, String requestId, Set<String> errors) {
-        LOGGER.error(String.format(REFERENCE_ERROR_FORMAT, requestOwner, requestId, errors));
     }
 
     public static void notificationDenied(String requestOwner, String requestId, FeatureUniformResourceName urn,

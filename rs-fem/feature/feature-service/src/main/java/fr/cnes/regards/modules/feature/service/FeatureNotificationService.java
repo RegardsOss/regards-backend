@@ -229,4 +229,14 @@ public class FeatureNotificationService extends AbstractFeatureService implement
         abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, ids);
         abstractFeatureRequestRepo.updateState(RequestState.ERROR, ids);
     }
+
+    @Override
+    public FeatureRequestType getRequestType() {
+        return FeatureRequestType.NOTIFICATION;
+    }
+
+    @Override
+    protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
+        FeatureLogger.notificationDenied(requestOwner, requestId, null, errors);
+    }
 }

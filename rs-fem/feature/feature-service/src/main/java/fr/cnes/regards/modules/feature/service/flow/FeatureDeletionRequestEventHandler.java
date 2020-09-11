@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
-import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
 /**
@@ -104,12 +104,7 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
     }
 
     @Override
-    public IFeatureDeniedService getFeatureService() {
+    public IRequestDeniedService getFeatureService() {
         return featureService;
-    }
-
-    @Override
-    public FeatureRequestType getFeatureRequestType() {
-        return FeatureRequestType.DELETION;
     }
 }

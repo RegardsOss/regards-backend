@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
-import fr.cnes.regards.modules.feature.service.IFeatureReferenceService;
 import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -132,18 +131,6 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     };
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
-
-    private final Task referenceTask = () -> {
-        LockAssert.assertLocked();
-        long start = System.currentTimeMillis();
-        int nb = this.featureReferenceService.scheduleRequests();
-        if (nb != 0) {
-            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, REFERENCE_REQUESTS, System.currentTimeMillis() - start);
-        }
-    };
-
-    @Autowired
     private IFeatureCopyService featureCopyService;
 
     private final Task copyTask = () -> {
@@ -223,24 +210,6 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_REQUESTS, NOTIFICATION_TITLE, e);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-    }
-
-    @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.feature.request.reference.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
-    public void scheduleReferenceRequests() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, REFERENCE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(referenceTask,
-                                                     new LockConfiguration(REFERENCE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
-            } catch (Throwable e) {
-                handleSchedulingError(REFERENCE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

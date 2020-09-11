@@ -53,15 +53,23 @@
     </developers>
 
 	<dependencies>
-		<dependency>
+        <dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
-		<!-- Test -->
-		<dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.feature</groupId>
+            <artifactId>feature-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-domain</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

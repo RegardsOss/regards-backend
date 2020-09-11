@@ -42,21 +42,21 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 @MappedSuperclass
 public abstract class AbstractRequest {
 
-    protected static final String COLUMN_REQUEST_ID = "request_id";
+    public static final String COLUMN_REQUEST_ID = "request_id";
 
-    protected static final String COLUMN_REQUEST_OWNER = "request_owner";
+    public static final String COLUMN_REQUEST_OWNER = "request_owner";
 
-    protected static final String COLUMN_REQUEST_TIME = "request_date";
+    public static final String COLUMN_REQUEST_TIME = "request_date";
 
-    protected static final String COLUMN_REGISTRATION_DATE = "registration_date";
+    public static final String COLUMN_REGISTRATION_DATE = "registration_date";
 
-    protected static final String COLUMN_STEP = "step";
+    public static final String COLUMN_STEP = "step";
 
-    protected static final String COLUMN_PRIORITY = "priority";
+    public static final String COLUMN_PRIORITY = "priority";
 
-    protected static final String COLUMN_URN = "urn";
+    public static final String COLUMN_URN = "urn";
 
-    protected static final String COLUMN_STATE = "state";
+    public static final String COLUMN_STATE = "state";
 
     @Column(name = COLUMN_REQUEST_ID, length = 36, nullable = false, updatable = false)
     protected String requestId;

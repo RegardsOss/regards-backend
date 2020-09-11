@@ -42,7 +42,6 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -497,5 +496,15 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
      */
     private int computeNextVersion(Integer previousVersion) {
         return previousVersion == null ? 1 : previousVersion + 1;
+    }
+
+    @Override
+    public FeatureRequestType getRequestType() {
+        return FeatureRequestType.CREATION;
+    }
+
+    @Override
+    protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
+        FeatureLogger.creationDenied(requestOwner, requestId, null, errors);
     }
 }

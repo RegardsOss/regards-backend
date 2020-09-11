@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -222,10 +221,11 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     public int scheduleRequests() {
 
         long scheduleStart = System.currentTimeMillis();
-        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo
-                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
-                                        PageRequest.of(0, this.properties.getMaxBulkSize()),
-                                        OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
+        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo.findRequestsToSchedule(
+                FeatureRequestStep.LOCAL_DELAYED,
+                OffsetDateTime.now(),
+                PageRequest.of(0, this.properties.getMaxBulkSize()),
+                OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
 
         if (!requestsToSchedule.isEmpty()) {
 
@@ -279,7 +279,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         Set<ILightFeatureUpdateRequest> errors = requestsToSchedule.stream()
                 .filter(request -> deletionUrnScheduled.contains(request.getUrn())).collect(Collectors.toSet());
         Set<Long> errorIds = errors.stream().map(IAbstractFeatureRequest::getId).collect(Collectors.toSet());
-        if(!errorIds.isEmpty()) {
+        if (!errorIds.isEmpty()) {
             this.featureUpdateRequestRepo.updateState(RequestState.ERROR, errorIds);
         }
 
@@ -383,5 +383,15 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                      System.currentTimeMillis() - processStart);
 
         return entities;
+    }
+
+    @Override
+    public FeatureRequestType getRequestType() {
+        return FeatureRequestType.PATCH;
+    }
+
+    @Override
+    protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
+        FeatureLogger.updateDenied(requestOwner, requestId, null, null, errors);
     }
 }

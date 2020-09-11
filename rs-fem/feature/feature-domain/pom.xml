@@ -62,22 +62,13 @@
         	<groupId>org.mapstruct</groupId>
         	<artifactId>mapstruct</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>plugins-domain</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>-->
+<!--			<artifactId>plugins-domain</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-data-regards</artifactId>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 	</dependencies>
-	<!-- <build>
-		<plugins>
-			Add lazy loading for jsonb
-			<plugin>
-                <groupId>org.hibernate.orm.tooling</groupId> 
-                <artifactId>hibernate-enhance-maven-plugin</artifactId> 
-    		</plugin>
-		</plugins>
-	</build> -->
 </project>

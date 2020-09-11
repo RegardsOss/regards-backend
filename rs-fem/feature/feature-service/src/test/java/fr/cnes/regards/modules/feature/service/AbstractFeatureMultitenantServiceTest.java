@@ -63,7 +63,6 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.flow.FeatureCreationRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventHandler;
-import fr.cnes.regards.modules.feature.service.flow.FeatureReferenceRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -449,7 +448,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(NotificationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureReferenceRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
     /**

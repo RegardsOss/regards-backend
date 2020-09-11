@@ -242,4 +242,15 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             LOGGER.error(String.format("No file found for checksum %s", request.getUrn().toString()));
         }
     }
+
+    @Override
+    public FeatureRequestType getRequestType() {
+        return FeatureRequestType.FILE_COPY;
+    }
+
+    @Override
+    protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
+        // request cannot be denied because FeatureCopyRequest are generated in response to storage event and do not
+        // come from outside the microservice
+    }
 }

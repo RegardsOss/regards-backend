@@ -16,31 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.service;
+package fr.cnes.regards.modules.featureprovider.domain.plugin;
 
-import java.util.List;
-import java.util.Set;
+import com.google.gson.JsonObject;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 
 /**
- * Service for notify {@link Feature}
+ * Generate a {@link Feature} from a {@link FeatureReferenceRequest}
  * @author Kevin Marchois
- *
  */
-public interface IFeatureNotificationService extends IAbstractFeatureService {
+@PluginInterface(description = "Generate a feature from a reference request")
+public interface IFeatureFactoryPlugin {
 
     /**
-     * Register notification requests in database for further processing from incoming request events
+     * Generate a {@link Feature} from {@link FeatureReferenceRequest} parameters.
+     * @param parameters free extraction parameters
+     * @return generated {@link Feature}
      */
-    int registerRequests(List<NotificationRequestEvent> events);
-
-    int sendToNotifier();
-
-    void handleNotificationSuccess(Set<AbstractFeatureRequest> success);
-
-    void handleNotificationError(Set<AbstractFeatureRequest> errorRequest);
+    Feature generateFeature(JsonObject parameters) throws ModuleException;
 }

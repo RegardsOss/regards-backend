@@ -67,9 +67,8 @@
         </dependency>
         <!-- Module dependencies -->
         <dependency>
-            <groupId>fr.cnes.regards</groupId>
+            <groupId>fr.cnes.regards.modules.featureprovider</groupId>
             <artifactId>featureprovider-service</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
         </dependency>
         <!-- Test -->
         <dependency>

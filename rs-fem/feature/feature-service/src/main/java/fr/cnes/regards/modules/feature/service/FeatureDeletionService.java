@@ -407,4 +407,14 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         }
         return registerRequests(toTreat);
     }
+
+    @Override
+    public FeatureRequestType getRequestType() {
+        return FeatureRequestType.DELETION;
+    }
+
+    @Override
+    protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
+        FeatureLogger.deletionDenied(requestOwner, requestId, null, errors);
+    }
 }
