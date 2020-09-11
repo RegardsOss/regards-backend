@@ -18,32 +18,32 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.JsonElement;
-
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Performance tests on Notification manager
  * @author Kevin Marchois
  *
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf",
-                "regards.amqp.enabled=true" },
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf",
+        "regards.amqp.enabled=true" },
         locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
+@Ignore("Perf test in local")
 public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTest {
 
     @Test
@@ -54,9 +54,12 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
 
         initPlugins(false);
 
-        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
+        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
+            events.add(new NotificationActionEvent(element,
+                                                   gson.toJsonTree("CREATE"),
+                                                   AbstractRequestEvent.generateRequestId(),
+                                                   "NotificationPerfIT"));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
@@ -74,9 +77,11 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
         JsonElement element = initElement("element.json");
         initPlugins(true);
 
-        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
+        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
+            events.add(new NotificationActionEvent(element, gson.toJsonTree("CREATE"),
+                                                     AbstractRequestEvent.generateRequestId(),
+                                                     "NotificationPerfIT"));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database

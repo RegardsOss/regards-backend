@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 
 /**
@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 @Component
 @Profile("!nohandler")
 public class NotificationActionEventHandler
-        implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+        implements IBatchHandler<NotificationActionEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationActionEventHandler.class);
@@ -58,22 +58,22 @@ public class NotificationActionEventHandler
     private INotificationRuleService notificationService;
 
     @Override
-    public Class<NotificationRequestEvent> getMType() {
-        return NotificationRequestEvent.class;
+    public Class<NotificationActionEvent> getMType() {
+        return NotificationActionEvent.class;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(NotificationRequestEvent.class, this);
+        subscriber.subscribeTo(NotificationActionEvent.class, this);
     }
 
     @Override
-    public boolean validate(String tenant, NotificationRequestEvent message) {
+    public boolean validate(String tenant, NotificationActionEvent message) {
         return true;
     }
 
     @Override
-    public void handleBatch(String tenant, List<NotificationRequestEvent> messages) {
+    public void handleBatch(String tenant, List<NotificationActionEvent> messages) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
             notificationService.registerNotifications(messages);

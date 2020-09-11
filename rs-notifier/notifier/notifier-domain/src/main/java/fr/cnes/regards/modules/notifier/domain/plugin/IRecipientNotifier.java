@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 
 /**
  * Describe action for Recipient
@@ -32,9 +32,10 @@ public interface IRecipientNotifier {
 
     /**
      *
-     * @param toSend {@link NotificationAction} to send
+     * @param toSend {@link NotificationRequest} to send
      * @return true if succed, false otherwise
      */
-    boolean send(NotificationAction toSend);
+    //FIXME see if we can send multiple notification at same time
+    boolean send(NotificationRequest toSend);
 
 }

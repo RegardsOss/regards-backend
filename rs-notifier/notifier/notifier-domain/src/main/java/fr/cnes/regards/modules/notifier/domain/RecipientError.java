@@ -55,7 +55,7 @@ public class RecipientError {
     @NotNull(message = "Ntofication is required")
     @JoinColumn(name = "notification_action_id", nullable = false,
             foreignKey = @ForeignKey(name = "fk_notification_action_id"))
-    private NotificationAction notification;
+    private NotificationRequest notification;
 
     @ManyToOne
     @NotNull(message = "Job info is required")
@@ -82,16 +82,16 @@ public class RecipientError {
         this.job = job;
     }
 
-    public NotificationAction getNotification() {
+    public NotificationRequest getNotification() {
         return notification;
     }
 
-    public void setNotification(NotificationAction notification) {
+    public void setNotification(NotificationRequest notification) {
         this.notification = notification;
     }
 
     public static RecipientError build(PluginConfiguration recipient, JobInfo jobInfo,
-            NotificationAction notification) {
+            NotificationRequest notification) {
         RecipientError error = new RecipientError();
         error.setJob(jobInfo);
         error.setRecipient(recipient);

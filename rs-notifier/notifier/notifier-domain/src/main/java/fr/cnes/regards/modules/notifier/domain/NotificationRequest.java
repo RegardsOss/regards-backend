@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,12 +27,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 
 import com.google.gson.JsonElement;
-
-import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Entity to store notification action
@@ -42,13 +40,16 @@ import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
  *
  */
 @Entity
-@Table(name = "t_notification_action")
-public class NotificationAction {
+@Table(name = "t_notification_request")
+public class NotificationRequest {
 
     @Id
     @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "seq_notification_action")
     @GeneratedValue(generator = "notificationSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
+
+    @Column(name = "request_id")
+    private String requestId;
 
     @Column(columnDefinition = "jsonb", name = "payload", nullable = false)
     @Type(type = "jsonb")
@@ -59,12 +60,24 @@ public class NotificationAction {
     private JsonElement metadata;
 
     /** creation date of the instance */
-    @Column(name = "action_date", nullable = false)
-    private OffsetDateTime actionDate;
+    @Column(name = "request_date", nullable = false)
+    private OffsetDateTime requestDate;
 
     @Column(name = "state", nullable = false)
     @Enumerated(EnumType.STRING)
     private NotificationState state;
+
+    public NotificationRequest(JsonElement payload, JsonElement metadata, String requestId, OffsetDateTime requestDate,
+            NotificationState state) {
+        this.payload = payload;
+        this.requestDate = requestDate;
+        this.metadata = metadata;
+        this.state = state;
+        this.requestId = requestId;
+    }
+
+    public NotificationRequest() {
+    }
 
     public JsonElement getPayload() {
         return payload;
@@ -82,16 +95,20 @@ public class NotificationAction {
         this.metadata = metadata;
     }
 
-    public OffsetDateTime getActionDate() {
-        return actionDate;
+    public OffsetDateTime getRequestDate() {
+        return requestDate;
     }
 
-    public void setActionDate(OffsetDateTime actionDate) {
-        this.actionDate = actionDate;
+    public void setRequestDate(OffsetDateTime requestDate) {
+        this.requestDate = requestDate;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public NotificationState getState() {
@@ -102,13 +119,11 @@ public class NotificationAction {
         this.state = state;
     }
 
-    public static NotificationAction build(JsonElement element, JsonElement action, NotificationState state) {
-        NotificationAction toCreate = new NotificationAction();
-        toCreate.setMetadata(action);
-        toCreate.setPayload(element);
-        toCreate.setActionDate(OffsetDateTime.now());
-        toCreate.setState(state);
+    public String getRequestId() {
+        return requestId;
+    }
 
-        return toCreate;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 }

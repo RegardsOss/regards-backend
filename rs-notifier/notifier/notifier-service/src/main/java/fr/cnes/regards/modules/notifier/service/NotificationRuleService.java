@@ -42,7 +42,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -58,13 +58,15 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotifRequestId;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
-import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.service.cache.AbstractCacheableRule;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
@@ -107,19 +109,19 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Autowired
+    private IPublisher publisher;
+
     /**
-     * Handle a {@link NotificationAction} and check if it matches with enabled {@link Rule} in that case
+     * Handle a {@link NotificationRequest} and check if it matches with enabled {@link Rule} in that case
      * send a notification to Recipient
-     * @param notification {@link NotificationAction} to handle
-     * @param notificationsInErrors list of {@link NotificationAction} where a Recipient fail
+     * @param notification {@link NotificationRequest} to handle
+     * @param notificationsInErrors list of {@link NotificationRequest} where a Recipient fail
      * @return number of notification sended
-     * @throws NotAvailablePluginConfigurationException
-     * @throws ModuleException
-     * @throws ExecutionException
+     * @throws ExecutionException in case issue occurs with rules cache
      */
-    private int handleNotificationRequest(NotificationAction notification,
-            ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors)
-            throws ExecutionException, ModuleException, NotAvailablePluginConfigurationException {
+    private int handleNotificationRequest(NotificationRequest notification,
+            ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors) throws ExecutionException {
         int notificationNumber = 0;
         for (Rule rule : getRules()) {
             try {
@@ -129,16 +131,20 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
                     for (PluginConfiguration recipient : rule.getRecipients()) {
                         if (notifyRecipient(notification, recipient)) {
+                            publisher
+                                    .publish(new NotifierEvent(notification.getRequestId(), NotificationState.SUCCESS));
                             notificationNumber++;
                         } else {
+                            publisher.publish(new NotifierEvent(notification.getRequestId(), NotificationState.ERROR));
                             notification.setState(NotificationState.ERROR);
                             notificationsInErrors.put(notification, recipient);
                         }
                     }
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                LOGGER.error("Error while get plugin with id {}", rule.getRulePlugin().getId(), e);
-                throw e;
+                // exception from rule plugin instantiation
+                LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getId()), e);
+                publisher.publish(new NotifierEvent(notification.getRequestId(), NotificationState.ERROR));
             }
         }
         return notificationNumber;
@@ -147,47 +153,51 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     /**
      * Notify a recipient return false if a problem occurs
      * @param notification {@link JsonElement} about to notify
-     * @param recipient Recipient of the notification
-     * @return
+     * @param recipientConfiguration Recipient of the notification
+     * @return whether notification could be sent
      */
-    private boolean notifyRecipient(NotificationAction notification, PluginConfiguration recipient) {
+    private boolean notifyRecipient(NotificationRequest notification, PluginConfiguration recipientConfiguration) {
         try {
-            // check that all send method of recipiens return true
-            return ((IRecipientNotifier) this.pluginService.getPlugin(recipient.getBusinessId())).send(notification);
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            LOGGER.error("Error while sending notification to receiver ", e);
+            // check that all send method of recipient return true
+            return ((IRecipientNotifier) this.pluginService.getPlugin(recipientConfiguration.getBusinessId()))
+                    .send(notification);
+        } catch (Exception e) {
+            LOGGER.error("Error while sending notification to receiver", e);
             return false;
         }
     }
 
     @Override
-    public Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId) {
+    public Pair<Integer, Integer> processRequest(List<NotificationRequest> toHandles, UUID jobInfoId) {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("------------->>> Reception of {} notification  event, start of notification process {} ms",
-                     toHandles.size(), startTime);
+                     toHandles.size(),
+                     startTime);
         int nbSend = 0;
-        int nbError = 0;
+        int nbError;
         long averageNotificationTreatmentTime = 0;
-        long startNotificationTreatmentTime = 0;
+        long startNotificationTreatmentTime;
 
         //get RecipientRrror for jobInfoId if exists
         List<RecipientError> recipientErrors = this.recipientErrorRepo.findByJobId(jobInfoId);
 
         // if empty we send notifications according rules
         if (recipientErrors.isEmpty()) {
-            ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors = ArrayListMultimap.create();
+            ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors = ArrayListMultimap.create();
 
-            for (NotificationAction notification : toHandles) {
+            for (NotificationRequest notification : toHandles) {
                 startNotificationTreatmentTime = System.currentTimeMillis();
                 try {
                     nbSend += handleNotificationRequest(notification, notificationsInErrors);
-                } catch (ExecutionException | ModuleException | NotAvailablePluginConfigurationException e) {
+                } catch (ExecutionException e) {
                     LOGGER.error("Error during notification", e);
                 }
                 averageNotificationTreatmentTime += System.currentTimeMillis() - startNotificationTreatmentTime;
             }
             LOGGER.debug("------------->>> End of notification process in {} ms, {} notifications sended"
-                    + " with a average treatment time of {} ms", System.currentTimeMillis() - startTime, nbSend,
+                                 + " with a average treatment time of {} ms",
+                         System.currentTimeMillis() - startTime,
+                         nbSend,
                          averageNotificationTreatmentTime / (nbSend == 0 ? 1 : nbSend));
             // delete all Notification not in the list in errors
             toHandles.removeAll(notificationsInErrors.keySet());
@@ -211,7 +221,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      */
     private int resendNotification(List<RecipientError> recipientErrors) {
         int nbSend = 0;
-        List<RecipientError> succededRecipient = new ArrayList<RecipientError>();
+        List<RecipientError> succededRecipient = new ArrayList<>();
         for (RecipientError error : recipientErrors) {
 
             if (notifyRecipient(error.getNotification(), error.getRecipient())) {
@@ -227,19 +237,18 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
     /**
      * Create and save {@link RecipientError} from Recipient
-     * @param notificationsInErrors Map of failed {@link NotificationAction}=>Recipient
+     * @param notificationsInErrors Map of failed {@link NotificationRequest}=>Recipient
      * @param jobInfo current {@link JobInfo}
      */
-    private void saveRecipientErrors(ListMultimap<NotificationAction, PluginConfiguration> notificationsInErrors,
+    private void saveRecipientErrors(ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors,
             JobInfo jobInfo) {
-        this.recipientErrorRepo.saveAll(notificationsInErrors.entries().stream()
-                .map(entry -> RecipientError.build(entry.getValue(), jobInfo, entry.getKey()))
-                .collect(Collectors.toList()));
+        this.recipientErrorRepo.saveAll(notificationsInErrors.entries().stream().map(entry -> RecipientError
+                .build(entry.getValue(), jobInfo, entry.getKey())).collect(Collectors.toList()));
     }
 
     @Override
-    public void registerNotifications(List<NotificationRequestEvent> events) {
-        Set<NotificationAction> notificationToRegister = events.stream().map(event -> initNotificationRequest(event))
+    public void registerNotifications(List<NotificationActionEvent> events) {
+        Set<NotificationRequest> notificationToRegister = events.stream().map(this::initNotificationRequest)
                 .collect(Collectors.toSet());
         notificationToRegister.remove(null);
         this.notificationActionRepo.saveAll(notificationToRegister);
@@ -248,18 +257,25 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
     /**
      * Check if a notification event is valid and create a request publish an error otherwise
-     * @param event
-     * @return a implemented {@link NotificationAction} or null if invalid
+     * @return a implemented {@link NotificationRequest} or null if invalid
      */
-    private NotificationAction initNotificationRequest(NotificationRequestEvent event) {
-        Errors errors = new MapBindingResult(new HashMap<>(), NotificationRequestEvent.class.getName());
+    private NotificationRequest initNotificationRequest(NotificationActionEvent event) {
+        Errors errors = new MapBindingResult(new HashMap<>(), NotificationActionEvent.class.getName());
         this.validator.validate(event, errors);
 
         if (!errors.hasErrors()) {
-            return NotificationAction.build(event.getPayload(), event.getMetadata(), NotificationState.DELAYED);
+            publisher.publish(new NotifierEvent(event.getRequestId(), NotificationState.GRANTED));
+            return new NotificationRequest(event.getPayload(),
+                                           event.getMetadata(),
+                                           event.getRequestId(),
+                                           event.getRequestDate(),
+                                           NotificationState.GRANTED);
         }
-        this.notificationClient.notify(errors.toString(), "A NotificationActionEvent received is invalid",
-                                       NotificationLevel.ERROR, DefaultRole.ADMIN);
+        this.notificationClient.notify(errors.toString(),
+                                       "A NotificationActionEvent received is invalid",
+                                       NotificationLevel.ERROR,
+                                       DefaultRole.ADMIN);
+        publisher.publish(new NotifierEvent(event.getRequestId(), NotificationState.DENIED));
         return null;
     }
 
@@ -267,8 +283,11 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     public int scheduleRequests() {
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        List<Long> requestIds = this.notificationActionRepo
-                .findIdToSchedule(PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("actionDate"))));
+        List<Long> requestIds = this.notificationActionRepo.findByState(NotificationState.GRANTED,
+                                                                        PageRequest.of(0,
+                                                                                       properties.getMaxBulkSize(),
+                                                                                       Sort.by(Order.asc("requestDate"))))
+                .getContent().stream().map(NotifRequestId::getId).collect(Collectors.toList());
         long scheduleStart = System.currentTimeMillis();
 
         if (!requestIds.isEmpty()) {
@@ -276,11 +295,15 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
 
             this.notificationActionRepo.updateState(NotificationState.SCHEDULED, requestIds);
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false, 0, jobParameters, authResolver.getUser(),
-                    NotificationJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false,
+                                          0,
+                                          jobParameters,
+                                          authResolver.getUser(),
+                                          NotificationJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.debug("------------->>> {} notifications scheduled in {} ms", requestIds.size(),
+            LOGGER.debug("------------->>> {} notifications scheduled in {} ms",
+                         requestIds.size(),
                          System.currentTimeMillis() - scheduleStart);
         }
         return requestIds.size();

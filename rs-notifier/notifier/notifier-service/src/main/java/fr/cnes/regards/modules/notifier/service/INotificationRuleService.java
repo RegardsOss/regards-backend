@@ -23,10 +23,10 @@ import java.util.UUID;
 
 import org.springframework.data.util.Pair;
 
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Notification service interface
@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 public interface INotificationRuleService {
 
     /**
-     * Handle a list of {@link NotificationAction} it can be CREATE/UPDATE/DELETE event
+     * Handle a list of {@link NotificationRequest} it can be CREATE/UPDATE/DELETE event
      * Check if this event is compliant with a {@link Rule} and in that case notify all {@link Recipient} associated
      * with this {@link Rule}
      * If some {@link Recipient} failed we will save them
@@ -45,15 +45,15 @@ public interface INotificationRuleService {
      * @param jobInfoId job id will be saved in case of failed {@link Recipient}
      * @return pair of nbSended/nbErrors notifications
      */
-    Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId);
+    Pair<Integer, Integer> processRequest(List<NotificationRequest> toHandles, UUID jobInfoId);
 
     /**
-     * Register {@link NotificationRequestEvent} to schedule notifications
+     * Register {@link NotificationActionEvent} to schedule notifications
      */
-    void registerNotifications(List<NotificationRequestEvent> events);
+    void registerNotifications(List<NotificationActionEvent> events);
 
     /**
-     * Schedule a job to process a batch of {@link NotificationAction}<br/>
+     * Schedule a job to process a batch of {@link NotificationRequest}<br/>
      * @return number of scheduled notification (0 if no request was scheduled)
      */
     int scheduleRequests();

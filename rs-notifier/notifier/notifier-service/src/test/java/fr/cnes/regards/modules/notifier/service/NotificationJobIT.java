@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.RecipientError;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 
 /**
  * Test notification job restart after recipient failure
@@ -50,7 +51,7 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
     /**
      * Test notification job restart after {@link Recipient} fail
      * After the job fail we will restart ir then the {@link Recipient} should work
-     * All {@link RecipientError} and {@link NotificationAction} must be deleted
+     * All {@link RecipientError} and {@link NotificationRequest} must be deleted
      * @throws InterruptedException
      * @throws ModuleException
      */
@@ -61,22 +62,24 @@ public class NotificationJobIT extends AbstractNotificationMultitenantServiceTes
 
         initPlugins(true);
 
-        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
+        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(NotificationRequestEvent.build(element, gson.toJsonTree("CREATE")));
+            events.add(new NotificationActionEvent(element, gson.toJsonTree("CREATE"),
+                                                     AbstractRequestEvent.generateRequestId(),
+                                                     "NotificationPerfIT"));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
         waitDatabaseCreation(this.notificationRepo, configuration.getMaxBulkSize(), 60);
         this.notificationService.scheduleRequests();
-        // we will wait util configuration.getMaxBulkSize() recipient errors are stored in database
+        // we will wait until configuration.getMaxBulkSize() recipient errors are stored in database
         // cause one of the RECIPIENTS_PER_RULE will fail so we will get 1 error per NotificationAction to send
         waitDatabaseCreation(this.recipientErrorRepo, configuration.getMaxBulkSize(), 60);
         // waiting for job end
         Thread.sleep(5000);
         JobInfo failJob = this.jobInforepo.findAll().iterator().next();
         failJob.updateStatus(JobStatus.QUEUED);
-        // this static variable will make succed/fail recipient plugin according it value
+        // this static variable will make recipient plugin succeed/fail according it value
         RECIPIENT_FAIL = false;
         this.jobInforepo.save(failJob);
         waitDatabaseCreation(this.recipientErrorRepo, 0, 60);

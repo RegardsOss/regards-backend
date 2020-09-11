@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.notifier.domain.plugin;
 import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent10;
 import fr.cnes.regards.modules.notifier.service.NotificationJobIT;
 
@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.notifier.service.NotificationJobIT;
 public class RecipientSenderFail extends AbstractRecipientSender<NotificationEvent10> {
 
     @Override
-    public boolean send(NotificationAction toSend) {
+    public boolean send(NotificationRequest toSend) {
         return !NotificationJobIT.RECIPIENT_FAIL;
     }
 

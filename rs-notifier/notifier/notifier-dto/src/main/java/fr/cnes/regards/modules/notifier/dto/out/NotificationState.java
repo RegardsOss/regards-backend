@@ -16,20 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.notifier.domain.state;
-
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+package fr.cnes.regards.modules.notifier.dto.out;
 
 /**
- * States of a {@link NotificationAction}
  * @author kevin
  *
  */
 public enum NotificationState {
+    /**
+     * Denied and not registered.
+     */
+    DENIED,
+    /** Accepted and registered. Waiting for job*/
+    GRANTED,
     /** Scheduled by a job*/
     SCHEDULED,
-    /** Waiting for job*/
-    DELAYED,
+    /**
+     * Successfully sent
+     */
+    SUCCESS,
     /** Failed during a job*/
     ERROR
 }

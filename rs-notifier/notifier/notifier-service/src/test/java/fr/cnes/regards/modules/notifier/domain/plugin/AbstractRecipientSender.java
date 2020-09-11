@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 
 /**
  * @author Marc SORDI
@@ -46,7 +46,7 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
     abstract E buildEvent(JsonElement element, JsonElement action);
 
     @Override
-    public boolean send(NotificationAction toSend) {
+    public boolean send(NotificationRequest toSend) {
         this.publisher.publish(buildEvent(toSend.getPayload(), toSend.getMetadata()));
         return true;
     }

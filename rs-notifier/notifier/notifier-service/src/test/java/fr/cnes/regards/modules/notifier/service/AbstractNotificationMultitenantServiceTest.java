@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
@@ -247,10 +247,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         }
     }
 
-    protected NotificationRequestEvent getEvent(String name) {
+    protected NotificationActionEvent getEvent(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
                 Reader reader = new InputStreamReader(input)) {
-            return gson.fromJson(CharStreams.toString(reader), NotificationRequestEvent.class);
+            return gson.fromJson(CharStreams.toString(reader), NotificationActionEvent.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import event";
             LOGGER.debug(errorMessage);
@@ -260,7 +260,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     @After
     public void after() {
-        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
+        subscriber.unsubscribeFrom(NotificationActionEvent.class);
         cleanAMQPQueues(NotificationActionEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender2.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender3.class, Target.ONE_PER_MICROSERVICE_TYPE);

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.notifier.service.plugin;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
@@ -38,7 +38,7 @@ public class RecipientSenderTestFail extends RabbitMQSender implements IRecipien
     private boolean fail;
 
     @Override
-    public boolean send(NotificationAction toSend) {
+    public boolean send(NotificationRequest toSend) {
         if (fail) {
             return false;
         }

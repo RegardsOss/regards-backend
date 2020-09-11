@@ -50,6 +50,7 @@ public abstract class AbstractCacheableRule {
      * Rule cache is used to avoid useless database request as models rarely change!<br/>
      * tenant key -> model key / attributes val
      */
+    // TODO cache seems to be broken... or javadoc is fucked up...
     private final Map<String, LoadingCache<String, Set<Rule>>> ruleCacheMap = new ConcurrentHashMap<>();
 
     /**
@@ -61,7 +62,7 @@ public abstract class AbstractCacheableRule {
     protected Set<Rule> getRules() throws ExecutionException {
         String tenant = runtimeTenantResolver.getTenant();
         LoadingCache<String, Set<Rule>> ruleCache = ruleCacheMap.get(tenant);
-        if (ruleCacheMap.get(tenant) == null) {
+        if (ruleCache == null) {
             ruleCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Set<Rule>>() {
 
                 @Override
@@ -73,7 +74,7 @@ public abstract class AbstractCacheableRule {
             ruleCacheMap.put(tenant, ruleCache);
 
         }
-        return ruleCacheMap.get(tenant).get(tenant);
+        return ruleCache.get(tenant);
     }
 
     /**

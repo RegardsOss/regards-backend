@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
@@ -60,7 +60,7 @@ public class RabbitMQSender implements IRecipientNotifier {
     private String queueName;
 
     @Override
-    public boolean send(NotificationAction toSend) {
+    public boolean send(NotificationRequest toSend) {
         this.publisher.broadcast(exchange,
                                  Optional.ofNullable(queueName),
                                  0,
@@ -76,7 +76,7 @@ public class RabbitMQSender implements IRecipientNotifier {
 
         private JsonElement metadata;
 
-        public NotificationEvent(NotificationAction request) {
+        public NotificationEvent(NotificationRequest request) {
             this.payload = request.getPayload();
             this.metadata = request.getMetadata();
         }

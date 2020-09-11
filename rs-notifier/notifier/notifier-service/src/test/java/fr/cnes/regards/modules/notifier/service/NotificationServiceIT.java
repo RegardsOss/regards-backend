@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import static org.junit.Assert.assertEquals;
-
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,24 +31,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.state.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent10;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent2;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent3;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent4;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent5;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent6;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent7;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent8;
-import fr.cnes.regards.modules.notifier.dto.NotificationEvent9;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
@@ -59,15 +48,27 @@ import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender6;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender7;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender8;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender9;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent10;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent2;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent3;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent4;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent5;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent6;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent7;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent8;
+import fr.cnes.regards.modules.notifier.dto.NotificationEvent9;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test class for service {@link NotificationRuleService}
  * @author kevin
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification",
-        "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-        "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=notification", "regards.amqp.enabled=true",
+                "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+                "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class NotificationServiceIT extends AbstractNotificationMultitenantServiceTest {
 
@@ -113,11 +114,15 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
         initPlugins(false);
 
-        List<NotificationAction> events = new ArrayList<>();
+        List<NotificationRequest> events = new ArrayList<>();
         int bulk = 0;
         for (int i = 0; i < EVENT_TO_RECEIVE; i++) {
             bulk++;
-            events.add(NotificationAction.build(element, gson.toJsonTree("CREATE"), NotificationState.DELAYED));
+            events.add(new NotificationRequest(element,
+                                               gson.toJsonTree("CREATE"),
+                                               AbstractRequestEvent.generateRequestId(),
+                                               OffsetDateTime.now(),
+                                               NotificationState.GRANTED));
             if (bulk == EVENT_BULK) {
                 bulk = 0;
                 assertEquals(EVENT_BULK * RECIPIENTS_PER_RULE,
@@ -148,9 +153,13 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
         initPlugins(true);
 
-        List<NotificationAction> events = new ArrayList<>();
+        List<NotificationRequest> events = new ArrayList<>();
         for (int i = 0; i < EVENT_TO_RECEIVE; i++) {
-            events.add(NotificationAction.build(modifiedElement, gson.toJsonTree("CREATE"), NotificationState.DELAYED));
+            events.add(new NotificationRequest(modifiedElement,
+                                               gson.toJsonTree("CREATE"),
+                                               AbstractRequestEvent.generateRequestId(),
+                                               OffsetDateTime.now(),
+                                               NotificationState.GRANTED));
         }
 
         Pair<Integer, Integer> results = this.notificationService.processRequest(events, job.getId());

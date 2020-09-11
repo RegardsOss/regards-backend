@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 
@@ -47,7 +47,7 @@ public class NotificationJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
-    private List<NotificationAction> notificationRequests;
+    private List<NotificationRequest> notificationRequests;
 
     @Autowired
     private INotificationActionRepository notificationActionRepo;
