@@ -42,20 +42,23 @@
             <artifactId>gson-regards-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>multitenant-regards-starter</artifactId>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
         </dependency>
         <!-- Tests dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.8.1</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

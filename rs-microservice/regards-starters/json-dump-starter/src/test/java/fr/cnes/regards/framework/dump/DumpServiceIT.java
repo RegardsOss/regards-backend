@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.dump;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static fr.cnes.regards.framework.dump.TestUtils.checkZipCreation;
 import static fr.cnes.regards.framework.dump.TestUtils.readZipEntryNames;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
 /**
@@ -50,11 +52,14 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ComponentScan(basePackages = { "fr.cnes.regards.framework" })
 @EnableAutoConfiguration
-@TestPropertySource(properties = { "spring.application.name=test", "regards.json.dump.max.per.sub.zip=4" })
+@TestPropertySource(properties = { "spring.application.name=test", "regards.json.dump.max.per.sub.zip=4", "regards.dump.location=target/dump" })
 public class DumpServiceIT {
 
     @Autowired
     private DumpService dumpService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Value("${regards.json.dump.max.per.sub.zip}")
     private int maxFilesPerSubZip;
@@ -85,11 +90,12 @@ public class DumpServiceIT {
         ArrayList<ObjectDump> zipCollection;
         for (int i = 0; i < nbZips; i++) {
             zipCollection = TestData.buildJsonCollection(this.maxFilesPerSubZip);
-            dumpService.generateJsonZip(zipCollection, tmpDumpLocation);
+            dumpService.generateJsonZip(zipCollection, Paths.get(tmpDumpLocation));
         }
         // Generate Dump
         OffsetDateTime creationDate = OffsetDateTime.now();
-        dumpService.generateDump(dumpLocation, tmpDumpLocation, creationDate);
+        runtimeTenantResolver.forceTenant("TOTO");
+        dumpService.generateDump(Paths.get(tmpDumpLocation), creationDate);
 
         // ----------------------------------- CHECK RESULTS -----------------------------------
         // check if tmpFolder and dumpFolder were created
@@ -147,7 +153,7 @@ public class DumpServiceIT {
             }
         }
         // launch test
-        dumpService.generateJsonZip(zipCollection, tmpDumpLocation);
+        dumpService.generateJsonZip(zipCollection, Paths.get(tmpDumpLocation));
 
         // ----------------------------------- CHECK RESULTS -----------------------------------
         // check if destination folder was created
@@ -170,7 +176,7 @@ public class DumpServiceIT {
         int numOfJson = 11;
         ArrayList<ObjectDump> dumpCollection = TestData.buildDuplicatedJsonCollection(numOfJson);
         // launch test
-        List<String> duplicatedDumps = dumpService.checkUniqueJsonNames(dumpCollection);
+        List<ObjectDump> duplicatedDumps = dumpService.checkUniqueJsonNames(dumpCollection);
         // check that all dumps are in error
         Assert.assertEquals(numOfJson, duplicatedDumps.size());
     }
