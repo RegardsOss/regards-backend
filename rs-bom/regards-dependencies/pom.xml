@@ -71,6 +71,7 @@
 		<encryption.starter.version>${regards.version}</encryption.starter.version>
 		<metric.starter.version>${regards.version}</metric.starter.version>
 		<random.starter.version>${regards.version}</random.starter.version>
+		<dump.starter.version>${regards.version}</dump.starter.version>
 
         <!-- Bootstrap -->
 		<config.bootstrap.version>${regards.version}</config.bootstrap.version>
@@ -327,6 +328,11 @@
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>json-random-starter</artifactId>
 				<version>${random.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>json-dump-starter</artifactId>
+				<version>${dump.starter.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
