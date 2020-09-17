@@ -21,7 +21,7 @@ public class XFrameOptionsHeaderWriterDefault implements HeaderWriter {
 
     @Override
     public void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
-        if (Strings.isNullOrEmpty(response.getHeader(HttpHeaders.X_FRAME_OPTIONS))) {
+        if ((response != null) && Strings.isNullOrEmpty(response.getHeader(HttpHeaders.X_FRAME_OPTIONS))) {
             response.setHeader(HttpHeaders.X_FRAME_OPTIONS, DEFAULT_VALUE);
         }
     }
