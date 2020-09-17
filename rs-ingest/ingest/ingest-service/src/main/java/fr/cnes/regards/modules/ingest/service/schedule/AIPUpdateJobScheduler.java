@@ -35,7 +35,6 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
  */
 @Profile("!noscheduler")
 @Component
-@MultitenantTransactional
 public class AIPUpdateJobScheduler {
 
     @Autowired

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -26,13 +26,13 @@ import org.springframework.stereotype.Repository;
 import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
 
 /**
- * {@link LastDump} repository
+ * JPA repository to access {@link LastDump}
  * @author Iliana Ghazali
  */
 @Repository
 public interface IAIPDumpMetadataRepositoryRefactor extends JpaRepository<LastDump, Long> {
 
-    OffsetDateTime findLastDumpDate();
+    Optional<LastDump> findById(Long id);
 
 }
 

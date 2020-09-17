@@ -43,4 +43,6 @@ public class RequestTypeConstant {
     public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";
 
     public static final String AIP_POST_PROCESS_VALUE = "AIP_POST_PROCESS";
+
+    public static final String AIP_SAVE_METADATA_VALUE = "AIP_SAVE_METADATA";
 }

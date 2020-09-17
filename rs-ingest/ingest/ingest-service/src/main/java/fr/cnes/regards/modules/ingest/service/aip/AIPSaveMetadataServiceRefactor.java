@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +32,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRepositoryRefactor;
+import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepositoryRefactor;
+import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJobRefactor;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 
@@ -49,10 +51,10 @@ public class AIPSaveMetadataServiceRefactor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetadataServiceRefactor.class);
 
     @Autowired
-    private IAIPSaveMetadataRepositoryRefactor aipSaveMetadataRepositoryRefactor;
+    private IAIPSaveMetadataRequestRepositoryRefactor requestMetadataRepository;
 
     @Autowired
-    private IAIPDumpMetadataRepositoryRefactor aipDumpMetadataRepositoryRefactor;
+    private IAIPDumpMetadataRepositoryRefactor dumpRepository;
 
     @Autowired
     private JobInfoService jobInfoService;
@@ -60,16 +62,26 @@ public class AIPSaveMetadataServiceRefactor {
     /**
      * Schedule Jobs
      */
-    public void scheduleJobs() {
+    public JobInfo scheduleJobs() {
         LOGGER.trace("[SAVE METADATA SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
 
+        // Find last dump date
+        Optional<LastDump> lastDumpOpt = dumpRepository.findById(LastDump.LAST_DUMP_DATE_ID);
+        OffsetDateTime lastDumpReqDate = null;
+        LastDump lastDump = new LastDump();
+        if (lastDumpOpt.isPresent()) {
+            lastDump = lastDumpOpt.get();
+            lastDumpReqDate = lastDump.getLastDumpReqDate();
+        }
+        // update lastDumpReqDate
+        lastDump.setLastDumpReqDate(OffsetDateTime.now());
+        dumpRepository.save(lastDump);
+
         // Create request
-        // find last dump date and create request
-        OffsetDateTime lastDumpDate = aipDumpMetadataRepositoryRefactor.findLastDumpDate();
-        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(lastDumpDate);
+        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(lastDumpReqDate);
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
-        aipSaveMetadataRepositoryRefactor.save(aipSaveMetadataRequest);
+        requestMetadataRepository.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
@@ -79,7 +91,6 @@ public class AIPSaveMetadataServiceRefactor {
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
                      System.currentTimeMillis() - start);
-
+        return jobInfo;
     }
-
 }

@@ -18,23 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 
 /**
  * {@link LastDump} repository
  * @author Iliana Ghazali
  */
 @Repository
-public interface IAIPSaveMetadataRepositoryRefactor extends JpaRepository<AIPSaveMetadataRequestRefactor, Long> {
+public interface IAIPSaveMetadataRequestRepositoryRefactor extends JpaRepository<AIPSaveMetadataRequestRefactor, Long> {
 
 }
 

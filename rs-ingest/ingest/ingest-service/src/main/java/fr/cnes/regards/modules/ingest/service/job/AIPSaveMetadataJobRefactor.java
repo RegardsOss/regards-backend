@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
 
 /**
@@ -44,7 +44,7 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
     private AIPSaveMetadataRequestRefactor request;
 
     @Autowired
-    private IAIPMetadataServiceRefactor aipMetadataServiceRefactor;
+    private IAIPMetadataServiceRefactor metadataService;
 
     @Override
     public boolean needWorkspace() {
@@ -55,26 +55,31 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
-        Type type = new TypeToken<List<Long>>() {
+        Type type = new TypeToken<AIPSaveMetadataRequestRefactor>() {
 
         }.getType();
         this.request = getValue(parameters, SAVE_METADATA_REQUEST, type);
     }
 
+
     @Override
     public void run() {
         logger.debug("[AIP SAVE METADATA JOB] Running job for 1 AIPSaveMetaDataRequest request");
         long start = System.currentTimeMillis();
-        aipMetadataServiceRefactor.writeZips(request, getWorkspace());
         try {
-            aipMetadataServiceRefactor.writeDump(request, getWorkspace());
+            metadataService.writeZips(request, getWorkspace());
+            metadataService.writeDump(request, getWorkspace());
+            metadataService.handleSuccess(request);
         } catch (RsRuntimeException e) {
-            aipMetadataServiceRefactor.handleError(request, e.getMessage());
+            logger.error(e.getMessage());
+            metadataService.handleError(request, e.getMessage());
             throw e;
+        } catch (NothingToDoException e) {
+            logger.info("[AIP SAVE METADATA JOB] " + e.getMessage());
+            metadataService.handleSuccess(request); // request is in success, even if nothing was dumped
         }
         logger.debug("[AIP SAVE META JOB] Job handled for 1 AIPSaveMetaDataRequest request in {}ms",
                      System.currentTimeMillis() - start);
-
         // there is only one request per job so interruption can be ignored i.e this job(i.e. request) will be fully handled.
     }
 

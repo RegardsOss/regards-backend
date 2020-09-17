@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.request;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -116,11 +118,12 @@ public abstract class AbstractRequest {
     public AbstractRequest() {
     }
 
-    public AbstractRequest(String sessionOwner, String session, String providerId) {
+    public AbstractRequest(String sessionOwner, String session, String providerId, String dtype) {
         this.creationDate = OffsetDateTime.now();
         this.sessionOwner = sessionOwner;
         this.session = session;
         this.providerId = providerId;
+        this.dtype = dtype;
         this.state = InternalRequestState.TO_SCHEDULE;
     }
 

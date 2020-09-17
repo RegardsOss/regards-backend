@@ -456,6 +456,9 @@ public class RequestService implements IRequestService {
             case RequestTypeConstant.INGEST_VALUE:
                 // Ingest cannot be blocked
                 return false;
+            case RequestTypeConstant.AIP_SAVE_METADATA_VALUE:
+                // Save metadata cannot be blocked
+                return false;
             default:
                 throw new IllegalArgumentException(String
                         .format("You should not use this method for requests having [%s] type", request.getDtype()));

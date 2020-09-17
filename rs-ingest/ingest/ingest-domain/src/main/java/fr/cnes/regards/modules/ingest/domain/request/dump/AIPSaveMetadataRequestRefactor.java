@@ -16,13 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request.manifest;
+package fr.cnes.regards.modules.ingest.domain.request.dump;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
@@ -30,25 +29,29 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
  * Storing info that a metadata should be saved on storage
  * @author Iliana Ghazali
  */
-@Entity(name = RequestTypeConstant.STORE_METADATA_VALUE)
+@Entity
+@DiscriminatorValue(RequestTypeConstant.AIP_SAVE_METADATA_VALUE)
 public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
 
-    @NotNull(message = "Last dump date")
-    @Column(name = "last_dump_date")
-    private OffsetDateTime lastDumpDate;
+    @Column(name = "previous_dump_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime previousDumpDate;
 
-    public AIPSaveMetadataRequestRefactor(OffsetDateTime lastDumpDate) {
+    public AIPSaveMetadataRequestRefactor(OffsetDateTime previousDumpDate) {
         // session information are specific to AIP subset defined by users, the same goes for session owner. ProviderId is aip specific.
         // AIPSaveMetadataRequests are not related to sessions but subset AIPs only by date
-        super(null, null, null);
-        this.lastDumpDate = lastDumpDate;
+        super(null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE);
+        this.previousDumpDate = previousDumpDate;
     }
 
-    public OffsetDateTime getLastDumpDate() {
-        return lastDumpDate;
+    public AIPSaveMetadataRequestRefactor() {
     }
 
-    public void setLastDumpDate(OffsetDateTime lastDumpDate) {
-        this.lastDumpDate = lastDumpDate;
+    public OffsetDateTime getPreviousDumpDate() {
+        return previousDumpDate;
+    }
+
+    public void setPreviousDumpDate(OffsetDateTime previousDumpDate) {
+        this.previousDumpDate = previousDumpDate;
     }
 }

@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.ingest.service.job.OAISDeletionsCreatorJob;
  */
 @Profile("!noscheduler")
 @Component
-@MultitenantTransactional
 public class OAISDeletionJobScheduler {
 
     @Autowired

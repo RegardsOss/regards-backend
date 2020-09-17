@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 
 /**
  * Manage AIP dumps
@@ -34,26 +36,27 @@ import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataReq
  */
 public interface IAIPMetadataServiceRefactor {
 
+    /** Write zip in workspace  */
+    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace)
+            throws NothingToDoException;
+
+    /** Create zip of zips in workspace (dump) */
+    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
+
     /**
      * Get set of aips to zip and zip their content in workspace
      * @return next pageable if exist null otherwise
      * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
     Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
-            Path workspace) throws IOException, DuplicateUniqueNameException;
+            Path workspace) throws IOException, DuplicateUniqueNameException, NothingToDoException;
 
-
-    /** Write zip in workspace  */
-    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
-
-    /** Create zip of zips in workspace (dump) */
-    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
+    /** Reset last dump date */
+    void resetLastUpdateDate();
 
     /** Handle request in error and notify client */
     void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, String errorMessage);
 
     /** Handle request in success */
     void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
-
-
 }

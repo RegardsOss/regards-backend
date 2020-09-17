@@ -20,11 +20,8 @@
 
 package fr.cnes.regards.modules.ingest.domain.dump;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 /**
  *
@@ -34,11 +31,28 @@ import java.util.List;
 @Table(name = "t_dump")
 public class LastDump {
 
-    @Column(name = "last_dump", nullable = false)
-    private OffsetDateTime lastDumpDate;
+    // lastDumpDate to be updated when a dump is created
+    public static final long LAST_DUMP_DATE_ID = 0;
 
-    public OffsetDateTime getLastDumpDate() {
-        return lastDumpDate;
+    @Id
+    private long id;
+
+    @Column(name = "last_dump_req_date", nullable = false)
+    private OffsetDateTime lastDumpReqDate;
+
+    public LastDump(OffsetDateTime lastDumpReqDate) {
+        this.id = LAST_DUMP_DATE_ID;
+        this.lastDumpReqDate = lastDumpReqDate;
     }
 
+    public LastDump() {
+    }
+
+    public OffsetDateTime getLastDumpReqDate() {
+        return this.lastDumpReqDate;
+    }
+
+    public void setLastDumpReqDate(OffsetDateTime lastDumpReqDate) {
+        this.lastDumpReqDate = lastDumpReqDate;
+    }
 }

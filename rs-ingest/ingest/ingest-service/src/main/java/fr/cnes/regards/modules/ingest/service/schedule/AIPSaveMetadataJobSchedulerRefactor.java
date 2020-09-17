@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataServiceRefactor
  */
 @Profile("!noschedule")
 @Component
-public class AIPSaveMetaDataJobSchedulerRefactor {
+public class AIPSaveMetadataJobSchedulerRefactor {
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -43,7 +43,7 @@ public class AIPSaveMetaDataJobSchedulerRefactor {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AIPSaveMetadataServiceRefactor aipSaveMetadataServiceRefactor;
+    private AIPSaveMetadataServiceRefactor aipSaveMetadataService;
 
     /**
      * Bulk save queued items every second.
@@ -55,7 +55,7 @@ public class AIPSaveMetaDataJobSchedulerRefactor {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                aipSaveMetadataServiceRefactor.scheduleJobs();
+                aipSaveMetadataService.scheduleJobs();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

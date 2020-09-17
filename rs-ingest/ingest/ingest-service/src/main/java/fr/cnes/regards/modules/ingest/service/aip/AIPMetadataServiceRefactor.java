@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -44,12 +45,15 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRepositoryRefactor;
+import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
+import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 
 /**
  * Service to dump aips
@@ -62,18 +66,21 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataServiceRefactor.class);
 
+    // Limit number of AIPs to retrieve in one page
+    @Value("${regards.dump.zip-limit:1000}")
+    private int zipLimit;
+
     @Autowired
     private DumpService dumpService;
 
     @Autowired
-    private IAIPSaveMetadataRepositoryRefactor aipSaveMetadataRepositoryRefactor;
+    private IAIPSaveMetadataRequestRepositoryRefactor requestMetadataRepository;
+
+    @Autowired
+    private IAIPDumpMetadataRepositoryRefactor dumpRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
-
-    /** Limit number of AIPs to retrieve in one page. */
-    @Value("${regards.aips.save-metadata.scan.iteration-limit:1000}")
-    private int saveMetadataIterationLimit;
 
     @Autowired
     private IAIPMetadataServiceRefactor self;
@@ -83,8 +90,9 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace) {
-        Pageable pageToRequest = PageRequest.of(0, saveMetadataIterationLimit, Sort.by(Sort.Order.asc("creationDate")));
+    public void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace)
+            throws NothingToDoException {
+        Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
                 pageToRequest = self.dumpOnePage(aipSaveMetadataRequestRefactor, pageToRequest, workspace);
@@ -104,48 +112,34 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
         OffsetDateTime creationDate = aipSaveMetadataRequestRefactor.getCreationDate();
         try {
             dumpService.generateDump(workspace, creationDate);
-            handleSuccess(aipSaveMetadataRequestRefactor);
         } catch (IOException e) {
             LOGGER.error("Error while writing aip dump", e);
             throw new RsRuntimeException(e.getClass().getSimpleName() + " " + e.getMessage(), e);
         }
     }
 
-    private List<ObjectDump> convertAipToObjectDump(Collection<AIPEntity> aipEntities) {
-        return aipEntities.stream().map(aipEntity -> new ObjectDump(aipEntity.getCreationDate(),
-                                                                    aipEntity.getProviderId() + "-" + aipEntity
-                                                                            .getVersion(), aipEntity.getAip(),
-                                                                    aipEntity.getAipId())).collect(Collectors.toList());
-    }
-
-    @Override
-    public void handleError(AIPSaveMetadataRequestRefactor dumpRequest, String errorMessage) {
-        notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
-                                                              dumpRequest.getLastDumpDate(),
-                                                              dumpRequest.getCreationDate()), NotificationLevel.ERROR,
-                                  DefaultRole.ADMIN);
-        dumpRequest.addError(errorMessage);
-        dumpRequest.setState(InternalRequestState.ERROR);
-        aipSaveMetadataRepositoryRefactor.save(dumpRequest);
-        // we do not need to clean up workspace as job service is doing so for us
-    }
-
-    @Override
-    public void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
-        aipSaveMetadataRepositoryRefactor.delete(aipSaveMetadataRequestRefactor);
-        // we do not need to clean up workspace as job service is doing so for us
-    }
-
     @Override
     public Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
-            Path workspace) throws IOException, DuplicateUniqueNameException {
+            Path workspace) throws IOException, DuplicateUniqueNameException, NothingToDoException {
         // Write Zips
         List<ObjectDump> objectDumps;
         List<ObjectDump> duplicatedJsonNames;
 
-        Page<AIPEntity> aipToDump = aipRepository
-                .findByLastUpdateBetween(aipSaveMetadataRequestRefactor.getLastDumpDate(),
-                                         aipSaveMetadataRequestRefactor.getCreationDate(), pageToRequest);
+        Page<AIPEntity> aipToDump = null;
+        OffsetDateTime previousDumpDate = aipSaveMetadataRequestRefactor.getPreviousDumpDate();
+        OffsetDateTime dumpDate = aipSaveMetadataRequestRefactor.getCreationDate();
+        if (previousDumpDate == null) {
+            aipToDump = aipRepository.findByLastUpdateLessThan(dumpDate, pageToRequest);
+        } else {
+            aipToDump = aipRepository.findByLastUpdateBetween(previousDumpDate, dumpDate, pageToRequest);
+        }
+
+        if (!aipToDump.hasContent()) {
+            throw new NothingToDoException(
+                    String.format("There is nothing to dump between %s and %s", previousDumpDate, dumpDate));
+        }
+
+        // Convert objects
         objectDumps = convertAipToObjectDump(aipToDump.getContent());
 
         // Check if names are unique in the collection
@@ -167,6 +161,44 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
             throw e;
         }
         return aipToDump.hasNext() ? aipToDump.nextPageable() : null;
+    }
+
+    private List<ObjectDump> convertAipToObjectDump(Collection<AIPEntity> aipEntities) {
+        return aipEntities.stream().map(aipEntity -> new ObjectDump(aipEntity.getCreationDate(),
+                                                                    aipEntity.getProviderId() + "-" + aipEntity
+                                                                            .getVersion(), aipEntity.getAip(),
+                                                                    aipEntity.getAipId())).collect(Collectors.toList());
+    }
+
+    @Override
+    public void resetLastUpdateDate() {
+        // init new lastDump
+        LastDump lastDump = new LastDump();
+        // reset last dump date if already present
+        Optional<LastDump> lastDumpOpt = dumpRepository.findById(LastDump.LAST_DUMP_DATE_ID);
+        if (lastDumpOpt.isPresent()) {
+            lastDump = lastDumpOpt.get();
+            lastDump.setLastDumpReqDate(null);
+        }
+        dumpRepository.save(lastDump);
+    }
+
+    @Override
+    public void handleError(AIPSaveMetadataRequestRefactor dumpRequest, String errorMessage) {
+        notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
+                                                              dumpRequest.getPreviousDumpDate(),
+                                                              dumpRequest.getCreationDate()), NotificationLevel.ERROR,
+                                  DefaultRole.ADMIN);
+        dumpRequest.addError(errorMessage);
+        dumpRequest.setState(InternalRequestState.ERROR);
+        requestMetadataRepository.save(dumpRequest);
+        // no need to clean up workspace as job service is doing so
+    }
+
+    @Override
+    public void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
+        requestMetadataRepository.delete(aipSaveMetadataRequestRefactor);
+        // we do not need to clean up workspace as job service is doing so for us
     }
 
 }
