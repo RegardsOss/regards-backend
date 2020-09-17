@@ -1,17 +1,5 @@
 package fr.cnes.regards.modules.search.rest.download;
 
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import feign.Request;
 import feign.Request.Body;
 import feign.Response;
@@ -19,9 +7,21 @@ import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import javax.validation.Valid;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Primary
 @Service
@@ -87,4 +87,18 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
         return null;
     }
 
+    @Override
+    public ResponseEntity<DownloadQuotaLimitsDto> createQuotaLimits(@Valid DownloadQuotaLimitsDto toBeCreated) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@Valid String userEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@Valid String userEmail) {
+        return null;
+    }
 }

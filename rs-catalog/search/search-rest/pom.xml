@@ -88,6 +88,10 @@
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
 			<artifactId>catalog-services-domain</artifactId>
 		</dependency>
@@ -108,10 +112,6 @@
 			<artifactId>rome-modules</artifactId>
 			<version>1.10.0</version>
 		</dependency>
-		<dependency>
-		    <groupId>fr.cnes.regards.modules.storage</groupId>
-		    <artifactId>storage-client</artifactId>
-	    </dependency>
 
 
 		<!-- Test -->
