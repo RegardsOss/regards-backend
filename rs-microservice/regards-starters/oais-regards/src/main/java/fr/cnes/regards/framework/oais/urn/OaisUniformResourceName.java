@@ -49,36 +49,16 @@ public class OaisUniformResourceName extends UniformResourceName {
      * Constructor setting the given parameters as attributes
      */
     public OaisUniformResourceName(OAISIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
-            int version) {
-        super(oaisIdentifier.name(), entityType, tenant, entityId, version, null, null);
-    }
-
-    /**
-     * Constructor setting the given parameters as attributes
-     */
-    public OaisUniformResourceName(OAISIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
             int version, Long order, String revision) {
         super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, revision);
     }
 
-    /**
-     * Constructor setting the given parameters as attributes
-     */
-    public OaisUniformResourceName(OAISIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
-            int version, long order) {
-        super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, null);
-    }
-
-    /**
-     * Constructor setting the given parameters as attributes
-     */
-    public OaisUniformResourceName(OAISIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
-            int version, String revision) {
-        super(oaisIdentifier.name(), entityType, tenant, entityId, version, null, revision);
-    }
-
     public OaisUniformResourceName() {
         // for testing purpose
+    }
+
+    public OaisUniformResourceName(OAISIdentifier identifier, EntityType entityType, String tenant, UUID entityId, Long order, String revision) {
+        super(identifier.name(), entityType, tenant, entityId, order, revision);
     }
 
     public static OaisUniformResourceName build(UniformResourceName urn) {
@@ -107,40 +87,30 @@ public class OaisUniformResourceName extends UniformResourceName {
             throw new IllegalArgumentException();
         }
         String[] stringFragment = urn.split(DELIMITER);
-        OAISIdentifier oaisIdentifier = OAISIdentifier.valueOf(stringFragment[1]);
+        OAISIdentifier identifier = OAISIdentifier.valueOf(stringFragment[1]);
         EntityType entityType = EntityType.valueOf(stringFragment[2]);
         String tenant = stringFragment[3];
         UUID entityId = UUID.fromString(stringFragment[4]);
         String[] versionWithOrder = stringFragment[5].split(",");
+        boolean last = versionWithOrder[0].contains(LAST_VALUE);
+        Integer version = null;
+        if(!last) {
+            // if this is not a last URN then lets compute version
+            version = Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length()));
+        }
+        Long order = null;
+        String revision = null;
         if (versionWithOrder.length == 2) {
-            // Order is precised
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                String revisionString = stringFragment[6];
-                // so we have all fields
-                return new OaisUniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision
-                return new OaisUniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]));
-            }
+            order = Long.parseLong(versionWithOrder[1]);
+        }
+        if (stringFragment.length == 7) {
+            // Revision is precised
+            revision = stringFragment[6].substring(REVISION_PREFIX.length());
+        }
+        if(last) {
+            return new OaisUniformResourceName(identifier, entityType, tenant, entityId, order, revision);
         } else {
-            // we don't have an order specified
-            if (stringFragment.length == 7) {
-                // Revision is precised
-                String revisionString = stringFragment[6];
-                // so we have all fields exception Order
-                return new OaisUniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        revisionString.substring(REVISION_PREFIX.length()));
-            } else {
-                // Revision is missing so we have all except Revision and Order
-                return new OaisUniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
-            }
+            return new OaisUniformResourceName(identifier, entityType, tenant, entityId, version, order, revision);
         }
     }
 
@@ -150,11 +120,11 @@ public class OaisUniformResourceName extends UniformResourceName {
     public static OaisUniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
             String tenant, int version) {
         return new OaisUniformResourceName(oaisIdentifier, entityType, tenant,
-                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version);
+                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version, null, null);
     }
 
     public static OaisUniformResourceName clone(OaisUniformResourceName template, Long order) {
         return new OaisUniformResourceName(OAISIdentifier.valueOf(template.getIdentifier()), template.getEntityType(),
-                template.getTenant(), template.getEntityId(), template.getVersion(), order);
+                template.getTenant(), template.getEntityId(), template.getVersion(), order, null);
     }
 }

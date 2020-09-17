@@ -69,13 +69,13 @@
 
     <profiles>
         <profile>
-            <id>default</id>
+            <id>delivery</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <!-- Default properties -->
-                <filter.name>integration</filter.name>
+                <filter.name>delivery</filter.name>
             </properties>
             <build>
                 <resources>

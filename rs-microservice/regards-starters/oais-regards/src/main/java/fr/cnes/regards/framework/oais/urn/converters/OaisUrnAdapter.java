@@ -22,10 +22,11 @@ import java.io.IOException;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * This adapter is used by Gson via @JsonAdapter(UrnAdapter.class) on UniformResourceName class
@@ -36,6 +37,10 @@ public class OaisUrnAdapter extends TypeAdapter<OaisUniformResourceName> {
 
     @Override
     public OaisUniformResourceName read(JsonReader pArg0) throws IOException {
+        if (pArg0.peek() == JsonToken.NULL) {
+            pArg0.nextNull();
+            return null;
+        }
         return OaisUniformResourceName.fromString(pArg0.nextString());
     }
 
