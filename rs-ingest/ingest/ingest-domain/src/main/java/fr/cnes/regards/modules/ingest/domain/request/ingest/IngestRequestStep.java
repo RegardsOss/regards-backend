@@ -57,7 +57,24 @@ public enum IngestRequestStep {
     LOCAL_GENERATION,
     LOCAL_TAGGING,
     LOCAL_POST_PROCESSING,
-    LOCAL_FINAL;
+    LOCAL_FINAL,
+
+    /**
+     * Remote and asynchronous storage steps
+     *
+     *   |
+     *   {@link #REMOTE_STORAGE_REQUESTED}
+     *   |_ {@link #REMOTE_STORAGE_DENIED}
+     *   |_ {@link #REMOTE_STORAGE_ERROR}
+     *   |
+     * Request deleted
+     *
+     */
+
+    // For AIP files
+    REMOTE_STORAGE_REQUESTED(true, true),
+    REMOTE_STORAGE_DENIED(true),
+    REMOTE_STORAGE_ERROR(true);
 
     private boolean remote = false;
 

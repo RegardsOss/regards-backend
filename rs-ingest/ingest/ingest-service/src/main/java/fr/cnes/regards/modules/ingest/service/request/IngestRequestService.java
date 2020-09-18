@@ -127,10 +127,16 @@ public class IngestRequestService implements IIngestRequestService {
     private IAIPService aipService;
 
     @Autowired
+    private IAIPStorageService aipStorageService;
+
+    @Autowired
     private INotificationClient notificationClient;
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
