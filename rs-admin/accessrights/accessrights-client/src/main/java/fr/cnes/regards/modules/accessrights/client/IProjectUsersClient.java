@@ -24,6 +24,12 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
@@ -61,8 +67,10 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(@RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(@RequestParam(value = "status", required = false) String pStatus,
+                                                                                 @RequestParam(value = "partialEmail", required = false) String pEmailStart,
+                                                                                 @RequestParam("page") int pPage,
+                                                                                 @RequestParam("size") int pSize);
 
     /**
      * Retrieve all users with a pending access requests.
@@ -131,6 +139,24 @@ public interface IProjectUsersClient {
     @ResponseBody
     @RequestMapping(value = "/{user_id}", method = RequestMethod.DELETE)
     ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long pUserId);
+
+    /**
+     * Retrieve the {@link ProjectUser} of current authenticated user
+     * @return a {@link ProjectUser}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/myuser", method = RequestMethod.GET)
+    ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser();
+
+    /**
+     * Update the {@link ProjectUser} of current projet user authenticated.
+     * @param updatedProjectUser The new {@link ProjectUser}
+     * @return a {@link ProjectUser}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
+    ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(
+        @RequestBody ProjectUser updatedProjectUser);
 
     /**
      * retrieveRoleProjectUserList

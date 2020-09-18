@@ -107,7 +107,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null, null,0, 10);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 

@@ -18,26 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-
-import javax.persistence.EntityNotFoundException;
-import javax.validation.Valid;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  *
@@ -85,12 +77,19 @@ public interface IRegistrationClient {
             @Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
+     * Confirm the registration by email.
+     * @param token the token
+     * @return void
+     */
+    @RequestMapping(value = "/verifyEmail/{token}", method = RequestMethod.GET)
+    public ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token);
+
+    /**
      * Grants access to the project user
      *
      * @param pAccessId
      *            the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{access_id}/accept", method = RequestMethod.PUT)
     ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") Long pAccessId);
@@ -105,6 +104,24 @@ public interface IRegistrationClient {
     @ResponseBody
     @RequestMapping(value = "/{access_id}/deny", method = RequestMethod.PUT)
     ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") Long pAccessId);
+
+    /**
+     * Activates an inactive user
+     * @param accessId the project user id
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{access_id}/active", method = RequestMethod.PUT)
+    ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long accessId);
+
+    /**
+     * Deactivates an active user
+     * @param accessId the project user id
+     * @return <code>void</code> wrapped in a {@link ResponseEntity}
+     */
+    @ResponseBody
+    @RequestMapping(value = "/{access_id}/inactive", method = RequestMethod.PUT)
+    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long accessId);
 
     /**
      * Rejects the access request
