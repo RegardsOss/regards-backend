@@ -32,9 +32,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -55,8 +59,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ComponentScan(basePackages = { "fr.cnes.regards.framework" })
 @EnableAutoConfiguration
-@TestPropertySource(properties = { "spring.application.name=test", "regards.json.dump.max.per.sub.zip=4",
-        "regards.dump.location=target/dump" })
+@TestPropertySource(properties = { "spring.application.name=rs-test", "regards.json.dump.max.per.sub.zip=4" })
 public class DumpServiceIT {
 
     @Autowired
@@ -71,48 +74,53 @@ public class DumpServiceIT {
     @Value("${spring.application.name}")
     private String microservice;
 
-    @Value("${regards.dump.location}")
-    private String dumpLocation;
+    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    private Path dumpLocationPath;
+
+    private Path tmpZipLocationPath;
+
+    @Before
+    public void init() {
+        this.dumpLocationPath = Paths.get("target/dump");
+        this.tmpZipLocationPath = Paths.get("target/tmpZipLocation");
+    }
 
     @Test
     @Purpose("Test creation of a dump")
-    public void generateDumpTest() throws IOException {
+    public void generateDumpTest() {
+        LOGGER.debug("=========================> BEGIN DUMP GENERATION TEST <=====================");
         // ------------------------------ PREPARE AND LAUNCH TESTS ------------------------------
-        // define workspace and force tenant
-        String tenantName = "test";
-        runtimeTenantResolver.forceTenant(tenantName);
-        this.dumpLocation += "/" + tenantName;
-
-        // delete folders if previously generated
-        Path dumpLocationPath = Paths.get(this.dumpLocation);
-        if (Files.exists(dumpLocationPath)) {
-            try {
-                FileUtils.deleteDirectory(dumpLocationPath.toFile());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        // generate zips in dumpLocation
+        // generate zips in tmpZipLocation
         int nbZips = 3;
         ArrayList<ObjectDump> zipCollection;
         for (int i = 0; i < nbZips; i++) {
             zipCollection = TestData.buildJsonCollection(this.maxFilesPerSubZip);
-            dumpService.generateJsonZip(zipCollection, dumpLocationPath);
+            try {
+                dumpService.generateJsonZip(zipCollection, this.tmpZipLocationPath);
+            } catch (IOException e) {
+                LOGGER.error("Error while testing zip generation {}",
+                             e.getClass().getSimpleName() + " " + e.getMessage());
+            }
         }
         // Get list of created zips
-        List<String> listValidNames = Arrays.stream(dumpLocationPath.toFile().listFiles()).map(file -> file.getName())
-                .collect(Collectors.toList());
+        List<String> listValidNames = Arrays.stream(this.tmpZipLocationPath.toFile().listFiles())
+                .map(file -> file.getName()).collect(Collectors.toList());
 
         // Generate Dump
         OffsetDateTime creationDate = OffsetDateTime.now();
-        dumpService.generateDump(dumpLocationPath, creationDate);
+        try {
+            dumpService.generateDump(this.dumpLocationPath, this.tmpZipLocationPath, creationDate);
+        } catch (IOException e) {
+            LOGGER.error("Error while testing dump {}", e.getClass().getSimpleName() + " " + e.getMessage());
+        }
 
         // ----------------------------------- CHECK RESULTS -----------------------------------
         // check if dumpFolder was created
-        Assert.assertTrue("dir and dump dir should exist", Files.exists(dumpLocationPath));
+        Assert.assertTrue("dump dir should exist", Files.exists(this.dumpLocationPath));
 
         // check if dumpFolder has only one zip
-        File[] listDump = dumpLocationPath.toFile().listFiles();
+        File[] listDump = this.dumpLocationPath.toFile().listFiles();
         Assert.assertEquals(1, listDump.length);
 
         // check name of dump zip
@@ -139,34 +147,25 @@ public class DumpServiceIT {
 
     @Test
     @Purpose("Test the creation of a zip")
-    public void generateJsonZipTest() throws IOException {
+    public void generateJsonZipTest() {
+        LOGGER.debug("=========================> BEGIN ZIP GENERATION TEST <=====================");
         // ------------------------------ PREPARE AND LAUNCH TESTS ------------------------------
         // create test data
         ArrayList<ObjectDump> zipCollection = TestData.buildJsonCollection(this.maxFilesPerSubZip);
-        // define workspace and force tenant
-        String tenantName = "test";
-        runtimeTenantResolver.forceTenant(tenantName);
-        this.dumpLocation += "/" + tenantName;
-        // create zip files
-        Path dumpLocationPath = Paths.get(this.dumpLocation);
-        File dumpFolder = dumpLocationPath.toFile();
-        // delete zip folder is previously generated
-        if (Files.exists(dumpLocationPath)) {
-            try {
-                FileUtils.deleteDirectory(dumpFolder);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
         // launch test
-        dumpService.generateJsonZip(zipCollection, dumpLocationPath);
+        try {
+            dumpService.generateJsonZip(zipCollection, this.tmpZipLocationPath);
+        } catch (IOException e) {
+            LOGGER.error("Error while testing zip generation {}", e.getClass().getSimpleName() + " " + e.getMessage());
+        }
 
         // ----------------------------------- CHECK RESULTS -----------------------------------
         // check if destination folder was created
-        Assert.assertTrue("target dir should exist", Files.exists(dumpLocationPath));
+        Assert.assertTrue("target dir should exist", Files.exists(this.tmpZipLocationPath));
 
         // check if zip was created
-        File[] listZip = dumpFolder.listFiles();
+        File[] listZip = this.tmpZipLocationPath.toFile().listFiles();
         Assert.assertEquals(1, listZip.length);
 
         // check name of created zip
@@ -186,4 +185,19 @@ public class DumpServiceIT {
         // check that all dumps are in error
         Assert.assertEquals(numOfJson, duplicatedDumps.size());
     }
+
+    @After
+    public void doAfter() {
+        try {
+            if (Files.exists(this.tmpZipLocationPath)) {
+                FileUtils.deleteDirectory(this.tmpZipLocationPath.toFile());
+            }
+            if (Files.exists(this.dumpLocationPath)) {
+                FileUtils.deleteDirectory(this.dumpLocationPath.toFile());
+            }
+        } catch (IOException e) {
+            LOGGER.error("e.getClass().getSimpleName()" + " " + e.getMessage());
+        }
+    }
+
 }
