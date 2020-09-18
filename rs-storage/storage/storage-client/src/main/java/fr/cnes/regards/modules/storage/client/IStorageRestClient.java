@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.List;
-
+import feign.Response;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,16 +28,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import feign.Response;
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
+import java.util.List;
 
 /**
  * REST Client to to access storage microservice
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
-public interface IStorageRestClient {
+public interface IStorageRestClient extends IStorageDownloadQuotaClient {
 
     public static final String FILE_PATH = "/files";
 

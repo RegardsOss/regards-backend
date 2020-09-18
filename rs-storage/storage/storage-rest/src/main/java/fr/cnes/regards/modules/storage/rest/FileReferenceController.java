@@ -27,6 +27,11 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
+import io.vavr.control.Try;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
@@ -86,10 +91,16 @@ public class FileReferenceController {
     private FileDownloadService downloadService;
 
     @Autowired
+    private IQuotaService<ResponseEntity<StreamingResponseBody>> downloadQuotaService;
+
+    @Autowired
     private FileReferenceService fileRefService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Autowired
     private StorageFlowItemHandler storageHandler;
@@ -98,21 +109,91 @@ public class FileReferenceController {
      * End-point to Download a file referenced by a storage location with the given checksum.
      * @param checksum checksum of the file to download
      * @return {@link InputStreamResource}
-     * @throws ModuleException
-     * @throws IOException
      */
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("checksum") String checksum,
-            HttpServletResponse response) throws ModuleException, IOException {
-        try {
-            DownloadableFile downloadFile = downloadService.downloadFile(checksum);
+    public ResponseEntity<StreamingResponseBody> downloadFile(
+        @PathVariable("checksum") String checksum,
+        HttpServletResponse response)
+    {
+        return downloadWithQuota(checksum, response)
+            .recover(EntityOperationForbiddenException.class, t -> {
+                LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
+                LOGGER.debug(t.getMessage(), t);
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            }).recover(EntityNotFoundException.class, t -> {
+                LOGGER.warn(String
+                    .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
+                        checksum));
+                LOGGER.debug(t.getMessage(), t);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }).recover(ModuleException.class, t -> {
+                LOGGER.error(t.getMessage(), t);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }).get();
+    }
+
+    /**
+     * End-point to Download a file referenced by a storage location with the given checksum.
+     * @param checksum checksum of the file to download
+     * @return {@link InputStreamResource}
+     */
+    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
+            produces = MediaType.ALL_VALUE)
+    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<StreamingResponseBody> downloadFileWithToken(
+        @PathVariable("checksum") String checksum,
+        @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
+        HttpServletResponse response)
+    {
+        if (! downloadService.checkToken(checksum, token)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return downloadWithQuota(checksum, response)
+            .recover(ModuleException.class, t -> {
+                LOGGER.error(t.getMessage());
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }).get();
+    }
+
+    @VisibleForTesting
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadWithQuota(
+        String checksum,
+        HttpServletResponse response
+    ) {
+        // FIXME 1: quota check disabled for now just so that I can merge my domain POJO/DTOs and continue working on catalog, order and access (Thanks CI "multibranch" builds)
+        // FIXME 2: the quota check should actually be done only after checking that the download targets a RAWDATA file
+        return /*downloadQuotaService.withQuota(
+            authResolver.getUser(),
+            (quotaHandler) -> */Try
+                .of(() -> downloadService.downloadFile(checksum))
+                .flatMap(downloadFile -> downloadFileWithQuota(downloadFile, /*FIXME quotaHandler,*/ response)/*FIXME )*/
+        ).recover(DownloadQuotaLimitExceededException.class, t -> {
+            LOGGER.debug(t.getMessage(), t);
+            return new ResponseEntity<>(
+                outputStream -> outputStream.write(t.getMessage().getBytes()),
+                HttpStatus.TOO_MANY_REQUESTS);
+        });
+    }
+
+    @VisibleForTesting
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadFileWithQuota (
+        DownloadableFile downloadFile,
+        /*FIXME IQuotaService.WithQuotaOperationHandler quotaHandler,*/
+        HttpServletResponse response
+    ) {
+        return Try.of(() -> {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(downloadFile.getRealFileSize());
             headers.setContentType(asMediaType(downloadFile.getMimeType()));
-            headers.setContentDisposition(ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
-                    .size(downloadFile.getRealFileSize()).build());
+            headers.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                    .filename(downloadFile.getFileName())
+                    .size(downloadFile.getRealFileSize())
+                    .build()
+            );
             StreamingResponseBody stream = out -> {
+                /*FIXME quotaHandler.start();*/
                 try (OutputStream outs = response.getOutputStream()) {
                     byte[] bytes = new byte[1024];
                     int length;
@@ -124,68 +205,11 @@ public class FileReferenceController {
                     LOGGER.error("Exception while reading and streaming data {} ", e);
                 } finally {
                     downloadFile.close();
+                    /*FIXME quotaHandler.stop();*/
                 }
             };
             return new ResponseEntity<>(stream, headers, HttpStatus.OK);
-        } catch (EntityOperationForbiddenException e) {
-            LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
-            LOGGER.debug(e.getMessage(), e);
-            return new ResponseEntity<StreamingResponseBody>(HttpStatus.ACCEPTED);
-        } catch (EntityNotFoundException e) {
-            LOGGER.warn(String
-                    .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
-                            checksum));
-            LOGGER.debug(e.getMessage(), e);
-            return new ResponseEntity<StreamingResponseBody>(HttpStatus.NOT_FOUND);
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<StreamingResponseBody>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * End-point to Download a file referenced by a storage location with the given checksum.
-     * @param checksum checksum of the file to download
-     * @return {@link InputStreamResource}
-     * @throws ModuleException
-     * @throws IOException
-     */
-    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-            produces = MediaType.ALL_VALUE)
-    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
-            @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
-            HttpServletResponse response) throws ModuleException, IOException {
-        if (downloadService.checkToken(checksum, token)) {
-            try {
-                DownloadableFile downloadFile = downloadService.downloadFile(checksum);
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentLength(downloadFile.getRealFileSize());
-                headers.setContentType(asMediaType(downloadFile.getMimeType()));
-                headers.setContentDisposition(ContentDisposition.builder("attachment")
-                        .filename(downloadFile.getFileName()).size(downloadFile.getRealFileSize()).build());
-                StreamingResponseBody stream = out -> {
-                    try (OutputStream outs = response.getOutputStream()) {
-                        byte[] bytes = new byte[1024];
-                        int length;
-                        while ((length = downloadFile.getFileInputStream().read(bytes)) >= 0) {
-                            outs.write(bytes, 0, length);
-                        }
-                        outs.close();
-                    } catch (final IOException e) {
-                        LOGGER.error("Exception while reading and streaming data {} ", e);
-                    } finally {
-                        downloadFile.close();
-                    }
-                };
-                return new ResponseEntity<>(stream, headers, HttpStatus.OK);
-            } catch (ModuleException e) {
-                LOGGER.error(e.getMessage());
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        } else {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
+        });
     }
 
     @RequestMapping(method = RequestMethod.GET, path = EXPORT_PATH)
