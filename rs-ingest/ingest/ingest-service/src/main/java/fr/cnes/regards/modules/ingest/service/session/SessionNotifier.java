@@ -15,7 +15,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.sessionmanager.client.ISessionNotificationClient;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
@@ -236,42 +235,8 @@ public class SessionNotifier {
                                   1);
     }
 
-    public void decrementMetaStorePending(AIPStoreMetaDataRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORE_PENDING,
-                                  SessionNotificationState.OK,
-                                  1);
-    }
-
-    public void incrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORED,
-                                  SessionNotificationState.OK,
-                                  1);
-    }
-
     public void decrementMetaStoreSuccess(String sessionOwner, String session, Integer nbAips) {
         sessionNotifier.decrement(sessionOwner, session, PRODUCT_META_STORED, SessionNotificationState.OK, nbAips);
-    }
-
-    public void incrementMetaStoreError(AIPStoreMetaDataRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORE_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  1);
-    }
-
-    public void decrementMetaStoreError(AIPStoreMetaDataRequest request) {
-        if (request.getState() == InternalRequestState.ERROR) {
-            sessionNotifier.decrement(request.getSessionOwner(),
-                                      request.getSession(),
-                                      PRODUCT_META_STORE_ERROR,
-                                      SessionNotificationState.OK,
-                                      1);
-        }
     }
 
     /**
