@@ -21,6 +21,7 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,9 +49,10 @@ public class DumpController {
      */
     public static final String RESET_LAST_DUMP_DATE = "/reset";
 
-    @RequestMapping(path = RESET_LAST_DUMP_DATE, method = RequestMethod.PUT)
+    @RequestMapping(path = RESET_LAST_DUMP_DATE, method = RequestMethod.PATCH)
     @ResourceAccess(description = "Reset last dump date", role = DefaultRole.ADMIN)
-    public void resetLastDumpDate() {
+    public ResponseEntity<?> resetLastDumpDate() {
         aipMetadataServiceRefactor.resetLastUpdateDate();
+        return ResponseEntity.ok("resource saved");
     }
 }

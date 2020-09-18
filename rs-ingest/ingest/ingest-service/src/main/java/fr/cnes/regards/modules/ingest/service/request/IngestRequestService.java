@@ -422,10 +422,6 @@ public class IngestRequestService implements IIngestRequestService {
             // Even if no file is present in AIP, we consider the product as stored
             sessionNotifier.incrementProductStoreSuccess(request);
 
-            // Prepare manifest storage scheduling
-            toSchedule.addAll(aipSaveMetaDataService.createRequests(aips, request.getMetadata().getStorages(), false,
-                                                                    true));
-
             // Update SIP state
             SIPEntity sipEntity = aips.get(0).getSip();
             sipEntity.setState(SIPState.STORED);

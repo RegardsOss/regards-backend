@@ -51,7 +51,7 @@ public class AIPSaveMetadataServiceRefactor {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetadataServiceRefactor.class);
 
     @Autowired
-    private IAIPSaveMetadataRequestRepositoryRefactor requestMetadataRepository;
+    private IAIPSaveMetadataRequestRepositoryRefactor metadataRequestRepository;
 
     @Autowired
     private IAIPDumpMetadataRepositoryRefactor dumpRepository;
@@ -81,7 +81,7 @@ public class AIPSaveMetadataServiceRefactor {
         // Create request
         AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(lastDumpReqDate);
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
-        requestMetadataRepository.save(aipSaveMetadataRequest);
+        metadataRequestRepository.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),

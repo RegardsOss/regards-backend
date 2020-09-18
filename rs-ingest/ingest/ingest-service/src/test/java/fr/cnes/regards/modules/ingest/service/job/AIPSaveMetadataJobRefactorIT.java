@@ -26,13 +26,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Matcher;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +37,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -53,21 +49,20 @@ import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepositoryRefactor;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.AIPMetadataServiceRefactor;
 import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataServiceRefactor;
-import static fr.cnes.regards.modules.ingest.service.job.TestData.*;
+import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
  *
  * @author Iliana Ghazali
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_refactor_test",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_test",
         "regards.amqp.enabled=true", "regards.dump.location=target/workspace" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
@@ -77,6 +72,9 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
 
     @Value("${regards.dump.location}")
     private String dumpLocation;
+
+    @Value("${spring.application.name}")
+    private String microservice;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -122,8 +120,10 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
         metadataService.resetLastUpdateDate();
         // dump all aips created
         UUID jobInfoId = runSaveMetadataJob();
-
         Thread.sleep(1000);
+
+        //FIXME: use when old request(STORE_META) have been removed
+        //ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
 
         // CHECK RESULTS
         // Check job info is successful
@@ -135,20 +135,14 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
         List<AIPSaveMetadataRequestRefactor> errorRequests = metadataRequestRepository.findAll();
         Assert.assertEquals(0, errorRequests.size());
 
-
-        // job has finished lets check result in DB & dump
-        // first check that job has finished successfully i.e. JobInfo is in success
-        // then check that there is no dump request left in DB(request in success are automatically deleted)
-
-        //FIXME: use when old request(STORE_META) have been removed
-        //ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
-       /* Assert.assertEquals(1, Paths.get(this.dumpLocation).resolve(runtimeTenantResolver.getTenant()).resolve(microservice).toFile()
-                .listFiles().length);*/
+        // Check folder target/workspace/<microservice>/ contains 1 dump
+        Assert.assertEquals(1, Paths.get(this.dumpLocation).resolve(runtimeTenantResolver.getTenant())
+                .resolve(microservice).toFile().listFiles().length);
     }
 
     @Test
     @Purpose("Check if the dump of AIPs is not created (in error)")
-    public void checkDumpError() {
+    public void checkDumpError() throws InterruptedException {
         // add aip to db
         int nbSIP = 3;
         storageClient.setBehavior(true, true);
@@ -168,17 +162,24 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
             Assert.assertTrue("DuplicateUniqueNameException was expected",
                               e.getMessage().contains("DuplicateUniqueNameException"));
         }
+        Thread.sleep(1000);
+
         // Check job info in ERROR
         Pageable pageToRequest = PageRequest.of(0, 100);
-        Page<JobInfo> errorJobInfo =  jobInfoRepository.findByClassNameAndStatusStatusIn(AIPSaveMetadataJobRefactor.class.getName(), JobStatus.values(),
-                                                                                         pageToRequest);
+        Page<JobInfo> errorJobInfo = jobInfoRepository
+                .findByClassNameAndStatusStatusIn(AIPSaveMetadataJobRefactor.class.getName(), JobStatus.values(),
+                                                  pageToRequest);
         Assert.assertEquals(1L, errorJobInfo.getTotalElements());
-        //Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus().toString());
+        Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus());
 
         // Check request in ERROR
         List<AIPSaveMetadataRequestRefactor> errorRequests = metadataRequestRepository.findAll();
         Assert.assertEquals(1, errorRequests.size());
         Assert.assertEquals(InternalRequestState.ERROR, errorRequests.get(0).getState());
+
+        // Check folder target/workspace/<microservice>/ does not contain dump
+        Assert.assertEquals(0, Paths.get(this.dumpLocation).resolve(runtimeTenantResolver.getTenant())
+                .resolve(microservice).toFile().listFiles().length);
     }
 
     private UUID runSaveMetadataJob() throws ExecutionException, InterruptedException {
@@ -197,7 +198,7 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
         }
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        // Wait STORE_META request over
+        // FIXME: Wait STORE_META request over
         //ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
     }
 
@@ -219,6 +220,6 @@ public class AIPSaveMetadataJobRefactorIT extends IngestMultitenantServiceTest {
         sipRepository.deleteAll();
         dumpRepository.deleteAll();
         //clear dump location
-        //FileUtils.deleteDirectory(Paths.get(this.dumpLocation).toFile());
+        FileUtils.deleteDirectory(Paths.get(this.dumpLocation).toFile());
     }
 }

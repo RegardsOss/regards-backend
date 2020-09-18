@@ -17,11 +17,9 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-package fr.cnes.regards.modules.ingest.service.job;
+package fr.cnes.regards.modules.ingest.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -29,7 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import com.google.common.collect.Lists;
 
 /**
- *
+ * Utils to publish random SIPs
  * @author Iliana Ghazali
  */
 public class TestData {
