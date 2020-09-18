@@ -107,11 +107,7 @@
                 <artifactId>processing-domain-data</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-plugins</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
                 <artifactId>processing-rest</artifactId>
@@ -143,6 +139,16 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-order-commons</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-order-processes</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
@@ -226,11 +232,12 @@
 
     <modules>
         <module>processing-commons</module>
+        <module>processing-reactive-clients</module>
+        <module>processing-test</module>
+
         <module>processing-domain-data</module>
         <module>processing-domain</module>
         <module>processing-dao</module>
-        <module>processing-reactive-clients</module>
-        <module>processing-plugins</module>
         <module>processing-storage</module>
         <module>processing-service</module>
         <module>processing-rest</module>
@@ -239,6 +246,8 @@
         <module>processing-engine-springbatch</module>
         <module>processing-spring-config</module>
         <module>processing-client</module>
-        <module>processing-test</module>
+
+        <module>processing-order-commons</module>
+        <module>processing-order-processes</module>
     </modules>
 </project>

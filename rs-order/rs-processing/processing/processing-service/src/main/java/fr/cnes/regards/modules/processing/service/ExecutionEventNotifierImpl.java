@@ -68,7 +68,9 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
         if (event.isFinal()) {
             PExecutionResultEvent resultEvent = new PExecutionResultEvent(
                 exec.getId(),
+                exec.getExecutionCorrelationId(),
                 exec.getBatchId(),
+                exec.getBatchCorrelationId(),
                 event.getStep().getStatus(),
                 event.getOutputFiles().map(POutputFileDTO::toDto),
                 List.of(event.getStep().getMessage())

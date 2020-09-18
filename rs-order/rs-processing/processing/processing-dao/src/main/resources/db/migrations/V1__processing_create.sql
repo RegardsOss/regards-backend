@@ -31,6 +31,8 @@ CREATE TABLE t_execution (
     process_name         varchar(255) NOT NULL,
     tenant               varchar(255) NOT NULL,
     user_email           varchar(255) NOT NULL,
+    correlation_id       text         NOT NULL,
+    batch_correlation_id text         NOT NULL,
     steps                jsonb        NOT NULL,
     file_parameters      jsonb        NOT NULL,
     primary key (id)
@@ -49,16 +51,17 @@ CREATE INDEX ON t_execution (tenant);
 ---------------------
 -- OUTPUT FILES
 CREATE TABLE t_outputfile (
-    downloaded      boolean     NOT NULL,
-    deleted         boolean     NOT NULL,
-    size_bytes      int8        NOT NULL,
-    created         timestamptz NOT NULL,
-    id              uuid        NOT NULL,
-    exec_id         uuid        NOT NULL,
-    checksum_method varchar(10) NOT NULL,
-    checksum_value  varchar(64) NOT NULL,
-    name            text        NOT NULL,
-    url             text        NOT NULL,
+    downloaded            boolean     NOT NULL,
+    deleted               boolean     NOT NULL,
+    size_bytes            int8        NOT NULL,
+    created               timestamptz NOT NULL,
+    id                    uuid        NOT NULL,
+    exec_id               uuid        NOT NULL,
+    checksum_method       varchar(10) NOT NULL,
+    checksum_value        varchar(64) NOT NULL,
+    name                  text        NOT NULL,
+    url                   text        NOT NULL,
+    input_correlation_ids text[]      NOT NULL DEFAULT '{}',
     PRIMARY KEY (id)
 );
 

@@ -40,12 +40,13 @@ public class ExecutionRequestEventHandler
     @Override public void handle(String tenant, PExecutionRequestEvent message) {
         runtimeTenantResolver.forceTenant(tenant); // Needed in order to publish events
 
-        LOGGER.info("exec={} - Execution request received", message.getExecutionId());
+        String execCid = message.getExecutionCorrelationId();
+        LOGGER.info("exec={} - Execution request received", execCid);
 
         execService.launchExecution(message)
             .subscribe(
-                exec -> LOGGER.info("exec={} - Execution request registered correctly", message.getExecutionId()),
-                err -> LOGGER.error("exec={} - Execution request error: {}", message.getExecutionId(), err.getMessage())
+                exec -> LOGGER.info("exec={} - Execution request registered correctly", execCid),
+                err -> LOGGER.error("exec={} - Execution request error: {}", execCid, err.getMessage())
             );
     }
 }

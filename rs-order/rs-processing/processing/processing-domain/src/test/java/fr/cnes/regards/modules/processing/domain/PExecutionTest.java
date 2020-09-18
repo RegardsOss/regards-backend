@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.domain;
 
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
 import io.vavr.collection.List;
@@ -27,15 +26,19 @@ public class PExecutionTest extends AbstractMarshallingTest<PExecution> {
         String json = ProcessingGsonUtils.gsonPretty().toJson(List.of(
             new PExecution(
                 UUID.randomUUID(),
-                UUID.randomUUID(), Duration.ofMinutes(5),
-                List.of(new ExecutionFileParameterValue(
+                "exec corr ID",
+                UUID.randomUUID(),
+                "batch corr ID",
+                Duration.ofMinutes(5),
+                List.of(new PInputFile(
                     "param1",
                     "file.raw",
                     null,
                     new URL("http://0.0.0.0:1000/file.raw"),
                     512L,
                     "checksum",
-                    false
+                    false,
+                    "file.raw"
                 )),
                 List.of(registered("").withTime(registered),
                         prepare("").withTime(nowUtc().minusMinutes(5)),

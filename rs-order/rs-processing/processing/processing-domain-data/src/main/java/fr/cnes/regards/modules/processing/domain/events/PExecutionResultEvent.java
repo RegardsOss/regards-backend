@@ -18,8 +18,14 @@ public class PExecutionResultEvent implements ISubscribable {
     /** The execution this message was related to. */
     UUID executionId;
 
+    /** The execution correlation ID. */
+    String executionCorrelationId;
+
     /** The batch the execution this message was related to was related to. */
     UUID batchId;
+
+    /** The batch correlation ID */
+    String batchCorrelationId;
 
     ExecutionStatus finalStatus;
 

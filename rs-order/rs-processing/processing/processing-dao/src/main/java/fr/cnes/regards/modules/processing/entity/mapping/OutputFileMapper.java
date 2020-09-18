@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
+import io.vavr.collection.List;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,7 @@ public class OutputFileMapper implements DomainEntityMapper.OutputFile {
                 domain.getChecksum().getValue(),
                 domain.getChecksum().getMethod(),
                 domain.getSize(),
+                domain.getInputCorrelationIds().asJava(),
                 domain.getCreated(),
                 domain.isDownloaded(),
                 domain.isDeleted(),
@@ -31,6 +33,7 @@ public class OutputFileMapper implements DomainEntityMapper.OutputFile {
                 new POutputFile.Digest(entity.getChecksumMethod(), entity.getChecksumValue()),
                 entity.getUrl(),
                 entity.getSizeInBytes(),
+                List.ofAll(entity.getInputCorrelationIds()),
                 entity.getCreated(),
                 entity.isDownloaded(),
                 entity.isDeleted(),

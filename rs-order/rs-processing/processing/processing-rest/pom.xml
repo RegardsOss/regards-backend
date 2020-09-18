@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-plugins</artifactId>
+            <artifactId>processing-order-processes</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

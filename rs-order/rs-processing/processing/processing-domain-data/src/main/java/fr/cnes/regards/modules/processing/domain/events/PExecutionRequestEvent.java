@@ -4,7 +4,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
 import io.vavr.collection.Seq;
 import lombok.Value;
 import lombok.With;
@@ -16,10 +16,10 @@ import java.util.UUID;
 @Value @With
 public class PExecutionRequestEvent implements ISubscribable {
 
-    UUID executionId;
+    String executionCorrelationId;
 
     UUID batchId;
 
-    Seq<ExecutionFileParameterValue> inputFiles;
+    Seq<PInputFile> inputFiles;
 
 }

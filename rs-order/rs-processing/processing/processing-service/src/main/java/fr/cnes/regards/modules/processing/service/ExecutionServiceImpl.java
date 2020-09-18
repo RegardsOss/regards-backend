@@ -1,23 +1,16 @@
 package fr.cnes.regards.modules.processing.service;
 
-import fr.cnes.regards.modules.processing.domain.PBatch;
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.PProcess;
-import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
-import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
+import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
 import fr.cnes.regards.modules.processing.domain.repository.IPBatchRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
-import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
-import fr.cnes.regards.modules.processing.domain.storage.IExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.domain.storage.ISharedStorageService;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +22,6 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.NOTIFY_TIMEOUT_ERROR;
-
 @Service
 public class ExecutionServiceImpl implements IExecutionService {
 
@@ -39,22 +30,17 @@ public class ExecutionServiceImpl implements IExecutionService {
     private final IPExecutionRepository execRepo;
     private final IPBatchRepository batchRepo;
     private final IPProcessRepository processRepo;
-    private final IExecutionLocalWorkdirService workdirService;
 
-    private final ISharedStorageService storageService;
     private final IPOutputFilesRepository outputFilesRepo;
     private final IExecutionResultEventSender execResultSender;
 
     @Autowired
     public ExecutionServiceImpl(IPExecutionRepository execRepo, IPBatchRepository batchRepo,
-            IPProcessRepository processRepo, IExecutionLocalWorkdirService executionLocalWorkdirService,
-            ISharedStorageService sharedStorageService, IPOutputFilesRepository outputFilesRepo,
+            IPProcessRepository processRepo, IPOutputFilesRepository outputFilesRepo,
             IExecutionResultEventSender execResultSender) {
         this.execRepo = execRepo;
         this.batchRepo = batchRepo;
         this.processRepo = processRepo;
-        this.workdirService = executionLocalWorkdirService;
-        this.storageService = sharedStorageService;
         this.outputFilesRepo = outputFilesRepo;
         this.execResultSender = execResultSender;
     }
@@ -113,7 +99,9 @@ public class ExecutionServiceImpl implements IExecutionService {
 
     private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch, Duration duration) {
         return PExecution.create(
+            request.getExecutionCorrelationId(),
             batch.getId(),
+            batch.getCorrelationId(),
             duration,
             request.getInputFiles(),
             batch.getTenant(),
@@ -123,28 +111,24 @@ public class ExecutionServiceImpl implements IExecutionService {
         );
     }
 
-    private Mono<Duration> estimateDuration(PBatch batch, Seq<ExecutionFileParameterValue> inputFiles) {
+    private Mono<Duration> estimateDuration(PBatch batch, Seq<PInputFile> inputFiles) {
         return processRepo.findByBatch(batch)
             .map(PProcess::getRunningDurationForecast)
             .map(forecast -> {
                 Long totalSize = inputFiles
-                    .map(ExecutionFileParameterValue::getBytes)
+                    .map(PInputFile::getBytes)
                     .fold(0L, Long::sum);
                 return forecast.expectedRunningDurationInBytes(totalSize);
             });
     }
 
     private Mono<ExecutionContext> createContext(PExecution exec, PBatch batch, PProcess process) {
-        return workdirService.makeWorkdir(exec).map(workdir ->
-            new ExecutionContext(
-                workdirService,
-                storageService,
-                exec,
-                batch,
-                process,
-                workdir,
-                notifierFor(exec)
-            ));
+        return Mono.just(new ExecutionContext(
+            exec,
+            batch,
+            process,
+            notifierFor(exec)
+        ));
     }
 
     private IExecutionEventNotifier notifierFor(PExecution execution) {

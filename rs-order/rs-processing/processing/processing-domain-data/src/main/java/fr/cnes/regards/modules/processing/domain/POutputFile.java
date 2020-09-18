@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.processing.domain;
 
+import io.vavr.collection.List;
 import lombok.Value;
 import lombok.With;
 
@@ -33,6 +34,9 @@ public class POutputFile {
 
     /** The file size */
     Long size;
+
+    /** The list of input correlation IDs this output file is related to. */
+    List<String> inputCorrelationIds;
 
     /** Date at which the file was created */
     transient OffsetDateTime created;

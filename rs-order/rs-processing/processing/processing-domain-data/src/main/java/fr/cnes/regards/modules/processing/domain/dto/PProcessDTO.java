@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import io.vavr.collection.List;
+import io.vavr.collection.Map;
 import lombok.*;
 
 import java.util.UUID;
@@ -19,7 +20,7 @@ public class PProcessDTO {
 
     String userRoles;
 
-    List<String> datasets;
+    Map<String,String> processInfo;
 
     List<ExecutionParamDTO> params;
 
@@ -30,7 +31,7 @@ public class PProcessDTO {
                 p.isActive(),
                 p.getTenant(),
                 p.getUserRole(),
-                p.getDatasets().toList(),
+                p.getProcessInfo(),
                 p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList()
         );
     }

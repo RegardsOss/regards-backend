@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -36,6 +37,8 @@ public class OutputFileEntity implements Persistable<UUID> {
 
     /** The file size */
     private @Column("size_bytes") Long sizeInBytes;
+
+    private @Column("input_correlation_ids") List<String> inputCorrelationIds;
 
     /** The file creation time (not the entity creation time) */
     private @Column("created") OffsetDateTime created;

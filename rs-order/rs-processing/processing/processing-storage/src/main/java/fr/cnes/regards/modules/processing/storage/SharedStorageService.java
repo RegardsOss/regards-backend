@@ -4,11 +4,10 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingOutputFileException;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
-import fr.cnes.regards.modules.processing.domain.storage.ISharedStorageService;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.apache.commons.io.FileUtils;
@@ -53,17 +52,21 @@ public class SharedStorageService implements ISharedStorageService {
         this.basePath = basePath;
     }
 
-    @Override public Mono<Seq<POutputFile>> storeResult(ExecutionContext ctx) {
+    @Override public Mono<Seq<POutputFile>> storeResult(ExecutionContext ctx, ExecutionLocalWorkdir workdir) {
         return Mono.defer(() -> {
             Path storageExecPath = basePath.resolve(ctx.getExec().getId().toString());
-            ExecutionLocalWorkdir workdir = ctx.getWorkdir();
             Path execOutputPath = workdir.outputFolder();
+            IOutputToInputMapper ioMapper = ctx.getProcess().getMapper();
+
             return Flux.<Mono<POutputFile>>create(sink -> {
                 try {
                     walkFileTree(execOutputPath, new SimpleFileVisitor<Path>() {
                         @Override public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)
                                 throws IOException {
-                            sink.next(createOutputFile(ctx.getExec().getId(), path, storageExecPath));
+                            Mono<POutputFile> outputFile =
+                                    createOutputFile(ctx.getExec().getId(), path, storageExecPath)
+                                        .map(out -> ioMapper.mapInputCorrelationIds(ctx, out));
+                            sink.next(outputFile);
                             return FileVisitResult.CONTINUE;
                         }
                         @Override public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
@@ -111,6 +114,7 @@ public class SharedStorageService implements ISharedStorageService {
                 checksum,
                 storedFilePath.toUri().toURL(),
                 size,
+                List.empty(),
                 creationTime(storedFilePath),
                 false,
                 false,

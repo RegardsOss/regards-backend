@@ -21,7 +21,7 @@ public interface ProcessingConstants {
             String DATE_FROM_PARAM = "from";
             String DATE_TO_PARAM = "to";
 
-            String DATASET_PARAM = "dataset";
+            String DATASET_PARAM = "datasetIpId";
         }
 
         String APIV1 = "/api/v1";

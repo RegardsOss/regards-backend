@@ -48,6 +48,12 @@ public class ExecutionEntity implements Persistable<UUID> {
     @Column("process_name") @NonNull
     private String processName;
 
+    @Column("correlation_id") @NonNull
+    private String correlationId;
+
+    @Column("batch_correlation_id") @NonNull
+    private String batchCorrelationId;
+
     @Column("created")
     @CreatedDate
     private OffsetDateTime created;

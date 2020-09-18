@@ -3,7 +3,7 @@ package fr.cnes.regards.modules.processing.service;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
-import fr.cnes.regards.modules.processing.domain.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

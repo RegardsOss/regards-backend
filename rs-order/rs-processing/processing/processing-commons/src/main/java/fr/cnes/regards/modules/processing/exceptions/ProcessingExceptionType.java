@@ -13,6 +13,7 @@ public enum ProcessingExceptionType {
     PERSIST_EXECUTION_STEP_ERROR,
     SEND_EXECUTION_RESULT_ERROR,
     NOTIFY_TIMEOUT_ERROR,
+    MISSING_EXECUTION_CONTEXT_PARAM_ERROR,
     ;
 
     private final HttpStatus status;

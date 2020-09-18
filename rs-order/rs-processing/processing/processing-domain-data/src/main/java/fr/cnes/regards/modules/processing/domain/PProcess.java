@@ -2,10 +2,12 @@ package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
+import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
+import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import lombok.Value;
 
@@ -25,7 +27,7 @@ public class PProcess {
 
     String userRole;
 
-    Seq<String> datasets;
+    Map<String, String> processInfo;
 
     ConstraintChecker<PBatch> batchChecker;
 
@@ -40,4 +42,6 @@ public class PProcess {
     IWorkloadEngine engine;
 
     IExecutable executable;
+
+    IOutputToInputMapper mapper;
 }

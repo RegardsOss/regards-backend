@@ -4,8 +4,8 @@ import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
-import fr.cnes.regards.modules.processing.domain.storage.IDownloadService;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import io.vavr.collection.Set;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +45,12 @@ public class DownloadService implements IDownloadService {
         this.storageClient = storageClient;
     }
 
-    @Override public Mono<Path> download(ExecutionFileParameterValue file, Path dest) {
+    @Override public Mono<Path> download(PInputFile file, Path dest) {
         return createParentFolderIfNeeded(dest)
             .flatMap(d -> discriminateInternalExternal(file, d));
     }
 
-    private Mono<Path> discriminateInternalExternal(ExecutionFileParameterValue file, Path dest) {
+    private Mono<Path> discriminateInternalExternal(PInputFile file, Path dest) {
         return file.getInternal()
             ? internalDownload(file.getChecksum(), dest)
             : externalDownload(file.getUrl(), dest);

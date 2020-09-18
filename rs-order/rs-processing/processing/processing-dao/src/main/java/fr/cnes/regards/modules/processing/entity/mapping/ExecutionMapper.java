@@ -38,6 +38,8 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
                 exec.getUserName(),
                 exec.getProcessBusinessId(),
                 exec.getProcessName(),
+                exec.getExecutionCorrelationId(),
+                exec.getBatchCorrelationId(),
                 exec.getCreated(),
                 exec.getLastUpdated(),
                 exec.getVersion(),
@@ -49,7 +51,9 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
     public PExecution toDomain(ExecutionEntity entity) {
         return new PExecution(
                 entity.getId(),
+                entity.getCorrelationId(),
                 entity.getBatchId(),
+                entity.getBatchCorrelationId(),
                 Duration.ofMillis(entity.getTimeoutAfterMillis()),
                 List.ofAll(entity.getFileParameters().getValues()),
                 toDomain(entity.getSteps()),

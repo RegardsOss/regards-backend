@@ -70,7 +70,7 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-plugins</artifactId>
+            <artifactId>processing-order-processes</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

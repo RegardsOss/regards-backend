@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.domain;
 
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import lombok.Value;
@@ -16,11 +15,15 @@ public class PExecution {
 
     UUID id;
 
+    String executionCorrelationId;
+
     UUID batchId;
+
+    String batchCorrelationId;
 
     Duration expectedDuration;
 
-    Seq<ExecutionFileParameterValue> inputFiles;
+    Seq<PInputFile> inputFiles;
 
     Seq<PStep> steps;
 
@@ -41,9 +44,11 @@ public class PExecution {
     transient boolean persisted;
 
     public static PExecution create(
+            String executionCorrelationId,
             UUID batchId,
+            String batchCorrelationId,
             Duration expectedDuration,
-            Seq<ExecutionFileParameterValue> inputFiles,
+            Seq<PInputFile> inputFiles,
             String tenant,
             String userName,
             UUID processBusinessId,
@@ -52,7 +57,9 @@ public class PExecution {
         PStep registered = PStep.registered("");
         return new PExecution(
             UUID.randomUUID(),
+            executionCorrelationId,
             batchId,
+            batchCorrelationId,
             expectedDuration,
             inputFiles,
             List.of(registered),

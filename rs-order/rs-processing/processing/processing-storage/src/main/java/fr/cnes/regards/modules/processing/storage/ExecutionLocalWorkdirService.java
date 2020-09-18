@@ -2,10 +2,8 @@ package fr.cnes.regards.modules.processing.storage;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionFileParameterValue;
-import fr.cnes.regards.modules.processing.domain.storage.ExecutionLocalWorkdir;
-import fr.cnes.regards.modules.processing.domain.storage.IDownloadService;
-import fr.cnes.regards.modules.processing.domain.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
@@ -50,7 +48,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
 
     public Mono<ExecutionLocalWorkdir> writeInputFilesToWorkdirInput(
             ExecutionLocalWorkdir workdir,
-            Seq<ExecutionFileParameterValue> inputFiles
+            Seq<PInputFile> inputFiles
     ) {
         return Unit.fromCallable(() -> {
                 Files.createDirectories(workdir.inputFolder());
@@ -63,7 +61,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
             .onErrorResume(t -> cleanupWorkdir(workdir).flatMap(x -> Mono.error(t)));
     }
 
-    private Mono<Path> download(ExecutionFileParameterValue src, Path dst) {
+    private Mono<Path> download(PInputFile src, Path dst) {
         return downloadService
             .download(src, dst)
             .retry(2L) // Allow some noise on the network and retry a little
