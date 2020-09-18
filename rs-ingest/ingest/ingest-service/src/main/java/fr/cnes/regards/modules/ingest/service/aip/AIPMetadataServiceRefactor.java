@@ -90,12 +90,12 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace)
+    public void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path tmpZipLocation)
             throws NothingToDoException {
         Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
-                pageToRequest = self.dumpOnePage(aipSaveMetadataRequestRefactor, pageToRequest, workspace);
+                pageToRequest = self.dumpOnePage(aipSaveMetadataRequestRefactor, pageToRequest, tmpZipLocation);
             } while (pageToRequest != null);
         } catch (IOException e) {
             String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();
@@ -108,10 +108,11 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
     }
 
     @Override
-    public void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace) {
+    public void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path dumpLocation,
+            Path tmpZipLocation) {
         OffsetDateTime creationDate = aipSaveMetadataRequestRefactor.getCreationDate();
         try {
-            dumpService.generateDump(workspace, creationDate);
+            dumpService.generateDump(dumpLocation, tmpZipLocation, creationDate);
         } catch (IOException e) {
             LOGGER.error("Error while writing aip dump", e);
             throw new RsRuntimeException(e.getClass().getSimpleName() + " " + e.getMessage(), e);

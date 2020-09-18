@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -59,7 +58,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
@@ -125,9 +123,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     private ISIPRepository sipRepository;
 
     @Autowired
-    private IAIPStoreMetaDataRepository storeMetaDataRepository;
-
-    @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
 
     @Autowired
@@ -187,10 +182,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         List<AIPEntity> aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), null, true, true);
-        storeMetaDataRequest.setState(InternalRequestState.ERROR);
-        storeMetaDataRepository.save(storeMetaDataRequest);
-
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest
                 .build(AIPUpdateParametersDto.build(SearchAIPsParameters.build().withSession(SESSION_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
@@ -252,8 +243,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH STORE META IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.STORE_METADATA).withState(InternalRequestState.ERROR), pr);
+        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH STORE META IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
@@ -304,10 +294,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         ingestRequest.setAips(Lists.newArrayList(aipEntity));
         abstractRequestRepository.save(ingestRequest);
 
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aipEntity2, null, false, false);
-        storeMetaDataRequest.setState(InternalRequestState.ERROR);
-        abstractRequestRepository.save(storeMetaDataRequest);
-
         List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aipEntity2, AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build()).withAddTags(Lists.newArrayList("TEST")), false);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
@@ -316,11 +302,13 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testDeleteRequestByAip() {
+    public void testDeleteRequestByAip() throws InterruptedException {
         Set<AIPEntity> aipEntities = makeRequests();
         Assert.assertEquals(3, abstractRequestRepository.count());
         // Delete all requests associated to AIP
         requestService.deleteAllByAip(aipEntities);
+
+
         Assert.assertEquals(0, abstractRequestRepository.count());
         // Now we can delete the AIP
         aipRepository.deleteAll(aipEntities);

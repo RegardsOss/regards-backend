@@ -89,8 +89,6 @@
 				spring-cloud-starter-netflix-eureka-client
 			</artifactId>
 		</dependency>
-
-		<!-- TO CHECK -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>json-dump-starter</artifactId>

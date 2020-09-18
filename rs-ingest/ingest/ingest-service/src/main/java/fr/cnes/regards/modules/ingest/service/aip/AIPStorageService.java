@@ -50,7 +50,6 @@ import fr.cnes.regards.framework.oais.RepresentationInformation;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
@@ -496,50 +495,6 @@ public class AIPStorageService implements IAIPStorageService {
             aip.setManifestLocations(newManifestLocations);
         }
         return filesToRemove;
-    }
-
-    @Override
-    public Set<StoreLocation> getManifestStoreLocationsByStorageMetadata(Set<StorageMetadata> storages) {
-        Set<StoreLocation> result = new HashSet<>();
-        for (StorageMetadata storage : storages) {
-            if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes().contains(DataType.AIP)) {
-                result.add(StoreLocation.build(storage.getPluginBusinessId(), storage.getStorePath()));
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public Set<StoreLocation> getManifestStoreLocationsByLocation(Set<OAISDataObjectLocation> manifestLocations) {
-        Set<StoreLocation> result = new HashSet<>();
-        for (OAISDataObjectLocation location : manifestLocations) {
-            result.add(StoreLocation.build(location.getStorage(), location.getStorePath()));
-        }
-        return result;
-    }
-
-    @Override
-    public List<String> storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException {
-
-        Optional<ServiceInstance> instance = discoveryClient.getInstances(applicationName).stream().findFirst();
-        if (!instance.isPresent()) {
-            throw new ModuleException("Unable to retrieve an accessible instance for ingest microservice");
-        }
-
-        // Build file storage requests
-        Collection<FileStorageRequestDTO> files = new ArrayList<>();
-
-        for (AIPStoreMetaDataRequest request : requests) {
-            // Create a request for each storage
-            Collection<FileStorageRequestDTO> fileStorageRequests = buildAIPStorageRequest(request.getAip()
-                    .getAip(), request.getAip().getChecksum(), request.getStoreLocations(), instance.get());
-            files.addAll(fileStorageRequests);
-        }
-
-        // Make a request group for all these aips
-        LOGGER.info("[AIP STORE META REQUEST] Sending {} storage requests to storage client.", files.size());
-        Collection<RequestInfo> infos = storageClient.store(files);
-        return infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList());
     }
 
     /**

@@ -15,7 +15,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.sessionmanager.client.ISessionNotificationClient;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
@@ -34,12 +33,6 @@ public class SessionNotifier {
     public static final String PRODUCT_STORED = "products_stored";
 
     public static final String PRODUCT_STORE_ERROR = "products_store_error";
-
-    public static final String PRODUCT_META_STORE_PENDING = "products_meta_store_pending";
-
-    public static final String PRODUCT_META_STORED = "products_meta_stored";
-
-    public static final String PRODUCT_META_STORE_ERROR = "products_meta_store_error";
 
     public static final String PRODUCT_IGNORED = "products_ignored";
 
@@ -226,54 +219,6 @@ public class SessionNotifier {
         }
     }
 
-    // AIP storage
-
-    public void incrementMetaStorePending(AIPEntity aip) {
-        sessionNotifier.increment(aip.getSessionOwner(),
-                                  aip.getSession(),
-                                  PRODUCT_META_STORE_PENDING,
-                                  SessionNotificationState.OK,
-                                  1);
-    }
-
-    public void decrementMetaStorePending(AIPStoreMetaDataRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORE_PENDING,
-                                  SessionNotificationState.OK,
-                                  1);
-    }
-
-    public void incrementMetaStoreSuccess(AIPStoreMetaDataRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORED,
-                                  SessionNotificationState.OK,
-                                  1);
-    }
-
-    public void decrementMetaStoreSuccess(String sessionOwner, String session, Integer nbAips) {
-        sessionNotifier.decrement(sessionOwner, session, PRODUCT_META_STORED, SessionNotificationState.OK, nbAips);
-    }
-
-    public void incrementMetaStoreError(AIPStoreMetaDataRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_META_STORE_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  1);
-    }
-
-    public void decrementMetaStoreError(AIPStoreMetaDataRequest request) {
-        if (request.getState() == InternalRequestState.ERROR) {
-            sessionNotifier.decrement(request.getSessionOwner(),
-                                      request.getSession(),
-                                      PRODUCT_META_STORE_ERROR,
-                                      SessionNotificationState.OK,
-                                      1);
-        }
-    }
-
     /**
      * Notify session when a request is deleted
      * @param request
@@ -335,7 +280,6 @@ public class SessionNotifier {
         int nbGenerated = 0;
         int nbStored = 0;
         int nbStorePending = 0;
-        int nbManifestStored = 0;
         for (AIPEntity aip : aips) {
             // Check if an ingest request exists in error status for the given AIP. If exists, so the product is not
             // referenced as store pending in the session but as store error.
@@ -348,9 +292,6 @@ public class SessionNotifier {
                     break;
                 case STORED:
                     nbStored++;
-                    if (!aip.getManifestLocations().isEmpty()) {
-                        nbManifestStored++;
-                    }
                     break;
                 case DELETED:
                 default:
@@ -368,13 +309,6 @@ public class SessionNotifier {
         if (nbStored > 0) {
             // -x product_stored
             sessionNotifier.decrement(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, nbStored);
-            if (nbManifestStored > 0) {
-                sessionNotifier.decrement(sessionOwner,
-                                          session,
-                                          PRODUCT_META_STORED,
-                                          SessionNotificationState.OK,
-                                          nbManifestStored);
-            }
         }
         sessionNotifier
                 .decrement(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK, nbGenerated + nbStored);

@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
@@ -46,6 +49,9 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
     @Autowired
     private IAIPMetadataServiceRefactor metadataService;
 
+    @Autowired
+    private IWorkspaceService workspaceService;
+
     @Override
     public boolean needWorkspace() {
         return true;
@@ -61,15 +67,17 @@ public class AIPSaveMetadataJobRefactor extends AbstractJob<Void> {
         this.request = getValue(parameters, SAVE_METADATA_REQUEST, type);
     }
 
-
     @Override
     public void run() {
         logger.debug("[AIP SAVE METADATA JOB] Running job for 1 AIPSaveMetaDataRequest request");
         long start = System.currentTimeMillis();
         try {
+            Path dumpLocation = workspaceService.getMicroserviceWorkspace();
             metadataService.writeZips(request, getWorkspace());
-            metadataService.writeDump(request, getWorkspace());
+            metadataService.writeDump(request, dumpLocation, getWorkspace());
             metadataService.handleSuccess(request);
+        } catch (IOException e) {
+            logger.error(e.getClass().getSimpleName() + " " + e.getMessage());
         } catch (RsRuntimeException e) {
             logger.error(e.getMessage());
             metadataService.handleError(request, e.getMessage());

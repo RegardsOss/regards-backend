@@ -37,11 +37,11 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
 public interface IAIPMetadataServiceRefactor {
 
     /** Write zip in workspace  */
-    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace)
+    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path tmpZipLocation)
             throws NothingToDoException;
 
     /** Create zip of zips in workspace (dump) */
-    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path workspace);
+    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path dumpLocation, Path tmpZipLocation);
 
     /**
      * Get set of aips to zip and zip their content in workspace

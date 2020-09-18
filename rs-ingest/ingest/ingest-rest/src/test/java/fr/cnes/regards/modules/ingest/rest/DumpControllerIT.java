@@ -57,7 +57,6 @@ public class DumpControllerIT extends AbstractRegardsTransactionalIT {
         // Create lastReqDumpDate to now
         dumpRepository.save(new LastDump(OffsetDateTime.now()));
         LastDump resource = dumpRepository.getOne(LastDump.LAST_DUMP_DATE_ID);
-
         Assert.assertFalse(resource.getLastDumpReqDate() == null);
 
         // Reset lastReqDumpDate

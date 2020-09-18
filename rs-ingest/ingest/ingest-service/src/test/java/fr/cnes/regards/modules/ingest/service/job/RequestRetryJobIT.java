@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -56,7 +55,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -79,7 +77,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=request_retry_job", "regards.amqp.enabled=true",
                 "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
+                "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 public class RequestRetryJobIT extends IngestMultitenantServiceTest {
@@ -100,9 +98,6 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private ISIPRepository sipRepository;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaDataRepository;
 
     @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
@@ -176,11 +171,6 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
         aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), new HashSet<>(), true,
-                                                                                     true);
-        storeMetaDataRequest.setState(InternalRequestState.ERROR);
-        storeMetaDataRepository.save(storeMetaDataRequest);
-
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);

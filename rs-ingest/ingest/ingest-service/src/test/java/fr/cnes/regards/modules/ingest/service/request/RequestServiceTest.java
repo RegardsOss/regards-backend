@@ -52,7 +52,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
@@ -71,8 +70,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  * @author Léo Mieulet
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
-                "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true",
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test", "regards.amqp.enabled=true",
                 "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
@@ -179,11 +177,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         return (AIPUpdatesCreatorRequest) requestService.scheduleRequest(updateCreatorRequest);
     }
 
-    private AIPStoreMetaDataRequest createStoreMetaDataRequest(List<AIPEntity> aips) {
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), null, true, true);
-        return (AIPStoreMetaDataRequest) requestService.scheduleRequest(storeMetaDataRequest);
-    }
-
     private AIPPostProcessRequest createPostProcessRequest(AIPEntity aip){
         AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip,"sampleId");
         return (AIPPostProcessRequest) requestService.scheduleRequest(postProcessRequest);
@@ -207,11 +200,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         IngestRequest ingestRequest = createIngestRequest(aips.get(0));
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
                             ingestRequest.getState());
-        clearRequest();
-
-        AIPStoreMetaDataRequest storeMetaDataRequest = createStoreMetaDataRequest(aips);
-        Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
-                            storeMetaDataRequest.getState());
         clearRequest();
 
         AIPUpdatesCreatorRequest aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
@@ -257,7 +245,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         // BEGIN ------- Test AIPUpdateRequest
         createIngestRequest(aips.get(0));
         createAIPUpdatesCreatorRequest();
-        createStoreMetaDataRequest(aips);
         updateRequest = createUpdateRequest(aips);
         for (AIPUpdateRequest request : updateRequest) {
             Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED, request.getState());
@@ -288,7 +275,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
 
         // BEGIN ------- Test AIPPostProcessRequest
         createIngestRequest(aips.get(0));
-        createStoreMetaDataRequest(aips);
         aipPostProcessRequest = createPostProcessRequest(aips.get(0));
         Assert.assertEquals("The request should not be blocked", InternalRequestState.CREATED,
                             aipPostProcessRequest.getState());
@@ -302,29 +288,16 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         prepareOAISEntities();
 
         // BEGIN ------- Test AIPUpdatesCreatorRequest
-        createStoreMetaDataRequest(aips);
-        AIPUpdatesCreatorRequest aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            aipUpdatesCreatorRequest.getState());
-        clearRequest();
-
         createOAISDeletionCreatorRequest();
-        aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
+        AIPUpdatesCreatorRequest aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             aipUpdatesCreatorRequest.getState());
         clearRequest();
         // END ------- Test AIPUpdatesCreatorRequest
 
         // BEGIN ------- Test AIPUpdateRequest
-        createStoreMetaDataRequest(aips);
-        List<AIPUpdateRequest> updateRequest = createUpdateRequest(aips);
-        for (AIPUpdateRequest request : updateRequest) {
-            Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED, request.getState());
-        }
-        clearRequest();
-
         createOAISDeletionRequest(aips);
-        updateRequest = createUpdateRequest(aips);
+        List<AIPUpdateRequest> updateRequest = createUpdateRequest(aips);
         for (AIPUpdateRequest request : updateRequest) {
             Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED, request.getState());
         }
@@ -345,55 +318,17 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         clearRequest();
         // END ------- Test AIPUpdateRequest
 
-        // BEGIN ------- Test AIPStoreMetaDataRequest
-        createUpdateRequest(aips);
-        AIPStoreMetaDataRequest storeMetaDataRequest = createStoreMetaDataRequest(aips);
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            storeMetaDataRequest.getState());
-        clearRequest();
-
-        createOAISDeletionRequest(aips);
-        storeMetaDataRequest = createStoreMetaDataRequest(aips);
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            storeMetaDataRequest.getState());
-        clearRequest();
-
-        createAIPUpdatesCreatorRequest();
-        storeMetaDataRequest = createStoreMetaDataRequest(aips);
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            storeMetaDataRequest.getState());
-        clearRequest();
-
-        createOAISDeletionCreatorRequest();
-        storeMetaDataRequest = createStoreMetaDataRequest(aips);
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            storeMetaDataRequest.getState());
-        clearRequest();
-        // END ------- Test AIPStoreMetaDataRequest
-
         // BEGIN ------- Test OAISDeletionCreatorRequest
-        createStoreMetaDataRequest(aips);
-        OAISDeletionCreatorRequest oaisDeletionRequest = createOAISDeletionCreatorRequest();
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            oaisDeletionRequest.getState());
-        clearRequest();
-
         createUpdateRequest(aips);
-        oaisDeletionRequest = createOAISDeletionCreatorRequest();
+        OAISDeletionCreatorRequest oaisDeletionRequest = createOAISDeletionCreatorRequest();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
                             oaisDeletionRequest.getState());
         clearRequest();
         // END ------- Test OAISDeletionCreatorRequest
 
         // BEGIN ------- Test StorageDeletionRequest
-        createStoreMetaDataRequest(aips);
-        OAISDeletionRequest storageDeletionRequest = createOAISDeletionRequest(aips);
-        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
-                            storageDeletionRequest.getState());
-        clearRequest();
-
         createUpdateRequest(aips);
-        storageDeletionRequest = createOAISDeletionRequest(aips);
+        OAISDeletionRequest storageDeletionRequest = createOAISDeletionRequest(aips);
         Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
                             storageDeletionRequest.getState());
         clearRequest();

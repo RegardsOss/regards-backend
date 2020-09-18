@@ -20,11 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,14 +33,12 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -52,8 +46,6 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -89,9 +81,6 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
 
     @Autowired
     private IIngestRequestRepository ingestReqRepo;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaReqRepo;
 
     @Autowired
     private ISIPRepository sipRepo;
@@ -148,10 +137,6 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
                                                                          null, null, MediaType.APPLICATION_JSON, null),
                                           FileLocationDTO.build(storage, storedUrl), owners),
                            null));
-            AIPStoreMetaDataRequest request = AIPStoreMetaDataRequest
-                    .build(aipEntity, Sets.newHashSet(StoreLocation.build(storage, storePath)), true, true);
-            request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
-            storeMetaReqRepo.save(request);
 
         } else {
             results.add(RequestResultInfoDTO
@@ -230,8 +215,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
             System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
             // Check results
             Assert.assertEquals(remaining, requestService
-                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                            .withRequestType(RequestTypeEnum.STORE_METADATA), PageRequest.of(0, 10))
+                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner"), PageRequest.of(0, 10))
                     .getTotalElements());
             aipRepo.findAll().forEach(a -> {
                 Assert.assertEquals(AIPState.STORED, a.getState());

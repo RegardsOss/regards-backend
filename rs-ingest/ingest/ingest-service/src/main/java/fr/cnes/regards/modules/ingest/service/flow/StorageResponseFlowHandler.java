@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,18 +29,15 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.service.aip.AIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
-import fr.cnes.regards.modules.ingest.service.request.IAIPStoreMetaDataRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
@@ -78,9 +71,6 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Autowired
     private AIPService aipService;
-
-    @Autowired
-    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Override
     public void onCopySuccess(Set<RequestInfo> requests) {
@@ -154,7 +144,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
-            Set<AIPStoreMetaDataRequest> toHandle = Sets.newHashSet();
+            //Set<AIPStoreMetaDataRequest> toHandle = Sets.newHashSet();
             Set<IngestRequest> toHandleRemote = Sets.newHashSet();
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -163,9 +153,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Ingest request {} found associated to group request {}",
                                      request.getId(), ri.getGroupId());
                         toHandleRemote.add((IngestRequest) request);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        toHandle.add((AIPStoreMetaDataRequest) request);
-                    } else {
+                    }  else {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Request type undefined {} for group {}",
                                      request.getId(), ri.getGroupId());
                         requestService.handleRemoteStoreSuccess(request);
@@ -173,7 +161,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 }
             }
             ingestRequestService.handleRemoteStoreSuccess(toHandleRemote, ri);
-            aipSaveMetaDataService.handleSuccess(toHandle, ri);
+            //aipSaveMetaDataService.handleSuccess(toHandle, ri);
             if (!found) {
                 LOGGER.warn("[STORAGE RESPONSE HANDLER] No request found associated to group request {}",
                             ri.getGroupId());
@@ -190,9 +178,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
                     if (request instanceof IngestRequest) {
                         ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                    } else if (request instanceof AIPStoreMetaDataRequest) {
-                        aipSaveMetaDataService.handleError((AIPStoreMetaDataRequest) request, ri);
-                    } else {
+                    }  else {
                         requestService.handleRemoteStoreError(request);
                     }
                 }

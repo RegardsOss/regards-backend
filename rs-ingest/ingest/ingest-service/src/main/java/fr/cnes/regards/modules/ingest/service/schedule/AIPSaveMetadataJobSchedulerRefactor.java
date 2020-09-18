@@ -50,7 +50,7 @@ public class AIPSaveMetadataJobSchedulerRefactor {
      */
 
     //TODO change bulk delay
-    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:10000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.aips.save-metadat.bulk.delay:2000000}", initialDelay = 1_000)
     protected void scheduleAIPSaveMetaDataJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

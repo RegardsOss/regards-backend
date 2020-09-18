@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestversioning", "spring.jpa.show-sql=false",
                 "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
-                "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
+                "eureka.client.enabled=false",
                 "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class VersioningModeIT extends IngestMultitenantServiceTest {

@@ -19,29 +19,20 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -61,7 +52,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IngestRequestSpecifications;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -82,9 +72,7 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.job.ChooseVersioningJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
-import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.ingest.service.job.RequestRetryJob;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -134,9 +122,6 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
-
-    @Autowired
-    private IAIPStoreMetaDataRequestService aipSaveMetaDataService;
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -307,7 +292,7 @@ public class IngestRequestService implements IIngestRequestService {
                 // Monitoring
                 sessionNotifier.incrementProductStorePending(request);
             } else {
-                // No files to store for the request AIPs. We can immediately store the manifest.
+                // No files to store for the request AIPs.
                 finalizeSuccessfulRequest(Sets.newHashSet(request), false);
             }
         } catch (ModuleException e) {
@@ -602,7 +587,7 @@ public class IngestRequestService implements IIngestRequestService {
 
     /**
      * Delete the given {@link IngestRequest} and unlock associated jobs.
-     * @param request
+     * @param requests
      */
     public void deleteRequest(Collection<IngestRequest> requests) {
         for (IngestRequest request : requests) {

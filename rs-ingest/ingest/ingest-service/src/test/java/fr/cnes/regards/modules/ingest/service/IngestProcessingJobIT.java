@@ -37,9 +37,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -50,7 +48,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -59,7 +56,6 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -70,11 +66,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.AIPTaggingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.PostProcessingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.*;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -90,7 +82,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
-                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+                       "regards.ingest.aip.delete.bulk.delay=100" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -129,9 +121,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepo;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaRequestRepo;
 
     @SpyBean
     private IStorageClient storageClient;
@@ -248,9 +237,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         // Check status of IngestRequest
         reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
         Assert.assertEquals("Request sould be deleted as requests is done success", 0, reqs.size());
-        List<AIPStoreMetaDataRequest> metaReqs = storeMetaRequestRepo.findAllByAipIdIn(Lists.newArrayList(aip.getId()));
-        Assert.assertEquals(1, metaReqs.size());
-
     }
 
     @Requirements({ @Requirement("REGARDS_DSL_ING_PRO_160"), @Requirement("REGARDS_DSL_STO_AIP_010") })
