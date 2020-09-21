@@ -14,8 +14,7 @@ import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepos
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
-import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
-import io.vavr.collection.List;
+import io.vavr.collection.Map;
 import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,29 +28,29 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
 
 @Component
-public class ProcessRepositoryImpl implements IPProcessRepository {
+public class OrderProcessRepositoryImpl implements IPProcessRepository {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessRepositoryImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderProcessRepositoryImpl.class);
 
     private final IPluginService pluginService;
     private final IWorkloadEngineRepository enginRepo;
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
     private final IRuntimeTenantResolver tenantResolver;
     private final IReactiveRolesClient rolesClient;
-    private final IPUserAuthService authFactory;
 
     @Autowired
-    public ProcessRepositoryImpl(IPluginService pluginService, IWorkloadEngineRepository enginRepo,
+    public OrderProcessRepositoryImpl(IPluginService pluginService, IWorkloadEngineRepository enginRepo,
             IRightsPluginConfigurationRepository rightsPluginConfigRepo, IRuntimeTenantResolver tenantResolver,
-            IReactiveRolesClient rolesClient, IPUserAuthService authFactory) {
+            IReactiveRolesClient rolesClient) {
         this.pluginService = pluginService;
         this.enginRepo = enginRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.tenantResolver = tenantResolver;
         this.rolesClient = rolesClient;
-        this.authFactory = authFactory;
     }
 
     @Override public Flux<PProcess> findAllByTenant(String tenant) {
@@ -68,7 +67,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     @Override public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
         return findRightsPluginConfigurations()
                 .flatMap(rights -> buildPProcess(tenant, rights))
-                .filter(p -> p.getBusinessId().equals(processId))
+                .filter(p -> p.getProcessId().equals(processId))
                 .next();
     }
 
@@ -80,7 +79,7 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
 
     @Override public Mono<PProcess> findByBatch(PBatch batch) {
         return findAllByTenant(batch.getTenant())
-                .filter(process -> process.getBusinessId().equals(batch.getProcessBusinessId()))
+                .filter(process -> process.getProcessId().equals(batch.getProcessBusinessId()))
                 .next();
     }
 
@@ -131,13 +130,11 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
                 .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName())
                     .map(engine -> {
                         PluginConfiguration pc = rpc.getPluginConfiguration();
-                        return new PProcess(
+                        return new PProcess.ConcretePProcess(
                                 UUID.fromString(pc.getBusinessId()),
                                 pc.getLabel(),
+                                addTenantRole(processDef.processInfo(), rpc.getTenant(), rpc.getRole()),
                                 pc.isActive(),
-                                rpc.getTenant(),
-                                rpc.getRole(),
-                                processDef.processInfo(),
                                 processDef.batchChecker(),
                                 processDef.executionChecker(),
                                 processDef.parameters(),
@@ -153,6 +150,11 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
         );
     }
 
+    private Map<String, String> addTenantRole(Map<String, String> processInfo, String tenant, String role) {
+        return processInfo
+            .put(PROCESS_INFO_TENANT_PARAM_NAME, tenant)
+            .put(PROCESS_INFO_ROLE_PARAM_NAME, role);
+    }
 
     private Mono<IProcessDefinition> getProcessDefinition(String tenant, String processName) {
         return fromOptional(() -> getOptionalPlugin(tenant, processName));
@@ -167,10 +169,6 @@ public class ProcessRepositoryImpl implements IPProcessRepository {
     private <T> Mono<T> fromOptional(Callable<Optional<T>> copt) {
         return Mono.fromCallable(copt)
                 .flatMap(o -> o.map(Mono::just).orElseGet(Mono::empty));
-    }
-
-    private boolean withBusinessId(String processName, RightsPluginConfiguration rights) {
-        return rights.getPluginConfiguration().getBusinessId().equals(processName);
     }
 
 }

@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParam
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
-import fr.cnes.regards.modules.processing.repository.ProcessRepositoryImpl;
+import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
@@ -58,7 +58,7 @@ public class SimpleShellProcessPluginTest {
 
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
-        ProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
+        OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
         SimpleShellProcessPlugin shellProcessPlugin = makePlugin();
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
@@ -100,7 +100,7 @@ public class SimpleShellProcessPluginTest {
         );
     }
 
-    private ProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
+    private OrderProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
         IRightsPluginConfigurationRepository rightsRepo = Mockito.mock(IRightsPluginConfigurationRepository.class);
         when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
         IReactiveRolesClient rolesClient = Mockito.mock(IReactiveRolesClient.class);
@@ -109,13 +109,12 @@ public class SimpleShellProcessPluginTest {
         when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
                 .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
 
-        return new ProcessRepositoryImpl(
+        return new OrderProcessRepositoryImpl(
                 Mockito.mock(IPluginService.class),
                 engineRepo,
                 rightsRepo,
                 Mockito.mock(IRuntimeTenantResolver.class),
-                rolesClient,
-                authFactory
+                rolesClient
         );
     }
 
@@ -179,7 +178,7 @@ public class SimpleShellProcessPluginTest {
         return new PBatch(
             "corr",
             batchId,
-            process.getBusinessId(),
+            process.getProcessId(),
             process.getProcessName(),
             "tenant", "user", "role",
             List.of(

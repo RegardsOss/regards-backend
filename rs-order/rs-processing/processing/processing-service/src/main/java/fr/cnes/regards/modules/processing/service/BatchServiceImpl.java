@@ -46,7 +46,7 @@ public class BatchServiceImpl implements IBatchService {
         return Mono.just(new PBatch(
             data.getCorrelationId(),
             UUID.randomUUID(),
-            process.getBusinessId(),
+            process.getProcessId(),
             process.getProcessName(),
             data.getTenant(),
             data.getUser(),

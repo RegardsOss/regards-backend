@@ -16,21 +16,15 @@ public class PProcessDTO {
 
     boolean active;
 
-    String tenant;
-
-    String userRoles;
-
     Map<String,String> processInfo;
 
     List<ExecutionParamDTO> params;
 
     public static PProcessDTO fromProcess(PProcess p) {
         return new PProcessDTO(
-                p.getBusinessId(),
+                p.getProcessId(),
                 p.getProcessName(),
                 p.isActive(),
-                p.getTenant(),
-                p.getUserRole(),
                 p.getProcessInfo(),
                 p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList()
         );

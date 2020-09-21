@@ -6,4 +6,8 @@ public interface Constants {
     String CARDINALITY = "cardinality";
     String DATATYPES = "datatypes";
 
+    String PROCESS_INFO_TENANT_PARAM_NAME = "regards.tenant";
+    String PROCESS_INFO_ROLE_PARAM_NAME = "regards.userRole";
+
+
 }

@@ -46,18 +46,16 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     @Override
-    public Mono<PExecution> launchExecution(PExecutionRequestEvent request) {
-        return makeExec(request)
-            .flatMap(this::runEngine);
-    }
-
-    @Override
-    public Mono<PExecution> runExecutable(UUID execId) {
+    public Mono<ExecutionContext> createContext(UUID execId) {
         return execRepo.findById(execId)
             .flatMap(exec -> batchRepo.findById(exec.getBatchId())
                 .flatMap(batch -> processRepo.findByBatch(batch)
-                    .flatMap(process -> createContext(exec, batch, process)
-                        .flatMap(process.getEngine()::run))));
+                    .flatMap(process -> createContext(exec, batch, process))));
+    }
+
+    @Override
+    public Mono<PExecution> launchExecution(PExecutionRequestEvent request) {
+        return makeExec(request).flatMap(this::runEngine);
     }
 
     @Scheduled(
@@ -121,6 +119,7 @@ public class ExecutionServiceImpl implements IExecutionService {
                 return forecast.expectedRunningDurationInBytes(totalSize);
             });
     }
+
 
     private Mono<ExecutionContext> createContext(PExecution exec, PBatch batch, PProcess process) {
         return Mono.just(new ExecutionContext(

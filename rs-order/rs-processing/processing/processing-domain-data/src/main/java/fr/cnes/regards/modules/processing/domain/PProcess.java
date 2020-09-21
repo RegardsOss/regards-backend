@@ -13,35 +13,46 @@ import lombok.Value;
 
 import java.util.UUID;
 
-@Value
+public interface PProcess {
 
-public class PProcess {
+    UUID getProcessId();
 
-    UUID businessId;
+    String getProcessName();
 
-    String processName;
+    Map<String, String> getProcessInfo();
 
-    boolean active;
+    boolean isActive();
 
-    String tenant;
+    ConstraintChecker<PBatch> getBatchChecker();
 
-    String userRole;
+    ConstraintChecker<PExecution> getExecutionChecker();
 
-    Map<String, String> processInfo;
+    Seq<ExecutionParameterDescriptor> getParameters();
 
-    ConstraintChecker<PBatch> batchChecker;
+    IResultSizeForecast getResultSizeForecast();
 
-    ConstraintChecker<PExecution> executionChecker;
+    IRunningDurationForecast getRunningDurationForecast();
 
-    Seq<ExecutionParameterDescriptor> parameters;
+    IWorkloadEngine getEngine();
 
-    IResultSizeForecast resultSizeForecast;
+    IExecutable getExecutable();
 
-    IRunningDurationForecast runningDurationForecast;
+    IOutputToInputMapper getMapper();
 
-    IWorkloadEngine engine;
+    @Value
+    class ConcretePProcess implements PProcess {
+        UUID processId;
+        String processName;
+        Map<String, String> processInfo;
+        boolean active;
+        ConstraintChecker<PBatch> batchChecker;
+        ConstraintChecker<PExecution> executionChecker;
+        Seq<ExecutionParameterDescriptor> parameters;
+        IResultSizeForecast resultSizeForecast;
+        IRunningDurationForecast runningDurationForecast;
+        IWorkloadEngine engine;
+        IExecutable executable;
+        IOutputToInputMapper mapper;
+    }
 
-    IExecutable executable;
-
-    IOutputToInputMapper mapper;
 }

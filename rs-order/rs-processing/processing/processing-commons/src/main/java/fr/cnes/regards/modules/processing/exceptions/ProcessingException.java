@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-public abstract class ProcessingException extends Exception {
+public abstract class ProcessingException extends RuntimeException {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingException.class);
 

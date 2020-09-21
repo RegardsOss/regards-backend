@@ -249,5 +249,7 @@
 
         <module>processing-order-commons</module>
         <module>processing-order-processes</module>
+
+        <module>processing-demo</module>
     </modules>
 </project>
