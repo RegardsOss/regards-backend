@@ -6,6 +6,8 @@ import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.domain.repository.IPBatchRepository;
+import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
+import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,6 +53,16 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
                 .map(BatchEntity::persisted)
                 .map(mapper::toDomain)
                 .doOnNext(b -> cache.put(b.getId(), b))
-            );
+            )
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new BatchNotFoundException(id))));
+    }
+
+    public static final class BatchNotFoundException extends ProcessingException {
+        public BatchNotFoundException(UUID batchId) {
+            super(ProcessingExceptionType.BATCH_NOT_FOUND_EXCEPTION, String.format("Batch uuid not found: %s", batchId));
+        }
+        @Override public String getMessage() {
+            return desc;
+        }
     }
 }

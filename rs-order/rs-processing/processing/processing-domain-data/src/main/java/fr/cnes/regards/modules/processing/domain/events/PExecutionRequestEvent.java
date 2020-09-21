@@ -12,7 +12,6 @@ import lombok.With;
 import java.util.UUID;
 
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-// TODO verify these @Event parameters
 @Value @With
 public class PExecutionRequestEvent implements ISubscribable {
 

@@ -7,6 +7,8 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
+import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
+import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,8 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             .map(Mono::just)
             .getOrElse(() -> entityExecRepo.findById(id)
                 .map(mapper::toDomain)
-                .doOnNext(e -> cache.put(e.getId(), e)));
+                .doOnNext(e -> cache.put(e.getId(), e)))
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new ExecutionNotFoundException(id))));
     }
 
     @Override public Flux<PExecution> getTimedOutExecutions() {
@@ -96,6 +99,16 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         return entityExecRepo.findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                 tenant, userEmail, status, from, to, page
         ).map(mapper::toDomain);
+    }
+
+
+    public static final class ExecutionNotFoundException extends ProcessingException {
+        public ExecutionNotFoundException(UUID execId) {
+            super(ProcessingExceptionType.EXECUTION_NOT_FOUND_EXCEPTION, String.format("Execution uuid not found: %s", execId));
+        }
+        @Override public String getMessage() {
+            return desc;
+        }
     }
 
 }

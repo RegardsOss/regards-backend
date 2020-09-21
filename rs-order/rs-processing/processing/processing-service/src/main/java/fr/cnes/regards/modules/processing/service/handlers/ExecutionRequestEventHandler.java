@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 public class ExecutionRequestEventHandler
@@ -44,6 +45,7 @@ public class ExecutionRequestEventHandler
         LOGGER.info("exec={} - Execution request received", execCid);
 
         execService.launchExecution(message)
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new RuntimeException("PExecutionRequestEvent yielded an empty result: " + message))))
             .subscribe(
                 exec -> LOGGER.info("exec={} - Execution request registered correctly", execCid),
                 err -> LOGGER.error("exec={} - Execution request error: {}", execCid, err.getMessage())

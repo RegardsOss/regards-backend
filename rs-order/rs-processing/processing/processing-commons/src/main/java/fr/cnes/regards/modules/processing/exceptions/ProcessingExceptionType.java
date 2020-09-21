@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 
 public enum ProcessingExceptionType {
 
+    EXECUTION_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND),
+    BATCH_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND),
     WORKDIR_CREATION_ERROR,
     INTERNAL_DOWNLOAD_ERROR,
     EXTERNAL_DOWNLOAD_ERROR,

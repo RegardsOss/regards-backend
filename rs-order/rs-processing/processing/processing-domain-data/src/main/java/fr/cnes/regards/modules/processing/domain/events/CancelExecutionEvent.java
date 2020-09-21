@@ -9,8 +9,8 @@ import lombok.With;
 
 import java.util.UUID;
 
+// TODO: cancelling an execution is not supported yet
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-// TODO verify these @Event parameters
 @Value @With
 public class CancelExecutionEvent implements ISubscribable {
 
