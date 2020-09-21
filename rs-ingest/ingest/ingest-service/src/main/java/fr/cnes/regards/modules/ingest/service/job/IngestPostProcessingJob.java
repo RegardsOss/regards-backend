@@ -130,7 +130,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                     putReqError(postProcessResult.getErrors());
 
                 }
-                // If Success - put all requests corresponding to successfully processed aipIds to RUNNING state
+                // If Success - add successful aipIds to list
                 if (!postProcessResult.getSuccesses().isEmpty()) {
                     aipIdsSuccess.addAll(postProcessResult.getSuccesses());
                 }
@@ -145,11 +145,11 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             }
         }
 
-        // Update BDD (update running and error requests)
+        // Update BDD (update error requests)
         // If interrupted all requests not handled are already set in ABORTED status at job start
         aipPostProcessRequestRepository.saveAll(this.requests.values());
 
-        // Delete requests processed
+        // Delete requests processed successfully
         deleteSuccessReq(aipIdsSuccess);
 
         if (isInterrupted) {

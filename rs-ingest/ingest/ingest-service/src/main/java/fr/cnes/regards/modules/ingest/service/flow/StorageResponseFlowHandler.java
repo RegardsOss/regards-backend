@@ -144,7 +144,6 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
-            //Set<AIPStoreMetaDataRequest> toHandle = Sets.newHashSet();
             Set<IngestRequest> toHandleRemote = Sets.newHashSet();
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
@@ -161,7 +160,6 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 }
             }
             ingestRequestService.handleRemoteStoreSuccess(toHandleRemote, ri);
-            //aipSaveMetaDataService.handleSuccess(toHandle, ri);
             if (!found) {
                 LOGGER.warn("[STORAGE RESPONSE HANDLER] No request found associated to group request {}",
                             ri.getGroupId());

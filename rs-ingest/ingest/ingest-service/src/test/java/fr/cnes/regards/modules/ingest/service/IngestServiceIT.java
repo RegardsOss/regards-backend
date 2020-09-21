@@ -34,11 +34,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -68,6 +70,7 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
         properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
                 "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
+@ActiveProfiles(value = {"noschedule"})
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -121,7 +124,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Test
     @Purpose("Test postprocess requests creation")
-    public void ingestWithPostProcess() throws EntityInvalidException {
+    public void ingestWithPostProcess() throws EntityInvalidException, InterruptedException {
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection
@@ -147,7 +150,10 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Check that post process job is scheduled
         aipPostProcessService.scheduleJob();
 
-        Assert.assertEquals(1L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName()).longValue());
+        Assert.assertEquals(1L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING).longValue());
+
+        // Wait for job to finish
+        Thread.sleep(1000);
     }
 
     @Test

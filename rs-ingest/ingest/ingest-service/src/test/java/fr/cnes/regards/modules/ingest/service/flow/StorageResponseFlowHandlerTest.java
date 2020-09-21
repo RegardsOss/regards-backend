@@ -66,11 +66,10 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(
-        properties = { "spring.jpa.show-sql=true",
-                "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
+@TestPropertySource(properties = { "spring.jpa.show-sql=true",
+        "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
         locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noschedule" })
 public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest {
 
     @Autowired
@@ -88,26 +87,25 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
     @Autowired
     private IAIPRepository aipRepo;
 
-    private Set<RequestInfo> initAips(int nbAips, boolean metaStorage) {
+    private Set<RequestInfo> initAips(int nbAips) {
         Set<RequestInfo> rq = Sets.newHashSet();
         // Init 1000 sip/aip waiting for storage responses
         for (int i = 0; i < nbAips; i++) {
-            rq.add(initAip(UUID.randomUUID().toString(), "aip_number_" + i, metaStorage));
+            rq.add(initAip(UUID.randomUUID().toString(), "aip_number_" + i));
         }
         return rq;
     }
 
-    private RequestInfo initAip(String fileToStoreChecksum, String providerId, boolean metaStorage) {
+    private RequestInfo initAip(String fileToStoreChecksum, String providerId) {
         String sessionOwner = "sessionOwner";
         String session = "session";
         String storage = "storage";
         String storePath = null;
         MimeType mimeType = MediaType.APPLICATION_JSON;
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
-                                              IngestMetadata.build(sessionOwner, session, "ingestChain",
-                                                                   Sets.newHashSet(), StorageMetadata.build(storage)),
-                                              sip, 1, metaStorage ? SIPState.STORED : SIPState.INGESTED);
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata
+                                                      .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)), sip, 1,
+                                              SIPState.INGESTED);
         sipEntity.setChecksum(UUID.randomUUID().toString());
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
@@ -120,7 +118,7 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         aip.withDataObject(DataType.RAWDATA, Paths.get("file:///somewhere/", fileName), "MD5", fileToStoreChecksum);
         aip.withSyntax(mimeType);
         aip.registerContentInformation();
-        AIPEntity aipEntity = AIPEntity.build(sipEntity, metaStorage ? AIPState.STORED : AIPState.GENERATED, aip);
+        AIPEntity aipEntity = AIPEntity.build(sipEntity, AIPState.GENERATED, aip);
         aipEntity.setChecksum(UUID.randomUUID().toString());
         aipEntity = aipRepo.save(aipEntity);
         Set<String> owners = Sets.newHashSet(aipId.toString());
@@ -128,51 +126,34 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         // Generated associated storage response
         String groupId = UUID.randomUUID().toString();
         Collection<RequestResultInfoDTO> results = Sets.newHashSet();
-        if (metaStorage) {
-            results.add(RequestResultInfoDTO
-                    .build(groupId, aipEntity.getChecksum(), storage, storePath, owners,
-                           FileReferenceDTO
-                                   .build(OffsetDateTime.now(),
-                                          FileReferenceMetaInfoDTO.build(aipEntity.getChecksum(), "MD5", fileName, 10L,
-                                                                         null, null, MediaType.APPLICATION_JSON, null),
-                                          FileLocationDTO.build(storage, storedUrl), owners),
-                           null));
-
-        } else {
-            results.add(RequestResultInfoDTO
-                    .build(groupId, fileToStoreChecksum, storage, storePath, owners,
-                           FileReferenceDTO
-                                   .build(OffsetDateTime.now(),
-                                          FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L,
-                                                                         null, null, MediaType.APPLICATION_JSON, null),
-                                          FileLocationDTO.build(storage, storedUrl), owners),
-                           null));
-            IngestRequest request = IngestRequest.build(null, IngestMetadata
-                    .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
-                                                        InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT,
-                                                        sip);
-            request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
-            // Create associated IngestRequest
-            request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
-            request.setAips(Lists.newArrayList(aipEntity));
-            ingestReqRepo.save(request);
-        }
+        results.add(RequestResultInfoDTO.build(groupId, fileToStoreChecksum, storage, storePath, owners,
+                                               FileReferenceDTO.build(OffsetDateTime.now(), FileReferenceMetaInfoDTO
+                                                                              .build(fileToStoreChecksum, "MD5", fileName, 10L, null, null,
+                                                                                     MediaType.APPLICATION_JSON, null),
+                                                                      FileLocationDTO.build(storage, storedUrl),
+                                                                      owners), null));
+        IngestRequest request = IngestRequest.build(null, IngestMetadata
+                                                            .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
+                                                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+        request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
+        // Create associated IngestRequest
+        request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
+        request.setAips(Lists.newArrayList(aipEntity));
+        ingestReqRepo.save(request);
 
         return RequestInfo.build(groupId, results, Sets.newHashSet());
     }
 
     @Test
     public void testStorageResponsesHandler() throws ModuleException {
-        Set<RequestInfo> responses = initAips(100, false);
+        Set<RequestInfo> responses = initAips(100);
         long start = System.currentTimeMillis();
         storageResponseFlowHandler.onStoreSuccess(responses);
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
-        Assert.assertEquals(0,
-                            requestService
-                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
-                                    .getTotalElements());
+        Assert.assertEquals(0, requestService.findRequestDtos(
+                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });
@@ -180,48 +161,17 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
 
     @Test
     public void testReferenceResponsesHandler() throws ModuleException {
-        Set<RequestInfo> responses = initAips(100, false);
+        Set<RequestInfo> responses = initAips(100);
         long start = System.currentTimeMillis();
         storageResponseFlowHandler.onReferenceSuccess(responses);
         System.out.printf("Duration : %d ms\n", System.currentTimeMillis() - start);
         // Check results
-        Assert.assertEquals(0,
-                            requestService
-                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
-                                    .getTotalElements());
+        Assert.assertEquals(0, requestService.findRequestDtos(
+                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });
-    }
-
-    @Test
-    public void testMetaStorageResponsesHandler() throws ModuleException {
-        // NOTE : up this number for performances tests.
-        int nbAipsToGenerated = 300;
-        Set<RequestInfo> responses = initAips(nbAipsToGenerated, true);
-
-        Iterator<RequestInfo> it = responses.iterator();
-
-        int remaining = responses.size();
-        do {
-            long start = System.currentTimeMillis();
-            Set<RequestInfo> subList = Sets.newHashSet();
-            for (int i = 0; (i < 100) && it.hasNext(); i++) {
-                subList.add(it.next());
-                remaining--;
-            }
-            storageResponseFlowHandler.onStoreSuccess(subList);
-            System.out.printf("Duration : %d ms \n", System.currentTimeMillis() - start);
-            // Check results
-            Assert.assertEquals(remaining, requestService
-                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner"), PageRequest.of(0, 10))
-                    .getTotalElements());
-            aipRepo.findAll().forEach(a -> {
-                Assert.assertEquals(AIPState.STORED, a.getState());
-            });
-        } while (it.hasNext());
-
     }
 
 }

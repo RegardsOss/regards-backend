@@ -79,7 +79,7 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
                 "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
                 "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp", "noschedule" })
 public class RequestRetryJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -234,7 +234,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceTest {
     @Test
     public void testRetryJob() {
         initData();
-        Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
+        Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
         requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
         waitForErrorRequestReach(5, 20_000);

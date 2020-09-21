@@ -81,10 +81,10 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_it",
-        "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
+        "regards.amqp.enabled=true", "eureka.client.enabled=false",
         "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock","noschedule" })
 public class RequestServiceIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -216,7 +216,7 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         Page<RequestDto> requests = requestService
                 .findRequestDtos(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH ALL IN ERROR <=====================");
-        Assert.assertEquals(6, requests.getTotalElements());
+        Assert.assertEquals(5, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH INGEST IN ERROR <=====================");
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
@@ -240,11 +240,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         requests = requestService.findRequestDtos(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.OAIS_DELETION).withState(InternalRequestState.ERROR), pr);
         LOGGER.info("=========================> END SEARCH STORAGE DELETION IN ERROR <=====================");
-        Assert.assertEquals(1, requests.getTotalElements());
-
-        LOGGER.info("=========================> BEGIN SEARCH STORE META IN ERROR <=====================");
-        requests = requestService.findRequestDtos(SearchRequestsParameters.build().withState(InternalRequestState.ERROR), pr);
-        LOGGER.info("=========================> END SEARCH STORE META IN ERROR <=====================");
         Assert.assertEquals(1, requests.getTotalElements());
 
         LOGGER.info("=========================> BEGIN SEARCH UPDATE IN ERROR <=====================");
@@ -302,13 +297,11 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     }
 
     @Test
-    public void testDeleteRequestByAip() throws InterruptedException {
+    public void testDeleteRequestByAip() {
         Set<AIPEntity> aipEntities = makeRequests();
-        Assert.assertEquals(3, abstractRequestRepository.count());
+        Assert.assertEquals(2, abstractRequestRepository.count());
         // Delete all requests associated to AIP
         requestService.deleteAllByAip(aipEntities);
-
-
         Assert.assertEquals(0, abstractRequestRepository.count());
         // Now we can delete the AIP
         aipRepository.deleteAll(aipEntities);
