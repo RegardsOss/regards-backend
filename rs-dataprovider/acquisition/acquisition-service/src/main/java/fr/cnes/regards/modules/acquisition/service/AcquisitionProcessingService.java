@@ -800,7 +800,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // If new file to register date is exactly the same as the last scanning date, check if file is not already acquired.
             lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
             if (scanningDate.isPresent() && lmd.equals(scanningDate.get())
-                    && acqFileRepository.findOneByFilePath(filePath).isPresent()) {
+                    && acqFileRepository.findOneByFilePathIn(filePath).isPresent()) {
                 return false;
             } else {
                 // Initialize new file
