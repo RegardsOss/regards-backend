@@ -84,12 +84,6 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     private AIP aip;
 
     /**
-     * Real AIP content checksum, computed once all associated files are stored
-     */
-    @Column(name = "checksum", length = SIPEntity.CHECKSUM_MAX_LENGTH)
-    private String checksum;
-
-    /**
      * Storage lists used by this AIP to store its files
      */
     @Column(columnDefinition = "jsonb", name = "storages", nullable = false)
@@ -133,14 +127,6 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     public void setAipId(OaisUniformResourceName aipId) {
         this.aipId = aipId.toString();
-    }
-
-    public String getChecksum() {
-        return checksum;
-    }
-
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
     }
 
     public Set<String> getStorages() {

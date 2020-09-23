@@ -32,9 +32,9 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
 
 /**
  * {@link DumpController} REST API test
@@ -46,24 +46,24 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
 public class DumpControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
-    IAIPMetadataServiceRefactor aipMetadataServiceRefactor;
+    IAIPMetadataService aipMetadataServiceRefactor;
 
     @Autowired
-    IAIPDumpMetadataRepositoryRefactor dumpRepository;
+    IDumpConfigurationRepository dumpRepository;
 
     @Test
     @Purpose("Test reset last req dump date")
     public void testResetLastReqDumpDate() {
         // Create lastReqDumpDate to now
-        dumpRepository.save(new LastDump(OffsetDateTime.now()));
-        LastDump resource = dumpRepository.getOne(LastDump.LAST_DUMP_DATE_ID);
+        dumpRepository.save(new DumpConfiguration(true, "", "target/", OffsetDateTime.now()));
+        DumpConfiguration resource = dumpRepository.getOne(DumpConfiguration.DUMP_CONF_ID);
         Assert.assertFalse(resource.getLastDumpReqDate() == null);
 
         // Reset lastReqDumpDate
         RequestBuilderCustomizer putRequest = customizer().expectStatusOk();
         performDefaultPatch(DumpController.TYPE_MAPPING + DumpController.RESET_LAST_DUMP_DATE,null  , putRequest, "Reset lastReqDumpDate error");
 
-        resource = dumpRepository.getOne(LastDump.LAST_DUMP_DATE_ID);
+        resource = dumpRepository.getOne(DumpConfiguration.DUMP_CONF_ID);
         Assert.assertTrue(resource.getLastDumpReqDate() == null);
     }
 }

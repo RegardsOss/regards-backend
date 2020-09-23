@@ -45,15 +45,15 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepositoryRefactor;
+import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 
 /**
  * Service to dump aips
@@ -62,56 +62,56 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
  */
 @Service
 @MultitenantTransactional
-public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
+public class AIPMetadataService implements IAIPMetadataService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataServiceRefactor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataService.class);
 
     // Limit number of AIPs to retrieve in one page
     @Value("${regards.dump.zip-limit:1000}")
     private int zipLimit;
 
     @Autowired
-    private DumpService dumpService;
+    private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
     @Autowired
-    private IAIPSaveMetadataRequestRepositoryRefactor requestMetadataRepository;
-
-    @Autowired
-    private IAIPDumpMetadataRepositoryRefactor dumpRepository;
+    private IDumpConfigurationRepository dumpRepository;
 
     @Autowired
     private IAIPRepository aipRepository;
 
     @Autowired
-    private IAIPMetadataServiceRefactor self;
+    private DumpService dumpService;
+
+    @Autowired
+    private IAIPMetadataService self;
 
     @Autowired
     private INotificationClient notificationClient;
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path tmpZipLocation)
+    public void writeZips(AIPSaveMetadataRequest metadataRequest, Path tmpZipLocation)
             throws NothingToDoException {
         Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
-                pageToRequest = self.dumpOnePage(aipSaveMetadataRequestRefactor, pageToRequest, tmpZipLocation);
+                pageToRequest = self.dumpOnePage(metadataRequest, pageToRequest, tmpZipLocation);
             } while (pageToRequest != null);
         } catch (IOException e) {
             String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();
-            self.handleError(aipSaveMetadataRequestRefactor, errorMessage);
+            self.handleError(metadataRequest, errorMessage);
             throw new RsRuntimeException(errorMessage, e);
         } catch (DuplicateUniqueNameException e) {
-            self.handleError(aipSaveMetadataRequestRefactor, e.getMessage());
+            self.handleError(metadataRequest, e.getMessage());
             throw new RsRuntimeException(e);
         }
     }
 
     @Override
-    public void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path dumpLocation,
-            Path tmpZipLocation) {
-        OffsetDateTime creationDate = aipSaveMetadataRequestRefactor.getCreationDate();
+    public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) {
+        OffsetDateTime creationDate = metadataRequest.getCreationDate();
         try {
+            // Write dump
             dumpService.generateDump(dumpLocation, tmpZipLocation, creationDate);
         } catch (IOException e) {
             LOGGER.error("Error while writing aip dump", e);
@@ -120,15 +120,15 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
     }
 
     @Override
-    public Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
+    public Pageable dumpOnePage(AIPSaveMetadataRequest metadataRequest, Pageable pageToRequest,
             Path workspace) throws IOException, DuplicateUniqueNameException, NothingToDoException {
         // Write Zips
         List<ObjectDump> objectDumps;
         List<ObjectDump> duplicatedJsonNames;
 
         Page<AIPEntity> aipToDump = null;
-        OffsetDateTime previousDumpDate = aipSaveMetadataRequestRefactor.getPreviousDumpDate();
-        OffsetDateTime dumpDate = aipSaveMetadataRequestRefactor.getCreationDate();
+        OffsetDateTime previousDumpDate = metadataRequest.getPreviousDumpDate();
+        OffsetDateTime dumpDate = metadataRequest.getCreationDate();
         if (previousDumpDate == null) {
             aipToDump = aipRepository.findByLastUpdateLessThan(dumpDate, pageToRequest);
         } else {
@@ -150,7 +150,7 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
                     ", ", "Some AIPs to dump had same generated names "
                             + "(providerId-version.json) which should be unique: ",
                     ". Please edit your AIPs so there is no duplicates."));
-            handleError(aipSaveMetadataRequestRefactor, errorMessage);
+            handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);
         }
 
@@ -173,32 +173,30 @@ public class AIPMetadataServiceRefactor implements IAIPMetadataServiceRefactor {
 
     @Override
     public void resetLastUpdateDate() {
-        // init new lastDump
-        LastDump lastDump = new LastDump();
         // reset last dump date if already present
-        Optional<LastDump> lastDumpOpt = dumpRepository.findById(LastDump.LAST_DUMP_DATE_ID);
+        Optional<DumpConfiguration> lastDumpOpt = dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID);
         if (lastDumpOpt.isPresent()) {
-            lastDump = lastDumpOpt.get();
+            DumpConfiguration lastDump = lastDumpOpt.get();
             lastDump.setLastDumpReqDate(null);
+            dumpRepository.save(lastDump);
         }
-        dumpRepository.save(lastDump);
     }
 
     @Override
-    public void handleError(AIPSaveMetadataRequestRefactor dumpRequest, String errorMessage) {
+    public void handleError(AIPSaveMetadataRequest metadataRequest, String errorMessage) {
         notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
-                                                              dumpRequest.getPreviousDumpDate(),
-                                                              dumpRequest.getCreationDate()), NotificationLevel.ERROR,
+                                                              metadataRequest.getPreviousDumpDate(),
+                                                              metadataRequest.getCreationDate()), NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
-        dumpRequest.addError(errorMessage);
-        dumpRequest.setState(InternalRequestState.ERROR);
-        requestMetadataRepository.save(dumpRequest);
+        metadataRequest.addError(errorMessage);
+        metadataRequest.setState(InternalRequestState.ERROR);
+        metadataRequestRepository.save(metadataRequest);
         // no need to clean up workspace as job service is doing so
     }
 
     @Override
-    public void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor) {
-        requestMetadataRepository.delete(aipSaveMetadataRequestRefactor);
+    public void handleSuccess(AIPSaveMetadataRequest metadataRequest) {
+        metadataRequestRepository.delete(metadataRequest);
         // we do not need to clean up workspace as job service is doing so for us
     }
 

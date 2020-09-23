@@ -21,15 +21,15 @@ package fr.cnes.regards.modules.ingest.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 
 /**
- * {@link LastDump} repository
+ * {@link DumpConfiguration} repository
  * @author Iliana Ghazali
  */
 @Repository
-public interface IAIPSaveMetadataRequestRepositoryRefactor extends JpaRepository<AIPSaveMetadataRequestRefactor, Long> {
+public interface IAIPSaveMetadataRequestRepository extends JpaRepository<AIPSaveMetadataRequest, Long> {
 
 }
 

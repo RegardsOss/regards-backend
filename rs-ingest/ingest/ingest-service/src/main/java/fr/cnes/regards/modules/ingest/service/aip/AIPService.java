@@ -275,10 +275,6 @@ public class AIPService implements IAIPService {
                 OAISDataObject dataObject = ci.getDataObject();
                 filesToDelete.addAll(getFileDeletionEvents(aipId, dataObject.getChecksum(), dataObject.getLocations()));
             }
-
-            // Add the AIP itself (on each storage) to the file list to remove
-            filesToDelete
-                    .addAll(getFileDeletionEvents(aipId, aipEntity.getChecksum(), aipEntity.getManifestLocations()));
         }
 
         // Publish event to delete AIP files and AIPs itself
@@ -352,18 +348,5 @@ public class AIPService implements IAIPService {
             aip.setLastUpdate(OffsetDateTime.now());
         }
         return aipRepository.saveAll(entities);
-    }
-
-    @Override
-    public void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException {
-        try {
-            String checksum = calculateChecksum(aipEntity.getAip());
-            aipEntity.setChecksum(checksum);
-            save(aipEntity);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            String message = String.format("Failed to compute AIP checksum for AIP %s", aipEntity.getId());
-            LOGGER.error(message, e);
-            throw new ModuleException(message, e);
-        }
     }
 }

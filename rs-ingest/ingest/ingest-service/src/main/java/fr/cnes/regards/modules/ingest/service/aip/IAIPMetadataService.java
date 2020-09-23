@@ -20,43 +20,42 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.OffsetDateTime;
 
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 
 /**
  * Manage AIP dumps
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IAIPMetadataServiceRefactor {
+public interface IAIPMetadataService {
 
     /** Write zip in workspace  */
-    void writeZips(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path tmpZipLocation)
+    void writeZips(AIPSaveMetadataRequest metadataRequest, Path tmpZipLocation)
             throws NothingToDoException;
 
-    /** Create zip of zips in workspace (dump) */
-    void writeDump(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Path dumpLocation, Path tmpZipLocation);
+    /** Create zip of zips (in workspace by default) */
+    void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation);
 
     /**
      * Get set of aips to zip and zip their content in workspace
      * @return next pageable if exist null otherwise
      * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
-    Pageable dumpOnePage(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, Pageable pageToRequest,
+    Pageable dumpOnePage(AIPSaveMetadataRequest metadataRequest, Pageable pageToRequest,
             Path workspace) throws IOException, DuplicateUniqueNameException, NothingToDoException;
 
     /** Reset last dump date */
     void resetLastUpdateDate();
 
     /** Handle request in error and notify client */
-    void handleError(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor, String errorMessage);
+    void handleError(AIPSaveMetadataRequest metadataRequest, String errorMessage);
 
     /** Handle request in success */
-    void handleSuccess(AIPSaveMetadataRequestRefactor aipSaveMetadataRequestRefactor);
+    void handleSuccess(AIPSaveMetadataRequest metadataRequest);
 }

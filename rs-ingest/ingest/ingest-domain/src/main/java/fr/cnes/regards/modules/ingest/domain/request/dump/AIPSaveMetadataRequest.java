@@ -31,20 +31,24 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
  */
 @Entity
 @DiscriminatorValue(RequestTypeConstant.AIP_SAVE_METADATA_VALUE)
-public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
+public class AIPSaveMetadataRequest extends AbstractRequest {
 
-    @Column(name = "previous_dump_date")
+    @Column(name = "previous_dump_date", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime previousDumpDate;
 
-    public AIPSaveMetadataRequestRefactor(OffsetDateTime previousDumpDate) {
+    @Column(name = "dump_location")
+    private String dumpLocation;
+
+    public AIPSaveMetadataRequest(OffsetDateTime previousDumpDate, String dumpLocation) {
         // session information are specific to AIP subset defined by users, the same goes for session owner. ProviderId is aip specific.
-        // AIPSaveMetadataRequests are not related to sessions but subset AIPs only by date
+        // AIPSaveMetadataRequests are not related to sessions
         super(null, null, null, RequestTypeConstant.AIP_SAVE_METADATA_VALUE);
         this.previousDumpDate = previousDumpDate;
+        this.dumpLocation = dumpLocation;
     }
 
-    public AIPSaveMetadataRequestRefactor() {
+    public AIPSaveMetadataRequest() {
     }
 
     public OffsetDateTime getPreviousDumpDate() {
@@ -53,5 +57,13 @@ public class AIPSaveMetadataRequestRefactor extends AbstractRequest {
 
     public void setPreviousDumpDate(OffsetDateTime previousDumpDate) {
         this.previousDumpDate = previousDumpDate;
+    }
+
+    public String getDumpLocation() {
+        return dumpLocation;
+    }
+
+    public void setDumpLocation(String dumpLocation) {
+        this.dumpLocation = dumpLocation;
     }
 }

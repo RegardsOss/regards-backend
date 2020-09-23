@@ -32,8 +32,10 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 
 /**
@@ -50,6 +52,9 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IIngestProcessingChainRepository ingestChainRepository;
+
+    @Autowired
+    private IDumpConfigurationRepository dumpRepository;
 
     @Override
     public Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -70,6 +75,9 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                         LOGGER.error(e.getMessage(), e);
                     }
                 }
+            } else if (DumpConfiguration.class.isAssignableFrom(item.getKey())) {
+                DumpConfiguration conf = item.getTypedValue();
+                dumpRepository.save(conf);
             }
         }
         return importErrors;
@@ -81,6 +89,7 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
         for (IngestProcessingChain ipc : ingestChainRepository.findAll()) {
             configuration.add(ModuleConfigurationItem.build(ipc));
         }
+        configuration.add(ModuleConfigurationItem.build(dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID)));
         return ModuleConfiguration.build(info, configuration);
     }
 }

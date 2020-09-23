@@ -119,7 +119,6 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         aip.withSyntax(mimeType);
         aip.registerContentInformation();
         AIPEntity aipEntity = AIPEntity.build(sipEntity, AIPState.GENERATED, aip);
-        aipEntity.setChecksum(UUID.randomUUID().toString());
         aipEntity = aipRepo.save(aipEntity);
         Set<String> owners = Sets.newHashSet(aipId.toString());
 

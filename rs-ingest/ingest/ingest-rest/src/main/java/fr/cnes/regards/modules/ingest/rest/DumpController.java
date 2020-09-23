@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
 
 /**
  * This controller manages Dumps
@@ -42,7 +42,7 @@ public class DumpController {
     public static final String TYPE_MAPPING = "/dumps";
 
     @Autowired
-    IAIPMetadataServiceRefactor aipMetadataServiceRefactor;
+    IAIPMetadataService aipMetadataServiceRefactor;
 
     /**
      * Controller path to reset lastDumpDate
@@ -51,8 +51,7 @@ public class DumpController {
 
     @RequestMapping(path = RESET_LAST_DUMP_DATE, method = RequestMethod.PATCH)
     @ResourceAccess(description = "Reset last dump date", role = DefaultRole.ADMIN)
-    public ResponseEntity<?> resetLastDumpDate() {
+    public void resetLastDumpDate() {
         aipMetadataServiceRefactor.resetLastUpdateDate();
-        return ResponseEntity.ok("resource saved");
     }
 }

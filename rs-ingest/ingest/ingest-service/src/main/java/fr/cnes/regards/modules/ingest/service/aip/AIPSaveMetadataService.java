@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
@@ -31,33 +32,36 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.modules.ingest.dao.IAIPDumpMetadataRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepositoryRefactor;
-import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
-import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJobRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 
 /**
- * Service to handle {@link AIPSaveMetadataJobRefactor}s
+ * Service to handle {@link AIPSaveMetadataJob}s
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
 @MultitenantTransactional
-public class AIPSaveMetadataServiceRefactor {
+public class AIPSaveMetadataService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetadataServiceRefactor.class);
-
-    @Autowired
-    private IAIPSaveMetadataRequestRepositoryRefactor metadataRequestRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetadataService.class);
 
     @Autowired
-    private IAIPDumpMetadataRepositoryRefactor dumpRepository;
+    private IAIPSaveMetadataRequestRepository metadataRequestRepository;
+
+    @Autowired
+    private IDumpConfigurationRepository dumpRepository;
 
     @Autowired
     private JobInfoService jobInfoService;
+
+    @Value("${regards.dump.aips.cron.expression:0 0 0 ? * SUN *}")
+    private String cron;
 
     /**
      * Schedule Jobs
@@ -66,31 +70,36 @@ public class AIPSaveMetadataServiceRefactor {
         LOGGER.trace("[SAVE METADATA SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
 
-        // Find last dump date
-        Optional<LastDump> lastDumpOpt = dumpRepository.findById(LastDump.LAST_DUMP_DATE_ID);
-        OffsetDateTime lastDumpReqDate = null;
-        LastDump lastDump = new LastDump();
-        if (lastDumpOpt.isPresent()) {
+        // Find dump configuration
+        Optional<DumpConfiguration> lastDumpOpt = dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID);
+        DumpConfiguration lastDump;
+        if (!lastDumpOpt.isPresent()) {
+            lastDump = new DumpConfiguration(true, this.cron, null, null);
+            dumpRepository.save(lastDump);
+        } else{
             lastDump = lastDumpOpt.get();
-            lastDumpReqDate = lastDump.getLastDumpReqDate();
         }
-        // update lastDumpReqDate
+
+        // Update lastDumpReqDate
+        OffsetDateTime lastDumpDate = lastDump.getLastDumpReqDate();
         lastDump.setLastDumpReqDate(OffsetDateTime.now());
         dumpRepository.save(lastDump);
 
         // Create request
-        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(lastDumpReqDate);
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(lastDumpDate,
+                                                                                   lastDump.getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         metadataRequestRepository.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY.getPriority(),
-                                      Sets.newHashSet(new JobParameter(AIPSaveMetadataJobRefactor.SAVE_METADATA_REQUEST,
+                                      Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST,
                                                                        aipSaveMetadataRequest)), null,
-                                      AIPSaveMetadataJobRefactor.class.getName());
+                                      AIPSaveMetadataJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
                      System.currentTimeMillis() - start);
+
         return jobInfo;
     }
 }

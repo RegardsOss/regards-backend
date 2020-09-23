@@ -16,23 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+package fr.cnes.regards.modules.ingest.service.schedule;
 
-import fr.cnes.regards.modules.ingest.domain.dump.LastDump;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataService;
 
 /**
- * JPA repository to access {@link LastDump}
+ *
  * @author Iliana Ghazali
  */
-@Repository
-public interface IAIPDumpMetadataRepositoryRefactor extends JpaRepository<LastDump, Long> {
+@Component
+public class AIPSaveMetadataJobTask implements Runnable {
 
-    Optional<LastDump> findById(Long id);
+    @Autowired
+    private AIPSaveMetadataService aipSaveMetadataService;
 
+    @Override
+    public void run() {
+        aipSaveMetadataService.scheduleJobs();
+    }
 }
-

@@ -18,23 +18,33 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataServiceRefactor;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 
 /**
  * This component schedule jobs
  * @author Iliana Ghazali
- * @author Sylvain VISSIERE-GUERINET
  */
 @Profile("!noschedule")
 @Component
-public class AIPSaveMetadataJobSchedulerRefactor {
+public class AIPSaveMetadataScheduler {
+
+    @Autowired
+    private TaskScheduler taskScheduler;
+
+    @Autowired
+    AIPSaveMetadataJobTask metadataTask;
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -43,19 +53,22 @@ public class AIPSaveMetadataJobSchedulerRefactor {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AIPSaveMetadataServiceRefactor aipSaveMetadataService;
+    private IDumpConfigurationRepository dumpRepository;
 
     /**
      * Bulk save queued items every second.
      */
 
-    //TODO change bulk delay
-    @Scheduled(fixedDelayString = "${regards.aips.save-metadat.bulk.delay:2000000}", initialDelay = 1_000)
+    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:3600000}", initialDelay = 1_000)
     protected void scheduleAIPSaveMetaDataJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                aipSaveMetadataService.scheduleJobs();
+                // check if dump is required
+                Optional<DumpConfiguration> dumpConfOpt = dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID);
+                if (dumpConfOpt.isPresent() && dumpConfOpt.get().isActiveModule()) {
+                    taskScheduler.schedule(metadataTask, new CronTrigger(dumpConfOpt.get().getCronTrigger()));
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

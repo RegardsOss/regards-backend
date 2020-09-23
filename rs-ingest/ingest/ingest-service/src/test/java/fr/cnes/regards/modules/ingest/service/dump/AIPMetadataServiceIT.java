@@ -41,14 +41,16 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequestRefactor;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataServiceRefactor;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -56,16 +58,16 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_test",
-        "regards.amqp.enabled=true", "regards.dump.location=target/dump", "regards.dump.zip-limit = 3" },
+        "regards.amqp.enabled=true", "regards.dump.zip-limit = 3" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
-public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
+public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
 
     private Path tmpZipLocation;
 
-    private Path dumpLocation;
+    private DumpConfiguration conf;
 
     @Value("${regards.dump.zip-limit}")
     private int zipLimit;
@@ -77,10 +79,13 @@ public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
-    IAIPMetadataServiceRefactor metadataService;
+    IAIPMetadataService metadataService;
 
     @Autowired
     private StorageClientMock storageClient;
+
+    @Autowired
+    private IDumpConfigurationRepository dumpConf;
 
     @Override
     public void doInit() {
@@ -89,9 +94,10 @@ public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
-        // init path
-        this.dumpLocation = Paths.get("target/dump");
+        // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
+        conf = new DumpConfiguration(true, "", "target/dump",null);
+        dumpConf.save(conf);
     }
 
     @Test
@@ -142,12 +148,13 @@ public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
         initData(nbSIP);
 
         // Create dump
-        metadataService.writeZips(createSaveMetadataRequest(), this.tmpZipLocation);
-        metadataService.writeDump(createSaveMetadataRequest(), this.dumpLocation, this.tmpZipLocation);
+        AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
+        metadataService.writeZips(metadataRequest, this.tmpZipLocation);
+        metadataService.writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), this.tmpZipLocation);
 
         // CHECK RESULTS
         // Number of dump created
-        File[] dumpFolder = this.dumpLocation.toFile().listFiles();
+        File[] dumpFolder = Paths.get(this.conf.getDumpLocation()).toFile().listFiles();
         Assert.assertEquals(1, dumpFolder.length);
 
         // Number of zips in dump
@@ -161,14 +168,11 @@ public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
         }
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        // FIXME: Wait STORE_META request over
-        //ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
     }
 
-    private AIPSaveMetadataRequestRefactor createSaveMetadataRequest() {
+    private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
-        AIPSaveMetadataRequestRefactor aipSaveMetadataRequest = new AIPSaveMetadataRequestRefactor(
-                this.lastDumpReqDate);
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate, this.conf.getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         return aipSaveMetadataRequest;
     }
@@ -210,7 +214,7 @@ public class AIPMetadataServiceRefactorIT extends IngestMultitenantServiceTest {
         aipRepository.deleteAll();
         sipRepository.deleteAll();
         //clear dump location
-        FileUtils.deleteDirectory(this.dumpLocation.toFile());
+        FileUtils.deleteDirectory(Paths.get(conf.getDumpLocation()).toFile());
         FileUtils.deleteDirectory(this.tmpZipLocation.toFile());
     }
 }
