@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
 
 /**
@@ -45,10 +45,10 @@ import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfiguration
  */
 @Component
 @Profile("!nohandler")
-public class FeatureReferenceRequestEventHandler
-        implements IBatchHandler<FeatureReferenceRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+public class FeatureExtractionRequestEventHandler
+        implements IBatchHandler<FeatureExtractionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceRequestEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureExtractionRequestEventHandler.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -60,14 +60,14 @@ public class FeatureReferenceRequestEventHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
+    private IFeatureExtractionService featureReferenceService;
 
     @Autowired
     private IRequestDeniedService requestDeniedService;
 
     @Override
-    public Class<FeatureReferenceRequestEvent> getMType() {
-        return FeatureReferenceRequestEvent.class;
+    public Class<FeatureExtractionRequestEvent> getMType() {
+        return FeatureExtractionRequestEvent.class;
     }
 
     @Override
@@ -82,17 +82,17 @@ public class FeatureReferenceRequestEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FeatureReferenceRequestEvent.class, this);
+        subscriber.subscribeTo(FeatureExtractionRequestEvent.class, this);
     }
 
     @Override
-    public boolean validate(String tenant, FeatureReferenceRequestEvent message) {
+    public boolean validate(String tenant, FeatureExtractionRequestEvent message) {
         // FIXME
         return true;
     }
 
     @Override
-    public void handleBatch(String tenant, List<FeatureReferenceRequestEvent> messages) {
+    public void handleBatch(String tenant, List<FeatureExtractionRequestEvent> messages) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
             long start = System.currentTimeMillis();

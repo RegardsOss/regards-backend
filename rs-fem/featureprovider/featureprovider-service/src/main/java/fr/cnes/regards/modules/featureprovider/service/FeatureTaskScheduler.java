@@ -53,9 +53,9 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final String NOTIFICATION_TITLE = "Feature scheduling";
 
-    private static final String REFERENCE_REQUEST_LOCK = "scheduleFReference";
+    private static final String EXTRACTION_REQUEST_LOCK = "scheduleFExtraction";
 
-    private static final String REFERENCE_REQUESTS = "FEATURE REFERENCE REQUESTS";
+    private static final String EXTRACTION_REQUESTS = "FEATURE EXTRACTION REQUESTS";
 
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
@@ -70,14 +70,14 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
+    private IFeatureExtractionService featureExtractionService;
 
-    private final Task referenceTask = () -> {
+    private final Task extractionTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        int nb = this.featureReferenceService.scheduleRequests();
+        int nb = this.featureExtractionService.scheduleRequests();
         if (nb != 0) {
-            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, REFERENCE_REQUESTS, System.currentTimeMillis() - start);
+            LOGGER.info(LOG_FORMAT, INSTANCE_RANDOM_ID, nb, EXTRACTION_REQUESTS, System.currentTimeMillis() - start);
         }
     };
 
@@ -91,16 +91,16 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     @Scheduled(initialDelayString = "${regards.feature.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.feature.request.reference.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
-    public void scheduleReferenceRequests() {
+    public void scheduleExtractionRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, REFERENCE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(referenceTask,
-                                                     new LockConfiguration(REFERENCE_REQUEST_LOCK,
+                traceScheduling(tenant, EXTRACTION_REQUESTS);
+                lockingTaskExecutors.executeWithLock(extractionTask,
+                                                     new LockConfiguration(EXTRACTION_REQUEST_LOCK,
                                                                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
-                handleSchedulingError(REFERENCE_REQUESTS, NOTIFICATION_TITLE, e);
+                handleSchedulingError(EXTRACTION_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

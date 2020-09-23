@@ -22,18 +22,18 @@ import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 
 /**
- * Generate a {@link Feature} from a {@link FeatureReferenceRequest}
+ * Generate a {@link Feature} from a {@link FeatureExtractionRequest}
  * @author Kevin Marchois
  */
 @PluginInterface(description = "Generate a feature from a reference request")
 public interface IFeatureFactoryPlugin {
 
     /**
-     * Generate a {@link Feature} from {@link FeatureReferenceRequest} parameters.
+     * Generate a {@link Feature} from {@link FeatureExtractionRequest} parameters.
      * @param parameters free extraction parameters
      * @return generated {@link Feature}
      */

@@ -67,12 +67,12 @@ import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.featureprovider.dao.IFeatureReferenceRequestRepository;
+import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
 
@@ -83,9 +83,9 @@ import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfiguration
  */
 @Service
 @MultitenantTransactional
-public class FeatureReferenceService implements IFeatureReferenceService, IRequestDeniedService, IRequestValidation {
+public class FeatureExtractionService implements IFeatureExtractionService, IRequestDeniedService, IRequestValidation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureReferenceService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureExtractionService.class);
 
     private static final String PREFIX = "[MONITORING] ";
 
@@ -104,7 +104,7 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
 
     @Autowired
-    private IFeatureReferenceRequestRepository featureReferenceRequestRepo;
+    private IFeatureExtractionRequestRepository featureReferenceRequestRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -161,11 +161,11 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     }
 
     @Override
-    public RequestInfo<String> registerRequests(List<FeatureReferenceRequestEvent> events) {
+    public RequestInfo<String> registerRequests(List<FeatureExtractionRequestEvent> events) {
 
         long registrationStart = System.currentTimeMillis();
 
-        List<FeatureReferenceRequest> grantedRequests = new ArrayList<>();
+        List<FeatureExtractionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
         Set<String> existingRequestIds = this.featureReferenceRequestRepo.findRequestId();
 
@@ -184,16 +184,16 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     }
 
     /**
-     * @param item {@link FeatureReferenceRequestEvent} to verify
-     * @param grantedRequests validated {@link FeatureReferenceRequestEvent}
+     * @param item {@link FeatureExtractionRequestEvent} to verify
+     * @param grantedRequests validated {@link FeatureExtractionRequestEvent}
      * @param requestInfo received request info
      * @param existingRequestIds list of existing request in database
      */
-    private void prepareFeatureReferenceRequest(FeatureReferenceRequestEvent item,
-            List<FeatureReferenceRequest> grantedRequests, RequestInfo<String> requestInfo,
+    private void prepareFeatureReferenceRequest(FeatureExtractionRequestEvent item,
+            List<FeatureExtractionRequest> grantedRequests, RequestInfo<String> requestInfo,
             Set<String> existingRequestIds) {
         // Validate event
-        Errors errors = new MapBindingResult(new HashMap<>(), FeatureReferenceRequestEvent.class.getName());
+        Errors errors = new MapBindingResult(new HashMap<>(), FeatureExtractionRequestEvent.class.getName());
         validator.validate(item, errors);
         validateRequest(item, errors);
 
@@ -234,15 +234,15 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
                        item.getMetadata().getSession(),
                        item.getMetadata().getStorages(),
                        item.getMetadata().isOverride());
-        grantedRequests.add(FeatureReferenceRequest.build(item.getRequestId(),
-                                                          item.getRequestOwner(),
-                                                          item.getRequestDate(),
-                                                          RequestState.GRANTED,
-                                                          metadata,
-                                                          FeatureRequestStep.LOCAL_DELAYED,
-                                                          item.getMetadata().getPriority(),
-                                                          item.getParameters(),
-                                                          item.getFactory()));
+        grantedRequests.add(FeatureExtractionRequest.build(item.getRequestId(),
+                                                           item.getRequestOwner(),
+                                                           item.getRequestDate(),
+                                                           RequestState.GRANTED,
+                                                           metadata,
+                                                           FeatureRequestStep.LOCAL_DELAYED,
+                                                           item.getMetadata().getPriority(),
+                                                           item.getParameters(),
+                                                           item.getFactory()));
         requestInfo.addGrantedRequest(item.getRequestId(), RequestState.GRANTED.toString());
     }
 
@@ -253,12 +253,12 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
 
-        List<FeatureReferenceRequest> requestsToSchedule = this.featureReferenceRequestRepo.findByStep(
+        List<FeatureExtractionRequest> requestsToSchedule = this.featureReferenceRequestRepo.findByStep(
                 FeatureRequestStep.LOCAL_DELAYED,
                 OffsetDateTime.now(),
                 PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
-        Set<Long> requestIds = requestsToSchedule.stream().map(FeatureReferenceRequest::getId)
+        Set<Long> requestIds = requestsToSchedule.stream().map(FeatureExtractionRequest::getId)
                 .collect(Collectors.toSet());
         if (!requestsToSchedule.isEmpty()) {
 
@@ -285,14 +285,14 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     }
 
     @Override
-    public void processRequests(List<FeatureReferenceRequest> requests) {
+    public void processRequests(List<FeatureExtractionRequest> requests) {
 
         long processStart = System.currentTimeMillis();
 
         int successCreationRequestGenerationCount = 0;
         List<FeatureCreationRequestEvent> creationRequestsToRegister = new ArrayList<>();
 
-        for (FeatureReferenceRequest request : requests) {
+        for (FeatureExtractionRequest request : requests) {
             try {
                 creationRequestsToRegister.add(initFeatureCreationRequest(request));
                 successCreationRequestGenerationCount++;
@@ -325,7 +325,7 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
                      System.currentTimeMillis() - processStart);
     }
 
-    private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureReferenceRequest request)
+    private <T> FeatureCreationRequestEvent initFeatureCreationRequest(FeatureExtractionRequest request)
             throws NotAvailablePluginConfigurationException, ModuleException {
 
         Optional<T> plugin;
@@ -379,13 +379,13 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     @Override
     public RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection) {
         // Build events to reuse event registration code
-        List<FeatureReferenceRequestEvent> toTreat = new ArrayList<>();
+        List<FeatureExtractionRequestEvent> toTreat = new ArrayList<>();
         for (JsonObject parameters : collection.getParameters()) {
-            toTreat.add(FeatureReferenceRequestEvent.build(authResolver.getUser(),
-                                                           collection.getMetadata(),
-                                                           parameters,
-                                                           OffsetDateTime.now().minusSeconds(1),
-                                                           collection.getFactory()));
+            toTreat.add(FeatureExtractionRequestEvent.build(authResolver.getUser(),
+                                                            collection.getMetadata(),
+                                                            parameters,
+                                                            OffsetDateTime.now().minusSeconds(1),
+                                                            collection.getFactory()));
         }
         return registerRequests(toTreat);
     }

@@ -31,9 +31,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.featureprovider.dao.IFeatureReferenceRequestRepository;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
-import fr.cnes.regards.modules.featureprovider.service.IFeatureReferenceService;
+import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 
@@ -48,13 +47,13 @@ public class FeatureReferenceCreationJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
-    private List<FeatureReferenceRequest> featureReferenceRequests;
+    private List<FeatureExtractionRequest> featureExtractionRequests;
 
     @Autowired
-    private IFeatureReferenceRequestRepository featureReferenceRequestRepo;
+    private IFeatureExtractionRequestRepository featureReferenceRequestRepo;
 
     @Autowired
-    private IFeatureReferenceService featureService;
+    private IFeatureExtractionService featureService;
 
     @Autowired
     private MeterRegistry registry;
@@ -65,7 +64,7 @@ public class FeatureReferenceCreationJob extends AbstractJob<Void> {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
-        featureReferenceRequests = this.featureReferenceRequestRepo
+        featureExtractionRequests = this.featureReferenceRequestRepo
                 .findAllById(getValue(parameters, IDS_PARAMETER, type));
     }
 
@@ -75,7 +74,7 @@ public class FeatureReferenceCreationJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
 
-        featureService.processRequests(featureReferenceRequests);
+        featureService.processRequests(featureExtractionRequests);
 
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         logger.info("[{}]{} reference creation request(s) processed in {} ms", jobInfoId, INFO_TAB,

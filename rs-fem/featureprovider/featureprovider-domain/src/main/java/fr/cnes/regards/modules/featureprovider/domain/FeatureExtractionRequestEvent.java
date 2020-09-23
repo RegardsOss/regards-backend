@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.dto.event.in;
+package fr.cnes.regards.modules.featureprovider.domain;
 
 import java.time.OffsetDateTime;
 
@@ -34,12 +34,12 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 
 /**
- * Request reference for new feature creation from a location
+ * Request extraction for new feature creation from a location
  *
  * @author Kevin Marchois
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class FeatureReferenceRequestEvent extends AbstractRequestEvent implements ISubscribable {
+public class FeatureExtractionRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
     @Valid
     @NotNull(message = "Request metadata is required")
@@ -54,14 +54,14 @@ public class FeatureReferenceRequestEvent extends AbstractRequestEvent implement
     @NotNull(message = "Extraction parameters must not be empty")
     private JsonObject parameters;
 
-    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
+    public static FeatureExtractionRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
             JsonObject parameters, String factory) {
         return build(requestOwner, metadata, parameters, OffsetDateTime.now().minusSeconds(1), factory);
     }
 
-    public static FeatureReferenceRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
+    public static FeatureExtractionRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
             JsonObject parameters, OffsetDateTime requestDate, String factory) {
-        FeatureReferenceRequestEvent event = new FeatureReferenceRequestEvent();
+        FeatureExtractionRequestEvent event = new FeatureExtractionRequestEvent();
         event.setParameters(parameters);
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);

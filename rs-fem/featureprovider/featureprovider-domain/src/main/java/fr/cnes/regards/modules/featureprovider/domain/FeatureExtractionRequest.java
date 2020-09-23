@@ -47,17 +47,16 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  *
  */
 @Entity
-@Table(name = "t_feature_reference_request",
-        indexes = { @Index(name = "idx_feature_reference_request_step", columnList = AbstractRequest.COLUMN_STEP) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_reference_request_id",
+@Table(name = "t_feature_extraction_request",
+        indexes = { @Index(name = "idx_feature_extraction_request_step", columnList = AbstractRequest.COLUMN_STEP) },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_extraction_request_id",
                 columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
-// TODO rename to FeatureExtractionRequest
-public class FeatureReferenceRequest extends AbstractRequest {
+public class FeatureExtractionRequest extends AbstractRequest {
 
     @Id
-    @SequenceGenerator(name = "featureReferenceRequestSequence", initialValue = 1,
-            sequenceName = "seq_feature_reference_request")
-    @GeneratedValue(generator = "featureReferenceRequestSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "featureExtractionRequestSequence", initialValue = 1,
+            sequenceName = "seq_feature_extraction_request")
+    @GeneratedValue(generator = "featureExtractionRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Embedded
@@ -70,10 +69,10 @@ public class FeatureReferenceRequest extends AbstractRequest {
     @Type(type = "jsonb")
     private JsonObject parameters;
 
-    public static FeatureReferenceRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+    public static FeatureExtractionRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, FeatureCreationMetadataEntity metadata, FeatureRequestStep step, PriorityLevel priority,
             JsonObject parameters, String factory) {
-        FeatureReferenceRequest request = new FeatureReferenceRequest();
+        FeatureExtractionRequest request = new FeatureExtractionRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setMetadata(metadata);
         request.setFactory(factory);

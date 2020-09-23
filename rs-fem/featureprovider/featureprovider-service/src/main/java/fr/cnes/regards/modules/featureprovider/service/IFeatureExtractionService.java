@@ -24,36 +24,36 @@ import java.util.List;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 
 /**
  * Service for deleting Features
  * @author Kevin Marchois
  *
  */
-public interface IFeatureReferenceService {
+public interface IFeatureExtractionService {
 
     /**
-     * Register {@link FeatureReferenceRequest}in database for further processing from incoming request events
+     * Register {@link FeatureExtractionRequest}in database for further processing from incoming request events
      */
-    RequestInfo<String> registerRequests(List<FeatureReferenceRequestEvent> events);
+    RequestInfo<String> registerRequests(List<FeatureExtractionRequestEvent> events);
 
     /**
      * Schedule a job to process a batch of requests<br/>
-     * @return number of scheduled {@link FeatureReferenceRequest}
+     * @return number of scheduled {@link FeatureExtractionRequest}
      */
     int scheduleRequests();
 
     /**
-     * Process batch of {@link FeatureReferenceRequest} during job
+     * Process batch of {@link FeatureExtractionRequest} during job
      * We will call referenced plugin to obtain a {@link Feature} and publish it to create it
      */
-    void processRequests(List<FeatureReferenceRequest> requests);
+    void processRequests(List<FeatureExtractionRequest> requests);
 
     /**
-     * Register {@link FeatureReferenceRequest} from a {@link FeatureReferenceCollection}
+     * Register {@link FeatureExtractionRequest} from a {@link FeatureReferenceCollection}
      * @param collection
      * @return {@link RequestInfo} contain request ids of granted/denied features
      */

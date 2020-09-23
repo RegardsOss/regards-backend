@@ -31,7 +31,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 
 /**
@@ -39,38 +39,38 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureReferenceRequestRepository extends JpaRepository<FeatureReferenceRequest, Long> {
+public interface IFeatureExtractionRequestRepository extends JpaRepository<FeatureExtractionRequest, Long> {
 
     /**
-     * Get a page of {@link FeatureReferenceRequest} with specified step.
+     * Get a page of {@link FeatureExtractionRequest} with specified step.
      * @param now
      * @return a list of {@link FeatureCreationRequest}
      */
-    @Query("select frr from FeatureReferenceRequest frr where frr.step = :localDelayed and frr.requestDate <= :now")
-    List<FeatureReferenceRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
+    @Query("select frr from FeatureExtractionRequest frr where frr.step = :localDelayed and frr.requestDate <= :now")
+    List<FeatureExtractionRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
             @Param("now") OffsetDateTime now, Pageable page);
 
     /**
      * Update {@link FeatureRequestStep} step
      * @param step new {@link FeatureRequestStep}
-     * @param ids id of {@link FeatureReferenceRequest} to update
+     * @param ids id of {@link FeatureExtractionRequest} to update
      */
     @Modifying
-    @Query("update FeatureReferenceRequest frr set frr.step = :newStep where frr.id in :ids")
+    @Query("update FeatureExtractionRequest frr set frr.step = :newStep where frr.id in :ids")
     void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 
-    @Query("select distinct fcr.requestId from FeatureReferenceRequest fcr")
+    @Query("select distinct fcr.requestId from FeatureExtractionRequest fcr")
     Set<String> findRequestId();
 
     @Modifying
-    @Query("update FeatureReferenceRequest frr set frr.state = :newState where frr.requestId in :requestIds")
+    @Query("update FeatureExtractionRequest frr set frr.state = :newState where frr.requestId in :requestIds")
     void updateStepByRequestIdIn(@Param("newState") FeatureRequestStep step, @Param("requestIds") Set<String> requestIds);
 
     @Modifying
-    @Query("update FeatureReferenceRequest frr set frr.state = :newState where frr.requestId in :requestIds")
+    @Query("update FeatureExtractionRequest frr set frr.state = :newState where frr.requestId in :requestIds")
     void updateState(@Param("newState") RequestState state, @Param("requestIds") Set<String> requestIds);
 
     @Modifying(clearAutomatically = true)
-    @Query("delete from FeatureReferenceRequest frr where frr.requestId in :requestIds")
+    @Query("delete from FeatureExtractionRequest frr where frr.requestId in :requestIds")
     void deleteAllByRequestIdIn(@Param("requestIds") Set<String> requestIds);
 }

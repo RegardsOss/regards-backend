@@ -58,17 +58,16 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.feature.client.FeatureClient;
 import fr.cnes.regards.modules.feature.client.FeatureRequestEventHandler;
-import fr.cnes.regards.modules.feature.client.IFeatureEntityClient;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.featureprovider.dao.IFeatureReferenceRequestRepository;
+import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -126,10 +125,10 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     protected IPublisher publisher;
 
     @Autowired
-    private IFeatureReferenceRequestRepository referenceRequestRepo;
+    private IFeatureExtractionRequestRepository referenceRequestRepo;
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
+    private IFeatureExtractionService featureReferenceService;
 
     @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
@@ -163,20 +162,20 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         recipientPlugin.setPluginId("DefaultFeatureGenerator");
         recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
 
-        List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
+        List<FeatureExtractionRequestEvent> eventsToPublish = new ArrayList<>();
         List<FeatureRequestEvent> creationGrantedToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
-            FeatureReferenceRequestEvent referenceEvent = FeatureReferenceRequestEvent.build("bibi",
-                                                                                             FeatureCreationSessionMetadata
+            FeatureExtractionRequestEvent referenceEvent = FeatureExtractionRequestEvent.build("bibi",
+                                                                                               FeatureCreationSessionMetadata
                                                                                                      .build("bibi",
                                                                                                             "session",
                                                                                                             PriorityLevel.NORMAL,
                                                                                                             false,
                                                                                                             new StorageMetadata[0]),
-                                                                                             parameters,
-                                                                                             "testFeatureGeneration");
+                                                                                               parameters,
+                                                                                               "testFeatureGeneration");
             eventsToPublish.add(referenceEvent);
             creationGrantedToPublish.add(FeatureRequestEvent.build(FeatureRequestType.CREATION,
                                                                    referenceEvent.getRequestId(),
@@ -208,18 +207,18 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         recipientPlugin.setPluginId("DefaultFeatureGenerator");
         recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
 
-        List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
+        List<FeatureExtractionRequestEvent> eventsToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
-            eventsToPublish.add(FeatureReferenceRequestEvent.build("bibi",
-                                                                   FeatureCreationSessionMetadata.build("bibi",
+            eventsToPublish.add(FeatureExtractionRequestEvent.build("bibi",
+                                                                    FeatureCreationSessionMetadata.build("bibi",
                                                                                                         "session",
                                                                                                         PriorityLevel.NORMAL,
                                                                                                         false,
                                                                                                         new StorageMetadata[0]),
-                                                                   parameters,
-                                                                   "testFeatureGeneration"));
+                                                                    parameters,
+                                                                    "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
@@ -314,12 +313,12 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
 
     @After
     public void after() {
-        subscriber.unsubscribeFrom(FeatureReferenceRequestEvent.class);
+        subscriber.unsubscribeFrom(FeatureExtractionRequestEvent.class);
         cleanAMQP();
     }
 
     private void cleanAMQP() {
-        cleanAMQPQueues(FeatureReferenceRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FeatureExtractionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 

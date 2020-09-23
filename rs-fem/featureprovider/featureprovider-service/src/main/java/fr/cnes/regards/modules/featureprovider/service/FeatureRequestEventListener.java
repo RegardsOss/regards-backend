@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 public class FeatureRequestEventListener implements IFeatureRequestEventListener {
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
+    private IFeatureExtractionService featureReferenceService;
 
     @Override
     public void onRequestDenied(List<FeatureRequestEvent> denied) {

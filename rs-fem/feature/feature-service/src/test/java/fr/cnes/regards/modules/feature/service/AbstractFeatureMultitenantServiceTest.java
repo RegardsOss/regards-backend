@@ -55,7 +55,6 @@ import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -443,7 +442,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         subscriber.unsubscribeFrom(FeatureUpdateRequestEvent.class);
         subscriber.unsubscribeFrom(NotificationRequestEvent.class);
         subscriber.unsubscribeFrom(NotificationActionEvent.class);
-        subscriber.unsubscribeFrom(FeatureReferenceRequestEvent.class);
         cleanAMQPQueues(FeatureCreationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);

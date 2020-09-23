@@ -18,8 +18,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
-import fr.cnes.regards.modules.featureprovider.service.IFeatureReferenceService;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
+import fr.cnes.regards.modules.featureprovider.service.IFeatureExtractionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,21 +29,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * @author Sylvain VISSIERE-GUERINET
  */
 @RestController
-@RequestMapping(FeatureReferenceController.REFERENCE_PATH)
-public class FeatureReferenceController implements IResourceController<RequestInfo<String>> {
+@RequestMapping(FeatureExtractionController.EXTRACTION_PATH)
+public class FeatureExtractionController implements IResourceController<RequestInfo<String>> {
 
-    public static final String REFERENCE_PATH = "/reference";
+    public static final String EXTRACTION_PATH = "/extraction";
 
     @Autowired
-    private IFeatureReferenceService featureReferenceService;
+    private IFeatureExtractionService featureReferenceService;
 
     @Autowired
     private IResourceService resourceService;
 
     /**
-     * Create a list of {@link FeatureReferenceRequest} from a list of locationsstored in a {@link FeatureReferenceCollection}
+     * Create a list of {@link FeatureExtractionRequest} from a list of locationsstored in a {@link FeatureReferenceCollection}
      * and return a {@link RequestInfo} full of urns and occured errors
-     * @param collection {@link FeatureReferenceRequest} it contain all {@link Feature} to handle
+     * @param collection {@link FeatureExtractionRequest} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
      */
     @Operation(

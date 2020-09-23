@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
                 "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
                 "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
-public class FeatureReferenceControllerIT extends AbstractRegardsIT {
+public class FeatureExtractionControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -59,7 +59,7 @@ public class FeatureReferenceControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         documentFeatureReferenceCollectionRequestBody(requestBuilderCustomizer);
 
-        performDefaultPost(FeatureReferenceController.REFERENCE_PATH,
+        performDefaultPost(FeatureExtractionController.EXTRACTION_PATH,
                            collection,
                            requestBuilderCustomizer,
                            "Something goes wrong during FeatureReferenceRequest creation")
