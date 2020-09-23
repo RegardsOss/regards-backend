@@ -7,6 +7,7 @@ import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
@@ -15,6 +16,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 import java.nio.charset.Charset;
@@ -88,17 +90,37 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> createQuotaLimits(@Valid DownloadQuotaLimitsDto toBeCreated) {
+    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
         return null;
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@Valid String userEmail) {
+    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
         return null;
     }
 
     @Override
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@Valid String userEmail) {
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(String userEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(String[] userEmails) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
         return null;
     }
 }
