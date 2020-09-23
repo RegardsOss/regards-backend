@@ -77,6 +77,11 @@
 			<groupId>fr.cnes.regards.modules.feature</groupId>
 			<artifactId>feature-service</artifactId>
 		</dependency>
+		<!-- documentation -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-webmvc-core</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>
@@ -87,11 +92,6 @@
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<!-- documentation -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-webmvc-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>

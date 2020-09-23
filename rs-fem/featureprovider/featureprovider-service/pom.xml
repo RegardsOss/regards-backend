@@ -69,6 +69,10 @@
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.feature</groupId>
+            <artifactId>feature-client</artifactId>
+        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
@@ -83,6 +87,16 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>
             <artifactId>model-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-service</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.project</groupId>
+            <artifactId>project-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

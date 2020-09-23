@@ -30,6 +30,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 
@@ -55,9 +56,21 @@ public interface IFeatureReferenceRequestRepository extends JpaRepository<Featur
      * @param ids id of {@link FeatureReferenceRequest} to update
      */
     @Modifying
-    @Query("update FeatureReferenceRequest frr set frr.step = :newStep where frr.id in :ids ")
+    @Query("update FeatureReferenceRequest frr set frr.step = :newStep where frr.id in :ids")
     void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
 
     @Query("select distinct fcr.requestId from FeatureReferenceRequest fcr")
     Set<String> findRequestId();
+
+    @Modifying
+    @Query("update FeatureReferenceRequest frr set frr.state = :newState where frr.requestId in :requestIds")
+    void updateStepByRequestIdIn(@Param("newState") FeatureRequestStep step, @Param("requestIds") Set<String> requestIds);
+
+    @Modifying
+    @Query("update FeatureReferenceRequest frr set frr.state = :newState where frr.requestId in :requestIds")
+    void updateState(@Param("newState") RequestState state, @Param("requestIds") Set<String> requestIds);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from FeatureReferenceRequest frr where frr.requestId in :requestIds")
+    void deleteAllByRequestIdIn(@Param("requestIds") Set<String> requestIds);
 }

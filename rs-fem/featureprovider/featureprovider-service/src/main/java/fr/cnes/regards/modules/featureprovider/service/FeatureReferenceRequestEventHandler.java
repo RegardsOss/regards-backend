@@ -62,7 +62,6 @@ public class FeatureReferenceRequestEventHandler
     @Autowired
     private IFeatureReferenceService featureReferenceService;
 
-    //TODO find some way to specify a type
     @Autowired
     private IRequestDeniedService requestDeniedService;
 

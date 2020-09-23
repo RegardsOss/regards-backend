@@ -52,8 +52,10 @@ public class FeatureNotfierListener implements INotifierRequestListener {
                   NotificationState.SUCCESS);
         List<String> requestIds = success.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
         Set<AbstractFeatureRequest> successRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
-        featureNotificationService.handleNotificationSuccess(successRequest);
-        LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, success.size(), NotificationState.SUCCESS, NotifierEvent.class.getSimpleName());
+        if(!successRequest.isEmpty()) {
+            featureNotificationService.handleNotificationSuccess(successRequest);
+            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, success.size(), NotificationState.SUCCESS, NotifierEvent.class.getSimpleName());
+        }
     }
 
     @Override
@@ -64,7 +66,9 @@ public class FeatureNotfierListener implements INotifierRequestListener {
                   NotificationState.ERROR);
         List<String> requestIds = error.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
         Set<AbstractFeatureRequest> errorRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
-        featureNotificationService.handleNotificationError(errorRequest);
-        LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, error.size(), NotificationState.ERROR, NotifierEvent.class.getSimpleName());
+        if(!errorRequest.isEmpty()) {
+            featureNotificationService.handleNotificationError(errorRequest);
+            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, error.size(), NotificationState.ERROR, NotifierEvent.class.getSimpleName());
+        }
     }
 }

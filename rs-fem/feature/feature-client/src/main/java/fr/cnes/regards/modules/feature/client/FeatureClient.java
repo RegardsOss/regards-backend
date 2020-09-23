@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.client;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
@@ -93,6 +95,10 @@ public class FeatureClient {
         }
         publisher.publish(events);
         return events.stream().map(NotificationRequestEvent::getRequestId).collect(Collectors.toList());
+    }
+
+    public void createFeatures(List<FeatureCreationRequestEvent> featuresToCreate) {
+        publisher.publish(featuresToCreate);
     }
 
 }

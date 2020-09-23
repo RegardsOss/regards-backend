@@ -18,38 +18,26 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.ui.Model;
-import org.springframework.util.MimeType;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -60,36 +48,32 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.feature.client.FeatureClient;
+import fr.cnes.regards.modules.feature.client.FeatureRequestEventHandler;
+import fr.cnes.regards.modules.feature.client.IFeatureEntityClient;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureReferenceRequestRepository;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author kevin
@@ -97,13 +81,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_reference", "regards.amqp.enabled=true",
-                "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+                "spring.task.scheduling.pool.size=2", "zuul.prefix=zuulPrefix" },
+        locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public IProjectsClient projectsClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
+
+        @Bean
+        public IProjectUsersClient projectUsersClient() {
+            return Mockito.mock(IProjectUsersClient.class);
+        }
+
+        @Bean
+        public IModelAttrAssocClient modelAttrAssocClient() {
+            return Mockito.mock(IModelAttrAssocClient.class);
+        }
+
+        @Bean
+        public IModelClient modelClient() {
+            return Mockito.mock(IModelClient.class);
+        }
+
+    }
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
@@ -121,6 +129,9 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     private IFeatureReferenceRequestRepository referenceRequestRepo;
 
     @Autowired
+    private IFeatureReferenceService featureReferenceService;
+
+    @Autowired
     private IPluginConfigurationRepository pluginConfRepo;
 
     @SpyBean
@@ -132,15 +143,19 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     @Autowired(required = false)
     private IRabbitVirtualHostAdmin vhostAdmin;
 
+    @Spy
+    private FeatureClient featureClient;
+
     @Before
     public void setup() throws InterruptedException {
+        cleanAMQP();
         this.referenceRequestRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
         simulateApplicationReadyEvent();
     }
 
     @Test
-    public void testProcessReference() {
+    public void testProcessReference() throws InterruptedException {
         PluginConfiguration recipientPlugin = new PluginConfiguration();
         recipientPlugin.setBusinessId("testFeatureGeneration");
         recipientPlugin.setVersion("1.0.0");
@@ -149,24 +164,38 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         recipientPlugin = this.pluginConfRepo.save(recipientPlugin);
 
         List<FeatureReferenceRequestEvent> eventsToPublish = new ArrayList<>();
+        List<FeatureRequestEvent> creationGrantedToPublish = new ArrayList<>();
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
-            eventsToPublish.add(FeatureReferenceRequestEvent.build("bibi",
-                                                                   FeatureCreationSessionMetadata.build("bibi",
-                                                                                                        "session",
-                                                                                                        PriorityLevel.NORMAL,
-                                                                                                        false,
-                                                                                                        new StorageMetadata[0]),
-                                                                   parameters,
-                                                                   "testFeatureGeneration"));
+            FeatureReferenceRequestEvent referenceEvent = FeatureReferenceRequestEvent.build("bibi",
+                                                                                             FeatureCreationSessionMetadata
+                                                                                                     .build("bibi",
+                                                                                                            "session",
+                                                                                                            PriorityLevel.NORMAL,
+                                                                                                            false,
+                                                                                                            new StorageMetadata[0]),
+                                                                                             parameters,
+                                                                                             "testFeatureGeneration");
+            eventsToPublish.add(referenceEvent);
+            creationGrantedToPublish.add(FeatureRequestEvent.build(FeatureRequestType.CREATION,
+                                                                   referenceEvent.getRequestId(),
+                                                                   referenceEvent.getRequestOwner(),
+                                                                   null,
+                                                                   null,
+                                                                   RequestState.GRANTED));
         }
         this.publisher.publish(eventsToPublish);
-
-        // this.waitRequest(this.featureCreationRequestRepo, this.properties.getMaxBulkSize(), 60000);
-//        this.waitRequest(this.featureRepo, this.properties.getMaxBulkSize(), 120_000);
-
-        assertEquals(0, this.referenceRequestRepo.count());
+        // lets wait until all requests are registered
+        this.waitRequest(referenceRequestRepo, properties.getMaxBulkSize(), 60_000);
+        // once this is done, lets schedule all requests
+        featureReferenceService.scheduleRequests();
+        // wait for all jobs to be finished it means all requests are in step REMOTE_CREATION_REQUESTED
+        waitForStep(referenceRequestRepo, FeatureRequestStep.REMOTE_CREATION_REQUESTED, 120_000);
+        // now simulate that every request has been successfully granted by feature module
+        publisher.publish(creationGrantedToPublish);
+        // then lets wait for the DB to be empty
+        this.waitRequest(referenceRequestRepo, 0, 10_000);
     }
 
     @Test
@@ -195,11 +224,13 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         this.publisher.publish(eventsToPublish);
 
         Mockito.doThrow(new ModuleException("")).when(pluginService).getPlugin(Mockito.anyString());
-        this.waitRequest(this.referenceRequestRepo, this.properties.getMaxBulkSize(), 60000);
-        waitForErrorState(this.referenceRequestRepo);
-        // no feature creation should be in database
-//        Assertions.assertEquals(0, this.featureCreationRequestRepo.count());
-
+        // lets wait until all requests are registered
+        this.waitRequest(referenceRequestRepo, properties.getMaxBulkSize(), 60_000);
+        // once this is done, lets schedule all requests
+        featureReferenceService.scheduleRequests();
+        // now lets wait for request to be in error
+        waitForState(this.referenceRequestRepo, RequestState.ERROR);
+        Mockito.verify(featureClient, Mockito.times(0)).createFeatures(Mockito.anyList());
     }
 
     /**
@@ -208,7 +239,7 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
         if (vhostAdmin != null) {
             // Re-set tenant because above simulation clear it!
-
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
             // Purge event queue
             try {
                 vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
@@ -221,8 +252,7 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         }
     }
 
-    protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo)
-
+    protected void waitForState(JpaRepository<? extends AbstractRequest, ?> repo, RequestState state)
             throws InterruptedException {
         int cpt = 0;
 
@@ -233,7 +263,21 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
                 fail("Timeout");
             }
             cpt++;
-        } while (!repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
+        } while (!repo.findAll().stream().allMatch(request -> state.equals(request.getState())));
+    }
+
+    protected void waitForStep(JpaRepository<? extends AbstractRequest, ?> repo, FeatureRequestStep step, int timeout)
+            throws InterruptedException {
+        int cpt = 0;
+
+        // we will expect that all feature reference remain in database with the error state
+        do {
+            Thread.sleep(1000);
+            if (cpt == timeout / 1000) {
+                fail("Timeout");
+            }
+            cpt++;
+        } while (!repo.findAll().stream().allMatch(request -> step.equals(request.getStep())));
     }
 
     protected void waitRequest(JpaRepository<?, ?> repo, long expected, long timeout) {
@@ -271,7 +315,12 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     @After
     public void after() {
         subscriber.unsubscribeFrom(FeatureReferenceRequestEvent.class);
+        cleanAMQP();
+    }
+
+    private void cleanAMQP() {
         cleanAMQPQueues(FeatureReferenceRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FeatureRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
     }
 
 }

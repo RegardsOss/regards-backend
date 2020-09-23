@@ -28,3 +28,7 @@ INSERT INTO t_feature_request SELECT id, 'NOTIFICATION', null, null, null, null,
 INSERT INTO t_feature_request SELECT id, 'COPY', null, null, null, null, null, request_id, request_owner, state, null, registration_date, request_date, step, priority, null, null, null, urn, storage, checksum, null, null FROM t_feature_copy_request;
 
 -- TODO: delete old tables but i want to test the script first on an env with creation request & update & deletion & notification to see if everything goes well
+
+-- Delete t_feature_reference because it is now in another module
+DROP TABLE t_feature_reference_request CASCADE;
+DROP sequence seq_feature_reference_request;

@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -56,6 +58,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.feature.client.FeatureClient;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -66,9 +69,9 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureReferenceRequestRepository;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
@@ -121,8 +124,8 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
     @Autowired
     private IPluginService pluginService;
 
-    //    @Autowired TODO: change to feature client
-    //    private IFeatureCreationService featureCreationService;
+    @Autowired
+    private FeatureClient featureClient;
 
     @Override
     public void validateRequest(AbstractRequestEvent event, Errors errors) {
@@ -149,11 +152,9 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
         // Monitoring log
         LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errorMessage));
         // Publish DENIED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.EXTRACTION,
+        publisher.publish(new FeatureExtractionResponseEvent(
                                                     requestId,
                                                     requestOwner,
-                                                    null,
-                                                    null,
                                                     RequestState.DENIED,
                                                     Sets.newHashSet(errorMessage)));
         return true;
@@ -202,7 +203,8 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
         }
 
         if (errors.hasErrors()) {
-            LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}", ErrorTranslator.getErrors(errors));
+            LOGGER.debug("Error during founded FeatureReferenceRequestEvent validation {}",
+                         ErrorTranslator.getErrors(errors));
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
             // Monitoring log
             LOGGER.error(String.format(REFERENCE_DENIED_FORMAT,
@@ -210,11 +212,9 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
                                        item.getRequestId(),
                                        ErrorTranslator.getErrors(errors)));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.EXTRACTION,
+            publisher.publish(new FeatureExtractionResponseEvent(
                                                         item.getRequestId(),
                                                         item.getRequestOwner(),
-                                                        null,
-                                                        null,
                                                         RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             return;
@@ -222,13 +222,11 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
         // Monitoring log
         LOGGER.trace(String.format(REFERENCE_GRANTED_FORMAT, item.getRequestOwner(), item.getRequestId()));
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.EXTRACTION,
+        publisher.publish(new FeatureExtractionResponseEvent(
                                                     item.getRequestId(),
                                                     item.getRequestOwner(),
-                                                    null,
-                                                    null,
                                                     RequestState.GRANTED,
-                                                    null));
+                                                    new HashSet<>()));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
@@ -291,39 +289,39 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
 
         long processStart = System.currentTimeMillis();
 
-        Set<FeatureReferenceRequest> successCreationRequestGeneration = new HashSet<>();
+        int successCreationRequestGenerationCount = 0;
         List<FeatureCreationRequestEvent> creationRequestsToRegister = new ArrayList<>();
 
         for (FeatureReferenceRequest request : requests) {
             try {
-                FeatureCreationRequestEvent fcre = initFeatureCreationRequest(request);
-                creationRequestsToRegister.add(fcre);
-                successCreationRequestGeneration.add(request);
+                creationRequestsToRegister.add(initFeatureCreationRequest(request));
+                successCreationRequestGenerationCount++;
+                request.setStep(FeatureRequestStep.REMOTE_CREATION_REQUESTED);
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
                 Set<String> errors = Sets.newHashSet(e.getMessage());
                 // Monitoring log
-                LOGGER.error(String.format(REFERENCE_ERROR_FORMAT, request.getRequestOwner(), request.getRequestId(), errors));
+                LOGGER.error(String.format(REFERENCE_ERROR_FORMAT,
+                                           request.getRequestOwner(),
+                                           request.getRequestId(),
+                                           errors));
                 // Publish ERROR request
                 request.setState(RequestState.ERROR);
-                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.EXTRACTION,
+                publisher.publish(new FeatureExtractionResponseEvent(
                                                             request.getRequestId(),
                                                             request.getRequestOwner(),
-                                                            null,
-                                                            null,
                                                             RequestState.ERROR,
                                                             errors));
             }
         }
 
         this.featureReferenceRequestRepo.saveAll(requests);
-        // TODO change to client
-//        this.featureCreationService.registerRequests(creationRequestsToRegister);
-        // TODO remove this to another method that will be called once notification has been properly sent by notifier
-        // Successful requests are deleted now!
-        this.featureReferenceRequestRepo.deleteInBatch(successCreationRequestGeneration);
+        if(!creationRequestsToRegister.isEmpty()) {
+            this.featureClient.createFeatures(creationRequestsToRegister);
+        }
+        // feature creation has been asked to feature module lets handled granted and denied with a listener
 
         LOGGER.trace("------------->>> {} creation request published in {} ms",
-                     successCreationRequestGeneration.size(),
+                     successCreationRequestGenerationCount,
                      System.currentTimeMillis() - processStart);
     }
 
@@ -390,5 +388,41 @@ public class FeatureReferenceService implements IFeatureReferenceService, IReque
                                                            collection.getFactory()));
         }
         return registerRequests(toTreat);
+    }
+
+    @Override
+    public void handleDenied(List<FeatureRequestEvent> denied) {
+        if (!denied.isEmpty()) {
+            Map<String, FeatureRequestEvent> deniedRequestPerRequestId = denied.stream()
+                    .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
+            List<FeatureExtractionResponseEvent> events = new ArrayList<>();
+            for (Map.Entry<String, FeatureRequestEvent> request : deniedRequestPerRequestId.entrySet()) {
+                events.add(new FeatureExtractionResponseEvent(request.getKey(),
+                                                              request.getValue().getRequestOwner(),
+                                                              RequestState.ERROR,
+                                                              request.getValue().getErrors()));
+            }
+            publisher.publish(events);
+            featureReferenceRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR, deniedRequestPerRequestId.keySet());
+            featureReferenceRequestRepo.updateState(RequestState.ERROR, deniedRequestPerRequestId.keySet());
+        }
+
+    }
+
+    @Override
+    public void handleGranted(List<FeatureRequestEvent> granted) {
+        if (!granted.isEmpty()) {
+            Map<String, FeatureRequestEvent> grantedRequestPerRequestId = granted.stream()
+                    .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
+            List<FeatureExtractionResponseEvent> events = new ArrayList<>();
+            for (Map.Entry<String, FeatureRequestEvent> request : grantedRequestPerRequestId.entrySet()) {
+                events.add(new FeatureExtractionResponseEvent(request.getKey(),
+                                                              request.getValue().getRequestOwner(),
+                                                              RequestState.SUCCESS,
+                                                              new HashSet<>()));
+            }
+            publisher.publish(events);
+            featureReferenceRequestRepo.deleteAllByRequestIdIn(grantedRequestPerRequestId.keySet());
+        }
     }
 }

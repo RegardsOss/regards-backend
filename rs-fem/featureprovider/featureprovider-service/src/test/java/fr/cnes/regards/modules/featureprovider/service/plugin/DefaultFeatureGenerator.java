@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -42,6 +41,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -118,7 +118,7 @@ public class DefaultFeatureGenerator implements IFeatureFactoryPlugin {
             List<EntityModel<ModelAttrAssoc>> resources = new ArrayList<>();
             for (ModelAttrAssoc assoc : assocs) {
                 atts.add(assoc.getAttribute());
-                resources.add(new EntityModel<ModelAttrAssoc>(assoc));
+                resources.add(new EntityModel<>(assoc));
                 if (modelName == null) {
                     modelName = assoc.getModel().getName();
                 }
@@ -128,10 +128,10 @@ public class DefaultFeatureGenerator implements IFeatureFactoryPlugin {
             factory.registerAttributes(tenant, atts);
 
             // Mock client
-            List<EntityModel<Model>> models = new ArrayList<EntityModel<Model>>();
+            List<EntityModel<Model>> models = new ArrayList<>();
             Model mockModel = Mockito.mock(Model.class);
             Mockito.when(mockModel.getName()).thenReturn(modelName);
-            models.add(new EntityModel<Model>(mockModel));
+            models.add(new EntityModel<>(mockModel));
             Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
                     .thenReturn(ResponseEntity.ok(resources));

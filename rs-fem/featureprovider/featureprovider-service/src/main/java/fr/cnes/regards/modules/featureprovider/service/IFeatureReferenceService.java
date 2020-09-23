@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureReferenceRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureReferenceRequest;
 
 /**
@@ -57,4 +58,14 @@ public interface IFeatureReferenceService {
      * @return {@link RequestInfo} contain request ids of granted/denied features
      */
     RequestInfo<String> registerRequests(@Valid FeatureReferenceCollection collection);
+
+    /**
+     * Request are not feature module property so we have to keep them in feature provider module in error
+     */
+    void handleDenied(List<FeatureRequestEvent> denied);
+
+    /**
+     * Request are now feature module property so we just delete them from feature provider module
+     */
+    void handleGranted(List<FeatureRequestEvent> granted);
 }

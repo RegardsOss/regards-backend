@@ -55,9 +55,9 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 public class FeatureReferenceRequest extends AbstractRequest {
 
     @Id
-    @SequenceGenerator(name = "featureCreationRequestSequence", initialValue = 1,
-            sequenceName = "seq_feature_creation_request")
-    @GeneratedValue(generator = "featureCreationRequestSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "featureReferenceRequestSequence", initialValue = 1,
+            sequenceName = "seq_feature_reference_request")
+    @GeneratedValue(generator = "featureReferenceRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Embedded

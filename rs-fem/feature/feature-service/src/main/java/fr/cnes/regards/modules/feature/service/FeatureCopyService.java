@@ -51,6 +51,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -122,7 +123,6 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
      * Validate a {@link FeatureCopyRequest}
      * @param item to validate
      * @param grantedRequests list of validated requests
-     * @param requestInfo
      */
     private void validateFeatureCopyRequest(FeatureCopyRequest item, List<FeatureCopyRequest> grantedRequests,
             RequestInfo<FeatureUniformResourceName> requestInfo) {
@@ -161,7 +161,6 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
 
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        Set<Long> requestIds = new HashSet<>();
 
         List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo
                 .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_DELAYED,
@@ -169,7 +168,8 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
                                                        PageRequest.of(0,
                                            properties.getMaxBulkSize(),
                                            Sort.by(Order.asc("priority"), Order.asc("requestDate")))).getContent();
-        requestIds.addAll(requestsToSchedule.stream().map(request -> request.getId()).collect(Collectors.toList()));
+        Set<Long> requestIds = requestsToSchedule.stream().map(AbstractFeatureRequest::getId)
+                .collect(Collectors.toSet());
         if (!requestsToSchedule.isEmpty()) {
 
             featureCopyRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);

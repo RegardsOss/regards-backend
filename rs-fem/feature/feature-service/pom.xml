@@ -118,11 +118,6 @@
             <artifactId>notifier-dto</artifactId>
             <groupId>fr.cnes.regards.modules.notifier</groupId>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>microservice-logger</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>

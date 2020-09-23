@@ -24,7 +24,6 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -91,21 +90,6 @@ public class FeatureLoggerTests {
     @Test
     public void deletionSuccess() {
         FeatureLogger.deletionSuccess(REQUEST_OWNER, REQUEST_ID, URN);
-    }
-
-    @Test
-    public void referenceDenied() {
-        FeatureLogger.referenceDenied(REQUEST_OWNER, REQUEST_ID, REQUEST_ERRORS);
-    }
-
-    @Test
-    public void referenceGranted() {
-        FeatureLogger.referenceGranted(REQUEST_OWNER, REQUEST_ID);
-    }
-
-    @Test
-    public void referenceError() {
-        FeatureLogger.referenceError(REQUEST_OWNER, REQUEST_ID, REQUEST_ERRORS);
     }
 
     @Test
