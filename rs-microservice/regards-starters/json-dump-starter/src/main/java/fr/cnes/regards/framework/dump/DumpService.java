@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableListMultimap;
@@ -63,7 +64,6 @@ public class DumpService {
     @Value("${spring.application.name}")
     private String microservice;
 
-
     /**
      * Check if jsonNames are unique in dumpCollection
      * @param dumpCollection objects to dump
@@ -90,7 +90,7 @@ public class DumpService {
      * Generate a zip from list of object dumps
      * @param zipCollection list of objects to dump
      * @param tmpZipLocation temporary location to write zip
-     * @throws IOException
+     * @throws IOException zip could not be written
      */
     public void generateJsonZip(List<ObjectDump> zipCollection, Path tmpZipLocation) throws IOException {
         // Sort dump collection by date
@@ -153,7 +153,7 @@ public class DumpService {
      * @param dumpLocation final location of the dump
      * @param tmpZipLocation location of the temporary zips to dump
      * @param reqDumpDate date when a request was created to dump objects
-     * @throws IOException
+     * @throws IOException the dump could not be written
      */
     public void generateDump(Path dumpLocation, Path tmpZipLocation, OffsetDateTime reqDumpDate) throws IOException {
         // Get all zips to dump
@@ -165,14 +165,15 @@ public class DumpService {
             ZipEntry zipEntry;
 
             // Create dump
-            String dumpName = "dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(reqDumpDate) + ".zip";
+            String dumpName =
+                    "dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(reqDumpDate) + ".zip";
             Files.createDirectories(dumpLocation);
 
             try (ZipOutputStream dumpZip = new ZipOutputStream(
                     new FileOutputStream(dumpLocation.resolve(dumpName).toFile()))) {
                 // Zip content from tmpDumpFolder
                 for (File file : zipArray) {
-                    if(!file.isDirectory()){
+                    if (!file.isDirectory()) {
                         // Get zip file
                         zipEntry = new ZipEntry(file.getName());
                         dumpZip.putNextEntry(zipEntry);

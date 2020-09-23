@@ -19,6 +19,7 @@
 
 
 package fr.cnes.regards.framework.dump;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 

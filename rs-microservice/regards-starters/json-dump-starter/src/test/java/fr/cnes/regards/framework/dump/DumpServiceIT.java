@@ -65,9 +65,6 @@ public class DumpServiceIT {
     @Autowired
     private DumpService dumpService;
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
     @Value("${regards.json.dump.max.per.sub.zip}")
     private int maxFilesPerSubZip;
 
