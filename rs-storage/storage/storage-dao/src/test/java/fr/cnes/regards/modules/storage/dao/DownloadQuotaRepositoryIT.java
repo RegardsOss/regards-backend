@@ -19,11 +19,14 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultDaoTestConfiguration;
 import fr.cnes.regards.modules.storage.dao.config.StorageDaoConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -31,9 +34,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,16 +46,24 @@ import static org.junit.Assert.assertEquals;
     }
 )
 @ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, StorageDaoConfiguration.class })
-public class DownloadQuotaRepositoryIT extends AbstractDaoTransactionalTest {
+public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IDownloadQuotaRepository repo;
+
+    // never too sure
+    @Before
+    @After
+    public void clean() {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        repo.deleteAll();
+        runtimeTenantResolver.clearTenant();
+    }
 
     @Test
     public void upsertOrCombineDownloadRate_should_insert_or_accumulate() throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
-        repo.deleteAll();
         String email = "plop";
         int instanceCount = 5;
         Random rand = new Random();
@@ -82,7 +91,6 @@ public class DownloadQuotaRepositoryIT extends AbstractDaoTransactionalTest {
     public void upsertOrCombineDownloadQuota_should_insert_or_accumulate() throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(3);
 
-        repo.deleteAll();
         String email = "plop";
         int instanceCount = 5;
         Random rand = new Random();

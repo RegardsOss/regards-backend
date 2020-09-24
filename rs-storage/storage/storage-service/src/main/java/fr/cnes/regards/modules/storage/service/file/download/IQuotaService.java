@@ -1,13 +1,13 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.control.Try;
 
 import java.util.function.Function;
 
 public interface IQuotaService<T> {
-    UserCurrentQuotas getCurrentQuotas(String userEmail);
-
     /**
      * Executes <code>operation</code> if and only if the current gauge for the
      * target user (specified by its <code>userEmail</code>) is not superior
@@ -40,6 +40,16 @@ public interface IQuotaService<T> {
      * @return the result of the supplied <code>operation</code> execution
      */
     Try<T> withQuota(String userEmail, Function<WithQuotaOperationHandler, Try<T>> operation);
+
+    Try<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits();
+
+    Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(DefaultDownloadQuotaLimits newDefaults);
+
+    Try<DownloadQuotaLimitsDto> getDownloadQuotaLimits(String userEmail);
+
+    Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits);
+
+    UserCurrentQuotas getCurrentQuotas(String userEmail);
 
     interface WithQuotaOperationHandler {
         void start();

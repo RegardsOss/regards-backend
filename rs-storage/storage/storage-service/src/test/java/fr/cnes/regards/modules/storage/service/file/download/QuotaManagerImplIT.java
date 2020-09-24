@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -34,13 +35,10 @@ import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(
     properties = {
-        "spring.jpa.properties.hibernate.default_schema=storage_download_gauge_tests",
-//        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///QuotaManagerImplIT",
-//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
+        "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests",
         "regards.storage.cache.path=unused but required" // ¯\_(ツ)_/¯
     }
 )
-@RunWith(SpringRunner.class)
 public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);

@@ -5,11 +5,13 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import io.vavr.Tuple;
+import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
 import org.junit.After;
 import org.junit.Before;
@@ -17,13 +19,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,18 +35,14 @@ import static org.mockito.Mockito.*;
 @TestPropertySource(
     properties = {
         "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests",
-//        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///DownloadQuotaServiceIT",
-//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT",
         "regards.storage.cache.path=unused but required" // ¯\_(ツ)_/¯
     }
 )
 @RunWith(SpringRunner.class)
 public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
 
-    @Value("${regards.admin.quota.max.default:10}") private long defaultQuota;
-
-    @Value("${regards.admin.rate.limit.default:600}") private long defaultRate;
-
+    public static final long MAX_QUOTA = 10L;
+    public static final long RATE_LIMIT = 600L;
     @Autowired private IDownloadQuotaRepository quotaRepository;
 
     private IDownloadQuotaRepository quotaRepositoryDelegate;
@@ -67,6 +65,7 @@ public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
 
         tenantResolver.forceTenant(getDefaultTenant());
         quotaService.setCache(Caffeine.newBuilder().build());
+        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(getDefaultTenant(), new DefaultDownloadQuotaLimits(MAX_QUOTA, RATE_LIMIT))));
     }
 
     @After
@@ -86,7 +85,7 @@ public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
     public void should_retry_find_request_for_caching_when_concurrent_quota_insert_happens() {
         // given
         String userEmail = "foo@bar.com";
-        DownloadQuotaLimits stub = new DownloadQuotaLimits(getDefaultTenant(), userEmail, defaultQuota, defaultRate);
+        DownloadQuotaLimits stub = new DownloadQuotaLimits(getDefaultTenant(), userEmail, MAX_QUOTA, RATE_LIMIT);
 
         // pretend there's no entry for the target user in the cache
         QuotaKey key = QuotaKey.make(getDefaultTenant(), userEmail);
@@ -143,13 +142,13 @@ public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
         ArgumentCaptor<DownloadQuotaLimits> argument = ArgumentCaptor.forClass(DownloadQuotaLimits.class);
         verify(quotaRepository).save(argument.capture());
         assertEquals(userEmail, argument.getValue().getEmail());
-        assertEquals(defaultQuota, argument.getValue().getMaxQuota().longValue());
+        assertEquals(MAX_QUOTA, argument.getValue().getMaxQuota().longValue());
 
         // no more requests are made to the quotaRepository,
         verifyNoMoreInteractions(quotaRepository);
 
         // the quota value is cached,
-        assertEquals(defaultQuota, cache.getIfPresent(key).getMaxQuota().longValue());
+        assertEquals(MAX_QUOTA, cache.getIfPresent(key).getMaxQuota().longValue());
 
         // and
         // we finally got the noop result

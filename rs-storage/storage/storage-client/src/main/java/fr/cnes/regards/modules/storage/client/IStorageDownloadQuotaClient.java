@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.springframework.http.ResponseEntity;
@@ -27,20 +28,39 @@ import javax.validation.Valid;
 
 public interface IStorageDownloadQuotaClient {
 
+    public static final String PATH_DEFAULT_QUOTA = "/quota/defaults";
+
+    public static final String PATH_USER_QUOTA = "/quota/{user_email}";
+
     public static final String PATH_QUOTA = "/quota";
 
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
 
-    @RequestMapping(method = RequestMethod.POST, path = PATH_QUOTA)
-    @ResponseBody
-    ResponseEntity<DownloadQuotaLimitsDto> createQuotaLimits(@Valid @RequestBody DownloadQuotaLimitsDto toBeCreated);
+    public static final String USER_EMAIL_PARAM = "user_email";
 
-    @RequestMapping(method = RequestMethod.GET, path = PATH_QUOTA)
+    @GetMapping(value = PATH_DEFAULT_QUOTA)
     @ResponseBody
-    ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@Valid @PathVariable("email") String userEmail);
+    ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits();
 
-    @RequestMapping(method = RequestMethod.GET, path = PATH_CURRENT_QUOTA)
+    @PutMapping(value = PATH_DEFAULT_QUOTA)
     @ResponseBody
-    ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@Valid @PathVariable("email") String userEmail);
+    ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid @RequestBody DefaultDownloadQuotaLimits newDefaults);
 
+    @GetMapping(path = PATH_USER_QUOTA)
+    @ResponseBody
+    ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail);
+
+    @PutMapping(path = PATH_USER_QUOTA)
+    @ResponseBody
+    ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
+        @PathVariable(USER_EMAIL_PARAM) String userEmail,
+        @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits);
+
+    @GetMapping(path = PATH_QUOTA)
+    @ResponseBody
+    ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits();
+
+    @GetMapping(path = PATH_CURRENT_QUOTA)
+    @ResponseBody
+    ResponseEntity<UserCurrentQuotas> getCurrentQuotas();
 }

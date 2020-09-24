@@ -23,51 +23,38 @@ import javax.validation.constraints.Min;
 import java.util.Objects;
 
 @Entity
-@Table(name = "t_user_download_quota_limits",
-    uniqueConstraints = @UniqueConstraint(name = DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL, columnNames = { "email" }))
-@SequenceGenerator(name = DownloadQuotaLimitsEntity.DOWNLOAD_QUOTA_LIMIT_SEQUENCE, initialValue = 1, sequenceName = "seq_download_quota_limits")
-public class DownloadQuotaLimitsEntity {
+@Table(name = "t_default_download_quota_limits")
+@SequenceGenerator(name = DefaultDownloadQuotaLimitsEntity.DEFAULT_DOWNLOAD_QUOTA_LIMIT_SEQUENCE, initialValue = 1, sequenceName = "seq_default_download_quota_limits")
+public class DefaultDownloadQuotaLimitsEntity {
 
-    public static final String UK_DOWNLOAD_QUOTA_LIMITS_EMAIL = "uk_download_quota_limits_email";
-    public static final String DOWNLOAD_QUOTA_LIMIT_SEQUENCE = "downloadQuotaLimitSequence";
+    public static final String DEFAULT_DOWNLOAD_QUOTA_LIMIT_SEQUENCE = "defaultDownloadQuotaLimitSequence";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = DOWNLOAD_QUOTA_LIMIT_SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = DEFAULT_DOWNLOAD_QUOTA_LIMIT_SEQUENCE)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "email", nullable = false)
-    private String email;
-
     @Column(name = "max_quota", nullable = false)
-    @Min(value = -1, message = "The custom download quota cannot be inferior to -1 (minus one).")
+    @Min(value = -1, message = "The default download quota cannot be inferior to -1 (minus one).")
     private Long maxQuota;
 
     @Column(name = "rate_limit", nullable = false)
-    @Min(value = -1, message = "The custom download rate cannot be inferior to -1 (minus one).")
+    @Min(value = -1, message = "The default download rate cannot be inferior to -1 (minus one).")
     private Long rateLimit;
 
-    public DownloadQuotaLimitsEntity() {
+    public DefaultDownloadQuotaLimitsEntity() {
         super();
     }
 
-    public DownloadQuotaLimitsEntity(Long id, String email, Long maxQuota, Long rateLimit) {
+    public DefaultDownloadQuotaLimitsEntity(Long id, Long maxQuota, Long rateLimit) {
         this.id = id;
-        this.email = email;
         this.maxQuota = maxQuota;
         this.rateLimit = rateLimit;
     }
 
-    public DownloadQuotaLimitsEntity(String email, Long maxQuota, Long rateLimit) {
-        this.email = email;
+    public DefaultDownloadQuotaLimitsEntity(Long maxQuota, Long rateLimit) {
         this.maxQuota = maxQuota;
         this.rateLimit = rateLimit;
-    }
-
-    public DownloadQuotaLimitsEntity(DownloadQuotaLimitsEntity other) {
-        this.email = other.email;
-        this.maxQuota = other.maxQuota;
-        this.rateLimit = other.rateLimit;
     }
 
     public Long getId() {
@@ -76,14 +63,6 @@ public class DownloadQuotaLimitsEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public Long getMaxQuota() {
@@ -106,15 +85,14 @@ public class DownloadQuotaLimitsEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DownloadQuotaLimitsEntity that = (DownloadQuotaLimitsEntity) o;
+        DefaultDownloadQuotaLimitsEntity that = (DefaultDownloadQuotaLimitsEntity) o;
         return Objects.equals(id, that.id) &&
-            Objects.equals(email, that.email) &&
             Objects.equals(maxQuota, that.maxQuota) &&
             Objects.equals(rateLimit, that.rateLimit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email, maxQuota, rateLimit);
+        return Objects.hash(id, maxQuota, rateLimit);
     }
 }

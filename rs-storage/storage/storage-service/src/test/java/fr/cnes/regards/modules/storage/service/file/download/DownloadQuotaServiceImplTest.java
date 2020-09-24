@@ -5,15 +5,17 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
-import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
-import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
-import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.assertj.core.api.ThrowableAssert;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import static fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL;
@@ -52,7 +55,9 @@ public class DownloadQuotaServiceImplTest {
 
     @Mock private IQuotaManager quotaManager;
 
-    @Mock private IRuntimeTenantResolver tenantResolver;
+    @Mock private ITenantResolver tenantResolver;
+
+    @Mock private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Mock private ISubscriber subscriber;
 
@@ -67,25 +72,25 @@ public class DownloadQuotaServiceImplTest {
         MockitoAnnotations.initMocks(this);
 
         doNothing()
-            .when(tenantResolver)
+            .when(runtimeTenantResolver)
             .forceTenant(anyString());
         doReturn(TENANT)
-            .when(tenantResolver)
+            .when(runtimeTenantResolver)
             .getTenant();
 
         quotaService = spy(
             new DownloadQuotaServiceImpl<>(
-                DEFAULT_QUOTA,
-                DEFAULT_RATE,
                 quotaRepository,
                 quotaManager,
                 tenantResolver,
+                runtimeTenantResolver,
                 subscriber,
                 applicationContext
             )
         );
         quotaService.setSelf(quotaService);
         quotaService.setCache(Caffeine.newBuilder().build());
+        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(TENANT, new DefaultDownloadQuotaLimits(DEFAULT_QUOTA, DEFAULT_RATE))));
     }
 
     @After
@@ -95,7 +100,7 @@ public class DownloadQuotaServiceImplTest {
     }
 
     @Test
-    public void createDefaultDownloadQuota_should_insert_default_quota() {
+    public void createDefaultDownloadQuota_should_insert_quota() {
         // given
         String userEmail = "foo@bar.com";
 
@@ -105,7 +110,7 @@ public class DownloadQuotaServiceImplTest {
             .when(quotaRepository)
             .save(any());
         DownloadQuotaLimits downloadQuota =
-            quotaService.createDefaultDownloadQuota(userEmail);
+            quotaService.createDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         assertEquals(stub, downloadQuota);
@@ -122,7 +127,7 @@ public class DownloadQuotaServiceImplTest {
             .when(quotaRepository)
             .save(any());
         ThrowableAssert.ThrowingCallable throwing =
-            () -> quotaService.createDefaultDownloadQuota(userEmail);
+            () -> quotaService.createDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         assertThatThrownBy(throwing)
@@ -143,7 +148,7 @@ public class DownloadQuotaServiceImplTest {
         // when
         // we search for it
         DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail);
+            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         // we find it
@@ -170,7 +175,7 @@ public class DownloadQuotaServiceImplTest {
             .when(quotaRepository)
             .save(any());
         DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail);
+            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         // we don't find it
@@ -205,7 +210,7 @@ public class DownloadQuotaServiceImplTest {
             .when(quotaRepository)
             .save(any());
         DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail);
+            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         // we didn't find it at first but we retried
@@ -240,7 +245,7 @@ public class DownloadQuotaServiceImplTest {
                 .when(quotaRepository)
                 .save(any());
             ThrowableAssert.ThrowingCallable throwing =
-                () -> quotaService.findOrCreateDownloadQuota(userEmail);
+                () -> quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
             // then
             // we didn't find it at first so we tried to create it but failed
@@ -262,7 +267,7 @@ public class DownloadQuotaServiceImplTest {
                 .when(quotaRepository)
                 .save(any());
             ThrowableAssert.ThrowingCallable throwing =
-                () -> quotaService.findOrCreateDownloadQuota(userEmail);
+                () -> quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
             // then
             // we didn't find it at first so we tried to create it but failed
@@ -292,7 +297,7 @@ public class DownloadQuotaServiceImplTest {
         long rateStub = random.nextInt(Integer.MAX_VALUE);
         doReturn(new DownloadQuotaLimits(TENANT, userEmail, quotaStub, rateStub))
             .when(quotaService)
-            .findOrCreateDownloadQuota(userEmail);
+            .findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
         Try<DownloadQuotaLimits> result = quotaService.cacheUserQuota(userEmail, key);
 
         // then
@@ -340,6 +345,166 @@ public class DownloadQuotaServiceImplTest {
                         .isInstanceOf(DownloadQuotaLimitExceededException.class);
                 }
             });
+    }
+
+    @Test
+    public void getCurrentQuotas_should_cache_and_ask_quota_manager() {
+        // given
+        String userEmail = "foo@bar.com";
+
+        // there's an entry for the target user in the cache
+        QuotaKey key = QuotaKey.make(TENANT, userEmail);
+        DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+
+        doReturn(Try.success(quota))
+            .when(quotaService)
+            .cacheUserQuota(eq(userEmail), eq(key));
+
+        long stubQuotaCounter = random.nextInt(Integer.MAX_VALUE);
+        long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
+
+        doReturn(
+            CompletableFuture.completedFuture(
+                Tuple.of(
+                    new UserQuotaAggregate(stubQuotaCounter),
+                    new UserRateAggregate(stubRateGauge)
+                )
+            )
+        ).when(quotaManager).get(quota);
+
+        UserCurrentQuotas result = quotaService.getCurrentQuotas(userEmail);
+
+        UserCurrentQuotas expected = new UserCurrentQuotas(
+            TENANT,
+            userEmail,
+            quota.getMaxQuota(),
+            quota.getRateLimit(),
+            stubQuotaCounter,
+            stubRateGauge
+        );
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void getDownloadQuotaLimits_should_delegate_to_caching_methods() {
+        String userEmail = "foo@bar.com";
+
+        // there's an entry for the target user in the cache
+        QuotaKey key = QuotaKey.make(TENANT, userEmail);
+        DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+
+        doReturn(Try.success(quota))
+            .when(quotaService)
+            .cacheUserQuota(eq(userEmail), eq(key));
+
+        Try<DownloadQuotaLimitsDto> result = quotaService.getDownloadQuotaLimits(userEmail);
+
+        DownloadQuotaLimitsDto expected = DownloadQuotaLimitsDto.fromDownloadQuotaLimits(quota);
+        assertEquals(expected, result.get());
+    }
+
+    @Test
+    public void upsertDownloadQuotaLimits_should_upsert() {
+        String userEmail = "foo@bar.com";
+
+        long maxQuota = random.nextInt(Integer.MAX_VALUE);
+        long rateLimit = random.nextInt(Integer.MAX_VALUE);
+
+        DownloadQuotaLimitsDto limits = new DownloadQuotaLimitsDto(userEmail, maxQuota, rateLimit);
+
+        {
+            // there exist a quota for the target user
+            DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+
+            doReturn(Optional.of(stub))
+                .when(quotaRepository)
+                .findByEmail(anyString());
+
+            doAnswer(a -> a.getArgument(0))
+                .when(quotaRepository)
+                .save(any());
+
+            Try<DownloadQuotaLimitsDto> result = quotaService.upsertDownloadQuotaLimits(limits);
+
+            assertEquals(limits, result.get());
+        }
+        {
+            // there exist no quota for the target user
+            doReturn(Optional.empty())
+                .when(quotaRepository)
+                .findByEmail(anyString());
+
+            doAnswer(a -> a.getArgument(0))
+                .when(quotaRepository)
+                .save(any());
+
+            Try<DownloadQuotaLimitsDto> result = quotaService.upsertDownloadQuotaLimits(limits);
+
+            assertEquals(limits, result.get());
+        }
+    }
+    
+    @Test
+    public void upsertDownloadQuotaLimits_should_update_cache() {
+        // given
+        String userEmail = "foo@bar.com";
+
+        // there's an entry for the target user in the cache
+        QuotaKey key = QuotaKey.make(TENANT, userEmail);
+        DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        Cache<QuotaKey, DownloadQuotaLimits> cache = Caffeine.newBuilder().build();
+        cache.put(key, quota);
+        quotaService.setCache(cache);
+
+        // there exist a quota for the target user
+        doReturn(Optional.empty())
+            .when(quotaRepository)
+            .findByEmail(anyString());
+
+        doAnswer(a -> a.getArgument(0))
+            .when(quotaRepository)
+            .save(any());
+
+        long maxQuota = random.nextInt(Integer.MAX_VALUE);
+        long rateLimit = random.nextInt(Integer.MAX_VALUE);
+        DownloadQuotaLimitsDto limits = new DownloadQuotaLimitsDto(userEmail, maxQuota, rateLimit);
+
+        quotaService.upsertDownloadQuotaLimits(limits);
+
+        DownloadQuotaLimits cachedValue = cache.getIfPresent(key);
+        assertEquals(maxQuota, cachedValue.getMaxQuota().longValue());
+        assertEquals(rateLimit, cachedValue.getRateLimit().longValue());
+    }
+
+    @Test
+    public void getDefaultDownloadQuotaLimits_should_get_the_default_entry() {
+        DefaultDownloadQuotaLimits stub = new DefaultDownloadQuotaLimits(DEFAULT_QUOTA, DEFAULT_RATE);
+        doReturn(stub)
+            .when(quotaRepository)
+            .getDefaultDownloadQuotaLimits();
+        Try<DefaultDownloadQuotaLimits> result = quotaService.getDefaultDownloadQuotaLimits();
+        assertEquals(stub, result.get());
+    }
+
+    @Test
+    public void changeDefaultDownloadQuotaLimits_should_change_default_limits_and_update_cache() {
+        AtomicReference<Map<String, DefaultDownloadQuotaLimits>> cache =
+            new AtomicReference<>(HashMap.empty());
+        quotaService.setDefaultLimits(cache);
+
+        long maxQuota = random.nextInt(Integer.MAX_VALUE);
+        long rateLimit = random.nextInt(Integer.MAX_VALUE);
+        DefaultDownloadQuotaLimits newDefaultLimits = new DefaultDownloadQuotaLimits(maxQuota, rateLimit);
+
+        doReturn(newDefaultLimits)
+            .when(quotaRepository)
+            .changeDefaultDownloadQuotaLimits(maxQuota, rateLimit);
+
+        Try<DefaultDownloadQuotaLimits> result = quotaService.changeDefaultDownloadQuotaLimits(newDefaultLimits);
+
+        assertEquals(newDefaultLimits, result.get());
+        assertEquals(maxQuota, cache.get().get(TENANT).get().getMaxQuota().longValue());
+        assertEquals(rateLimit, cache.get().get(TENANT).get().getRateLimit().longValue());
     }
 
     @Test

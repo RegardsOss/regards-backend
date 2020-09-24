@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
-import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,18 +35,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 @RestController
 public class DownloadQuotaController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadQuotaController.class);
 
+    public static final String PATH_DEFAULT_QUOTA = "/quota/defaults";
+
+    public static final String PATH_USER_QUOTA = "/quota/{user_email}";
+
     public static final String PATH_QUOTA = "/quota";
 
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
 
-    @Autowired
-    private IDownloadQuotaRepository quotaRepository;
+    public static final String USER_EMAIL_PARAM = "user_email";
 
     @Autowired
     private IQuotaService<ResponseEntity<StreamingResponseBody>> quotaService;
@@ -57,122 +61,66 @@ public class DownloadQuotaController {
     @Autowired
     private IAuthenticationResolver authResolver;
 
-    @RequestMapping(method = RequestMethod.POST, path = PATH_QUOTA)
+    @GetMapping(value = PATH_DEFAULT_QUOTA)
     @ResponseBody
-    public ResponseEntity<DownloadQuotaLimitsDto> createQuotaLimits(@Valid @RequestBody DownloadQuotaLimitsDto toBeCreated) {
-        return Try.of(() ->
-            quotaRepository.save(
-                new DownloadQuotaLimits(
-                    tenantResolver.getTenant(),
-                    toBeCreated.getEmail(),
-                    toBeCreated.getMaxQuota(),
-                    toBeCreated.getRateLimit()
-                )
-            ))
-            .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.CREATED))
+    @ResourceAccess(description = "Get default download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
+        return quotaService.getDefaultDownloadQuotaLimits()
+            .map(limits -> new ResponseEntity<>(limits, HttpStatus.OK))
             .get();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = PATH_QUOTA)
+    @PutMapping(value = PATH_DEFAULT_QUOTA)
     @ResponseBody
-    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@Valid String userEmail) {
-        return quotaRepository.findByEmail(userEmail)
-            .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @ResourceAccess(description = "Update default download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid @RequestBody DefaultDownloadQuotaLimits newDefaults) {
+        return quotaService.changeDefaultDownloadQuotaLimits(newDefaults)
+            .map(ignored -> new ResponseEntity<>(newDefaults, HttpStatus.OK))
+            .get();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = PATH_CURRENT_QUOTA)
+    @GetMapping(path = PATH_USER_QUOTA)
     @ResponseBody
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@Valid String userEmail) {
+    @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(
+        @PathVariable(USER_EMAIL_PARAM) String userEmail
+    ) {
+        return quotaService.getDownloadQuotaLimits(userEmail)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
+    }
+
+    @PutMapping(path = PATH_USER_QUOTA)
+    @ResponseBody
+    @ResourceAccess(description = "Update user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
+        @PathVariable(USER_EMAIL_PARAM) String userEmail,
+        @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits
+    ) {
+        if (!Objects.equals(userEmail, quotaLimits.getEmail())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return quotaService.upsertDownloadQuotaLimits(quotaLimits)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
+    }
+
+    @GetMapping(path = PATH_QUOTA)
+    @ResponseBody
+    @ResourceAccess(description = "Get current user download quota limits.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
+        return quotaService.getDownloadQuotaLimits(authResolver.getUser())
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
+    }
+
+    @GetMapping(path = PATH_CURRENT_QUOTA)
+    @ResponseBody
+    @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
         return new ResponseEntity<>(
-            quotaService.getCurrentQuotas(userEmail),
+            quotaService.getCurrentQuotas(authResolver.getUser()),
             HttpStatus.OK
         );
     }
-
-//    /**
-//     * End-point to Download a file referenced by a storage location with the given checksum.
-//     * @param checksum checksum of the file to download
-//     * @return {@link InputStreamResource}
-//     */
-//    @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
-//    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
-//    public ResponseEntity<StreamingResponseBody> downloadFile(
-//        @PathVariable("checksum") String checksum,
-//        HttpServletResponse response)
-//    {
-//        return downloadWithQuota(checksum, response)
-//            .recover(EntityOperationForbiddenException.class, t -> {
-//                LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
-//                LOGGER.debug(t.getMessage(), t);
-//                return new ResponseEntity<>(HttpStatus.ACCEPTED);
-//            }).recover(EntityNotFoundException.class, t -> {
-//                LOGGER.warn(String
-//                    .format("Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
-//                        checksum));
-//                LOGGER.debug(t.getMessage(), t);
-//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//            }).recover(ModuleException.class, t -> {
-//                LOGGER.error(t.getMessage(), t);
-//                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//            }).get();
-//    }
-//
-//    /**
-//     * End-point to Download a file referenced by a storage location with the given checksum.
-//     * @param checksum checksum of the file to download
-//     * @return {@link InputStreamResource}
-//     */
-//    @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-//            produces = MediaType.ALL_VALUE)
-//    @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
-//    public ResponseEntity<StreamingResponseBody> downloadFileWithToken(
-//        @PathVariable("checksum") String checksum,
-//        @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
-//        HttpServletResponse response)
-//    {
-//        if (! downloadService.checkToken(checksum, token)) {
-//            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-//        }
-//        return downloadWithQuota(checksum, response)
-//            .recover(ModuleException.class, t -> {
-//                LOGGER.error(t.getMessage());
-//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//            }).get();
-//    }
-//
-//    @RequestMapping(method = RequestMethod.GET, path = EXPORT_PATH)
-//    @ResourceAccess(description = "Export all file referenced in csv file", role = DefaultRole.PROJECT_ADMIN)
-//    public void export(HttpServletResponse response) throws IOException {
-//        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=files.csv");
-//        response.setContentType("text/csv");
-//        BufferedWriter writer = new BufferedWriter(response.getWriter());
-//        CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id", "url", "storage", "owners"));
-//        Pageable page = null;
-//        Page<FileReference> results;
-//        do {
-//            if (page == null) {
-//                page = PageRequest.of(0, 100);
-//            } else {
-//                page = page.next();
-//            }
-//            results = fileRefService.search(page);
-//            for (FileReference fileRef : results.getContent()) {
-//                printer.printRecord(fileRef.getId(), fileRef.getLocation().getUrl(), fileRef.getLocation().getStorage(),
-//                                    fileRef.getOwners().stream().collect(Collectors.joining(",")));
-//            }
-//        } while (results.hasNext());
-//        printer.close();
-//        writer.close();
-//    }
-//
-//    @RequestMapping(method = RequestMethod.POST, path = STORE_PATH)
-//    @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.PROJECT_ADMIN)
-//    public ResponseEntity<Void> store(@Valid @RequestBody Collection<StorageFlowItem> items) {
-//        items.stream().map(i -> TenantWrapper.build(i, tenantResolver.getTenant())).forEach(storageHandler::handle);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-
 }

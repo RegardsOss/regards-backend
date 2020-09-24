@@ -8,6 +8,10 @@ import java.util.Optional;
 
 public interface IDownloadQuotaRepository {
 
+    DefaultDownloadQuotaLimits getDefaultDownloadQuotaLimits();
+
+    DefaultDownloadQuotaLimits changeDefaultDownloadQuotaLimits(Long maxQuota, Long rateLimit);
+
     DownloadQuotaLimits save(DownloadQuotaLimits quota);
 
     Optional<DownloadQuotaLimits> findByEmail(String email);

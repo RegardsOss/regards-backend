@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.modules.storage.dao.entity.download.DefaultDownloadQuotaLimitsEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadQuotaEntity;
 import fr.cnes.regards.modules.storage.dao.entity.download.UserDownloadRateEntity;
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
@@ -36,6 +37,9 @@ import java.util.Optional;
 public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
     @Autowired
+    private IDefaultDownloadQuotaLimitsEntityRepository delegateDefaultQuotaLimitsRepo;
+
+    @Autowired
     private IDownloadQuotaLimitsEntityRepository delegateQuotaLimitsRepo;
 
     @Autowired
@@ -49,6 +53,24 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
     @Autowired
     private DomainEntityMapper mapper;
+
+    @Override
+    public DefaultDownloadQuotaLimits getDefaultDownloadQuotaLimits() {
+        return mapper.toDomain(
+            delegateDefaultQuotaLimitsRepo.getOne(0L)
+        );
+    }
+
+    @Override
+    public DefaultDownloadQuotaLimits changeDefaultDownloadQuotaLimits(Long maxQuota, Long rateLimit) {
+        DefaultDownloadQuotaLimitsEntity def =
+            delegateDefaultQuotaLimitsRepo.getOne(0L);
+        def.setMaxQuota(maxQuota);
+        def.setRateLimit(rateLimit);
+        return mapper.toDomain(
+            delegateDefaultQuotaLimitsRepo.save(def)
+        );
+    }
 
     @Override
     public DownloadQuotaLimits save(DownloadQuotaLimits quota) {

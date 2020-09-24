@@ -7,17 +7,21 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -30,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL;
@@ -41,21 +46,21 @@ import static fr.cnes.regards.modules.storage.service.file.exception.DownloadQuo
 public class DownloadQuotaServiceImpl<T>
     implements IQuotaService<T>,ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ProjectUserEvent> {
 
-    private long defaultQuota;
-
-    private long defaultRate;
-
     private IDownloadQuotaRepository quotaRepository;
 
     private IQuotaManager quotaManager;
 
-    private IRuntimeTenantResolver tenantResolver;
+    private ITenantResolver tenantResolver;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     private ISubscriber subscriber;
 
     private ApplicationContext applicationContext;
 
     private DownloadQuotaServiceImpl<T> self;
+
+    private AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits;
 
     private Cache<QuotaKey, DownloadQuotaLimits> cache = Caffeine.newBuilder()
         .expireAfterAccess(30, TimeUnit.MINUTES)
@@ -66,19 +71,17 @@ public class DownloadQuotaServiceImpl<T>
 
     @Autowired
     public DownloadQuotaServiceImpl(
-        @Value("${regards.admin.quota.max.default:-1}") long defaultQuota,
-        @Value("${regards.admin.rate.limit.default:-1}") long defaultRate,
         IDownloadQuotaRepository quotaRepository,
         IQuotaManager quotaManager,
-        IRuntimeTenantResolver tenantResolver,
+        ITenantResolver tenantResolver,
+        IRuntimeTenantResolver runtimeTenantResolver,
         ISubscriber subscriber,
         ApplicationContext applicationContext
     ) {
-        this.defaultQuota = defaultQuota;
-        this.defaultRate = defaultRate;
         this.quotaRepository = quotaRepository;
         this.quotaManager = quotaManager;
         this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.applicationContext = applicationContext;
     }
@@ -86,6 +89,34 @@ public class DownloadQuotaServiceImpl<T>
     @PostConstruct
     public void init() {
         self = applicationContext.getBean(DownloadQuotaServiceImpl.class);
+
+//        self.initDefaultLimits();
+        defaultLimits = new AtomicReference<>(
+            tenantResolver.getAllActiveTenants()
+                .stream()
+                .reduce(
+                    HashMap.empty(),
+                    (m, tenant) -> {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        m = m.put(tenant, self.initDefaultLimits()); //quotaRepository.getDefaultDownloadQuotaLimits());
+                        runtimeTenantResolver.clearTenant();
+                        return m;
+                    },
+                    (l, r) -> l)
+        );
+    }
+
+    //@Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public DefaultDownloadQuotaLimits initDefaultLimits() {
+        return quotaRepository.getDefaultDownloadQuotaLimits();
+//        java.util.Map<String, DefaultDownloadQuotaLimits> m = new java.util.HashMap<>();
+//        tenantResolver.getAllActiveTenants()
+//            .forEach(tenant -> {
+//                runtimeTenantResolver.forceTenant(tenant);
+//                m.put(tenant, quotaRepository.getDefaultDownloadQuotaLimits());
+//                runtimeTenantResolver.clearTenant();
+//            });
+//        defaultLimits = new AtomicReference<>(HashMap.ofAll(m));
     }
 
     @VisibleForTesting
@@ -94,8 +125,13 @@ public class DownloadQuotaServiceImpl<T>
     }
 
     @VisibleForTesting
-    protected void setCache(Cache<QuotaKey, DownloadQuotaLimits> cache) {
+    public void setCache(Cache<QuotaKey, DownloadQuotaLimits> cache) {
         this.cache = cache;
+    }
+
+    @VisibleForTesting
+    public void setDefaultLimits(AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits) {
+        this.defaultLimits = defaultLimits;
     }
 
     @Override
@@ -110,7 +146,7 @@ public class DownloadQuotaServiceImpl<T>
 
     @Override
     public void handleBatch(String tenant, List<ProjectUserEvent> messages) {
-        tenantResolver.forceTenant(tenant);
+        runtimeTenantResolver.forceTenant(tenant);
         messages.forEach(event ->  {
             QuotaKey key = QuotaKey.make(tenant, event.getEmail());
             switch (event.getAction()) {
@@ -125,16 +161,77 @@ public class DownloadQuotaServiceImpl<T>
      * {@inheritDoc}
      */
     @Override
+    public Try<T> withQuota(String userEmail, Function<WithQuotaOperationHandler, Try<T>> operation) {
+
+        QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
+
+        return cacheUserQuota(userEmail, key)
+            .flatMap(self::getUserQuotaAndRate)
+            .flatMap(t -> apply(operation, t._1));
+    }
+
+    @Override
+    public Try<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
+        return Try.of(() ->
+            quotaRepository.getDefaultDownloadQuotaLimits());
+    }
+
+    @Override
+    public Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(DefaultDownloadQuotaLimits newDefaults) {
+        return Try.of(() ->
+            self.changeDefaultDownloadQuotaLimits(newDefaults.getMaxQuota(), newDefaults.getRateLimit()))
+            .peek(d -> defaultLimits.updateAndGet(m ->
+                m.put(runtimeTenantResolver.getTenant(), d)));
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public DefaultDownloadQuotaLimits changeDefaultDownloadQuotaLimits(Long maxQuota, Long rateLimit) {
+        return quotaRepository.changeDefaultDownloadQuotaLimits(maxQuota, rateLimit);
+    }
+
+    @Override
+    public Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits) {
+        return Option.ofOptional(quotaRepository.findByEmail(newLimits.getEmail()))
+            .map(limits -> new DownloadQuotaLimits(
+                limits.getId(),
+                limits.getTenant(),
+                limits.getEmail(),
+                newLimits.getMaxQuota(),
+                newLimits.getRateLimit()
+            ))
+            .orElse(Option.of(new DownloadQuotaLimits(
+                runtimeTenantResolver.getTenant(),
+                newLimits.getEmail(),
+                newLimits.getMaxQuota(),
+                newLimits.getRateLimit()
+                ))
+            ).map(quotaRepository::save)
+            .toTry()
+            .peek(limits -> {
+                QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), newLimits.getEmail());
+                cache.put(key, limits);
+            })
+            .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits);
+    }
+
+    @Override
+    public Try<DownloadQuotaLimitsDto> getDownloadQuotaLimits(String userEmail) {
+        QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
+        return cacheUserQuota(userEmail, key)
+            .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits);
+    }
+
+    @Override
     public UserCurrentQuotas getCurrentQuotas(String userEmail) {
 
-        QuotaKey key = QuotaKey.make(tenantResolver.getTenant(), userEmail);
+        QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
 
         return cacheUserQuota(userEmail, key)
             .flatMap(quota ->
                 Try.of(() -> quotaManager.get(quota).get())
                     .map(quotaAndRate ->
                         new UserCurrentQuotas(
-                            tenantResolver.getTenant(),
+                            runtimeTenantResolver.getTenant(),
                             userEmail,
                             quota.getMaxQuota(),
                             quota.getRateLimit(),
@@ -145,23 +242,11 @@ public class DownloadQuotaServiceImpl<T>
             ).get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Try<T> withQuota(String userEmail, Function<WithQuotaOperationHandler, Try<T>> operation) {
-
-        QuotaKey key = QuotaKey.make(tenantResolver.getTenant(), userEmail);
-
-        return cacheUserQuota(userEmail, key)
-            .flatMap(self::getUserQuotaAndRate)
-            .flatMap(t -> apply(operation, t._1));
-    }
-
     @VisibleForTesting
     protected Try<DownloadQuotaLimits> cacheUserQuota(String userEmail, QuotaKey key) {
+        DefaultDownloadQuotaLimits defaults = getDefaultLimits();
         return Try.of(() ->
-            cache.get(key, __ -> self.findOrCreateDownloadQuota(userEmail))
+            cache.get(key, __ -> self.findOrCreateDownloadQuota(userEmail, defaults.getMaxQuota(), defaults.getRateLimit()))
         );
     }
 
@@ -237,11 +322,11 @@ public class DownloadQuotaServiceImpl<T>
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public DownloadQuotaLimits findOrCreateDownloadQuota(String userEmail) {
+    public DownloadQuotaLimits findOrCreateDownloadQuota(String userEmail, Long maxQuota, Long rateLimit) {
         return Option.ofOptional(quotaRepository.findByEmail(userEmail))
             .getOrElseTry(() -> {
                 try {
-                    return self.createDefaultDownloadQuota(userEmail);
+                    return self.createDownloadQuota(userEmail, maxQuota, rateLimit);
                 } catch (DataIntegrityViolationException e) {
                     return Option.of(e.getRootCause())
                         .filter(t -> t instanceof PSQLException)
@@ -253,7 +338,18 @@ public class DownloadQuotaServiceImpl<T>
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public DownloadQuotaLimits createDefaultDownloadQuota(String userEmail) {
-        return quotaRepository.save(new DownloadQuotaLimits(tenantResolver.getTenant(), userEmail, defaultQuota, defaultRate));
+    public DownloadQuotaLimits createDownloadQuota(String userEmail, Long maxQuota, Long rateLimit) {
+        return quotaRepository.save(
+            new DownloadQuotaLimits(
+                runtimeTenantResolver.getTenant(),
+                userEmail,
+                maxQuota,
+                rateLimit
+            )
+        );
+    }
+
+    private DefaultDownloadQuotaLimits getDefaultLimits() {
+        return defaultLimits.get().get(runtimeTenantResolver.getTenant()).get();
     }
 }
