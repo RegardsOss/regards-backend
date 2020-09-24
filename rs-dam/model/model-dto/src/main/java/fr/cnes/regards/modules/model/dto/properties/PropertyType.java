@@ -29,6 +29,7 @@ public enum PropertyType {
      * Possible attribute type
      */
     STRING,
+    JSON,
     INTEGER,
     DOUBLE,
     DATE_ISO8601,

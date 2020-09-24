@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerIntervalProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerProperty;
+import fr.cnes.regards.modules.model.dto.properties.JsonProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongIntervalProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongProperty;
@@ -237,6 +238,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
                 break;
             case LONG_INTERVAL:
                 matchingClass = LongIntervalProperty.class;
+                break;
+            case JSON:
+                matchingClass = JsonProperty.class;
                 break;
             default:
                 final String errorMessage = String.format("Unexpected attribute type \"%s\".", pAttributeType);

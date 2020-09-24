@@ -122,6 +122,7 @@
             <xs:enumeration value="STRING"/>
             <xs:enumeration value="STRING_ARRAY"/>
             <xs:enumeration value="URL"/>
+            <xs:enumeration value="JSON"/>
         </xs:restriction>
     </xs:simpleType>
 

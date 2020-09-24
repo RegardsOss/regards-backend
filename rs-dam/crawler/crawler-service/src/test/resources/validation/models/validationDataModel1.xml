@@ -39,6 +39,11 @@
         <name>vurl</name>
         <type>URL</type>
     </attribute>
+    <attribute optional="true">
+        <label>Raw feature</label>
+        <name>raw_feature</name>
+        <type>JSON</type>
+    </attribute>
 
     <fragment>
         <name>fragment1</name>

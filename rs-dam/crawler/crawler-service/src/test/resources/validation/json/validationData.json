@@ -18,6 +18,13 @@
         "activated": "true",
         "state": "STARTED"
       },
+      "raw_feature": {
+        "plop": {
+            "plip": {
+                "coucou":"ok"
+            }
+        }
+      },
       "DATASET_VALIDATION_TYPE": "DS1",
       "vurl": "http://truc:201/machin"
     },

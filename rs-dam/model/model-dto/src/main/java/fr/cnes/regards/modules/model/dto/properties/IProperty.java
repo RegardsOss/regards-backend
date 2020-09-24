@@ -318,6 +318,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return buildLongInterval(name, (Range<Long>) value);
             case STRING:
                 return buildString(name, toStringValue(value));
+            case JSON:
+                return buildString(name, toStringValue(value));
             case STRING_ARRAY:
                 return buildStringArray(name, toArrayValue(value, IProperty::toStringValue, String.class));
             case URL:
