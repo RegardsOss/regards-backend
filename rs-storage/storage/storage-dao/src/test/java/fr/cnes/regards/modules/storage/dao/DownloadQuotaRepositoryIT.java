@@ -78,7 +78,7 @@ public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceTest {
         }
 
         executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
+        executor.awaitTermination(60, TimeUnit.SECONDS);
 
         UserRateAggregate userRate = repo.fetchDownloadRatesSum(email);
 
@@ -105,7 +105,7 @@ public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceTest {
         }
 
         executor.shutdown();
-        executor.awaitTermination(30, TimeUnit.SECONDS);
+        executor.awaitTermination(60, TimeUnit.SECONDS);
 
         UserQuotaAggregate userQuotaAggregate = repo.fetchDownloadQuotaSum(email);
 
