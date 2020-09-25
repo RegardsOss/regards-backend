@@ -22,8 +22,6 @@ import java.util.Objects;
 
 public class UserCurrentQuotas {
 
-    private final String tenant;
-
     private final String email;
 
     private final Long maxQuota;
@@ -34,17 +32,12 @@ public class UserCurrentQuotas {
 
     private final Long currentRate;
 
-    public UserCurrentQuotas(String tenant, String email, Long maxQuota, Long rateLimit, Long currentQuota, Long currentRate) {
-        this.tenant = tenant;
+    public UserCurrentQuotas(String email, Long maxQuota, Long rateLimit, Long currentQuota, Long currentRate) {
         this.email = email;
         this.maxQuota = maxQuota;
         this.rateLimit = rateLimit;
         this.currentQuota = currentQuota;
         this.currentRate = currentRate;
-    }
-
-    public String getTenant() {
-        return tenant;
     }
 
     public String getEmail() {
@@ -72,8 +65,7 @@ public class UserCurrentQuotas {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserCurrentQuotas that = (UserCurrentQuotas) o;
-        return Objects.equals(tenant, that.tenant) &&
-            Objects.equals(email, that.email) &&
+        return Objects.equals(email, that.email) &&
             Objects.equals(maxQuota, that.maxQuota) &&
             Objects.equals(rateLimit, that.rateLimit) &&
             Objects.equals(currentQuota, that.currentQuota) &&
@@ -82,6 +74,6 @@ public class UserCurrentQuotas {
 
     @Override
     public int hashCode() {
-        return Objects.hash(tenant, email, maxQuota, rateLimit, currentQuota, currentRate);
+        return Objects.hash(email, maxQuota, rateLimit, currentQuota, currentRate);
     }
 }
