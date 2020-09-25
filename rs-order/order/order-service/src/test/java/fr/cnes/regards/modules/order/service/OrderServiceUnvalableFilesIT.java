@@ -189,7 +189,7 @@ public class OrderServiceUnvalableFilesIT {
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu","http://perdu.com");
-        Thread.sleep(5_000);
+        Thread.sleep(10_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
 
