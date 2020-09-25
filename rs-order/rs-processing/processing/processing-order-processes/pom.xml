@@ -12,11 +12,6 @@
     <groupId>fr.cnes.regards.modules.processing</groupId>
     <artifactId>processing-order-processes</artifactId>
 
-    <properties>
-        <feign-reactor.version>2.0.15</feign-reactor.version>
-        <feign.version>11.0</feign.version>
-    </properties>
-
     <dependencies>
         <!-- Regards -->
         <dependency>
