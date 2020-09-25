@@ -37,7 +37,7 @@
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-core</artifactId>
-            <version>11.0</version> <!-- FIXME once the rest of Regards adopts spring-boot 2.3.2 -->
+            <version>${feign.version}</version>
         </dependency>
         <dependency>
             <groupId>com.playtika.reactivefeign</groupId>

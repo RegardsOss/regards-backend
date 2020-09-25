@@ -116,11 +116,6 @@
             <version>1.4.4</version>
         </dependency>
         <dependency>
-            <groupId>io.github.openfeign</groupId>
-            <artifactId>feign-core</artifactId>
-            <version>11.0</version> <!-- FIXME once the rest of Regards adopts spring-boot 2.3.2 -->
-        </dependency>
-        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>6.1.0</version> <!-- instead of 6.4.4 / FIXME once the rest of Regards adopts spring-boot 2.3.2-->
