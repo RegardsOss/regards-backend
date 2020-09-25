@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.demo.repository;
 
 import fr.cnes.regards.modules.processing.demo.engine.DemoEngine;
 import fr.cnes.regards.modules.processing.demo.process.DemoProcess;
+import fr.cnes.regards.modules.processing.demo.process.DemoSimulatedAsyncProcessFactory;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
@@ -17,10 +18,12 @@ import java.util.UUID;
 public class DemoProcessRepository implements IPProcessRepository {
 
     private final DemoEngine engine;
+    private final DemoSimulatedAsyncProcessFactory asyncProcessFactory;
 
     @Autowired
-    public DemoProcessRepository(DemoEngine engine) {
+    public DemoProcessRepository(DemoEngine engine, DemoSimulatedAsyncProcessFactory asyncProcessFactory) {
         this.engine = engine;
+        this.asyncProcessFactory = asyncProcessFactory;
     }
 
     public Flux<PProcess> findAll() {
