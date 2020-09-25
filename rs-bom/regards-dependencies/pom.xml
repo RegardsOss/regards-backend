@@ -15,7 +15,7 @@
 
 	<groupId>fr.cnes.regards</groupId>
 	<artifactId>regards-dependencies</artifactId>
-	<version>1.2.1</version>
+	<version>1.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<description>Declares the dependency management for the whole system</description>
@@ -40,8 +40,8 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<regards.version>1.2.1</regards.version>
+    <properties>
+		<regards.version>1.3.0-SNAPSHOT</regards.version>
 
         <!-- Framework starters -->
 		<amqp.starter.version>${regards.version}</amqp.starter.version>
@@ -135,6 +135,7 @@
 		<modules.catalog-services.version>${regards.version}</modules.catalog-services.version>
 		<modules.access-services.version>${regards.version}</modules.access-services.version>
 		<modules.backend-for-frontend.version>${regards.version}</modules.backend-for-frontend.version>
+        <modules.processing.version>${regards.version}</modules.processing.version>
 
 		<!-- FRONTEND -->
 		<fr.cnes.regards.frontend-webapp.version>${regards.version}</fr.cnes.regards.frontend-webapp.version>
@@ -1270,6 +1271,22 @@
 				<artifactId>ssalto-sipad-postprocessing</artifactId>
 				<version>${modules.ingest.plugins.version}</version>
 				<classifier>shaded</classifier>
+            </dependency>
+            <!-- Processing -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-client</artifactId>
+                <version>${modules.processing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-domain-data</artifactId>
+                <version>${modules.processing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.processing</groupId>
+                <artifactId>processing-order-commons</artifactId>
+                <version>${modules.processing.version}</version>
 			</dependency>
             <!-- CNES REMOTE STORAGES -->
 			<dependency>
