@@ -375,7 +375,6 @@ public class DownloadQuotaServiceImplTest {
         UserCurrentQuotas result = quotaService.getCurrentQuotas(userEmail);
 
         UserCurrentQuotas expected = new UserCurrentQuotas(
-            TENANT,
             userEmail,
             quota.getMaxQuota(),
             quota.getRateLimit(),

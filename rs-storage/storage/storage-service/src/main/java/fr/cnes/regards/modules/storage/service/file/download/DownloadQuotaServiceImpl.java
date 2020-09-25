@@ -231,7 +231,6 @@ public class DownloadQuotaServiceImpl<T>
                 Try.of(() -> quotaManager.get(quota).get())
                     .map(quotaAndRate ->
                         new UserCurrentQuotas(
-                            runtimeTenantResolver.getTenant(),
                             userEmail,
                             quota.getMaxQuota(),
                             quota.getRateLimit(),
