@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -111,6 +112,6 @@ public interface IPublisherContract {
     /**
      * Broadcast message to specified exchange optionally creating a binded queue.
      */
-    void broadcastAll(String exchangeName, Optional<String> queueName, int priority, List<Object> messages,
+    void broadcastAll(String exchangeName, Optional<String> queueName, int priority, Collection<?> messages,
             Map<String, Object> headers);
 }
