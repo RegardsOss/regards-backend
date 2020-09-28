@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +40,9 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -113,57 +116,71 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     private IPublisher publisher;
 
     /**
-     * Handle a {@link NotificationRequest} and check if it matches with enabled {@link Rule} in that case
+     * Handle each given {@link NotificationRequest} and check if it matches with enabled {@link Rule} in that case
      * send a notification to Recipient
-     * @param notification {@link NotificationRequest} to handle
+     * @param notificationRequests {@link NotificationRequest}s to handle
      * @param notificationsInErrors list of {@link NotificationRequest} where a Recipient fail
      * @return number of notification sended
      * @throws ExecutionException in case issue occurs with rules cache
      */
-    private int handleNotificationRequest(NotificationRequest notification,
-            ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors) throws ExecutionException {
-        int notificationNumber = 0;
-        for (Rule rule : getRules()) {
-            try {
-                // check if the  element match with the rule
-                if (((IRuleMatcher) this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId()))
-                        .match(notification.getPayload())) {
+    private int handleNotificationRequest(List<NotificationRequest> notificationRequests, long startTime,
+            SetMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors) throws ExecutionException {
 
-                    for (PluginConfiguration recipient : rule.getRecipients()) {
-                        if (notifyRecipient(notification, recipient)) {
-                            publisher
-                                    .publish(new NotifierEvent(notification.getRequestId(), NotificationState.SUCCESS));
-                            notificationNumber++;
-                        } else {
-                            publisher.publish(new NotifierEvent(notification.getRequestId(), NotificationState.ERROR));
-                            notification.setState(NotificationState.ERROR);
-                            notificationsInErrors.put(notification, recipient);
+        // first dispatch notification per rule
+        ListMultimap<PluginConfiguration, NotificationRequest> notificationRequestsPerRecipient = ArrayListMultimap
+                .create();
+        for (Rule rule : getRules()) {
+            for (NotificationRequest notificationRequest : notificationRequests) {
+                try {
+                    // check if the  element match with the rule
+                    if (((IRuleMatcher) this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId()))
+                            .match(notificationRequest.getPayload())) {
+                        for (PluginConfiguration recipient : rule.getRecipients()) {
+                            notificationRequestsPerRecipient.put(recipient, notificationRequest);
                         }
                     }
+                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                    // exception from rule plugin instantiation
+                    LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getId()), e);
+                    publisher.publish(new NotifierEvent(notificationRequest.getRequestId(), NotificationState.ERROR));
                 }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                // exception from rule plugin instantiation
-                LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getId()), e);
-                publisher.publish(new NotifierEvent(notification.getRequestId(), NotificationState.ERROR));
             }
         }
-        return notificationNumber;
+
+        // for each recipient send all request that should be sent
+        return sendNotifications(startTime, notificationsInErrors, notificationRequestsPerRecipient);
     }
 
-    /**
-     * Notify a recipient return false if a problem occurs
-     * @param notification {@link JsonElement} about to notify
-     * @param recipientConfiguration Recipient of the notification
-     * @return whether notification could be sent
-     */
-    private boolean notifyRecipient(NotificationRequest notification, PluginConfiguration recipientConfiguration) {
+    private int sendNotifications(long startTime,
+            SetMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors,
+            ListMultimap<PluginConfiguration, NotificationRequest> notificationRequestsPerRecipient) {
+        long startNotificationTreatmentTime = System.currentTimeMillis();
+        for (PluginConfiguration recipient : notificationRequestsPerRecipient.keySet()) {
+            notifyRecipient(notificationRequestsPerRecipient.get(recipient), recipient)
+                    .forEach(requestInError -> notificationsInErrors.put(requestInError, recipient));
+        }
+        // number of notification sent is the number of request to should have been handled successfully minus the one in error
+        int nbSend = notificationRequestsPerRecipient.values().size() - notificationsInErrors.keySet().size();
+        LOGGER.debug("------------->>> End of notification process in {} ms, {} notificationRequests sent"
+                             + " with a average treatment time of {} ms",
+                     System.currentTimeMillis() - startTime,
+                     nbSend,
+                     (System.currentTimeMillis() - startNotificationTreatmentTime) / (nbSend == 0 ? 1 : nbSend));
+        return nbSend;
+    }
+
+    private Collection<NotificationRequest> notifyRecipient(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipientConfiguration) {
         try {
             // check that all send method of recipient return true
-            return ((IRecipientNotifier) this.pluginService.getPlugin(recipientConfiguration.getBusinessId()))
-                    .send(notification);
+            Collection<NotificationRequest> errors = ((IRecipientNotifier) this.pluginService
+                    .getPlugin(recipientConfiguration.getBusinessId())).send(notificationRequests);
+            return errors == null ? new HashSet<>() : errors;
         } catch (Exception e) {
+            // if there is an exception, we consider none of the request could be handled,
+            // either due to error from plugin configuration or the plugin implementation itself
             LOGGER.error("Error while sending notification to receiver", e);
-            return false;
+            return notificationRequests;
         }
     }
 
@@ -175,30 +192,18 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
                      startTime);
         int nbSend = 0;
         int nbError;
-        long averageNotificationTreatmentTime = 0;
-        long startNotificationTreatmentTime;
 
         //get RecipientRrror for jobInfoId if exists
         List<RecipientError> recipientErrors = this.recipientErrorRepo.findByJobId(jobInfoId);
 
         // if empty we send notifications according rules
         if (recipientErrors.isEmpty()) {
-            ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors = ArrayListMultimap.create();
-
-            for (NotificationRequest notification : toHandles) {
-                startNotificationTreatmentTime = System.currentTimeMillis();
-                try {
-                    nbSend += handleNotificationRequest(notification, notificationsInErrors);
-                } catch (ExecutionException e) {
-                    LOGGER.error("Error during notification", e);
-                }
-                averageNotificationTreatmentTime += System.currentTimeMillis() - startNotificationTreatmentTime;
+            SetMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors = HashMultimap.create();
+            try {
+                nbSend = handleNotificationRequest(toHandles, startTime, notificationsInErrors);
+            } catch (ExecutionException e) {
+                LOGGER.error("Error during notification", e);
             }
-            LOGGER.debug("------------->>> End of notification process in {} ms, {} notifications sended"
-                                 + " with a average treatment time of {} ms",
-                         System.currentTimeMillis() - startTime,
-                         nbSend,
-                         averageNotificationTreatmentTime / (nbSend == 0 ? 1 : nbSend));
             // delete all Notification not in the list in errors
             toHandles.removeAll(notificationsInErrors.keySet());
             this.notificationActionRepo.saveAll(notificationsInErrors.keySet());
@@ -220,16 +225,20 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @return the number of notification sended
      */
     private int resendNotification(List<RecipientError> recipientErrors) {
-        int nbSend = 0;
-        List<RecipientError> succededRecipient = new ArrayList<>();
+        long startTime = System.currentTimeMillis();
+        ListMultimap<PluginConfiguration, NotificationRequest> requestsPerRecipient = ArrayListMultimap.create();
+        //dispatch request per recipient
         for (RecipientError error : recipientErrors) {
-
-            if (notifyRecipient(error.getNotification(), error.getRecipient())) {
-                succededRecipient.add(error);
-                nbSend++;
-            }
+            requestsPerRecipient.put(error.getRecipient(), error.getNotification());
         }
-        this.recipientErrorRepo.deleteAll(succededRecipient);
+        SetMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors = HashMultimap.create();
+        int nbSend = sendNotifications(startTime, notificationsInErrors, requestsPerRecipient);
+        // in this case we don't care about error as we are already handling errors, we do not have to save them again
+        // so we only handle successes
+        this.recipientErrorRepo.deleteAll(recipientErrors.stream()
+                                                  .filter(recipientError -> !notificationsInErrors.keySet()
+                                                          .contains(recipientError.getNotification()))
+                                                  .collect(Collectors.toSet()));
         // delete notification it have no errors left
         this.notificationActionRepo.deleteNoticationWithoutErrors();
         return nbSend;
@@ -240,7 +249,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
      * @param notificationsInErrors Map of failed {@link NotificationRequest}=>Recipient
      * @param jobInfo current {@link JobInfo}
      */
-    private void saveRecipientErrors(ListMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors,
+    private void saveRecipientErrors(SetMultimap<NotificationRequest, PluginConfiguration> notificationsInErrors,
             JobInfo jobInfo) {
         this.recipientErrorRepo.saveAll(notificationsInErrors.entries().stream().map(entry -> RecipientError
                 .build(entry.getValue(), jobInfo, entry.getKey())).collect(Collectors.toList()));

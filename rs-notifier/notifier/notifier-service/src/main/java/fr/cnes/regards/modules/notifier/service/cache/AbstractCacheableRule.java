@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service.cache;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
@@ -48,10 +45,16 @@ public abstract class AbstractCacheableRule {
 
     /**
      * Rule cache is used to avoid useless database request as models rarely change!<br/>
-     * tenant key -> model key / attributes val
+     * tenant key -> attributes val
      */
-    // TODO cache seems to be broken... or javadoc is fucked up...
-    private final Map<String, LoadingCache<String, Set<Rule>>> ruleCacheMap = new ConcurrentHashMap<>();
+    private final LoadingCache<String, Set<Rule>> ruleCachePerTenant = CacheBuilder.newBuilder()
+            .build(new CacheLoader<String, Set<Rule>>() {
+
+                @Override
+                public Set<Rule> load(String tenant) {
+                    return ruleRepo.findByRulePluginActiveTrue();
+                }
+            });
 
     /**
      * Get all enabled {@link Rule} for the current tenant if the cache is empty we will load it
@@ -61,20 +64,7 @@ public abstract class AbstractCacheableRule {
      */
     protected Set<Rule> getRules() throws ExecutionException {
         String tenant = runtimeTenantResolver.getTenant();
-        LoadingCache<String, Set<Rule>> ruleCache = ruleCacheMap.get(tenant);
-        if (ruleCache == null) {
-            ruleCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Set<Rule>>() {
-
-                @Override
-                public Set<Rule> load(String key) throws Exception {
-                    return ruleRepo.findByRulePluginActiveTrue();
-                }
-
-            });
-            ruleCacheMap.put(tenant, ruleCache);
-
-        }
-        return ruleCache.get(tenant);
+        return ruleCachePerTenant.get(tenant);
     }
 
     /**
@@ -82,9 +72,6 @@ public abstract class AbstractCacheableRule {
      * @param tenant to clean
      */
     public void cleanTenantCache(String tenant) {
-        LoadingCache<String, Set<Rule>> ruleCache = ruleCacheMap.get(tenant);
-        if (ruleCache != null) {
-            ruleCache.invalidate(tenant);
-        }
+        ruleCachePerTenant.invalidate(tenant);
     }
 }

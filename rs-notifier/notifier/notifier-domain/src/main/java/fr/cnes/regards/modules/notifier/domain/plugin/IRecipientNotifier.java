@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
+import java.util.Collection;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 
@@ -32,10 +34,9 @@ public interface IRecipientNotifier {
 
     /**
      *
-     * @param toSend {@link NotificationRequest} to send
-     * @return true if succed, false otherwise
+     * @param requestsToSend {@link NotificationRequest} to send
+     * @return notification request that could not be handled i.e. error occured
      */
-    //FIXME see if we can send multiple notification at same time
-    boolean send(NotificationRequest toSend);
+    Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend);
 
 }

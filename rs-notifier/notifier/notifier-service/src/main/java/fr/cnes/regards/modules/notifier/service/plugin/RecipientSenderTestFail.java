@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notifier.service.plugin;
 
+import java.util.Collection;
+
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
@@ -38,11 +40,11 @@ public class RecipientSenderTestFail extends RabbitMQSender implements IRecipien
     private boolean fail;
 
     @Override
-    public boolean send(NotificationRequest toSend) {
+    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
         if (fail) {
-            return false;
+            return requestsToSend;
         }
-        return super.send(toSend);
+        return super.send(requestsToSend);
     }
 
 }

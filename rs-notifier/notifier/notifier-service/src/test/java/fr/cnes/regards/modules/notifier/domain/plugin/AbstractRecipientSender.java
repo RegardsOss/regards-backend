@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +50,9 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
     abstract E buildEvent(JsonElement element, JsonElement action);
 
     @Override
-    public boolean send(NotificationRequest toSend) {
-        this.publisher.publish(buildEvent(toSend.getPayload(), toSend.getMetadata()));
-        return true;
+    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
+        this.publisher.publish(requestsToSend.stream().map(toSend->buildEvent(toSend.getPayload(), toSend.getMetadata())).collect(Collectors.toList()));
+        return Collections.EMPTY_LIST;
     }
 
     @Override
