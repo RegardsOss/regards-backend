@@ -1,5 +1,6 @@
-package fr.cnes.regards.modules.processing.webfilter;
+package fr.cnes.regards.modules.processing.config.reactive.webfilter;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,8 @@ import reactor.core.publisher.Mono;
  * Adding an 'application/json' Content-Type header for all response which don't have one already.
  */
 @Component
+@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
+
 public class ContentTypeHeaderWebFilter implements WebFilter {
 
     @Override

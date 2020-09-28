@@ -19,8 +19,8 @@ public class DemoSimulatedAsyncProcess {
     }
 
     public void send(ExecutionContext ctx, StartWithProfileEvent event) {
-        String profile = event.getProfile();
         new Thread(() -> {
+            String profile = event.getProfile();
             try {
                 Thread.sleep(500L);
                 publisher.publish(new StepEvent(
@@ -55,6 +55,6 @@ public class DemoSimulatedAsyncProcess {
             catch (Exception e) {
                 e.printStackTrace();
             }
-        });
+        }).start();
     }
 }

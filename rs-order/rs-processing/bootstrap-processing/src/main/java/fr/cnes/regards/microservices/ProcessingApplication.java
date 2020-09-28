@@ -37,7 +37,7 @@ public class ProcessingApplication {
      */
     public static void main(final String[] args) {
         SpringApplication app = new SpringApplication(ProcessingApplication.class);
-        app.setWebApplicationType(WebApplicationType.REACTIVE);
+        // app.setWebApplicationType(WebApplicationType.REACTIVE);
         app.run(args);
     }
 

@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.order.service;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
@@ -86,4 +88,14 @@ public interface IBasketService {
      * @return updated {@link Basket}
      */
     Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate);
+
+    /**
+     * Attach a process uuid to the dataset selection
+     * @param basket the user's basket
+     * @param datasetId the id of the dataset selection to modify
+     * @param processUuid the process UUID to attach to the dataset selection
+     * @return update {@link Basket}
+     */
+    Basket attachProcessing(Basket basket, Long datasetId, UUID processUuid);
+
 }

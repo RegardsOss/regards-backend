@@ -39,9 +39,9 @@ import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.random
 import static java.util.Arrays.asList;
 
 @ContextConfiguration(
-        classes = { TestSpringConfiguration.class, PMonitoringControllerTest.Config.class }
+        classes = { TestSpringConfiguration.class, PMonitoringReactiveControllerTest.Config.class }
 )
-public class PMonitoringControllerTest extends AbstractProcessingTest {
+public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
 
     @Test public void executions() {
 
@@ -73,7 +73,7 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
     //==================================================================================================================
     //==================================================================================================================
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringControllerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringReactiveControllerTest.class);
 
     private Client client;
 

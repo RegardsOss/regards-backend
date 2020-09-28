@@ -27,6 +27,9 @@ public interface IProcessingRestClient {
     @GetMapping(path = PROCESS_PATH + "/{name}")
     ResponseEntity<PProcessDTO> findByName(@PathVariable("name") String processName);
 
+    @GetMapping(path = PROCESS_PATH + "/{uuid}")
+    ResponseEntity<PProcessDTO> findByUuid(@PathVariable("uuid") String processName);
+
     @PostMapping(path = BATCH_PATH)
     ResponseEntity<PBatchResponse> createBatch(@RequestBody PBatchRequest request);
 

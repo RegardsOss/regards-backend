@@ -38,4 +38,5 @@
         <logger name="io.netty.handler.proxy.ProxyHandler" level="DEBUG"/>
         <logger name="org.springframework.web.reactive.function.client" level="DEBUG"/>
         <logger name="reactor.ipc.netty.channel" level="DEBUG"/>
+
 </configuration>

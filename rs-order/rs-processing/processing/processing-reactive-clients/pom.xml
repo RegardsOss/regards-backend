@@ -15,6 +15,18 @@
     <dependencies>
         <!-- Regards -->
         <dependency>
+            <groupId>fr.cnes.regards.modules.accessrights</groupId>
+            <artifactId>accessrights-client</artifactId>
+        </dependency>
+        <dependency><!-- Allowing feign client auto config -->
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
         </dependency>

@@ -1,6 +1,7 @@
-package fr.cnes.regards.modules.processing.config;
+package fr.cnes.regards.modules.processing.config.reactive;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,9 +12,11 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
+@Configuration
+@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
+
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-@Configuration
 public class ProcessingWebSecurityConfiguration {
 
     private final AuthenticationManager authenticationManager;
@@ -27,7 +30,7 @@ public class ProcessingWebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityWebFilterChain securitygWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .exceptionHandling()
                 .authenticationEntryPoint((swe, e) -> {

@@ -1,7 +1,8 @@
-package fr.cnes.regards.modules.processing.config;
+package fr.cnes.regards.modules.processing.config.reactive;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
+@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
+
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private final AuthenticationManager authenticationManager;

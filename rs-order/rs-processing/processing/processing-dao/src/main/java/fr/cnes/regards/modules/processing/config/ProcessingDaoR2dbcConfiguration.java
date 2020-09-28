@@ -8,12 +8,14 @@ import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
 import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
+import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
 import name.nkonev.r2dbc.migrate.core.Dialect;
 import name.nkonev.r2dbc.migrate.core.R2dbcMigrate;
 import name.nkonev.r2dbc.migrate.core.R2dbcMigrateProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -36,6 +38,9 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
         IBatchEntityRepository.class,
         IExecutionEntityRepository.class,
         IOutputFileEntityRepository.class
+})
+@EnableAutoConfiguration(exclude = {
+        R2dbcMigrateAutoConfiguration.class
 })
 @EntityScan(basePackageClasses = { BatchEntity.class, ExecutionEntity.class })
 @ComponentScan(basePackageClasses = {

@@ -223,4 +223,7 @@ public interface IOrderService {
      * @return
      */
     boolean isPaused(Long orderId);
+
+    /** Tells if this order involves processing on some dataset selection */
+    boolean hasProcessing(Order order);
 }

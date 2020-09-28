@@ -18,24 +18,14 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import org.hibernate.annotations.SortNatural;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.SortNatural;
-
-import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * A grouped items by dataset selection from a basket
@@ -71,6 +61,10 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
             foreignKey = @ForeignKey(name = "fk_items_selection"))
     @SortNatural
     private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
+
+    @Column(name = "process_dataset_desc")
+    @Type(type = "jsonb")
+    private ProcessDatasetDescription processDatasetDesc;
 
     @Override
     public Long getId() {
@@ -133,6 +127,14 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.itemsSelections.remove(itemsSelection);
     }
 
+    public ProcessDatasetDescription getProcessDatasetDesc() {
+        return processDatasetDesc;
+    }
+
+    public void setProcessDatasetDesc(ProcessDatasetDescription processDatasetDesc) {
+        this.processDatasetDesc = processDatasetDesc;
+    }
+
     @Override
     public int compareTo(BasketDatasetSelection o) {
         return datasetLabel.compareToIgnoreCase(o.datasetLabel);
@@ -155,5 +157,9 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Override
     public int hashCode() {
         return datasetIpid.hashCode();
+    }
+
+    public boolean hasProcessing() {
+        return this.processDatasetDesc != null;
     }
 }

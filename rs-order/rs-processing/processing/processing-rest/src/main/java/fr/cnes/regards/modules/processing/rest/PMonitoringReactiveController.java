@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.time.OffsetDateTime;
@@ -25,26 +22,26 @@ import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_PA
 import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SIZE;
 
 @RestController
-@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
+@ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @RequestMapping(
         produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE }
 )
-public class PMonitoringController {
+public class PMonitoringReactiveController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringReactiveController.class);
 
     private final IPExecutionRepository execRepo;
 
     @Autowired
-    public PMonitoringController(
+    public PMonitoringReactiveController(
         IPExecutionRepository execRepo
     ) {
         this.execRepo = execRepo;
     }
 
     @GetMapping(path = MONITORING_EXECUTIONS_PATH)
-    public List<PExecution> executions(
+    public Flux<PExecution> executions(
             @RequestParam(name = TENANT_PARAM) String tenant,
             @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
             @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
@@ -67,9 +64,7 @@ public class PMonitoringController {
             )
             .doOnError(t -> {
                 LOGGER.error(t.getMessage(), t);
-            })
-            .collectList()
-            .block();
+            });
         }
         else {
             return execRepo.findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
@@ -77,9 +72,7 @@ public class PMonitoringController {
             )
             .doOnError(t -> {
                 LOGGER.error(t.getMessage(), t);
-            })
-            .collectList()
-            .block();
+            });
         }
     }
 

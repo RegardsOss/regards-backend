@@ -49,8 +49,10 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.metalink.schema.*;
 import fr.cnes.regards.modules.order.service.job.*;
+import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
@@ -135,6 +137,12 @@ public class OrderService implements IOrderService {
     private IBasketRepository basketRepository;
 
     @Autowired
+    private IBasketService basketService;
+
+    @Autowired
+    private IDatasetTaskService datasetTaskService;
+
+    @Autowired
     private IOrderDataFileService dataFileService;
 
     @Autowired
@@ -166,6 +174,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IOrderService self;
+
+    @Autowired
+    private IOrderProcessingService orderProcessingService;
 
     @Autowired
     private TemplateService templateService;
@@ -288,6 +299,9 @@ public class OrderService implements IOrderService {
             int externalFilesCount = 0;
             // Dataset selections
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
+
+                ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDesc();
+
                 DatasetTask dsTask = createDatasetTask(dsSel);
 
                 // Bucket of internal files (managed by Storage)
@@ -480,18 +494,12 @@ public class OrderService implements IOrderService {
     }
 
     private DatasetTask createDatasetTask(BasketDatasetSelection dsSel) {
-        DatasetTask dsTask = new DatasetTask();
-        dsTask.setDatasetIpid(dsSel.getDatasetIpid());
-        dsTask.setDatasetLabel(dsSel.getDatasetLabel());
-        dsTask.setFilesCount(dsSel.getFilesCount());
-        dsTask.setFilesSize(dsSel.getFilesSize());
-        dsTask.setObjectsCount(dsSel.getObjectsCount());
-
-        dsSel.getItemsSelections().forEach(item -> {
-            dsTask.addSelectionRequest(item.getSelectionRequest());
-        });
-
-        return dsTask;
+        if (dsSel.hasProcessing()) {
+            return orderProcessingService.createDatasetTask(dsSel, dsSel.getProcessDatasetDesc());
+        }
+        else {
+            return DatasetTask.fromBasketSelection(dsSel);
+        }
     }
 
     /**
@@ -1031,6 +1039,12 @@ public class OrderService implements IOrderService {
             return false;
         }
         return this.orderEffectivelyInPause(order);
+    }
+
+    @Override
+    public boolean hasProcessing(Order order) {
+        return order.getDatasetTasks().stream()
+            .anyMatch(datasetTaskService::hasProcessing);
     }
 
 }

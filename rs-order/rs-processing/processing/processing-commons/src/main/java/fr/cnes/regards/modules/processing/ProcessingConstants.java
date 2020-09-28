@@ -29,16 +29,19 @@ public interface ProcessingConstants {
         String PROCESS_PATH = APIV1 + "/process";
         String BATCH_PATH = APIV1 + "/batch";
 
-        String PROCESS_BY_DATASETS_PATH = PROCESS_PATH + "/fordatasets";
-        String PROCESS_LINKDATASET_PATH = PROCESS_PATH + "/linkprocessdataset/{" + DATASET_PARAM + "}";
+        String BY_DATASETS_SUFFIX = "/fordatasets";
+        String LINKDATASET_SUFFIX = "/linkprocessdataset/{" + DATASET_PARAM + "}";
+        String CONFIG_SUFFIX = "/config";
+        String CONFIG_BID_SUFFIX = CONFIG_SUFFIX + "/{" + PROCESS_BUSINESS_ID_PARAM + "}";
+        String CONFIG_BID_USERROLE_SUFFIX = CONFIG_BID_SUFFIX + "/userRole";
+        String METADATA_SUFFIX = "/metadata";
 
-        String PROCESS_CONFIG_PATH = PROCESS_PATH + "/config";
-        String PROCESS_CONFIG_BID_PATH = PROCESS_CONFIG_PATH + "/{" + PROCESS_BUSINESS_ID_PARAM + "}" ;
-
-        String PROCESS_CONFIG_BID_USERROLE_PATH = PROCESS_CONFIG_BID_PATH + "/userRole";
-
-
-        String PROCESS_METADATA_PATH = PROCESS_PATH + "/metadata";
+        String PROCESS_BY_DATASETS_PATH = PROCESS_PATH + BY_DATASETS_SUFFIX;
+        String PROCESS_LINKDATASET_PATH = PROCESS_PATH + LINKDATASET_SUFFIX;
+        String PROCESS_CONFIG_PATH = PROCESS_PATH + CONFIG_SUFFIX;
+        String PROCESS_CONFIG_BID_PATH = PROCESS_PATH + CONFIG_BID_SUFFIX;
+        String PROCESS_CONFIG_BID_USERROLE_PATH = PROCESS_PATH + CONFIG_BID_USERROLE_SUFFIX;
+        String PROCESS_METADATA_PATH = PROCESS_PATH + METADATA_SUFFIX;
 
         String MONITORING_EXECUTIONS_PATH = APIV1 + "/monitoring/executions";
 

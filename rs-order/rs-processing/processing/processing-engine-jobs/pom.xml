@@ -15,6 +15,10 @@
     <dependencies>
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-engine-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-domain</artifactId>
         </dependency>
 

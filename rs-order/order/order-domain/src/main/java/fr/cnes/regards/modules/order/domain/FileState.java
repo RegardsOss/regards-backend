@@ -24,6 +24,7 @@ package fr.cnes.regards.modules.order.domain;
  * - AVAILABLE : available to be downloaded,
  * - DOWNLOADED : already downloaded (maybe no more available),
  * - DOWNLOAD_ERROR : AVAILABLE but failed when attempting to be downloaded,
+ * - PROCESSING_ERROR : failed while applying treatment (NOT available),
  * - ERROR : in error while asked to be made available.
  * BEWARE !!!
  * - ONLINE files are not stored into rs-storage BUT are managed by rs-storage. Hence, it is mandatory to
@@ -35,6 +36,7 @@ public enum FileState {
     AVAILABLE,
     DOWNLOADED,
     DOWNLOAD_ERROR,
+    PROCESSING_ERROR,
     ERROR,
     PENDING,
 }

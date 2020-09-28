@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.order.service;
+package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;

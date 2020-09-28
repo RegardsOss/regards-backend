@@ -10,9 +10,9 @@ import java.util.UUID;
 @Value
 public class PProcessDTO {
 
-    UUID businessId;
+    UUID processId;
 
-    String name;
+    String processName;
 
     boolean active;
 
