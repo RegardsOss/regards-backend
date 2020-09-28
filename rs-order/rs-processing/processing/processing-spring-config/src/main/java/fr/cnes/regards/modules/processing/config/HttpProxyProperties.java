@@ -12,8 +12,8 @@ public class HttpProxyProperties {
 
     public HttpProxyProperties(
             @Value("${http.proxy.host:#{null}}") String host,
-            @Value("${http.proxy.host:#{null}}") Integer port,
-            @Value("${http.proxy.host:#{null}}") String noproxy
+            @Value("${http.proxy.port:#{null}}") Integer port,
+            @Value("${http.proxy.noproxy:#{null}}") String noproxy
     ) {
         this.host = host;
         this.port = port;
