@@ -18,6 +18,8 @@ import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.postgresql.util.PSQLException;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -200,10 +203,10 @@ public class DownloadQuotaServiceImpl<T>
                 newLimits.getRateLimit()
             ))
             .orElse(Option.of(new DownloadQuotaLimits(
-                runtimeTenantResolver.getTenant(),
-                newLimits.getEmail(),
-                newLimits.getMaxQuota(),
-                newLimits.getRateLimit()
+                    runtimeTenantResolver.getTenant(),
+                    newLimits.getEmail(),
+                    newLimits.getMaxQuota(),
+                    newLimits.getRateLimit()
                 ))
             ).map(quotaRepository::save)
             .toTry()
@@ -219,6 +222,26 @@ public class DownloadQuotaServiceImpl<T>
         QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
         return cacheUserQuota(userEmail, key)
             .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits);
+    }
+
+    @Override
+    public Try<List<DownloadQuotaLimitsDto>> getDownloadQuotaLimits(String[] userEmails) {
+        return Arrays.stream(userEmails)
+            .map(userEmail -> {
+                QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
+                return cacheUserQuota(userEmail, key);
+            })
+            .map(quotaLimits -> quotaLimits
+                .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits))
+            .reduce(
+                Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<DownloadQuotaLimitsDto>>right(io.vavr.collection.List.empty()),
+                (e, t) -> t.isSuccess()
+                    ? e.map(l -> l.append(t.get()))
+                    : e.isRight() ? Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) : e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
+                (l, r) -> l
+            )
+            .map(io.vavr.collection.List::toJavaList)
+            .toTry();
     }
 
     @Override
@@ -350,5 +373,53 @@ public class DownloadQuotaServiceImpl<T>
 
     private DefaultDownloadQuotaLimits getDefaultLimits() {
         return defaultLimits.get().get(runtimeTenantResolver.getTenant()).get();
+    }
+
+    public static abstract class ListUserQuotaLimitsResultException extends Exception {
+
+        private ListUserQuotaLimitsResultException() { super(); }
+        private ListUserQuotaLimitsResultException(Throwable cause) { super(cause); }
+
+        public static final ListUserQuotaLimitsResultException EMPTY = new Empty();
+
+        public static class Empty extends ListUserQuotaLimitsResultException {
+            Empty() { super(); }
+            @Override
+            public Seq<Throwable> causes() { return io.vavr.collection.List.of(); }
+        }
+
+        public static class Single extends ListUserQuotaLimitsResultException {
+            Single(Throwable cause) { super(cause == null ? new Exception() : cause); }
+            @Override
+            public Seq<Throwable> causes() {
+                Throwable cause = getCause();
+                return (cause instanceof ListUserQuotaLimitsResultException)
+                    ? ((ListUserQuotaLimitsResultException)cause).causes()
+                    : io.vavr.collection.List.of(cause);
+            }
+        }
+
+        public static class Multiple extends ListUserQuotaLimitsResultException {
+            private final Seq<Throwable> causes;
+            Multiple(Seq<Throwable> causes) {
+                super();
+                this.causes = Option.of(causes).getOrElse(io.vavr.collection.List.empty());
+            }
+            @Override
+            public Seq<Throwable> causes() {
+                return causes.flatMap(cause -> (cause instanceof ListUserQuotaLimitsResultException)
+                    ? ((ListUserQuotaLimitsResultException)cause).causes()
+                    : io.vavr.collection.List.of(cause));
+            }
+        }
+
+        public abstract Seq<Throwable> causes();
+
+        public ListUserQuotaLimitsResultException compose(ListUserQuotaLimitsResultException other) {
+            if (other == null) { return this; }
+            return new Multiple(this.causes().appendAll(other.causes()));
+        }
+
+        public static ListUserQuotaLimitsResultException make(Throwable cause) { return new Single(cause); }
     }
 }

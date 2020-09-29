@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.storage.rest;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.storage.dao.IDefaultDownloadQuotaLimitsEntityRepository;
@@ -33,23 +35,32 @@ import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.download.DownloadQuotaServiceImpl;
 import fr.cnes.regards.modules.storage.service.file.download.QuotaKey;
 import io.vavr.collection.HashMap;
+import io.vavr.collection.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static fr.cnes.regards.modules.storage.rest.DownloadQuotaController.*;
 import static org.junit.Assert.assertEquals;
@@ -284,6 +295,38 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
         assertEquals(maxQuota, cached.getMaxQuota().longValue());
         assertEquals(rateLimit, cached.getRateLimit().longValue());
+    }
+
+    @Test
+    public void getQuotaLimits_should_return_a_list_of_user_quota_limits() {
+        List<DownloadQuotaLimits> quotaLimits =
+            IntStream.range(0, 50)
+                .mapToObj(ignored -> UUID.randomUUID().toString())
+                .map(userEmail -> {
+                    long maxQuota = random.nextInt(Integer.MAX_VALUE);
+                    long rateLimit = random.nextInt(Integer.MAX_VALUE);
+                    return quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
+                })
+                .collect(Collectors.toList());
+
+        RequestBuilderCustomizer customizer =
+            customizer()
+                .addParameter(USER_EMAIL_PARAM, quotaLimits.stream().map(DownloadQuotaLimits::getEmail).toArray(String[]::new))
+                .expectStatusOk();
+
+        Stream.ofAll(quotaLimits)
+            .zipWithIndex()
+            .forEach(t -> {
+                customizer.expectValue(String.format("$.[%s].email", t._2), t._1.getEmail());
+                customizer.expectValue(String.format("$.[%s].maxQuota", t._2), t._1.getMaxQuota());
+                customizer.expectValue(String.format("$.[%s].rateLimit", t._2), t._1.getRateLimit());
+            });
+
+        performDefaultGet(PATH_QUOTA_LIST, customizer, "Failed to get user quota limits");
+
+//        DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
+//        assertEquals(maxQuota, cached.getMaxQuota().longValue());
+//        assertEquals(rateLimit, cached.getRateLimit().longValue());
     }
 
     @Test

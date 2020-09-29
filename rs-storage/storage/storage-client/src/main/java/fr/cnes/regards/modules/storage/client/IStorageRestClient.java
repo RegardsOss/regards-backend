@@ -35,7 +35,7 @@ import java.util.List;
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
-public interface IStorageRestClient extends IStorageDownloadQuotaClient {
+public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
     public static final String FILE_PATH = "/files";
 

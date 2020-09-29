@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -45,6 +46,8 @@ public class DownloadQuotaController {
     public static final String PATH_DEFAULT_QUOTA = "/quota/defaults";
 
     public static final String PATH_USER_QUOTA = "/quota/{user_email}";
+
+    public static final String PATH_QUOTA_LIST = "/quotas";
 
     public static final String PATH_QUOTA = "/quota";
 
@@ -110,6 +113,15 @@ public class DownloadQuotaController {
     @ResourceAccess(description = "Get current user download quota limits.", role = DefaultRole.PUBLIC)
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
         return quotaService.getDownloadQuotaLimits(authResolver.getUser())
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
+    }
+
+    @GetMapping(path = PATH_QUOTA_LIST)
+    @ResponseBody
+    @ResourceAccess(description = "Get download quota limits for the specified users.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails) {
+        return quotaService.getDownloadQuotaLimits(userEmails)
             .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
             .get();
     }
