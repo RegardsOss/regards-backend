@@ -5,6 +5,7 @@ import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.control.Try;
 
+import java.util.List;
 import java.util.function.Function;
 
 public interface IQuotaService<T> {
@@ -46,6 +47,8 @@ public interface IQuotaService<T> {
     Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(DefaultDownloadQuotaLimits newDefaults);
 
     Try<DownloadQuotaLimitsDto> getDownloadQuotaLimits(String userEmail);
+
+    Try<List<DownloadQuotaLimitsDto>> getDownloadQuotaLimits(String[] userEmails);
 
     Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits);
 

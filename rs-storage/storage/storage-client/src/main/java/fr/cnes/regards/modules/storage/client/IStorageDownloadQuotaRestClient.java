@@ -18,21 +18,27 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
-public interface IStorageDownloadQuotaClient {
+public interface IStorageDownloadQuotaRestClient {
 
     public static final String PATH_DEFAULT_QUOTA = "/quota/defaults";
 
     public static final String PATH_USER_QUOTA = "/quota/{user_email}";
 
     public static final String PATH_QUOTA = "/quota";
+
+    public static final String PATH_QUOTA_LIST = "/quotas";
 
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
 
@@ -55,6 +61,10 @@ public interface IStorageDownloadQuotaClient {
     ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
         @PathVariable(USER_EMAIL_PARAM) String userEmail,
         @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits);
+
+    @GetMapping(path = PATH_QUOTA_LIST)
+    @ResponseBody
+    ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
 
     @GetMapping(path = PATH_QUOTA)
     @ResponseBody
