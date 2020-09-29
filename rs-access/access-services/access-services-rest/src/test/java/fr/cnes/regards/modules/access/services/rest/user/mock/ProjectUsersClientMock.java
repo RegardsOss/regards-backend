@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.modules.access.services.rest.user.ProjectUsersController;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -55,6 +56,9 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
 
     @Autowired
     private ProjectUsersController projectUsersController;
+
+    @Autowired
+    private IResourceService resourceService;
 
     @Autowired
     private PagedResourcesAssembler<ProjectUser> assembler;
@@ -121,7 +125,7 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
 
     @Override
     public EntityModel<ProjectUser> toResource(ProjectUser element, Object... extras) {
-        return projectUsersController.toResource(element, extras);
+        return resourceService.toResource(element);
     }
 
     protected ResponseEntity<EntityModel<ProjectUser>> singleProjectUserResponse(ProjectUser projectUser) {

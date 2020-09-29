@@ -4,10 +4,13 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
 import static fr.cnes.regards.modules.access.services.rest.user.mock.ProjectUsersClientMock.*;
+import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.USER_QUOTA_LIMITS_STUB_MAX_QUOTA;
+import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.USER_QUOTA_LIMITS_STUB_RATE_LIMIT;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
@@ -36,14 +39,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getUserById() {
-        String apiUserEmail = ProjectUsersController.TYPE_MAPPING + "/email/{user_id}";
+        String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
 
         RequestBuilderCustomizer customizer =
             customizer()
                 .expectStatusOk();
         expectSingleUserFromClientMock(customizer);
 
-        performDefaultGet(apiUserEmail, customizer, "Failed to retrieve user by id", PROJECT_USER_STUB_ID);
+        performDefaultGet(apiUserId, customizer, "Failed to retrieve user by id", PROJECT_USER_STUB_ID);
     }
 
     @Test
@@ -165,12 +168,16 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     protected RequestBuilderCustomizer expectSingleUserFromClientMock(RequestBuilderCustomizer customizer) {
         return customizer
-            .expectValue("$.content.email", PROJECT_USER_STUB_EMAIL);
+            .expectValue("$.content.email", PROJECT_USER_STUB_EMAIL)
+            .expectValue("$.content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
+            .expectValue("$.content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
     }
 
     protected RequestBuilderCustomizer expectPagedUserFromClientMock(RequestBuilderCustomizer customizer) {
         return customizer
-            .expectValue("$.content.[0].content.email", PROJECT_USER_STUB_EMAIL);
+            .expectValue("$.content.[0].content.email", PROJECT_USER_STUB_EMAIL)
+            .expectValue("$.content.[0].content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
+            .expectValue("$.content.[0].content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
     }
 
     private RequestBuilderCustomizer expectPagingFromClientMock(RequestBuilderCustomizer customizer) {

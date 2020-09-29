@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-import static fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaClient.*;
+import static fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient.*;
 
 @RestController
 public class StorageDownloadQuotaController {

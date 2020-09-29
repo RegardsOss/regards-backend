@@ -26,10 +26,13 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.user.AccessSettingsDto;
+import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
 import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.StringJoiner;
+
+import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handleClientFailure;
 
 /**
  * Class AccountSettingsController
@@ -87,31 +92,29 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<AccessSettingsDto>> retrieveAccessSettings() throws ModuleException {
-        ResponseEntity<EntityModel<AccessSettings>> accessResponse =
-            accessSettingsClient.retrieveAccessSettings();
-
-        ResponseEntity<DefaultDownloadQuotaLimits> quotasResponse =
-            storageClient.getDefaultDownloadQuotaLimits();
-
-        boolean accessRequestFailed = !accessResponse.getStatusCode().is2xxSuccessful();
-        boolean quotasRequestFailed = !quotasResponse.getStatusCode().is2xxSuccessful();
-        if (accessRequestFailed || quotasRequestFailed) {
-            StringJoiner s = new StringJoiner("\n");
-            if (accessRequestFailed) { s.add(String.format("Request to accessrights-client failed with %s.", accessResponse.getStatusCodeValue())); }
-            if (quotasRequestFailed) { s.add(String.format("Request to storage-client failed with %s.", quotasResponse.getStatusCodeValue())); }
-            LOGGER.error(s.toString());
-            throw new ModuleException("Unable to request access settings.");
-        }
-
-        return new ResponseEntity<>(
-                toResource(new AccessSettingsDto(
-                    accessResponse.getBody().getContent().getId(),
-                    accessResponse.getBody().getContent().getMode(),
-                    quotasResponse.getBody().getMaxQuota(),
-                    quotasResponse.getBody().getRateLimit()
-                )),
-                HttpStatus.OK
-            );
+        return Validation
+            .combine(
+                Try.of(() -> accessSettingsClient.retrieveAccessSettings())
+                    .transform(handleClientFailure("accessrights-client"))
+                    .map(EntityModel::getContent),
+                Try.of(() -> storageClient.getDefaultDownloadQuotaLimits())
+                    .map(ResponseEntity::getBody)
+                    // special value for frontend if any error on storage or storage not deploy
+                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                    .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+                    .toValidation(ComposableClientException::make)
+            )
+            .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
+                accessSettings.getId(),
+                accessSettings.getMode(),
+                defaultLimits.getMaxQuota(),
+                defaultLimits.getRateLimit()
+            ))
+            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+            .map(this::toResource)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get()
+        ;
     }
 
     /**
@@ -123,30 +126,36 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<AccessSettingsDto>> updateAccessSettings(@Valid @RequestBody AccessSettingsDto accessSettingsDto) throws ModuleException {
-        AccessSettings accessSettings = new AccessSettings();
-        accessSettings.setId(accessSettingsDto.getId());
-        accessSettings.setMode(accessSettingsDto.getMode());
-        ResponseEntity<EntityModel<AccessSettings>> accessResponse =
-            accessSettingsClient.updateAccessSettings(accessSettings);
-
-        DefaultDownloadQuotaLimits defaultLimits =
-            new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit());
-        ResponseEntity<DefaultDownloadQuotaLimits> quotasResponse =
-            storageClient.changeDefaultDownloadQuotaLimits(defaultLimits);
-
-        boolean accessRequestFailed = !accessResponse.getStatusCode().is2xxSuccessful();
-        boolean quotasRequestFailed = !quotasResponse.getStatusCode().is2xxSuccessful();
-        if (accessRequestFailed || quotasRequestFailed) {
-            if (accessRequestFailed) { JOINER.add(String.format("Request to accessrights-client failed with %s.", accessResponse.getStatusCodeValue())); }
-            if (quotasRequestFailed) { JOINER.add(String.format("Request to storage-client failed with %s.", quotasResponse.getStatusCodeValue())); }
-            LOGGER.error(JOINER.toString());
-            throw new ModuleException("Unable to update access settings.");
-        }
-
-        return new ResponseEntity<>(
-            toResource(accessSettingsDto),
-            HttpStatus.OK
-        );
+        return Validation
+            .combine(
+                Try.of(() -> {
+                    AccessSettings accessSettings = new AccessSettings();
+                    accessSettings.setId(accessSettingsDto.getId());
+                    accessSettings.setMode(accessSettingsDto.getMode());
+                    return accessSettings;
+                })
+                    .map(accessSettingsClient::updateAccessSettings)
+                    .transform(handleClientFailure("accessrights-client"))
+                    .map(EntityModel::getContent),
+                Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
+                    .map(storageClient::changeDefaultDownloadQuotaLimits)
+                    .map(ResponseEntity::getBody)
+                    // special value for frontend if any error on storage or storage not deploy
+                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                    .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+                    .toValidation(ComposableClientException::make)
+            )
+            .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
+                accessSettings.getId(),
+                accessSettings.getMode(),
+                defaultLimits.getMaxQuota(),
+                defaultLimits.getRateLimit()
+            ))
+            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+            .map(this::toResource)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get()
+            ;
     }
 
     @Override

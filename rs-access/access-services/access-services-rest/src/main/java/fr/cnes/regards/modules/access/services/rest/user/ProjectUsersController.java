@@ -23,12 +23,26 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.access.services.domain.user.AccessRequestDto;
+import fr.cnes.regards.modules.access.services.domain.user.ProjectUserDto;
+import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Seq;
+import io.vavr.collection.Stream;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -38,12 +52,20 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handleClientFailure;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Controller responsible for the /users(/*)? endpoints
@@ -54,7 +76,9 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(ProjectUsersController.TYPE_MAPPING)
-public class ProjectUsersController implements IResourceController<ProjectUser> {
+public class ProjectUsersController implements IResourceController<ProjectUserDto> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectUsersController.class);
 
     /**
      * Root mapping for requests of this rest controller
@@ -76,6 +100,9 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @Autowired
     private IProjectUsersClient projectUsersClient;
 
+    @Autowired
+    private IStorageRestClient storageClient;
+
     /**
      * Resource service to manage visibles hateoas links
      */
@@ -89,102 +116,102 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     private IAuthenticationResolver authResolver;
 
     /**
-     * Retrieve the {@link List} of all {@link ProjectUser}s.
+     * Retrieve the {@link List} of all {@link ProjectUserDto}s.
      * @param status
      * @param emailStart
      * @param pageable
-     * @param pagedResourcesAssembler
-     * @return a {@link List} of {@link ProjectUser}
+     * @param assembler
+     * @return a {@link List} of {@link ProjectUserDto}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-            @RequestParam(name = "status", required = false) String status,
-            @RequestParam(name = "partialEmail", required = false) String emailStart,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler)
-    {
-        ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response =
-            projectUsersClient.retrieveProjectUserList(status, emailStart, pageable.getPageNumber(), pageable.getPageSize());
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(
-                toPagedResources(
-                    new PageImpl<>(
-                        response.getBody().getContent().stream().map(EntityModel::getContent).collect(Collectors.toList()),
-                        pageable,
-                        response.getBody().getMetadata().getTotalElements()
-                    ),
-                    pagedResourcesAssembler)
-                ,
-                response.getHeaders(),
-                response.getStatusCode())
-            : response;
+    public ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> retrieveProjectUserList(
+        @RequestParam(name = "status", required = false) String status,
+        @RequestParam(name = "partialEmail", required = false) String emailStart,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<ProjectUserDto> assembler) {
+        return completeUserPagedResponseWithQuotas(
+            () -> projectUsersClient.retrieveProjectUserList(status, emailStart, pageable.getPageNumber(), pageable.getPageSize()),
+            pageable,
+            assembler
+        );
     }
 
     /**
      * Retrieve all users with a pending access requests.
      * @param pageable
      * @param assembler
-     * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
+     * @return The {@link List} of all {@link ProjectUserDto}s with status {@link UserStatus#WAITING_ACCESS}
      */
     @ResponseBody
     @RequestMapping(value = PENDINGACCESSES, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveAccessRequestList(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<ProjectUser> assembler) {
-        ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response =
-            projectUsersClient.retrieveAccessRequestList(pageable.getPageNumber(), pageable.getPageSize());
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(
-            toPagedResources(
-                new PageImpl<>(
-                    response.getBody().getContent().stream().map(EntityModel::getContent).collect(Collectors.toList()),
-                    pageable,
-                    response.getBody().getMetadata().getTotalElements()
-                ),
-                assembler)
-            ,
-            response.getHeaders(),
-            response.getStatusCode())
-            : response;
+    public ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> retrieveAccessRequestList(
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<ProjectUserDto> assembler) {
+        return completeUserPagedResponseWithQuotas(
+            () -> projectUsersClient.retrieveAccessRequestList(pageable.getPageNumber(), pageable.getPageSize()),
+            pageable,
+            assembler
+        );
     }
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
-     * @param userId The {@link ProjectUser}'s <code>id</code>
-     * @return a {@link ProjectUser}
+     * Retrieve the {@link ProjectUserDto} of passed <code>id</code>.
+     * @param userId The {@link ProjectUserDto}'s <code>id</code>
+     * @return a {@link ProjectUserDto}
      */
     @ResponseBody
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUser(@PathVariable("user_id") Long userId) {
-        return projectUsersClient.retrieveProjectUser(userId);
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUser(@PathVariable("user_id") Long userId) {
+        return Try.of(() -> projectUsersClient.retrieveProjectUser(userId))
+            .transform(handleClientFailure("accessrights-client"))
+            .map(EntityModel::getContent)
+            .flatMap(user ->
+                Try.of(() -> storageClient.getQuotaLimits(user.getEmail()))
+                    .transform(ignoreStorageQuotaErrors)
+                    .map(limits -> new ProjectUserDto(
+                        user,
+                        limits
+                    )))
+            .map(this::toResource)
+            .map(resource -> new ResponseEntity<>(resource, HttpStatus.OK))
+            .mapError(ModuleException::new)
+            .get();
     }
 
     /**
-     * Retrieve the {@link ProjectUser} of current authenticated user
-     * @return a {@link ProjectUser}
+     * Retrieve the {@link ProjectUserDto} of current authenticated user
+     * @return a {@link ProjectUserDto}
      */
     @ResponseBody
     @RequestMapping(value = "/myuser", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
-            role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser() {
-        return projectUsersClient.retrieveCurrentProjectUser();
+        role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveCurrentProjectUser() {
+        return combineProjectUserThenQuotaCalls(
+            () -> projectUsersClient.retrieveCurrentProjectUser(),
+            () -> storageClient.getQuotaLimits(),
+            this::toResource
+        );
     }
 
     /**
-     * Retrieve the {@link ProjectUser} of passed <code>id</code>.
-     * @param userEmail The {@link ProjectUser}'s <code>id</code>
-     * @return a {@link ProjectUser}
+     * Retrieve the {@link ProjectUserDto} of passed <code>id</code>.
+     * @param userEmail The {@link ProjectUserDto}'s <code>id</code>
+     * @return a {@link ProjectUserDto}
      */
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUser>> retrieveProjectUserByEmail(@PathVariable("user_email") String userEmail) {
-        return projectUsersClient.retrieveProjectUserByEmail(userEmail);
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUserByEmail(@PathVariable("user_email") String userEmail) {
+        return combineProjectUserThenQuotaCalls(
+            () -> projectUsersClient.retrieveProjectUserByEmail(userEmail),
+            () -> storageClient.getQuotaLimits(userEmail),
+            this::toResource
+        );
     }
 
     @ResponseBody
@@ -195,29 +222,47 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     /**
-     * Update the {@link ProjectUser} of id <code>pUserId</code>.
-     * @param userId The {@link ProjectUser} <code>id</code>
-     * @param updatedProjectUser The new {@link ProjectUser}
+     * Update the {@link ProjectUserDto} of id <code>pUserId</code>.
+     * @param userId The {@link ProjectUserDto} <code>id</code>
+     * @param updatedProjectUser The new {@link ProjectUserDto}
      * @return void
      */
     @ResponseBody
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "update the project user", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUser>> updateProjectUser(@PathVariable("user_id") Long userId,
-                                                                      @RequestBody ProjectUser updatedProjectUser) {
-        return projectUsersClient.updateProjectUser(userId, updatedProjectUser);
+    public ResponseEntity<EntityModel<ProjectUserDto>> updateProjectUser(@PathVariable("user_id") Long userId,
+                                                                         @RequestBody ProjectUserDto updatedProjectUser) {
+        String userEmail = updatedProjectUser.getEmail();
+
+        Tuple2<ProjectUser, DownloadQuotaLimitsDto> t =
+            makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
+
+        return combineQuotaThenProjectUserCalls(
+            () -> storageClient.upsertQuotaLimits(userEmail, t._2),
+            () -> projectUsersClient.updateProjectUser(userId, t._1),
+            this::toResource
+        );
     }
 
     /**
-     * Update the {@link ProjectUser} of current projet user authenticated.
-     * @param updatedProjectUser The new {@link ProjectUser}
+     * Update the {@link ProjectUserDto} of current projet user authenticated.
+     * @param updatedProjectUser The new {@link ProjectUserDto}
      * @return void
      */
     @ResponseBody
     @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the current authenticated project user", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(@RequestBody ProjectUser updatedProjectUser) {
-        return projectUsersClient.updateCurrentProjectUser(updatedProjectUser);
+    public ResponseEntity<EntityModel<ProjectUserDto>> updateCurrentProjectUser(@RequestBody ProjectUserDto updatedProjectUser) {
+        String userEmail = authResolver.getUser();
+
+        Tuple2<ProjectUser, DownloadQuotaLimitsDto> t =
+            makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
+
+        return combineQuotaThenProjectUserCalls(
+            () -> storageClient.upsertQuotaLimits(userEmail, t._2),
+            () -> projectUsersClient.updateCurrentProjectUser(t._1),
+            this::toResourceRegisteredUser
+        );
     }
 
     /**
@@ -228,14 +273,35 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
-            role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto) {
-        return projectUsersClient.createUser(dto);
+        role = DefaultRole.EXPLOIT)
+    public ResponseEntity<EntityModel<ProjectUserDto>> createUser(@Valid @RequestBody AccessRequestDto dto) {
+        String userEmail = dto.getEmail();
+
+        fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto accessRequest =
+            new fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto(
+                userEmail,
+                dto.getFirstName(),
+                dto.getLastName(),
+                dto.getRoleName(),
+                dto.getMetadata(),
+                dto.getPassword(),
+                dto.getOriginUrl(),
+                dto.getRequestLink()
+            );
+
+        DownloadQuotaLimitsDto limits =
+            new DownloadQuotaLimitsDto(userEmail, dto.getMaxQuota(), dto.getRateLimit());
+
+        return combineQuotaThenProjectUserCalls(
+            () -> storageClient.upsertQuotaLimits(userEmail, limits),
+            () -> projectUsersClient.createUser(accessRequest),
+            this::toResourceRegisteredUser
+        );
     }
 
     /**
-     * Delete the {@link ProjectUser} of passed <code>id</code>.
-     * @param userId The {@link ProjectUser}'s <code>id</code>
+     * Delete the {@link ProjectUserDto} of passed <code>id</code>.
+     * @param userId The {@link ProjectUserDto}'s <code>id</code>
      * @return void
      */
     @ResponseBody
@@ -246,137 +312,227 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     }
 
     /**
-     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the role of passed
+     * Define the endpoint for retrieving the {@link List} of {@link ProjectUserDto} for the role of passed
      * <code>id</code> by crawling through parents' hierarachy.
      * @param roleId The role's <code>id</code>
      * @param pageable
      * @param assembler
-     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
+     * @return The {@link List} of {@link ProjectUserDto} wrapped in an {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(value = ROLES_ROLE_ID, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
-            role = DefaultRole.ADMIN)
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(
+        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
+        role = DefaultRole.ADMIN)
+    public ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUser> assembler
+        PagedResourcesAssembler<ProjectUserDto> assembler
     ) {
-        ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response =
-            projectUsersClient.retrieveRoleProjectUserList(roleId, pageable.getPageNumber(), pageable.getPageSize());
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(
-            toPagedResources(
-                new PageImpl<>(
-                    response.getBody().getContent().stream().map(EntityModel::getContent).collect(Collectors.toList()),
-                    pageable,
-                    response.getBody().getMetadata().getTotalElements()
-                ),
-                assembler)
-            ,
-            response.getHeaders(),
-            response.getStatusCode())
-            : response;
+        return completeUserPagedResponseWithQuotas(
+            () -> projectUsersClient.retrieveRoleProjectUserList(roleId, pageable.getPageNumber(), pageable.getPageSize()),
+            pageable,
+            assembler
+        );
     }
 
     /**
-     * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the role of passed
+     * Define the endpoint for retrieving the {@link List} of {@link ProjectUserDto} for the role of passed
      * <code>name</code> by crawling through parents' hierarachy.
      * @param role The role's <code>name</code>
      * @param pageable
      * @param assembler
-     * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
+     * @return The {@link List} of {@link ProjectUserDto} wrapped in an {@link ResponseEntity}
      */
     @ResponseBody
     @ResourceAccess(
-            description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
-            role = DefaultRole.ADMIN)
+        description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
+        role = DefaultRole.ADMIN)
     @RequestMapping(value = "/roles", method = RequestMethod.GET)
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(
-            @RequestParam("role_name") String role,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<ProjectUser> assembler
+    public ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> retrieveRoleProjectUsersList(
+        @RequestParam("role_name") String role,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<ProjectUserDto> assembler
     ) {
-        ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response =
-            projectUsersClient.retrieveRoleProjectUsersList(role, pageable.getPageNumber(), pageable.getPageSize());
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(
-            toPagedResources(
-                new PageImpl<>(
-                    response.getBody().getContent().stream().map(EntityModel::getContent).collect(Collectors.toList()),
-                    pageable,
-                    response.getBody().getMetadata().getTotalElements()
-                ),
-                assembler)
-            ,
-            response.getHeaders(),
-            response.getStatusCode())
-            : response;
+        return completeUserPagedResponseWithQuotas(
+            () -> projectUsersClient.retrieveRoleProjectUsersList(role, pageable.getPageNumber(), pageable.getPageSize()),
+            pageable,
+            assembler
+        );
+    }
+
+    private ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> completeUserPagedResponseWithQuotas(
+        Supplier<ResponseEntity<PagedModel<EntityModel<ProjectUser>>>> usersRequest,
+        Pageable pageable,
+        PagedResourcesAssembler<ProjectUserDto> pagedResourcesAssembler
+    ) {
+        AtomicReference<PagedModel.PageMetadata> meta = new AtomicReference<>();
+        AtomicReference<io.vavr.collection.List<ProjectUser>> users = new AtomicReference<>(io.vavr.collection.List.empty());
+        return Try.ofSupplier(usersRequest)
+            .transform(handleClientFailure("accessrights-client"))
+            .peek(r -> meta.set(r.getMetadata())) // need a piece of state (pagination metadata) for later if success
+            .map(PagedModel::getContent)
+            .map(c -> c.stream()
+                .map(EntityModel::getContent)
+                // fill the list of users while mapping, we'll need'em later
+                .peek(u -> users.updateAndGet(l -> l.append(u)))
+                .map(ProjectUser::getEmail)
+                .toArray(String[]::new))
+            .flatMap(a ->
+                Try.of(() -> storageClient.getQuotaLimits(a))
+                    .map(ResponseEntity::getBody)
+                    // special value for frontend if any error on storage or storage not deploy
+                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                    .orElse(() -> Try.success(Arrays.stream(a).map(email -> new DownloadQuotaLimitsDto(email, null, null)).collect(toList())))
+                    .toValidation(ComposableClientException::make)
+            )
+            .map(limits -> users.get()
+                .zip(limits)
+                .map(ul -> new ProjectUserDto(
+                    ul._1,
+                    ul._2
+                ))
+                .toJavaList()
+            )
+            .map(list -> new PageImpl<>(list, pageable, meta.get().getTotalElements()))
+            .map(page -> toPagedResources(page, pagedResourcesAssembler))
+            .map(paged -> new ResponseEntity<>(paged, HttpStatus.OK))
+            .mapError(ModuleException::new)
+            .get();
+    }
+
+    private Tuple2<ProjectUser, DownloadQuotaLimitsDto> makeProjectUserAndQuotaLimitsDto(ProjectUserDto updatedProjectUser) {
+        String userEmail = updatedProjectUser.getEmail();
+
+        ProjectUser user = new ProjectUser();
+        user.setId(updatedProjectUser.getId());
+        user.setEmail(userEmail);
+        user.setLastConnection(updatedProjectUser.getLastConnection());
+        user.setLastUpdate(updatedProjectUser.getLastUpdate());
+        user.setStatus(updatedProjectUser.getStatus());
+        user.setMetadata(updatedProjectUser.getMetadata());
+        user.setRole(updatedProjectUser.getRole());
+        user.setPermissions(updatedProjectUser.getPermissions());
+        user.setLicenseAccepted(updatedProjectUser.isLicenseAccepted());
+
+        DownloadQuotaLimitsDto limits =
+            new DownloadQuotaLimitsDto(userEmail, updatedProjectUser.getMaxQuota(), updatedProjectUser.getRateLimit());
+
+        return Tuple.of(user, limits);
+    }
+
+    private ResponseEntity<EntityModel<ProjectUserDto>> combineProjectUserThenQuotaCalls(
+        Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
+        Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
+        Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
+    ) {
+        return toResponse(
+            Try.ofSupplier(projectUsersCall)
+                .transform(handleClientFailure("accessrights-client"))
+                .map(EntityModel::getContent)
+                .combine(Try.ofSupplier(quotaLimitsCall)
+                    .transform(ignoreStorageQuotaErrors))
+                .ap(ProjectUserDto::new),
+            resourceMapper
+        );
+    }
+
+    private ResponseEntity<EntityModel<ProjectUserDto>> combineQuotaThenProjectUserCalls(
+        Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
+        Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
+        Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
+    ) {
+        return toResponse(
+            Try.ofSupplier(quotaLimitsCall)
+                .transform(ignoreStorageQuotaErrors)
+                .combine(Try.ofSupplier(projectUsersCall)
+                    .transform(handleClientFailure("accessrights-client"))
+                    .map(EntityModel::getContent))
+                .ap(ProjectUserDto::new),
+            resourceMapper
+        );
+    }
+
+    private Function<Try<ResponseEntity<DownloadQuotaLimitsDto>>, Validation<ComposableClientException, DownloadQuotaLimitsDto>> ignoreStorageQuotaErrors =
+        t -> t
+            .map(ResponseEntity::getBody)
+            // special value for frontend if any error on storage or storage not deploy
+            .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
+            .orElse(() -> Try.success(new DownloadQuotaLimitsDto(null, null, null)))
+            .toValidation(ComposableClientException::make);
+
+    private ResponseEntity<EntityModel<ProjectUserDto>> toResponse(
+        Validation<Seq<ComposableClientException>, ProjectUserDto> v,
+        Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
+    ) {
+        return v
+            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+            .map(resourceMapper)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
     }
 
     @Override
-    public EntityModel<ProjectUser> toResource(final ProjectUser element, final Object... extras) {
-        EntityModel<ProjectUser> resource = resourceService.toResource(element);
+    public EntityModel<ProjectUserDto> toResource(final ProjectUserDto element, final Object... extras) {
+        EntityModel<ProjectUserDto> resource = resourceService.toResource(element);
         if ((element != null) && (element.getId() != null)) {
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUser", LinkRels.SELF,
-                                    MethodParamFactory.build(Long.class, element.getId()));
+                MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "updateProjectUser", LinkRels.UPDATE,
-                                    MethodParamFactory.build(Long.class, element.getId()),
-                                    MethodParamFactory.build(ProjectUser.class, element));
+                MethodParamFactory.build(Long.class, element.getId()),
+                MethodParamFactory.build(ProjectUserDto.class, element));
             resourceService.addLink(resource, this.getClass(), "removeProjectUser", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, element.getId()));
+                MethodParamFactory.build(Long.class, element.getId()));
             resourceService.addLink(resource, this.getClass(), "retrieveProjectUserList", LinkRels.LIST,
-                                    MethodParamFactory.build(String.class, element.getStatus().toString()),
-                                    MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class));
+                MethodParamFactory.build(String.class, element.getStatus().toString()),
+                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+                MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
-                                        LinkRelation.of("accept"),
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                    LinkRelation.of("accept"),
+                    MethodParamFactory.build(Long.class, element.getId()));
                 resourceService.addLink(resource, RegistrationController.class, "denyAccessRequest",
-                                        LinkRelation.of("deny"), MethodParamFactory.build(Long.class, element.getId()));
+                    LinkRelation.of("deny"), MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_GRANTED state
             if (UserStatus.ACCESS_GRANTED.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "inactiveAccess",
-                                        LinkRelation.of("inactive"),
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                    LinkRelation.of("inactive"),
+                    MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_DENIED state
             if (UserStatus.ACCESS_DENIED.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "acceptAccessRequest",
-                                        LinkRelation.of("accept"),
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                    LinkRelation.of("accept"),
+                    MethodParamFactory.build(Long.class, element.getId()));
             }
             // Specific links to add in ACCESS_INACTIVE state
             if (UserStatus.ACCESS_INACTIVE.equals(element.getStatus())) {
                 resourceService.addLink(resource, RegistrationController.class, "activeAccess",
-                                        LinkRelation.of("active"),
-                                        MethodParamFactory.build(Long.class, element.getId()));
+                    LinkRelation.of("active"),
+                    MethodParamFactory.build(Long.class, element.getId()));
             }
         }
         return resource;
     }
 
-//    /**
-//     * Special HATEOS resource maker for registered users asking for their own users. The toResource method is for
-//     * project admins.
-//     * @param projectUser {@link ProjectUser} to transform to HATEOAS resources.
-//     * @return HATEOAS resources for {@link ProjectUser}
-//
-//     */
-//    public EntityModel<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
-//        EntityModel<ProjectUser> resource = resourceService.toResource(projectUser);
-//        if ((projectUser != null) && (projectUser.getId() != null)) {
-//            resource = resourceService.toResource(projectUser);
-//            resourceService.addLink(resource, this.getClass(), "retrieveCurrentProjectUser", LinkRels.SELF);
-//            resourceService.addLink(resource, this.getClass(), "updateCurrentProjectUser", LinkRels.UPDATE,
-//                                    MethodParamFactory.build(ProjectUser.class, projectUser));
-//        }
-//        return resource;
-//    }
+    /**
+     * Special HATEOS resource maker for registered users asking for their own users. The toResource method is for
+     * project admins.
+     * @param projectUser {@link ProjectUserDto} to transform to HATEOAS resources.
+     * @return HATEOAS resources for {@link ProjectUserDto}
 
+     */
+    public EntityModel<ProjectUserDto> toResourceRegisteredUser(ProjectUserDto projectUser) {
+        EntityModel<ProjectUserDto> resource = resourceService.toResource(projectUser);
+        if ((projectUser != null) && (projectUser.getId() != null)) {
+            resource = resourceService.toResource(projectUser);
+            resourceService.addLink(resource, this.getClass(), "retrieveCurrentProjectUser", LinkRels.SELF);
+            resourceService.addLink(resource, this.getClass(), "updateCurrentProjectUser", LinkRels.UPDATE,
+                MethodParamFactory.build(ProjectUserDto.class, projectUser));
+        }
+        return resource;
+    }
 }

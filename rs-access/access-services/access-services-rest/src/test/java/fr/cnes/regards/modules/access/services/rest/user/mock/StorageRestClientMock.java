@@ -16,9 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -68,6 +67,22 @@ public class StorageRestClientMock implements IStorageRestClient {
     @Override
     public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
         return new ResponseEntity<>(quotaLimits, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(String[] userEmails) {
+        return new ResponseEntity<>(
+            Arrays.stream(userEmails)
+                .map(userEmail ->
+                    new DownloadQuotaLimitsDto(
+                        userEmail,
+                        USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                        USER_QUOTA_LIMITS_STUB_RATE_LIMIT
+                    )
+                )
+                .collect(Collectors.toList()),
+            HttpStatus.OK
+        );
     }
 
     @Override

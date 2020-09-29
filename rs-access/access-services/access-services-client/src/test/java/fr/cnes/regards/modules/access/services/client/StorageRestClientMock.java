@@ -56,6 +56,11 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
+    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(String[] userEmails) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
         return null;
     }
