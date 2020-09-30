@@ -134,23 +134,4 @@ public interface IRegistrationClient {
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
     ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") Long pAccessId);
 
-    /**
-     * Retrieve the {@link AccessSettings}.
-     *
-     * @return The {@link AccessSettings}
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.GET)
-    ResponseEntity<EntityModel<AccessSettings>> getAccessSettings();
-
-    /**
-     * Update the {@link AccessSettings}.
-     *
-     * @param pAccessSettings
-     *            The {@link AccessSettings}
-     * @return The updated access settings
-     */
-    @ResponseBody
-    @RequestMapping(value = "/settings", method = RequestMethod.PUT)
-    ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody AccessSettings pAccessSettings);
 }
