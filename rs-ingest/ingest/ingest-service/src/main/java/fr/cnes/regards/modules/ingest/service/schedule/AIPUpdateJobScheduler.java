@@ -18,15 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.time.Instant;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
+import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * This component scans the AIPUpdateRepo and regroups tasks by aip to update
@@ -35,7 +44,9 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
  */
 @Profile("!noscheduler")
 @Component
-public class AIPUpdateJobScheduler {
+public class AIPUpdateJobScheduler extends AbstractTaskScheduler {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateJobScheduler.class);
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -46,24 +57,40 @@ public class AIPUpdateJobScheduler {
     @Autowired
     private AIPUpdateService aipUpdateService;
 
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    /**
+     * Update task
+     */
+    private final Task aipUpdateTask = () -> {
+        LockAssert.assertLocked();
+        aipUpdateService.scheduleJob();
+    };
+
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelayString = "${regards.ingest.aip.update.bulk.delay:10000}")
-    protected void handleQueue() {
-        //TODO what the fuck? create all job of one tenant and only then get to the next tenant?
-        // it is better not to do the do-while and decrease delay or invert for and do-while place
+    @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
+            fixedDelayString = "${regards.ingest.aip.update.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    protected void scheduleAIPUpdateJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                boolean stop = false;
-                do {
-                    stop = aipUpdateService.scheduleJob() == null;
-                } while (!stop);
+                traceScheduling(tenant, AIP_UPDATE_REQUESTS);
+                lockingTaskExecutors.executeWithLock(aipUpdateTask, new LockConfiguration(AIP_UPDATE_REQUEST_LOCK,
+                                                                                          Instant.now().plusSeconds(
+                                                                                                  MAX_TASK_DELAY)));
+            } catch (Throwable e) {
+                handleSchedulingError(AIP_UPDATE_REQUESTS, AIP_UPDATE_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 }

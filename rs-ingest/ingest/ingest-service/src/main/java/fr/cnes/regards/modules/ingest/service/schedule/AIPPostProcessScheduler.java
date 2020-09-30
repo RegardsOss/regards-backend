@@ -20,16 +20,25 @@
 
 package fr.cnes.regards.modules.ingest.service.schedule;
 
+import java.time.Instant;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
+import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Scheduler to handle created {@link AIPPostProcessRequest}
@@ -38,7 +47,10 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
  */
 @Profile("!noschedule")
 @Component
-public class AIPPostProcessScheduler {
+public class AIPPostProcessScheduler extends AbstractTaskScheduler {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AIPPostProcessScheduler.class);
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -46,30 +58,43 @@ public class AIPPostProcessScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IAIPPostProcessRequestRepository repo;
-
+    private AIPPostProcessService aipPostProcessService;
 
     @Autowired
-    private AIPPostProcessService aipPostProcessService;
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    /**
+     * Post process task
+     */
+    private final Task postProcessTask = () -> {
+        LockAssert.assertLocked();
+        aipPostProcessService.scheduleJob();
+    };
 
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(fixedDelayString = "${regards.aips.postprocess.bulk.delay:10000}", initialDelay = 1_000)
+    @Scheduled(initialDelayString = DEFAULT_INITIAL_DELAY,
+            fixedDelayString = "${regards.ingest.aip.post-process.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleAIPPostProcessingJobs() {
-        //TODO what the fuck? create all job of one tenant and only then get to the next tenant?
-        // it is better not to do the do-while and decrease delay or invert for and do-while place
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                boolean stop = false;
-                do {
-                    stop = aipPostProcessService.scheduleJob() == null;
-                } while (!stop);
+                traceScheduling(tenant, POST_PROCESS_REQUESTS);
+                lockingTaskExecutors.executeWithLock(postProcessTask, new LockConfiguration(POST_PROCESS_REQUEST_LOCK,
+                                                                                            Instant.now().plusSeconds(
+                                                                                                    MAX_TASK_DELAY)));
+            } catch (Throwable e) {
+                handleSchedulingError(POST_PROCESS_REQUESTS, POST_PROCESS_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }
 
