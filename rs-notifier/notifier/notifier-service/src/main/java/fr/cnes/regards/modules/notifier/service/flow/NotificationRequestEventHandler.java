@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
 
 /**
@@ -42,11 +42,11 @@ import fr.cnes.regards.modules.notifier.service.INotificationRuleService;
  */
 @Component
 @Profile("!nohandler")
-public class NotificationActionEventHandler
-        implements IBatchHandler<NotificationActionEvent>, ApplicationListener<ApplicationReadyEvent> {
+public class NotificationRequestEventHandler
+        implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationActionEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -58,25 +58,25 @@ public class NotificationActionEventHandler
     private INotificationRuleService notificationService;
 
     @Override
-    public Class<NotificationActionEvent> getMType() {
-        return NotificationActionEvent.class;
+    public Class<NotificationRequestEvent> getMType() {
+        return NotificationRequestEvent.class;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(NotificationActionEvent.class, this);
+        subscriber.subscribeTo(NotificationRequestEvent.class, this);
     }
 
     @Override
-    public boolean validate(String tenant, NotificationActionEvent message) {
+    public boolean validate(String tenant, NotificationRequestEvent message) {
         return true;
     }
 
     @Override
-    public void handleBatch(String tenant, List<NotificationActionEvent> messages) {
+    public void handleBatch(String tenant, List<NotificationRequestEvent> messages) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
-            notificationService.registerNotifications(messages);
+            notificationService.registerNotificationRequests(messages);
         } finally {
             runtimeTenantResolver.clearTenant();
         }

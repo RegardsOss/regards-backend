@@ -32,17 +32,16 @@ import fr.cnes.regards.framework.amqp.event.Target;
 /**
  * An event contain a JSON element plus an action
  * @author Kevin Marchois
- * FIXME: see if it is possible to change from NotificationActionEvent to NotificationRequestEvent and remove part of logic from fem
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class NotificationActionEvent extends AbstractRequestEvent implements ISubscribable {
+public class NotificationRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
     @NotNull(message = "JSON element is required")
     private JsonElement payload;
 
     private JsonElement metadata;
 
-    public NotificationActionEvent(JsonElement payload, JsonElement metadata, String requestId, String requestOwner) {
+    public NotificationRequestEvent(JsonElement payload, JsonElement metadata, String requestId, String requestOwner) {
         this.payload = payload;
         this.metadata = metadata;
         super.setRequestId(requestId);

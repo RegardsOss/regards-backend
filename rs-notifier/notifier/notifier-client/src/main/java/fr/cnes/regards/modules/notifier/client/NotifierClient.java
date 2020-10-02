@@ -4,10 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -19,7 +18,7 @@ public class NotifierClient implements INotifierClient {
     public IPublisher publisher;
 
     @Override
-    public void sendNotifications(List<NotificationActionEvent> notifications) {
+    public void sendNotifications(List<NotificationRequestEvent> notifications) {
         publisher.publish(notifications);
     }
 

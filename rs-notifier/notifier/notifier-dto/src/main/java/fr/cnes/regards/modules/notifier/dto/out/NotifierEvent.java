@@ -13,10 +13,13 @@ public class NotifierEvent implements ISubscribable {
 
     private String requestId;
 
+    private String requestOwner;
+
     private NotificationState state;
 
-    public NotifierEvent(String requestId, NotificationState state) {
+    public NotifierEvent(String requestId, String requestOwner, NotificationState state) {
         this.requestId = requestId;
+        this.requestOwner = requestOwner;
         this.state = state;
     }
 

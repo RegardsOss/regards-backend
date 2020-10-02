@@ -19,22 +19,44 @@
 package fr.cnes.regards.modules.notifier.dto.out;
 
 /**
- * @author kevin
+ * State diagram is:
+ * <pre>
+ *                  |
+ *          DENIED _|_ GRANTED
+ *                        |
+ *                 ERROR _|_ TO_SCHEDULE_BY_RECIPIENT <---------|
+ *                    |           |                             |
+ *                    |       SCHEDULED                         |
+ *                    |           |                             |
+ *                    |    ERROR _|_ SUCCESS                    |
+ *                    |______|__________________________________|
+ * </pre>
  *
+ * @author Sylvain Vissiere-Guerinet
  */
 public enum NotificationState {
     /**
      * Denied and not registered.
      */
     DENIED,
-    /** Accepted and registered. Waiting for job*/
+    /**
+     * Accepted and registered. Rule matching has not yet been done.
+     */
     GRANTED,
-    /** Scheduled by a job*/
+    /**
+     * Rule matching has been done. Jobs for each recipient should be scheduled(and created)
+     */
+    TO_SCHEDULE_BY_RECIPIENT,
+    /**
+     * Jobs for each recipient has been scheduled.
+     */
     SCHEDULED,
     /**
-     * Successfully sent
+     * All recipients have been successfully handled.
      */
     SUCCESS,
-    /** Failed during a job*/
+    /**
+     * At least one recipient have not been successfully handled.
+     */
     ERROR
 }

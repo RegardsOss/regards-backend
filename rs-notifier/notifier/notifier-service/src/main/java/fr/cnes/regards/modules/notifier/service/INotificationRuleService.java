@@ -19,14 +19,15 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.data.util.Pair;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
-import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Notification service interface
@@ -36,31 +37,41 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 public interface INotificationRuleService {
 
     /**
-     * Handle a list of {@link NotificationRequest} it can be CREATE/UPDATE/DELETE event
-     * Check if this event is compliant with a {@link Rule} and in that case notify all {@link Recipient} associated
-     * with this {@link Rule}
-     * If some {@link Recipient} failed we will save them
-     * If {@link RecipientError} exist for the jobInfoId we will only send notification to contained {@link Recipient}
-     * @param toHandles event to handle
-     * @param jobInfoId job id will be saved in case of failed {@link Recipient}
-     * @return pair of nbSended/nbErrors notifications
+     * Handle a list of {@link NotificationRequest}
+     * @param notificationRequests requests to handle
+     * @param recipient recipient to process
+     * @return pair of nbSent/nbErrors notifications
      */
-    Pair<Integer, Integer> processRequest(List<NotificationRequest> toHandles, UUID jobInfoId);
+    Pair<Integer, Integer> processRequest(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient);
 
     /**
-     * Register {@link NotificationActionEvent} to schedule notifications
+     * Register {@link NotificationRequestEvent} to schedule notifications
      */
-    void registerNotifications(List<NotificationActionEvent> events);
-
-    /**
-     * Schedule a job to process a batch of {@link NotificationRequest}<br/>
-     * @return number of scheduled notification (0 if no request was scheduled)
-     */
-    int scheduleRequests();
+    void registerNotificationRequests(List<NotificationRequestEvent> events);
 
     /**
      * Clean cache of rules. Need to be called after each configuration modification.
      */
     void cleanCache();
 
+    /**
+     * Match one page of {@link NotificationRequest} to multiple recipient({@link PluginConfiguration}) using all {@link Rule}s
+     * @return Pair representing how many notification have been matched to how many recipient (nbNotificationHandled, nbRecipient)
+     */
+    Pair<Integer, Integer> matchRequestNRecipient();
+
+    /**
+     * @param recipient recipient for which we want to schedule a {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob}
+     * @return 1 if there is {@link NotificationRequest} to schedule for this recipient, 0 otherwise
+     */
+    Set<Long> scheduleJobForOneRecipient(PluginConfiguration recipient);
+
+    /**
+     * Check whether a {@link NotificationRequest} is in success or not and notify its success
+     * @return number of request in success detected this time.
+     */
+    int checkSuccess();
+
+    void updateState(NotificationState state, Set<Long> ids);
 }

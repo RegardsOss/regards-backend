@@ -25,7 +25,6 @@ import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent10;
-import fr.cnes.regards.modules.notifier.service.NotificationJobIT;
 
 /**
  * @author kevin
@@ -35,9 +34,14 @@ import fr.cnes.regards.modules.notifier.service.NotificationJobIT;
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class RecipientSenderFail extends AbstractRecipientSender<NotificationEvent10> {
 
+    /**
+     * Yes this is only a public static and not final attribute. It allows tests to alter the logic without recreating a plugin configuration
+     */
+    public static boolean RECIPIENT_FAIL = false;
+
     @Override
     public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
-        if (NotificationJobIT.RECIPIENT_FAIL) {
+        if (RECIPIENT_FAIL) {
             return requestsToSend;
         } else {
             return Collections.emptySet();

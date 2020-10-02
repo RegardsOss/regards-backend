@@ -59,11 +59,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping(RuleController.RULE)
 public class RuleController implements IResourceController<RuleDTO> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
-
     public static final String RULE = "/rule";
 
     public static final String ID = "/{id}";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleController.class);
 
     @Autowired
     private IRuleService ruleService;
@@ -72,10 +72,8 @@ public class RuleController implements IResourceController<RuleDTO> {
     private IResourceService resourceService;
 
     /**
-     * Get all {@link Rule} from database the result will be paginated and transformed to {@link RuleDto}
-     * @param page
-     * @param assembler
-     * @return paged list of {@link RuleDto}
+     * Get all {@link Rule} from database the result will be paginated and transformed to {@link RuleDTO}
+     * @return paged list of {@link RuleDTO}
      */
     @ResourceAccess(description = "List all Rules")
     @RequestMapping(method = RequestMethod.GET)
@@ -108,7 +106,6 @@ public class RuleController implements IResourceController<RuleDTO> {
     /**
      * Update a {@link Rule}
      * @return the updated {@link Rule}
-     * @throws ModuleException if unkow id
      */
     @ResourceAccess(description = "Update a Rule")
     @RequestMapping(method = RequestMethod.PUT)
@@ -122,14 +119,13 @@ public class RuleController implements IResourceController<RuleDTO> {
     }
 
     /**
-     * Delete a {@link Recipient}
-     * @throws ModuleException
+     * Delete a {@link Rule}
      */
     @ResourceAccess(description = "Delete a rule")
     @RequestMapping(path = ID, method = RequestMethod.DELETE)
     @Operation(summary = "Delete a rule", description = "Delete a rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
-    public ResponseEntity<Void> deleteRecipient(@PathVariable("id") String id) throws ModuleException {
+    public ResponseEntity<Void> deleteRule(@PathVariable("id") String id) throws ModuleException {
         this.ruleService.deleteRule(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -137,13 +133,25 @@ public class RuleController implements IResourceController<RuleDTO> {
     @Override
     public EntityModel<RuleDTO> toResource(RuleDTO element, Object... extras) {
         EntityModel<RuleDTO> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "getRules", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getRules",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Pageable.class));
-        resourceService.addLink(resource, this.getClass(), "createRule", LinkRels.CREATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "createRule",
+                                LinkRels.CREATE,
                                 MethodParamFactory.build(RuleDTO.class, element));
-        resourceService.addLink(resource, this.getClass(), "updateRule", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateRule",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(RuleDTO.class, element));
-        resourceService.addLink(resource, this.getClass(), "deleteRule", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteRule",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, element.getId()));
         return resource;
     }

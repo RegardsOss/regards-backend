@@ -35,7 +35,7 @@ public interface IRecipientNotifier {
     /**
      *
      * @param requestsToSend {@link NotificationRequest} to send
-     * @return notification request that could not be handled i.e. error occured
+     * @return notification request that could not be handled i.e. error occurred
      */
     Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend);
 

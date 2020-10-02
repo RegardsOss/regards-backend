@@ -31,13 +31,14 @@ import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Performance tests on Notification manager
- * @author Kevin Marchois
+ * Performance tests on Notification manager.
+ * Notifier should be able to send 10_000 notifications in 2 min
  *
+ * @author Kevin Marchois
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf",
         "regards.amqp.enabled=true" },
@@ -50,21 +51,22 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     public void testRegistrationAndProcessing()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
 
-        JsonElement element = initElement("element.json");
+        JsonElement element = initElement("elementRule1.json");
 
         initPlugins(false);
 
-        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
+        List<NotificationRequestEvent> events = new ArrayList<>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(new NotificationActionEvent(element,
-                                                   gson.toJsonTree("CREATE"),
-                                                   AbstractRequestEvent.generateRequestId(),
-                                                   "NotificationPerfIT"));
+            events.add(new NotificationRequestEvent(element,
+                                                    gson.toJsonTree("CREATE"),
+                                                    AbstractRequestEvent.generateRequestId(),
+                                                    "NotificationPerfIT"));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
         waitDatabaseCreation(this.notificationRepo, configuration.getMaxBulkSize(), 60);
-        this.notificationService.scheduleRequests();
+        //        this.notificationService.scheduleRequests();
+        //TODO
         // all send should work so we should have 0 NotificationAction left in database
         waitDatabaseCreation(this.notificationRepo, 0, 60);
         assertEquals(0, this.recipientErrorRepo.count());
@@ -74,20 +76,21 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     @Test
     public void testRegistrationAndProcessingWith1RecipientFail()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
-        JsonElement element = initElement("element.json");
+        JsonElement element = initElement("elementRule1.json");
         initPlugins(true);
 
-        List<NotificationActionEvent> events = new ArrayList<NotificationActionEvent>();
+        List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();
         for (int i = 0; i < configuration.getMaxBulkSize(); i++) {
-            events.add(new NotificationActionEvent(element, gson.toJsonTree("CREATE"),
-                                                     AbstractRequestEvent.generateRequestId(),
-                                                     "NotificationPerfIT"));
+            events.add(new NotificationRequestEvent(element,
+                                                    gson.toJsonTree("CREATE"),
+                                                    AbstractRequestEvent.generateRequestId(),
+                                                    "NotificationPerfIT"));
         }
         this.publisher.publish(events);
         // we should have  configuration.getMaxBulkSize() NotificationAction in database
         waitDatabaseCreation(this.notificationRepo, configuration.getMaxBulkSize(), 60);
-        this.notificationService.scheduleRequests();
-
+        //        this.notificationService.scheduleRequests();
+        //TODO
         // we will wait util configuration.getMaxBulkSize() recipient errors are stored in database
         // cause one of the RECIPIENTS_PER_RULE will fail so we will get 1 error per NotificationAction to send
         waitDatabaseCreation(this.recipientErrorRepo, configuration.getMaxBulkSize(), 60);

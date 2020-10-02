@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.notifier.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
- * REST interface for managing data {@link Recipient}
+ * REST interface for managing data {@link PluginConfiguration}(recipient)
  * @author kevin marchois
  * @author Sébastien Binda
  *
@@ -60,11 +59,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping(RecipientController.RECIPIENT)
 public class RecipientController implements IResourceController<PluginConfiguration> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
-
     public static final String RECIPIENT = "/recipient";
 
     public static final String ID = "/{id}";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecipientController.class);
 
     @Autowired
     private IRecipientService recipientService;
@@ -73,10 +72,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
     private IResourceService resourceService;
 
     /**
-     * Get all {@link Recipient} from database the result will be paginated and transformed to {@link RecipientDto}
-     * @param page
-     * @param assembler
-     * @return paged list of {@link RecipientDto}
+     * Get all {@link PluginConfiguration}(recipient) from database the result will be paginated
+     * @return paged list of {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "List all recipient")
     @RequestMapping(method = RequestMethod.GET)
@@ -89,8 +86,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
     }
 
     /**
-     * Create a {@link Recipient}
-     * @return the created {@link Recipient}
+     * Create a {@link PluginConfiguration}(recipient)
+     * @return the created {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Create a recipient")
     @RequestMapping(method = RequestMethod.POST)
@@ -108,9 +105,8 @@ public class RecipientController implements IResourceController<PluginConfigurat
     }
 
     /**
-     * Update a {@link Recipient}
-     * @return the updated {@link Recipient}
-     * @throws ModuleException if unknow id
+     * Update a {@link PluginConfiguration}(recipient)
+     * @return the updated {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Update a recipient")
     @RequestMapping(method = RequestMethod.PUT)
@@ -124,8 +120,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
     }
 
     /**
-     * Delete a {@link Recipient}
-     * @throws ModuleException
+     * Delete a {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Delete a recipient")
     @RequestMapping(path = ID, method = RequestMethod.DELETE)
@@ -142,13 +137,25 @@ public class RecipientController implements IResourceController<PluginConfigurat
     public EntityModel<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
 
         EntityModel<PluginConfiguration> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "getRecipients", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getRecipients",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Pageable.class));
-        resourceService.addLink(resource, this.getClass(), "createRecipient", LinkRels.CREATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "createRecipient",
+                                LinkRels.CREATE,
                                 MethodParamFactory.build(PluginConfiguration.class, element));
-        resourceService.addLink(resource, this.getClass(), "updateRecipient", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateRecipient",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(PluginConfiguration.class, element));
-        resourceService.addLink(resource, this.getClass(), "deleteRecipient", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteRecipient",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, element.getBusinessId()));
         return resource;
     }
