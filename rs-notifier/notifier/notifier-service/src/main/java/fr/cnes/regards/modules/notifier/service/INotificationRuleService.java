@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.util.Pair;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
@@ -45,10 +48,16 @@ public interface INotificationRuleService {
     Pair<Integer, Integer> processRequest(List<NotificationRequest> notificationRequests,
             PluginConfiguration recipient);
 
+    Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError);
+
     /**
      * Register {@link NotificationRequestEvent} to schedule notifications
      */
     void registerNotificationRequests(List<NotificationRequestEvent> events);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Set<NotificationRequestEvent> handleRetryRequests(List<NotificationRequestEvent> events);
 
     /**
      * Clean cache of rules. Need to be called after each configuration modification.

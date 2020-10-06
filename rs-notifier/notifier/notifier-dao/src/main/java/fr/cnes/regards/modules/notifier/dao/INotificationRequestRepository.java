@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 public interface INotificationRequestRepository extends JpaRepository<NotificationRequest, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"recipientsScheduled", "recipientsInError", "recipientsToSchedule"})
+    @EntityGraph(attributePaths = {"recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch"})
     List<NotificationRequest> findAllById(Iterable<Long> ids);
 
     @EntityGraph(attributePaths = {"recipientsToSchedule", "recipientsScheduled"})
@@ -60,19 +60,20 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
     @Query("Update NotificationRequest notif set notif.state = :state Where notif.id in :ids")
     void updateState(@Param("state") NotificationState state, @Param("ids") Set<Long> ids);
 
-    //TODO: check that hibernate is able to handle this request alone or if we should help it (pagination with join on other table
+    //TODO: check that hibernate is able to handle this request alone or if we should help it (pagination with join on other table)
     @EntityGraph(attributePaths = {"recipientsToSchedule", "recipientsScheduled"})
     Page<NotificationRequest> findPageByStateAndRecipientsToScheduleContaining(NotificationState state,
             PluginConfiguration recipient, Pageable pageable);
 
-    //TODO: check that hibernate is able to handle this request alone or if we should help it (pagination with join on other table
+    //TODO: check that hibernate is able to handle this request alone or if we should help it (pagination with join on other table)
     // In query we check whether recipientsToSchedule is empty last because we consider that check success will only be called
     // after at least one recipient has been scheduled. So it is more likely that recipientsScheduled or recipientsInError
     // are not empty rather than recipientsToSchedule
     @Query("select nr from NotificationRequest nr where nr.state = :state and nr.recipientsScheduled is empty and"
-            + " nr.recipientsInError is empty and nr.recipientsToSchedule is empty")
-    Page<NotificationRequest> findByStateByRecipientsToScheduleEmptyByRecipientsScheduledEmptyByRecipientsInErrorEmpty(
+            + " nr.recipientsInError is empty and nr.recipientsToSchedule is empty and nr.rulesToMatch is empty")
+    Page<NotificationRequest> findByStateAndRecipientsScheduledEmptyAndRecipientsInErrorEmptyAndRecipientsToScheduleEmptyAndRulesToMatchEmpty(
             @Param("state") NotificationState state, Pageable pageable);
 
-    Set<NotificationRequest> findAllByStateAndRequestIdIn(NotificationState state, Set<String> requestIds);
+    @EntityGraph(attributePaths = {"recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch"})
+    Set<NotificationRequest> findAllByRequestIdIn(Set<String> requestsIds);
 }

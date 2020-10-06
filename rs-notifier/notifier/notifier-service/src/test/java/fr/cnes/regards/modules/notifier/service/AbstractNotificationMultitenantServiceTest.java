@@ -85,6 +85,8 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     // used to param if the test Recipient will fail
     public static boolean RECIPIENT_FAIL = true;
 
+    protected final String REQUEST_OWNER = this.getClass().getSimpleName();
+
     @Autowired
     protected IRuleRepository ruleRepo;
 
@@ -135,9 +137,9 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         RECIPIENT_FAIL = true;
         this.notificationService.cleanTenantCache(runtimeTenantResolver.getTenant());
         this.recipientErrorRepo.deleteAll();
+        this.notificationRepo.deleteAll();
         this.ruleRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
-        this.notificationRepo.deleteAll();
         this.jobInforepo.deleteAll();
         simulateApplicationReadyEvent();
     }
