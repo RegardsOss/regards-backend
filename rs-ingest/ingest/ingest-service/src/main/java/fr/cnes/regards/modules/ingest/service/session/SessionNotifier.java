@@ -15,6 +15,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.sessionmanager.client.ISessionNotificationClient;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
@@ -229,8 +230,6 @@ public class SessionNotifier {
             // Load with AIPs
             Optional<IngestRequest> oReq = ingestRequestRepository.findById(request.getId());
             if (oReq.isPresent()) {
-                // We can decrement the number of products
-                decrementProductStore(oReq.get());
                 // If request is in error status then we can decrement the number of generation error
                 if (request.getState() == InternalRequestState.ERROR) {
                     ingestRequestErrorDeleted(oReq.get());
@@ -263,6 +262,10 @@ public class SessionNotifier {
                 case REMOTE_STORAGE_DENIED:
                 case REMOTE_STORAGE_ERROR:
                     decrementProductStoreError(request);
+                    break;
+                case LOCAL_TO_BE_NOTIFIED:
+                case REMOTE_NOTIFICATION_ERROR:
+                    // Nothing to do, Notification step failed, product is correctly stored. Session is not impacted
                     break;
                 default:
                     break;

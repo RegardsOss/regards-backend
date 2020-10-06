@@ -21,14 +21,13 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 
 /**
  * This controller manages Dumps

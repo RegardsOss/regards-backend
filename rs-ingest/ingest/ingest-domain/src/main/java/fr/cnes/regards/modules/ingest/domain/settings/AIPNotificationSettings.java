@@ -31,7 +31,7 @@ import java.util.Objects;
  * @author Iliana Ghazali
  */
 @Entity
-@Table(name = "t_notification_settings")
+@Table(name = "t_aip_notification_settings")
 public class AIPNotificationSettings {
 
     // only one setting per tenant
@@ -45,7 +45,7 @@ public class AIPNotificationSettings {
      * To notify changes on aip requests
      */
     @Column(name = "active_notifications", nullable = false)
-    private boolean activeNotification = true;
+    private boolean activeNotification = false;
 
     public boolean isActiveNotification() {
         return activeNotification;

@@ -59,6 +59,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>gson-regards</artifactId>
 		</dependency>
+		<dependency>
+			<artifactId>notifier-dto</artifactId>
+			<groupId>fr.cnes.regards.modules.notifier</groupId>
+		</dependency>
 		<!--<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-data-regards</artifactId>

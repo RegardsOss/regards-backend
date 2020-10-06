@@ -38,9 +38,15 @@ public enum RequestTypeEnum {
     AIP_UPDATES_CREATOR(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE),
 
     /**
-     * Dump AIP metadatas
+     * Dump AIP metadata
      */
     AIP_SAVE_METADATA(RequestTypeConstant.AIP_SAVE_METADATA_VALUE),
+
+    /**
+     * Postprocess AIPs
+     */
+    AIP_POST_PROCESS(RequestTypeConstant.AIP_POST_PROCESS_VALUE),
+
     /**
      * 1 OAIS (SIP and AIP) Remove request
      */

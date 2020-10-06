@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 
 /**
  * {@link DumpController} REST API test

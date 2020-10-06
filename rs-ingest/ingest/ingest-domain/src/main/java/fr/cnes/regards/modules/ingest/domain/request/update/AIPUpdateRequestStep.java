@@ -16,25 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.request.deletion;
+
+
+package fr.cnes.regards.modules.ingest.domain.request.update;
 
 /**
- * Available steps to follow to properly handle SIP/AIP deletion
- *
- * @author Sébastien Binda
+ * Available steps to notify AIP updates
+ * @author Iliana Ghazali
  */
-public enum DeletionRequestStep {
+
+public enum AIPUpdateRequestStep {
 
     INITIAL,
-
-    STORAGE_DELETION_REQUESTED,
-
-    STORAGE_DELETION_ERROR,
 
     /** For notification */
 
     LOCAL_TO_BE_NOTIFIED,
 
     REMOTE_NOTIFICATION_ERROR;
-
 }

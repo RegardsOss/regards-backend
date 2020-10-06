@@ -71,7 +71,7 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
         Optional<AIPNotificationSettings> settingsOpt = notificationSettingsRepository.findFirstBy();
         Assert.assertTrue("Settings were not initialized properly",
                           settingsOpt.isPresent() && notificationSettings.equals(settingsOpt.get()));
-        Assert.assertTrue("active_notifications was initialized with default value",
+        Assert.assertEquals("active_notifications was initialized with default value", false,
                           settingsOpt.get().isActiveNotification());
     }
 
