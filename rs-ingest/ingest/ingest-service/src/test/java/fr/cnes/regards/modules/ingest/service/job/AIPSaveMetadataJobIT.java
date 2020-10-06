@@ -23,11 +23,12 @@ package fr.cnes.regards.modules.ingest.service.job;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -41,7 +42,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.dump.DumpService;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -58,8 +58,9 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
-import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataService;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
+import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataJobTask;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -186,9 +187,18 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         // Check folder target/workspace/<microservice>/ does not contain dump
         Assert.assertEquals(0, this.dumpLocation.toFile().listFiles().length);
         dumpConfRepo.deleteById(DumpConfiguration.DUMP_CONF_ID);
-
-
     }
+
+    @Test
+    @Purpose("Test scheduler task")
+    public void testTask() throws ExecutionException, InterruptedException {
+        // launch task
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(new AIPSaveMetadataJobTask(saveMetadataService, getDefaultTenant(), runtimeTenantResolver)).get();
+        // test dump was created properly
+        checkDumpSuccess();
+    }
+
 
     private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {
         // Run Job and wait for end

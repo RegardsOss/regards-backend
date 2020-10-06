@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.aip;
+package fr.cnes.regards.modules.ingest.service.dump;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -60,7 +60,7 @@ public class AIPSaveMetadataService {
     @Autowired
     private JobInfoService jobInfoService;
 
-    @Value("${regards.dump.aips.cron.expression:0 0 0 ? * SUN *}")
+    @Value("${regards.dump.aips.cron.expression:0 0 0 ? * 1#1 *}")
     private String cron;
 
     /**

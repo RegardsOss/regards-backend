@@ -50,14 +50,13 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
  *
  * @author Iliana Ghazali
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_test",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_it",
         "regards.amqp.enabled=true", "regards.dump.zip-limit = 3" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
@@ -79,7 +78,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
-    IAIPMetadataService metadataService;
+    private IAIPMetadataService metadataService;
 
     @Autowired
     private StorageClientMock storageClient;
@@ -96,8 +95,10 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         jobInfoRepository.deleteAll();
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpConfiguration(true, "", "target/dump",null);
+        conf = new DumpConfiguration(true, "", "target/dump", null);
         dumpConf.save(conf);
+        // no notification
+        initNotificationSettings(false);
     }
 
     @Test
@@ -108,7 +109,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         int nbAIPToDump = nbSIP * 4 / 5;
 
         // Create aips and update aip dates
-        storageClient.setBehavior(true, true);
         initData(nbSIP);
         updateAIPLastUpdateDate(nbAIPToDump);
 
@@ -162,6 +162,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     }
 
     public void initData(int nbSIP) {
+        storageClient.setBehavior(true, true);
         for (int i = 0; i < nbSIP; i++) {
             publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
                             getRandomSession(), getRandomSessionOwner(), getRandomCategories());
@@ -172,7 +173,8 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
-        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate, this.conf.getDumpLocation());
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate,
+                                                                                   this.conf.getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         return aipSaveMetadataRequest;
     }

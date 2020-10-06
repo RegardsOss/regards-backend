@@ -33,7 +33,5 @@ import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
 @Repository
 public interface IDumpConfigurationRepository extends JpaRepository<DumpConfiguration, Long> {
 
-    Optional<DumpConfiguration> findById(Long id);
-
 }
 

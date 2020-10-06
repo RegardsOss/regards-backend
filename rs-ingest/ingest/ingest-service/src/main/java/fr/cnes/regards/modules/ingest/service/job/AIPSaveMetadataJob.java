@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 
 /**
  * @author Iliana Ghazali
