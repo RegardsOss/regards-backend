@@ -19,15 +19,12 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
+import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -41,6 +38,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -52,6 +50,7 @@ import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 
 /**
@@ -78,6 +77,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private IAIPNotificationService aipNotificationService;
 
     private IngestProcessingChain ingestChain;
 
@@ -152,6 +154,9 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         int sipIngested = 0;
         int sipInError = 0;
 
+        // To notify again ingest request with NOTIFICATION_ERROR step
+        Set<AbstractRequest> notificationRequests = Sets.newHashSet();
+
         for (IngestRequest request : requests) {
             //FIXME add logic to handle interruption
             this.request = request;
@@ -192,6 +197,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         // if request already exists anyway it will be retried
                         ingestRequestService.requestRemoteStorage(request);
 
+                        break;
+                    case REMOTE_NOTIFICATION_ERROR:
+                        // add request to list of requests to be notified again
+                        notificationRequests.add(request);
                         break;
                     default:
                         logger.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
@@ -236,6 +245,11 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                          System.currentTimeMillis() - start);
         } else {
             logger.info("{}{} SIP(s) INGESTED in {} ms", INFO_TAB, sipIngested, System.currentTimeMillis() - start);
+        }
+
+        // if there are requests to be notified again, send them to notifier
+        if(!notificationRequests.isEmpty()) {
+            aipNotificationService.sendRequestsToNotifier(notificationRequests);
         }
     }
 

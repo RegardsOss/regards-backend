@@ -19,10 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +27,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -43,12 +40,16 @@ import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.job.step.IUpdateStep;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPLocation;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
+import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
+import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
@@ -60,7 +61,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     public static final String UPDATE_REQUEST_IDS = "UPDATE_REQUEST_IDS";
 
-    private ListMultimap<String, AIPUpdateRequest> requestByAIP;
+    private List<AIPUpdateRequest> requests;
+
+    private int completionCount;
 
     @Autowired
     private IAIPService aipService;
@@ -76,6 +79,12 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
+
+    @Autowired
+    private AIPNotificationService aipNotificationService;
+
+    @Autowired
+    private AIPNotificationSettingsService aipNotificationSettingsService;
 
     private static int compareUpdateRequests(AIPUpdateRequest r1, AIPUpdateRequest r2) {
         // sort by type of task
@@ -96,23 +105,60 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         }.getType();
         List<Long> updateRequestIds = getValue(parameters, UPDATE_REQUEST_IDS, type);
         // Retrieve list of update requests to handle
-        List<AIPUpdateRequest> requests = aipUpdateRequestRepository.findAllById(updateRequestIds);
-        // Save request by aip to edit
-        requestByAIP = ArrayListMultimap.create();
-        for (AIPUpdateRequest request : requests) {
-            requestByAIP.put(request.getAip().getAipId(), request);
-        }
+        this.requests = aipUpdateRequestRepository.findAllById(updateRequestIds);
+
     }
 
     @Override
     public void run() {
-        logger.debug("[AIP UPDATE JOB] Running job for {} AIPUpdateRequest(s) requests", requestByAIP.size());
+        // INIT
+        int nbRequestsToHandle = this.requests.size(); // nb of requests to handle (retry requests + updates)
+        logger.debug("[AIP UPDATE JOB] Running job for {} AIPUpdateRequest(s) requests", nbRequestsToHandle);
         long start = System.currentTimeMillis();
+
+        // UPDATE RETRY
+        // filter out requests with notification step (in case of retry)
+        Set<AbstractRequest> notificationRetryRequests;
+        notificationRetryRequests = requests.stream()
+                .filter(req -> req.getStep() == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
+                .collect(Collectors.toSet());
+        if (!notificationRetryRequests.isEmpty()) {
+            // remove notifications from requests to process and send them again
+            this.requests.removeAll(notificationRetryRequests);
+            aipNotificationService.sendRequestsToNotifier(notificationRetryRequests);
+        }
+
+        // UPDATE AIPs
+        if(!this.requests.isEmpty()) {
+            // save request by aip to edit
+            ListMultimap<String, AIPUpdateRequest> requestByAIP = ArrayListMultimap.create();
+            for (AIPUpdateRequest request : this.requests) {
+                requestByAIP.put(request.getAip().getAipId(), request);
+            }
+            this.completionCount = requestByAIP.keySet().size();
+            // run process of update
+            updateAIPs(requestByAIP);
+        }
+
+        logger.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", nbRequestsToHandle,
+                     System.currentTimeMillis() - start);
+    }
+
+    /**
+     * Update AIPs
+     */
+    private void updateAIPs(ListMultimap<String, AIPUpdateRequest> requestByAIP) {
         List<AIPEntity> updates = new ArrayList<>();
+        Set<AbstractRequest> requestsToNotify = Sets.newHashSet();
         long numberOfDeletionRequest = 0L;
+
+        // See if notifications are required
+        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
+        boolean isToNotify = notificationSettings.isActiveNotification();
+
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP
-            List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId);
+            List<AIPUpdateRequest> updateRequests = getOrderedTaskList(aipId, requestByAIP);
             if (Thread.currentThread().isInterrupted()) {
                 updateRequests.forEach(ur -> ur.setState(InternalRequestState.ABORTED));
             } else {
@@ -120,8 +166,13 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                 AIPEntityUpdateWrapper aipWrapper = runUpdates(updateRequests);
                 // Did something change in the AIP?
                 if (!aipWrapper.isPristine()) {
-                    // Save the AIP threw the service
+                    // Save the AIP through the service
                     updates.add(aipWrapper.getAip());
+                    // if notifications are required
+                    if(isToNotify) {
+                        // add request to list of requests with aip successfully modified
+                        requestsToNotify.addAll(updateRequests);
+                    }
                     // Wrapper also collect events
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
@@ -141,18 +192,28 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         boolean interrupted = Thread.interrupted();
 
         logger.info(this.getClass().getSimpleName() + ": {} file deletion requested.", numberOfDeletionRequest);
+
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> (request.getState() != InternalRequestState.ERROR)
-                        && (request.getState() != InternalRequestState.ABORTED))
-                .collect(Collectors.toList());
-        aipUpdateRequestRepository.deleteAll(succeedRequestsToDelete);
+                .filter(request -> (request.getState() != InternalRequestState.ERROR) && (request.getState()
+                        != InternalRequestState.ABORTED)).collect(Collectors.toList());
+
+        // If notifications are active, send them to notifier
+        // remark : only requests corresponding to modified aip are notified
+        if (isToNotify && !requestsToNotify.isEmpty()) {
+            succeedRequestsToDelete.removeAll(requestsToNotify);
+            aipNotificationService.sendRequestsToNotifier(requestsToNotify);
+        }
+
+        // Delete update requests successfully processed (except requests to notify if parameter is active)
+        if (!succeedRequestsToDelete.isEmpty()) {
+            requestService.deleteRequests(Sets.newHashSet(succeedRequestsToDelete));
+        }
 
         // Save ERROR requests
         List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> (request.getState() == InternalRequestState.ERROR)
-                        || (request.getState() == InternalRequestState.ABORTED))
-                .collect(Collectors.toList());
+                .filter(request -> (request.getState() == InternalRequestState.ERROR) || (request.getState()
+                        == InternalRequestState.ABORTED)).collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
@@ -162,10 +223,11 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             Thread.currentThread().interrupt();
         }
 
-        logger.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", requestByAIP.size(),
-                     System.currentTimeMillis() - start);
     }
 
+    /**
+     * Run update tasks
+     */
     private AIPEntityUpdateWrapper runUpdates(List<AIPUpdateRequest> updateRequests) {
         // Initializing update steps
 
@@ -220,7 +282,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         return aip;
     }
 
-    private List<AIPUpdateRequest> getOrderedTaskList(String aipId) {
+    private List<AIPUpdateRequest> getOrderedTaskList(String aipId, ListMultimap<String, AIPUpdateRequest> requestByAIP) {
         List<AIPUpdateRequest> aipUpdateRequests = requestByAIP.get(aipId);
         aipUpdateRequests.sort(AIPUpdateRunnerJob::compareUpdateRequests);
         return aipUpdateRequests;
@@ -228,7 +290,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return requestByAIP.keys().size();
+        return this.completionCount;
     }
 
 }

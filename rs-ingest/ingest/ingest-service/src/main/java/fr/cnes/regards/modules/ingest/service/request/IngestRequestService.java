@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
@@ -73,6 +74,8 @@ import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties
 import fr.cnes.regards.modules.ingest.service.job.ChooseVersioningJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -129,6 +132,12 @@ public class IngestRequestService implements IIngestRequestService {
     @Autowired
     private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
+    @Autowired
+    private IAIPNotificationSettingsService aipNotificationSettingsService;
+
+    @Autowired
+    private IAIPNotificationService aipNotificationService;
+
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
 
@@ -141,11 +150,8 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false,
-                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                                      jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
@@ -175,9 +181,9 @@ public class IngestRequestService implements IIngestRequestService {
                 List<IngestRequest> requests = loadByIds(ids);
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
-                String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
-                                               jobEvent.getJobId(),
-                                               jobEvent.getJobEventType());
+                String message = String
+                        .format("Ingest request job with id \"%s\" fails with status \"%s\"", jobEvent.getJobId(),
+                                jobEvent.getJobEventType());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
@@ -196,10 +202,8 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.GRANTED,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.GRANTED, request.getErrors()));
     }
 
     @Override
@@ -207,10 +211,8 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.DENIED,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.DENIED, request.getErrors()));
     }
 
     @Override
@@ -342,8 +344,8 @@ public class IngestRequestService implements IIngestRequestService {
         for (IngestRequest request : requests) {
             if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 // Update AIPs with meta returned by storage
-                aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
-                                                                     requestInfo.getSuccessRequests());
+                aipStorageService
+                        .updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
                 // Check if there is another storage request we're waiting for
                 List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                 if (!remoteStepGroupIds.isEmpty()) {
@@ -373,11 +375,10 @@ public class IngestRequestService implements IIngestRequestService {
             return;
         }
 
-        // Clean
-        deleteRequest(requests);
-
         List<AbstractRequest> toSchedule = Lists.newArrayList();
         Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
+        SIPEntity sipEntity;
+        List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
         for (IngestRequest request : requests) {
             Optional<IngestProcessingChain> chain = processingChainRepository
@@ -394,7 +395,7 @@ public class IngestRequestService implements IIngestRequestService {
                     if (postProcessToSchedule.get(chain.get()) != null) {
                         postProcessToSchedule.get(chain.get()).add(aipEntity);
                     } else {
-                        postProcessToSchedule.put(chain.get(),Sets.newHashSet(aipEntity) );
+                        postProcessToSchedule.put(chain.get(), Sets.newHashSet(aipEntity));
                     }
                 }
             }
@@ -408,16 +409,27 @@ public class IngestRequestService implements IIngestRequestService {
             sessionNotifier.incrementProductStoreSuccess(request);
 
             // Update SIP state
-            SIPEntity sipEntity = aips.get(0).getSip();
+            sipEntity = aips.get(0).getSip();
             sipEntity.setState(SIPState.STORED);
             sipService.save(sipEntity);
-            // Publish SUCCESSFUL request
-            publisher
-                    .publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                      sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
+
+            // add ingest request event to list of ingest request events to publish
+            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
+                                                                 sipEntity.getSipId(), RequestState.SUCCESS));
         }
 
-        // Create post process
+        // NOTIFICATIONS
+        // check if notifications are required - if true send to notifier, if false publish events and delete requests
+        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
+        if (notificationSettings.isActiveNotification()) {
+            // Change the step of the request
+            aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(requests));
+        } else {
+            publisher.publish(listIngestRequestEvents);
+            requestService.deleteRequests(Sets.newHashSet(requests));
+        }
+
+        // POSTPROCESS
         for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
             for (AIPEntity aip : es.getValue()) {
                 AIPPostProcessRequest req = AIPPostProcessRequest
@@ -425,10 +437,8 @@ public class IngestRequestService implements IIngestRequestService {
                 toSchedule.add(aipPostProcessRequestRepository.save(req));
             }
         }
-
         requestService.scheduleRequests(toSchedule);
     }
-
 
     @Override
     public void handleRemoteStoreError(IngestRequest request, RequestInfo requestInfo) {
@@ -460,7 +470,8 @@ public class IngestRequestService implements IIngestRequestService {
         Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
-            if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+            if (iReq.getStep()
+                    == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
                 for (RequestInfo ri : requests.stream()
                         .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
                         .collect(Collectors.toSet())) {
@@ -519,8 +530,8 @@ public class IngestRequestService implements IIngestRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(), jobParameters,
-                                      authResolver.getUser(), ChooseVersioningJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
+                                      jobParameters, authResolver.getUser(), ChooseVersioningJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", ChooseVersioningJob.class.getName(), jobInfo.getId());
     }
@@ -535,16 +546,14 @@ public class IngestRequestService implements IIngestRequestService {
             handleRequestGranted(request);
             ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
         }
-        ingestRequestToSchedulePerChain.keySet().forEach(chain -> scheduleIngestProcessingJobByChain(chain,
-                                                                                                     ingestRequestToSchedulePerChain
-                                                                                                             .get(chain)));
+        ingestRequestToSchedulePerChain.keySet().forEach(
+                chain -> scheduleIngestProcessingJobByChain(chain, ingestRequestToSchedulePerChain.get(chain)));
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
-                                       request.getRequestId(),
-                                       request.getSip().getId()));
+                                       request.getRequestId(), request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
@@ -554,10 +563,8 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null,
-                                                   null,
-                                                   RequestState.ERROR,
-                                                   request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null, null,
+                                                   RequestState.ERROR, request.getErrors()));
     }
 
     /**
@@ -583,21 +590,6 @@ public class IngestRequestService implements IIngestRequestService {
             request.setJobInfo(jobInfo);
         }
         return ingestRequestRepository.save(request);
-    }
-
-    /**
-     * Delete the given {@link IngestRequest} and unlock associated jobs.
-     * @param requests
-     */
-    public void deleteRequest(Collection<IngestRequest> requests) {
-        for (IngestRequest request : requests) {
-            if ((request.getJobInfo() != null) && !request.getJobInfo().isLocked()) {
-                JobInfo jobInfoToUnlock = request.getJobInfo();
-                jobInfoToUnlock.setLocked(false);
-                jobInfoService.save(jobInfoToUnlock);
-            }
-        }
-        ingestRequestRepository.deleteAll(requests);
     }
 
     private void updateRequestWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,

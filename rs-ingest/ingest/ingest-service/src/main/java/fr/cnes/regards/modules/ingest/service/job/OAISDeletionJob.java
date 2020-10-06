@@ -21,18 +21,22 @@ package fr.cnes.regards.modules.ingest.service.job;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 
 /**
@@ -54,11 +58,15 @@ public class OAISDeletionJob extends AbstractJob<Void> {
     @Autowired
     private OAISDeletionService oaisDeletionRequestService;
 
+    @Autowired
+    private AIPNotificationService aipNotificationService;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<List<Long>>() {
+
         }.getType();
         List<Long> deleteRequestIds = getValue(parameters, OAIS_DELETION_REQUEST_IDS, type);
         // Retrieve list of AIP save metadata requests to handle
@@ -67,10 +75,29 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("Running job for {} OAISDeletionRequest(s) requests", requests.size());
+        // INIT
+        int nbRequestsToHandle = this.requests.size(); // nb of requests to handle (retry requests + deletions)
+        logger.debug("Running job for {} OAISDeletionRequest(s) requests", nbRequestsToHandle);
         long start = System.currentTimeMillis();
-        oaisDeletionRequestService.runDeletion(requests);
-        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms", requests.size(),
+
+        // NOTIFICATION RETRY
+        // filter out requests with notification step (in case of retry)
+        Set<AbstractRequest> notificationRetryRequests = requests.stream()
+                .filter(req -> req.getStep() == DeletionRequestStep.REMOTE_NOTIFICATION_ERROR)
+                .collect(Collectors.toSet());
+        if (!notificationRetryRequests.isEmpty()) {
+            // remove notifications from requests to process and send them again
+            this.requests.removeAll(notificationRetryRequests);
+            aipNotificationService.sendRequestsToNotifier(notificationRetryRequests);
+        }
+
+        // DELETION
+        if (!this.requests.isEmpty()) {
+            // run process of deletion
+            oaisDeletionRequestService.runDeletion(requests);
+        }
+
+        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms", nbRequestsToHandle,
                      System.currentTimeMillis() - start);
     }
 

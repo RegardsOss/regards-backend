@@ -23,22 +23,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.persistence.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.validation.Valid;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.Parameter;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionPayload;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
@@ -49,6 +49,13 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 @Entity(name = RequestTypeConstant.UPDATE_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPUpdateRequest extends AbstractRequest {
+
+    /**
+     * request configuration
+     */
+    @Column(columnDefinition = "jsonb", name = "payload")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private AIPUpdatePayload config;
 
     //CascadeType.DELETE is not effective with @ManyToOne, so lets set all cascaded operation
     @ManyToOne(cascade = { CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH })
@@ -80,6 +87,22 @@ public class AIPUpdateRequest extends AbstractRequest {
         this.aip = aip;
     }
 
+    public AIPUpdatePayload getConfig() {
+        return config;
+    }
+
+    public void setConfig(AIPUpdatePayload config) {
+        this.config = config;
+    }
+
+    public AIPUpdateRequestStep getStep() {
+        return config.getStep();
+    }
+
+    public void setStep(AIPUpdateRequestStep step) {
+        config.setStep(step);
+    }
+
     public static List<AIPUpdateRequest> build(AIPEntity aip, AIPUpdateParametersDto updateTaskDto, boolean pending) {
         return AIPUpdateRequest.build(aip, AbstractAIPUpdateTask.build(updateTaskDto), pending);
     }
@@ -89,6 +112,7 @@ public class AIPUpdateRequest extends AbstractRequest {
         List<AIPUpdateRequest> result = new ArrayList<>();
         for (AbstractAIPUpdateTask updateTask : updateTasks) {
             AIPUpdateRequest updateRequest = new AIPUpdateRequest();
+            updateRequest.config = AIPUpdatePayload.build();
             updateRequest.setUpdateTask(updateTask);
             updateRequest.setAip(aip);
             updateRequest.setCreationDate(OffsetDateTime.now());
@@ -105,4 +129,6 @@ public class AIPUpdateRequest extends AbstractRequest {
         }
         return result;
     }
+
+
 }

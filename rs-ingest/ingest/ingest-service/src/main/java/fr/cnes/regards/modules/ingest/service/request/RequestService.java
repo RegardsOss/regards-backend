@@ -51,10 +51,12 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.mapper.IRequestMapper;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -406,12 +408,22 @@ public class RequestService implements IRequestService {
                                                                                               sessionOp);
                 break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
-                spec = AbstractRequestSpecifications
-                        .searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp,
-                                                           ((OAISDeletionRequest) request).getAip().getId());
+                if(((OAISDeletionRequest) request).getStep() != DeletionRequestStep.REMOTE_NOTIFICATION_ERROR) {
+                    spec = AbstractRequestSpecifications
+                            .searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp,
+                                                               ((OAISDeletionRequest) request).getAip().getId());
+                } else {
+                    // In case of notification error, aip has already been deleted so do not delay request.
+                    return false;
+                }
                 break;
             case RequestTypeConstant.UPDATE_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
+                if(((AIPUpdateRequest) request).getStep() != AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR) {
+                    spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
+                } else {
+                    // In case of notification error, aip has already been updated so do not delay request
+                    return false;
+                }
                 break;
             case RequestTypeConstant.AIP_POST_PROCESS_VALUE:
                 spec = AbstractRequestSpecifications.searchRequestBlockingAIPPostProcess(sessionOwnerOp,sessionOp);
