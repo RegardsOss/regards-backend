@@ -18,17 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.notification;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
@@ -37,7 +42,10 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
@@ -59,47 +67,71 @@ public class AIPNotificationService implements IAIPNotificationService {
     @Autowired
     private IAbstractRequestRepository abstractRequestRepo;
 
+    @Autowired
+    private IIngestRequestRepository ingestRequestRepository;
+
+    @Autowired
+    private RequestService requestService;
+
+    @Autowired
+    private IPublisher publisher;
+
     @Value("${spring.application.name}")
     private String microserviceName;
 
+    // ---------------------------
+    // HANDLE NOTIFICATION SENDING
+    // ---------------------------
+
     @Override
     public void sendRequestsToNotifier(Set<AbstractRequest> requestsToSend) {
-        for (AbstractRequest abstractRequest : requestsToSend) {
-            if (abstractRequest instanceof IngestRequest) {
-                IngestRequest ingestRequest = (IngestRequest) abstractRequest;
-                ingestRequest.setState(InternalRequestState.RUNNING);
-                ingestRequest.setStep(IngestRequestStep.LOCAL_TO_BE_NOTIFIED);
-            } else if (abstractRequest instanceof OAISDeletionRequest) {
-                OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
-                oaisDeletionRequest.setStep(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED);
-            } else if (abstractRequest instanceof AIPUpdateRequest) {
-                AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
-                aipUpdateRequest.setState(InternalRequestState.RUNNING);
-                aipUpdateRequest.setStep(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED);
-            }
-        }
-        abstractRequestRepo.saveAll(requestsToSend);
         if (!requestsToSend.isEmpty()) {
-            notifierClient.sendNotifications(createNotificationActionEvent(requestsToSend));
+            // first update step and states of requests
+            for (AbstractRequest abstractRequest : requestsToSend) {
+                if (abstractRequest instanceof IngestRequest) {
+                    IngestRequest ingestRequest = (IngestRequest) abstractRequest;
+                    ingestRequest.setState(InternalRequestState.RUNNING);
+                    ingestRequest.setStep(IngestRequestStep.LOCAL_TO_BE_NOTIFIED);
+                } else if (abstractRequest instanceof OAISDeletionRequest) {
+                    OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
+                    oaisDeletionRequest.setState(InternalRequestState.RUNNING);
+                    oaisDeletionRequest.setStep(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED);
+                } else if (abstractRequest instanceof AIPUpdateRequest) {
+                    AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
+                    aipUpdateRequest.setState(InternalRequestState.RUNNING);
+                    aipUpdateRequest.setStep(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED);
+                }
+            }
+            abstractRequestRepo.saveAll(requestsToSend);
+
+            // then create notification request events and send them to notifier
+            notifierClient.sendNotifications(createNotificationRequestEvent(requestsToSend));
         }
     }
 
-    private List<NotificationRequestEvent> createNotificationActionEvent(Set<AbstractRequest> requestsToSend) {
+    private List<NotificationRequestEvent> createNotificationRequestEvent(Set<AbstractRequest> requestsToSend) {
         List<NotificationRequestEvent> eventToSend = Lists.newArrayList();
+        // for each request, create the associated notification request event
         for (AbstractRequest abstractRequest : requestsToSend) {
+            // INGEST REQUESTS
             if (abstractRequest instanceof IngestRequest) {
                 IngestRequest ingestRequest = (IngestRequest) abstractRequest;
                 eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(ingestRequest.getAips()), gson.toJsonTree(
                         new NotificationActionEventMetadata(RequestTypeConstant.INGEST_VALUE)),
                                                              ingestRequest.getId().toString(), this.microserviceName));
-            } else if (abstractRequest instanceof OAISDeletionRequest) {
+            }
+            // OAIS DELETION REQUESTS
+            else if (abstractRequest instanceof OAISDeletionRequest) {
                 OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
-                eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAip()),
+                // remark : aip content is in payload because it has already been removed from database
+                eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAipToNotify()),
                                                              gson.toJsonTree(new NotificationActionEventMetadata(
                                                                      RequestTypeConstant.OAIS_DELETION_VALUE)),
                                                              oaisDeletionRequest.getId().toString(),
                                                              this.microserviceName));
-            } else if (abstractRequest instanceof AIPUpdateRequest) {
+            }
+            // UPDATE REQUESTS
+            else if (abstractRequest instanceof AIPUpdateRequest) {
                 AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
                 eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(aipUpdateRequest.getAip()),
                                                              gson.toJsonTree(new NotificationActionEventMetadata(
@@ -111,9 +143,22 @@ public class AIPNotificationService implements IAIPNotificationService {
         return eventToSend;
     }
 
+    // ------------------------------
+    // HANDLE NOTIFICATION FEEDBACK
+    // ------------------------------
+
     @Override
     public void handleNotificationSuccess(Set<AbstractRequest> successRequests) {
-        // Handle oais deletion and update request types
+        // Handle Ingest success
+        // filter out ingest requests because their processing is specific
+        Set<IngestRequest> ingestRequests = successRequests.stream().filter(IngestRequest.class::isInstance)
+                .map(IngestRequest.class::cast).collect(Collectors.toSet());
+        if (!ingestRequests.isEmpty()) {
+            successRequests.removeAll(ingestRequests);
+            handleIngestNotificationSuccess(ingestRequests);
+        }
+
+        // Handle Deletion and Update requests
         if (!successRequests.isEmpty()) {
             for (AbstractRequest abstractRequest : successRequests) {
                 if (abstractRequest instanceof OAISDeletionRequest) {
@@ -127,16 +172,42 @@ public class AIPNotificationService implements IAIPNotificationService {
                     AIPNotificationLogger
                             .notificationSuccess(aipUpdateRequest.getId(), aipUpdateRequest.getProviderId());
                     // no need to publish an event as no service needs it for the moment
+                    requestService.deleteRequest(abstractRequest);
                 }
             }
             // Delete successful requests
-            abstractRequestRepo.deleteInBatch(successRequests);
+            requestService.deleteRequests(successRequests);
         }
+    }
+
+    private void handleIngestNotificationSuccess(Set<IngestRequest> successIngestRequests) {
+        List<IngestRequestEvent> ingestRequestEvents = new ArrayList<>();
+        String sipId;
+
+        // find sip id for publication
+        // ingest requests are reloaded from database because aips are not loaded from successIngestRequests (lazy mode)
+        List<IngestRequest> tmpRequests = ingestRequestRepository
+                .findByIdIn(successIngestRequests.stream().map(IngestRequest::getId).collect(Collectors.toSet()));
+        for (IngestRequest request : tmpRequests) {
+            sipId = request.getAips().get(0).getSip().getSipId();
+            ingestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(), sipId,
+                                                             RequestState.SUCCESS));
+            AIPNotificationLogger.notificationSuccess(request.getId(), request.getProviderId());
+        }
+
+        // publish success
+        publisher.publish(ingestRequestEvents);
+
+        // delete ingest requests
+        requestService.deleteRequests(Sets.newHashSet(successIngestRequests));
+
     }
 
     @Override
     public void handleNotificationError(Set<AbstractRequest> errorRequests) {
+        // for each type of request set the change the state and the step of the request to ERROR
         for (AbstractRequest abstractRequest : errorRequests) {
+            // INGEST REQUESTS
             if (abstractRequest instanceof IngestRequest) {
                 IngestRequest ingestRequest = (IngestRequest) abstractRequest;
                 AIPNotificationLogger.notificationError(ingestRequest.getId(), ingestRequest.getProviderId(),
@@ -145,28 +216,33 @@ public class AIPNotificationService implements IAIPNotificationService {
                 ingestRequest.setState(InternalRequestState.ERROR);
                 ingestRequest.setStep(IngestRequestStep.REMOTE_NOTIFICATION_ERROR);
 
-            } else if (abstractRequest instanceof OAISDeletionRequest) {
+            }
+            // OAIS DELETION REQUESTS
+            else if (abstractRequest instanceof OAISDeletionRequest) {
                 OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
                 AIPNotificationLogger
                         .notificationError(oaisDeletionRequest.getId(), oaisDeletionRequest.getProviderId(),
                                            oaisDeletionRequest.getErrors());
                 // put request state to error and change step
                 oaisDeletionRequest.setState(InternalRequestState.ERROR);
-                oaisDeletionRequest.setStep(DeletionRequestStep.LOCAL_NOTIFICATION_ERROR);
+                oaisDeletionRequest.setStep(DeletionRequestStep.REMOTE_NOTIFICATION_ERROR);
 
-            } else if (abstractRequest instanceof AIPUpdateRequest) {
+            }
+            // UPDATE REQUESTS
+            else if (abstractRequest instanceof AIPUpdateRequest) {
                 AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
                 AIPNotificationLogger.notificationError(aipUpdateRequest.getId(), aipUpdateRequest.getProviderId(),
                                                         aipUpdateRequest.getErrors());
                 // put request state to error and change step
                 aipUpdateRequest.setState(InternalRequestState.ERROR);
-                aipUpdateRequest.setStep(AIPUpdateRequestStep.LOCAL_NOTIFICATION_ERROR);
+                aipUpdateRequest.setStep(AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR);
             }
         }
         // Save error requests
         abstractRequestRepo.saveAll(errorRequests);
     }
 
+    // class used to format RequestTypeConstant in gson
     public static class NotificationActionEventMetadata {
 
         private String action;

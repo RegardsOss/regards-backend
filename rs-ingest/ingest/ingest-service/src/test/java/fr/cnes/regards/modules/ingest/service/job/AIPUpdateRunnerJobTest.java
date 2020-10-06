@@ -138,6 +138,8 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+        // no notification
+        initNotificationSettings(false);
     }
 
     public void initData() throws InterruptedException {

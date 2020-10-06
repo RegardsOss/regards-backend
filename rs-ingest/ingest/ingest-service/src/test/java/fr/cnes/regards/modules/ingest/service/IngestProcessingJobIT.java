@@ -139,6 +139,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         Mockito.clearInvocations(ingestRequestService);
         Mockito.clearInvocations(storageClient);
+
+        // no notification
+        initNotificationSettings(false);
     }
 
     private void initFullProcessingChain() throws ModuleException {

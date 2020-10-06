@@ -38,6 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
@@ -46,11 +47,13 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.test.IngestServiceTest;
@@ -91,6 +94,9 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @Autowired
     protected IIngestProcessingChainService ingestProcessingService;
+
+    @Autowired
+    private IAIPNotificationSettingsService notificationSettingsService;
 
     @Before
     public void init() throws Exception {
@@ -188,6 +194,17 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
                                                         versioningMode,
                                                         storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+    }
+
+    public void initNotificationSettings(boolean state){
+        // Set notification to false
+        AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
+        notificationSettings.setActiveNotification(state);
+        try {
+            notificationSettingsService.update(notificationSettings);
+        } catch (EntityNotFoundException e) {
+            LOGGER.error("Notification settings not initialized properly");
+        }
     }
 
 }

@@ -66,6 +66,7 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     public void doInit() {
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        initNotificationSettings(false);
     }
 
     /**
@@ -276,8 +277,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
-        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
-        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted + IngestRequest
+        Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
@@ -593,8 +594,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
-        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
-        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted + IngestRequest
+        Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }

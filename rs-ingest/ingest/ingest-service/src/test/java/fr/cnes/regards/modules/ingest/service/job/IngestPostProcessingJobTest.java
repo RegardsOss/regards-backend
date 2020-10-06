@@ -34,16 +34,20 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -77,6 +81,7 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
 
@@ -113,6 +118,8 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+        // no notification
+        initNotificationSettings(false);
     }
 
     public long initData(String chain) throws ModuleException {

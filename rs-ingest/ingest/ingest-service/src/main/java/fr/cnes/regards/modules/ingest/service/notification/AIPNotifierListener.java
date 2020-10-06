@@ -76,18 +76,9 @@ public class AIPNotifierListener implements INotifierRequestListener {
             AIPNotificationLogger.notificationEventSuccess(nbRequests);
             // Find corresponding requests and handle them
             Set<AbstractRequest> successRequests = abstractRequestRepo.findAllByIdIn(requestIds);
-            // handle ingest requests specifically (because they need to be deleted in ingestRequestService)
-            Set<IngestRequest> ingestRequests = successRequests.stream().filter(IngestRequest.class::isInstance)
-                    .map(IngestRequest.class::cast).collect(Collectors.toSet());
-            if (!ingestRequests.isEmpty()) {
-                ingestRequestService.handleIngestNotificationSuccess(ingestRequests);
-                successRequests.removeAll(ingestRequests);
-            }
-            // handle other request types
             if (!successRequests.isEmpty()) {
                 notificationService.handleNotificationSuccess(successRequests);
             }
-
             AIPNotificationLogger.notificationEventSuccessHandled(successEvents.size());
         }
     }

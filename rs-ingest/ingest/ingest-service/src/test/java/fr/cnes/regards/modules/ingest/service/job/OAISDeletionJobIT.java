@@ -109,6 +109,8 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+        // no notification
+        initNotificationSettings(false);
     }
 
     public void waitUntilNbSIPStoredReach(long nbSIPRemaining) {

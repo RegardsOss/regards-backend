@@ -123,6 +123,8 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         abstractRequestRepository.deleteAll();
         jobInfoRepository.deleteAll();
+        // no notification
+        initNotificationSettings(false);
     }
 
     @Override

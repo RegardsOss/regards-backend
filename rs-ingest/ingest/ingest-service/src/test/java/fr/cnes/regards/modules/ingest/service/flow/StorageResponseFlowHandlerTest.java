@@ -87,6 +87,12 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
     @Autowired
     private IAIPRepository aipRepo;
 
+    @Override
+    public void doInit(){
+        // no notification
+        initNotificationSettings(false);
+    }
+
     private Set<RequestInfo> initAips(int nbAips) {
         Set<RequestInfo> rq = Sets.newHashSet();
         // Init 1000 sip/aip waiting for storage responses

@@ -89,6 +89,9 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
         }
         // Create data repository
         Files.createDirectory(DATA_REPOSITORY);
+
+        // no notification
+        initNotificationSettings(false);
     }
 
     @Test

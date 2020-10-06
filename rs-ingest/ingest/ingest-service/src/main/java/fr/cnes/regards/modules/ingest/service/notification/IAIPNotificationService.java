@@ -39,13 +39,13 @@ public interface IAIPNotificationService {
     void sendRequestsToNotifier(Set<AbstractRequest> requestsToSend);
 
     /**
-     * Handle ingest requests notified successfully
+     * Handle requests notified successfully
      * @param successRequests abstract requests in success
      */
     void handleNotificationSuccess(Set<AbstractRequest> successRequests);
 
     /**
-     * Handle ingest requests with notification errors
+     * Handle requests with notification errors
      * @param errorRequests abstract requests in error
      */
     void handleNotificationError(Set<AbstractRequest> errorRequests);
