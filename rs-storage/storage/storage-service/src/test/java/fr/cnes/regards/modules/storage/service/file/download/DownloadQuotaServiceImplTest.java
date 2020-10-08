@@ -322,11 +322,9 @@ public class DownloadQuotaServiceImplTest {
                 long stubQuotaCounter = random.nextInt(Integer.MAX_VALUE);
                 long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
                 doReturn(
-                    CompletableFuture.completedFuture(
-                        Tuple.of(
-                            new UserQuotaAggregate(stubQuotaCounter),
-                            new UserRateAggregate(stubRateGauge)
-                        )
+                    Tuple.of(
+                        new UserQuotaAggregate(stubQuotaCounter),
+                        new UserRateAggregate(stubRateGauge)
                     )
                 ).when(quotaManager).get(quota);
 
@@ -364,11 +362,9 @@ public class DownloadQuotaServiceImplTest {
         long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
 
         doReturn(
-            CompletableFuture.completedFuture(
-                Tuple.of(
-                    new UserQuotaAggregate(stubQuotaCounter),
-                    new UserRateAggregate(stubRateGauge)
-                )
+            Tuple.of(
+                new UserQuotaAggregate(stubQuotaCounter),
+                new UserRateAggregate(stubRateGauge)
             )
         ).when(quotaManager).get(quota);
 
@@ -514,10 +510,10 @@ public class DownloadQuotaServiceImplTest {
         long stub = random.nextInt(Integer.MAX_VALUE);
         DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, stub, DEFAULT_RATE);
         AtomicLong stubGauge = new AtomicLong(stub);
-        doAnswer(a -> CompletableFuture.completedFuture(stubGauge.incrementAndGet()))
+        doAnswer(a -> stubGauge.incrementAndGet())
             .when(quotaManager)
             .increment(quota);
-        doAnswer(a -> CompletableFuture.completedFuture(stubGauge.decrementAndGet()))
+        doAnswer(a -> stubGauge.decrementAndGet())
             .when(quotaManager)
             .decrement(quota);
 
@@ -591,7 +587,7 @@ public class DownloadQuotaServiceImplTest {
             long stub = random.nextInt(Integer.MAX_VALUE);
             DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, stub, DEFAULT_RATE);
             AtomicLong stubGauge = new AtomicLong(stub);
-            doAnswer(a -> CompletableFuture.completedFuture(stubGauge.incrementAndGet()))
+            doAnswer(a -> stubGauge.incrementAndGet())
                 .when(quotaManager)
                 .increment(quota);
 

@@ -18,34 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
+import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -55,17 +28,64 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.rest.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import io.vavr.collection.List;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.bind.annotation.RequestMethod;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.LongStream;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Sébastien Binda
@@ -102,11 +122,15 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     protected IFileReferenceRepository fileRepo;
 
     @Autowired
+    private IDownloadQuotaRepository quotaRepository;
+
+    @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     private String storedFileChecksum;
 
     private void clear() throws IOException {
+        quotaRepository.deleteAll();
         reqInfoRepository.deleteAll();
         fileRepo.deleteAll();
         prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
@@ -133,8 +157,15 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         Path filePath = Paths.get("src/test/resources/test-file.txt");
         String algorithm = "md5";
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
-        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm,
-                filePath.getFileName().toString(), null, MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo metaInfo =
+            new FileReferenceMetaInfo(
+                checksum,
+                algorithm,
+                filePath.getFileName().toString(),
+                null,
+                MediaType.APPLICATION_OCTET_STREAM
+            );
+        metaInfo.setType(DataType.RAWDATA.name());
         tenantResolver.forceTenant(getDefaultTenant());
         storeReqService.handleRequest("rest-test", metaInfo, filePath.toAbsolutePath().toUri().toURL().toString(),
                                       TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
@@ -162,14 +193,213 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Ignore("Spring web fails sometimes on test hen reading httpMockResponse headers")
     @Requirement("REGARDS_DSL_STO_AIP_130")
     @Requirement("REGARDS_DSL_STO_ARC_200")
     @Purpose("Check file download")
     public void downloadFileSuccess() {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
-                          requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
+        Mono.defer(() -> {
+            RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+            performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
+                requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
+            return Mono.empty();
+        })
+            // Retry in case of weird but transient "Spring headers" error.
+            // Still, let AssertionErrors fail the test downstream.
+            .retry(t -> ! (t instanceof AssertionError))
+            // blow up maybe?
+            .block();
+    }
+
+    @Test
+    public void download_failed_cause_quota_max_exceeded() {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+
+        String userEmail = UUID.randomUUID().toString();
+        long maxQuota = 5L;
+        long rateLimit = 10_000L;
+        quotaRepository.save(
+            new DownloadQuotaLimits(
+                getDefaultTenant(),
+                userEmail,
+                maxQuota,
+                rateLimit
+            )
+        );
+
+        String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+        String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
+            userEmail, getDefaultRole());
+
+        LongStream.range(0, maxQuota+1)
+            .forEach(i -> {
+                if (i < maxQuota) {
+                    RequestBuilderCustomizer requestBuilderCustomizer =
+                        customizer()
+                            .expectStatusOk();
+                    performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
+                } else {
+                    RequestBuilderCustomizer requestBuilderCustomizer =
+                        customizer()
+                            .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
+                    performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
+                }
+            });
+    }
+
+    @Test
+    public void download_failed_cause_rate_limit_exceeded() {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+
+        String userEmail = UUID.randomUUID().toString();
+        quotaRepository.save(
+            new DownloadQuotaLimits(
+                getDefaultTenant(),
+                userEmail,
+                10L,
+                0L
+            )
+        );
+
+        String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+        String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
+            userEmail, getDefaultRole());
+
+        RequestBuilderCustomizer requestBuilderCustomizer =
+            customizer()
+                .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
+        performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
+    }
+
+    @Test
+    public void rate_limiting_ends_eventually() throws InterruptedException {
+
+        tenantResolver.forceTenant(getDefaultTenant());
+
+        String userEmail = UUID.randomUUID().toString();
+        long maxQuota = -1L; // unlimited because IDK how many retries will be needed until the rate limiter gets angry
+        long rateLimit = 2L; // low enough in order to increase the chance of hitting the rate limiter
+        quotaRepository.save(
+            new DownloadQuotaLimits(
+                getDefaultTenant(),
+                userEmail,
+                maxQuota,
+                rateLimit
+            )
+        );
+
+        AtomicReference<List<Integer>> downloadReqStatuses = new AtomicReference<>(List.empty());
+        AtomicReference<List<Integer>> currentRatesHistory = new AtomicReference<>(List.empty());
+
+        // try to exceed the rate limit
+        int nbDownloads = 1_000;
+        int maxConcurrency = Runtime.getRuntime().availableProcessors();
+
+        // latch to know when all the downloads are finished (independently of the nb of retries)
+        CountDownLatch latch = new CountDownLatch(nbDownloads);
+
+        // periodically check current rate and store the observed value
+        JsonPath jsonPath = JsonPath.compile("$.currentRate");
+        Disposable monitor =
+            Flux.interval(Duration.ofMillis(50L))
+                .concatMap(i ->
+                    Mono.defer(() -> {
+                        RequestBuilderCustomizer requestBuilderCustomizer =
+                            customizer()
+                                // let assertion pass, I want to accumulate status codes!
+                                .expect(r -> assertTrue(true));
+                        String api = DownloadQuotaController.PATH_CURRENT_QUOTA;
+                        String authToken = manageSecurity(getDefaultTenant(), api, RequestMethod.GET, userEmail, getDefaultRole());
+                        ResultActions res = performGet(api, authToken, requestBuilderCustomizer, "Get current quotas should not blow up");
+                        MvcResult result = res.andReturn();
+
+                        try {
+                            return Mono.<Integer>just(jsonPath.read(result.getResponse().getContentAsString()));
+                        } catch (UnsupportedEncodingException e) {
+                            return Mono.error(e);
+                        }
+                    }).retry()
+                )
+                // record each currentRate observed
+                .subscribe(currentRate -> currentRatesHistory.updateAndGet(l -> l.append(currentRate)));
+
+        // record the max nb of requests sent in parallel, just to be sure that the test was relevant
+        // (if max concurrent calls <= rate limit then the test was useless)
+        AtomicReference<List<Integer>> maxConcurrentCalls = new AtomicReference<>(List.of(0));
+
+        // try to make each download
+        RuntimeException unexpectedResultEx = new RuntimeException("Unexpected result");
+        Disposable hammer = Flux.range(0, nbDownloads)
+            .flatMap(
+                ignored -> Mono.defer(() -> {
+                    // increase the nb of concurrent calls
+                    maxConcurrentCalls.updateAndGet(l -> l.append(l.last()+1));
+
+                    // download
+                    RequestBuilderCustomizer requestBuilderCustomizer =
+                        customizer()
+                            // let assertion pass, I want to accumulate status codes!
+                            .expect(r -> assertTrue(true));
+                    String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+                    String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, userEmail, getDefaultRole());
+                    ResultActions res = performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should not blow up at this point", storedFileChecksum);
+                    int status = res.andReturn().getResponse().getStatus();
+
+                    // record the download status (200, 429, 500, other ?)
+                    downloadReqStatuses.updateAndGet(l -> l.append(status));
+
+                    // call finished, decrease the nb of concurrent calls
+                    maxConcurrentCalls.updateAndGet(l -> l.append(l.last()-1));
+
+                    // if the result is not 200 then return and error Mono in order to retry
+                    if (status == HttpStatus.OK.value()) {
+                        return Mono.just(status);
+                    } else {
+                        return Mono.error(unexpectedResultEx).delayElement(Duration.ofMillis(200L));
+                    }
+                })
+                    // retry until we finally get the result we expect (200 download successful)
+                    .retry(t -> t == unexpectedResultEx)
+                    // use the dedicated thread pool
+                    .subscribeOn(Schedulers.newParallel("hammer", maxConcurrency))
+                ,
+                maxConcurrency
+            )
+            // Spring warm up time
+            .delaySubscription(Duration.ofSeconds(15))
+            // for each OK result, count down
+            .subscribe(ignored -> latch.countDown());
+
+        // wait for the calls to end (max 60secs)
+        boolean timely = latch.await(120, TimeUnit.SECONDS);
+        // free resources
+        hammer.dispose();
+        // cancel monitor (hammer has finished) but wait a bit so we can observe the currentRate going down
+        Thread.sleep(1_000);
+        monitor.dispose();
+
+//        LOGGER.info("concurrent="+maxConcurrentCalls.get().mkString(","));
+//        LOGGER.info("downloadReqStatuses="+downloadReqStatuses.get().mkString(","));
+//        LOGGER.info("rates="+currentRatesHistory.get().mkString(","));
+//        LOGGER.info("reqs count="+downloadReqStatuses.get().size());
+        assertTrue(
+            "Test should have ended in a timely manner. Check your setup, the delay is either too short or the test took longer than expected (are you on a crowded environment?).",
+            timely);
+        assertTrue(
+            "Test should have sent more concurrent requests than rateLimit, otherwise the whole test would be rather useless. Please check your setup.",
+            maxConcurrentCalls.get().reduce(Integer::max) > rateLimit);
+        assertTrue(
+            "Hitting the rate limiter should have caused HTTP 429 errors and retries of the failed calls until a 200 is eventually returned, hence more calls should have been made than initially requested.",
+            nbDownloads < downloadReqStatuses.get().size());
+        assertTrue(
+            "Observed rate history should never have exceeded the rate limit (in this single node setting at least).",
+            currentRatesHistory.get().reduce(Integer::max) <= rateLimit
+        );
+        assertFalse(
+            "Each time the rate went up above 0 it should eventually have gone back to zero.",
+            currentRatesHistory.get()
+                .foldLeft(false, (aboveZero, next) -> next > 0));
     }
 
     private void initDataStoragePluginConfiguration() throws ModuleException {

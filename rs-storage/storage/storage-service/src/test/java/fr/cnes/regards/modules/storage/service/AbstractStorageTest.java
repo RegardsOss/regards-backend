@@ -36,6 +36,7 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import fr.cnes.regards.framework.urn.DataType;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -484,6 +485,7 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         try {
             String filePath = cacheService.getFilePath(checksum);
             cacheService.addFile(checksum, 123L, "file", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                                 DataType.RAWDATA.name(),
                                  new URL("file", null, filePath), OffsetDateTime.now().plusDays(1),
                                  UUID.randomUUID().toString());
             // Create file on disk

@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import fr.cnes.regards.framework.urn.DataType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,34 +114,42 @@ public class FileCacheRequestServiceTest extends AbstractStorageTest {
         String cacheRequestsGroupId = UUID.randomUUID().toString();
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().plusDays(1),
                              cacheRequestsGroupId);
         cacheService.addFile(UUID.randomUUID().toString(), 1024L, "file",
                              MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "/plop/file"), OffsetDateTime.now().minusDays(1),
                              cacheRequestsGroupId);
 

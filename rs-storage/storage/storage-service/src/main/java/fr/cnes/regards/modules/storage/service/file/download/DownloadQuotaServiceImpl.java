@@ -251,7 +251,7 @@ public class DownloadQuotaServiceImpl<T>
 
         return cacheUserQuota(userEmail, key)
             .flatMap(quota ->
-                Try.of(() -> quotaManager.get(quota).get())
+                Try.of(() -> quotaManager.get(quota))
                     .map(quotaAndRate ->
                         new UserCurrentQuotas(
                             userEmail,
@@ -274,7 +274,7 @@ public class DownloadQuotaServiceImpl<T>
 
     @VisibleForTesting
     protected Try<Tuple3<DownloadQuotaLimits, Long, Long>> getUserQuotaAndRate(DownloadQuotaLimits quotaLimits) {
-        return Try.of(() -> quotaManager.get(quotaLimits).get())
+        return Try.of(() -> quotaManager.get(quotaLimits))
             .mapTry(quotaAndRate -> {
                 Long quota = quotaAndRate._1.getCounter();
                 if (quota >= quotaLimits.getMaxQuota() && quotaLimits.getMaxQuota() >= 0) {
@@ -282,7 +282,7 @@ public class DownloadQuotaServiceImpl<T>
                 }
                 Long rate = quotaAndRate._2.getGauge();
                 if (rate >= quotaLimits.getRateLimit() && quotaLimits.getRateLimit() >= 0) {
-                    throw buildDownloadRateExceededException(quotaLimits.getEmail(), quotaLimits.getMaxQuota(), rate);
+                    throw buildDownloadRateExceededException(quotaLimits.getEmail(), quotaLimits.getRateLimit(), rate);
                 }
                 return Tuple.of(quotaLimits, quota, rate);
             });

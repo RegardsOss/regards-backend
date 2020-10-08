@@ -70,6 +70,12 @@ public class CacheFile {
     private MimeType mimeType;
 
     /**
+     * The cache file type
+     */
+    @Column(name = "type")
+    private String type;
+
+    /**
      * location into the cache
      */
     @Column
@@ -103,9 +109,10 @@ public class CacheFile {
      * Constructor initializing the cache file from the parameters
      * @param df
      * @param expirationDate
+     * @param type
      */
     public CacheFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
-            OffsetDateTime expirationDate, String groupId) {
+                     OffsetDateTime expirationDate, String groupId, String type) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;
@@ -113,6 +120,7 @@ public class CacheFile {
         this.groupIds.add(groupId);
         this.fileName = fileName;
         this.mimeType = mimeType;
+        this.type = type;
     }
 
     public Long getId() {
@@ -173,6 +181,14 @@ public class CacheFile {
 
     public void setMimeType(MimeType mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 
 public interface IQuotaManager {
 
-    Future<Tuple2<UserQuotaAggregate, UserRateAggregate>> get(DownloadQuotaLimits quota);
+    Tuple2<UserQuotaAggregate, UserRateAggregate> get(DownloadQuotaLimits quota);
 
     void increment(DownloadQuotaLimits quota);
 

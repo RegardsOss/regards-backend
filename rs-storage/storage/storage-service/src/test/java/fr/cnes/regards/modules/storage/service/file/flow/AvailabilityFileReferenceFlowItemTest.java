@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import fr.cnes.regards.framework.urn.DataType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -202,7 +203,7 @@ public class AvailabilityFileReferenceFlowItemTest extends AbstractStorageTest {
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         // Simulate file in cache
         cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L, "file.nearline.1.test",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
                              OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
         // Simulate availability request on this file

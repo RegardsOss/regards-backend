@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.storage.service.file.exception;
 
-public class DownloadQuotaLimitExceededException extends Exception {
+public class DownloadQuotaLimitExceededException extends RuntimeException {
 
     private DownloadQuotaLimitExceededException(String message) {
         super(message);

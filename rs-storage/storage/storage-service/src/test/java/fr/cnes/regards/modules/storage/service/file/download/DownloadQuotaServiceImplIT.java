@@ -115,11 +115,9 @@ public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
 
         // also, the quotaManager is bypassed completely because we don't care in this test
         doReturn(
-            CompletableFuture.completedFuture(
-                Tuple.of(
-                    new UserQuotaAggregate(0L),
-                    new UserRateAggregate(0L)
-                )
+            Tuple.of(
+                new UserQuotaAggregate(0L),
+                new UserRateAggregate(0L)
             )
         ).when(quotaManager).get(any());
         doNothing().when(quotaManager).increment(any());

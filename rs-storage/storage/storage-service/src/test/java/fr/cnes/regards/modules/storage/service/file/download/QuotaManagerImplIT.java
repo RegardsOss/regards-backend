@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -10,10 +9,10 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import io.vavr.Tuple2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.AdditionalAnswers;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
@@ -23,10 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -67,8 +67,8 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         ReflectionTestUtils.setField(quotaManager, "quotaRepository", quotaRepository);
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        quotaManager.setUserDiffsByTenant(new java.util.HashMap<>());//HashMap.empty());
-        quotaManager.setDiffsAccumulatorByTenant(new java.util.HashMap<>());//HashMap.empty());
+        quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());
+        quotaManager.setDiffsAccumulatorByTenant(new HashMap<>());//HashMap.empty());
     }
 
     @After
@@ -81,19 +81,14 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     public void test_gauges() throws ExecutionException, InterruptedException {
         // given
         // there is a user with some quota definition
-        DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(getDefaultTenant(), "foo@bar.com", 5L, 5L);
-//        Map<String, AtomicReference<Map<DownloadQuota, QuotaManagerImpl.UserDiffs>>> cache =
-//            HashMap.of(
-//                getDefaultTenant(),
-//                new AtomicReference<>(HashMap.empty())
-//            );
-        Cache<DownloadQuotaLimits, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        quotaManager.setUserDiffsByTenant(new java.util.HashMap<String, Cache<DownloadQuotaLimits, QuotaManagerImpl.UserDiffs>>(){{
+        DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(getDefaultTenant(), "foo@bar.com", -1L, -1L);
+        Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
+        quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>(){{
             put(getDefaultTenant(), cache);
         }});
 
         // when
-        ExecutorService executor = Executors.newFixedThreadPool(3);
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         // a bunch of threads try to get, increment and decrement its gauge
         int nbRequests = 10_000;
         CountDownLatch latch = new CountDownLatch(nbRequests);
@@ -102,30 +97,23 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
                 () -> {
                     try {
                         runtimeTenantResolver.forceTenant(downloadQuota.getTenant());
-                        quotaManager.get(downloadQuota).get();
+                        quotaManager.get(downloadQuota);
+                        quotaManager.increment(downloadQuota);
+                        quotaManager.decrement(downloadQuota);
+                        latch.countDown();
                     } catch (Exception ignored) {}
                 },
                 executor
-            ).thenRunAsync(
-                () -> quotaManager.increment(downloadQuota)
-                , executor
-            ).thenRunAsync(
-                () -> quotaManager.decrement(downloadQuota)
-                , executor
-            ).thenRunAsync(
-                latch::countDown
-                , executor
             );
         }
-        latch.await(30, TimeUnit.SECONDS);
+        latch.await(60, TimeUnit.SECONDS);
         executor.shutdownNow();
-//        executor.awaitTermination(30, TimeUnit.SECONDS);
 
         // then
         // the quota is to the rooftop
-        assertEquals(nbRequests, quotaManager.get(downloadQuota).get()._1.getCounter().intValue());
+        assertEquals(nbRequests, quotaManager.get(downloadQuota)._1.getCounter().intValue());
         // the rate is back to zero
-        assertEquals(0L, quotaManager.get(downloadQuota).get()._2.getGauge().longValue());
+        assertEquals(0L, quotaManager.get(downloadQuota)._2.getGauge().longValue());
     }
 
     @Test
@@ -148,14 +136,9 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // and a diff on one of the two instances
         DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(), email, (long) rand.nextInt(10_000), (long) rand.nextInt(10_000));
         long quotaDiffOnInstance1 = rand.nextInt(10_000);
-//        HashMap<DownloadQuota, QuotaManagerImpl.DiffSync> diffSyncs =
-//            HashMap.of(
-//                downloadQuotaStub,
-//                new QuotaManagerImpl.DiffSync(0L, quotaDiffOnInstance1)
-//            );
-        java.util.Map<DownloadQuotaLimits, QuotaManagerImpl.DiffSync> diffSyncs =
-            new java.util.HashMap<DownloadQuotaLimits, QuotaManagerImpl.DiffSync>() {{
-                put(downloadQuotaStub, new QuotaManagerImpl.DiffSync(0L, quotaDiffOnInstance1));
+        Map<String, QuotaManagerImpl.DiffSync> diffSyncs =
+            new HashMap<String, QuotaManagerImpl.DiffSync>() {{
+                put(email, new QuotaManagerImpl.DiffSync(0L, quotaDiffOnInstance1));
             }};
 
         // when
@@ -191,14 +174,9 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // and a diff on one of the two instances
         DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(), email, (long) rand.nextInt(10_000), (long) rand.nextInt(10_000));
         long rateDiffOnInstance1 = rand.nextInt(10_000);
-//        HashMap<DownloadQuota, QuotaManagerImpl.DiffSync> diffSyncs =
-//            HashMap.of(
-//                downloadQuotaStub,
-//                new QuotaManagerImpl.DiffSync(rateDiffOnInstance1, 0L)
-//            );
-        java.util.Map<DownloadQuotaLimits, QuotaManagerImpl.DiffSync> diffSyncs =
-            new java.util.HashMap<DownloadQuotaLimits, QuotaManagerImpl.DiffSync>() {{
-                put(downloadQuotaStub, new QuotaManagerImpl.DiffSync(rateDiffOnInstance1, 0L));
+        Map<String, QuotaManagerImpl.DiffSync> diffSyncs =
+            new HashMap<String, QuotaManagerImpl.DiffSync>() {{
+                put(email, new QuotaManagerImpl.DiffSync(rateDiffOnInstance1, 0L));
             }};
 
         // when

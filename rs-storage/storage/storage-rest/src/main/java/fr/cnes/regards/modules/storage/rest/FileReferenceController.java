@@ -18,44 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
 import com.google.common.annotations.VisibleForTesting;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
-import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
-import io.vavr.control.Try;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MimeType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -67,7 +32,33 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
 import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
+import io.vavr.control.Try;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
+import org.springframework.util.MimeType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Controller to access {@link FileReference} by rest API.
@@ -91,10 +82,10 @@ public class FileReferenceController {
     private FileDownloadService downloadService;
 
     @Autowired
-    private IQuotaService<ResponseEntity<StreamingResponseBody>> downloadQuotaService;
+    private FileReferenceService fileRefService;
 
     @Autowired
-    private FileReferenceService fileRefService;
+    private IQuotaService<ResponseEntity<StreamingResponseBody>> downloadQuotaService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -161,25 +152,68 @@ public class FileReferenceController {
         String checksum,
         HttpServletResponse response
     ) {
-        // FIXME 1: quota check disabled for now just so that I can merge my domain POJO/DTOs and continue working on catalog, order and access (Thanks CI "multibranch" builds)
-        // FIXME 2: the quota check should actually be done only after checking that the download targets a RAWDATA file
-        return /*downloadQuotaService.withQuota(
-            authResolver.getUser(),
-            (quotaHandler) -> */Try
-                .of(() -> downloadService.downloadFile(checksum))
-                .flatMap(downloadFile -> downloadFileWithQuota(downloadFile, /*FIXME quotaHandler,*/ response)/*FIXME )*/
-        ).recover(DownloadQuotaLimitExceededException.class, t -> {
-            LOGGER.debug(t.getMessage(), t);
-            return new ResponseEntity<>(
-                outputStream -> outputStream.write(t.getMessage().getBytes()),
-                HttpStatus.TOO_MANY_REQUESTS);
-        });
+        return Try.of(() -> downloadService.downloadFile(checksum))
+            .mapTry(Callable::call)
+            .flatMap(dlFile -> {
+                if (dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile) {
+                    return downloadQuotaService.withQuota(
+                        authResolver.getUser(),
+                        (quotaHandler) -> Try.success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
+                            .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
+                            .map(d -> wrap(d, quotaHandler))
+                            .flatMap(d -> downloadFile(d, response))
+                    ) // idempotent close of stream (and quotaHandler) if anything failed, just in case
+                        .onFailure(ignored -> Try.run(dlFile::close));
+                }
+                // no quota handling, just download
+                return downloadFile(dlFile, response);
+            })
+            .recover(DownloadQuotaLimitExceededException.class, t -> {
+                LOGGER.debug(t.getMessage(), t);
+                return new ResponseEntity<>(
+                    outputStream -> outputStream.write(t.getMessage().getBytes()),
+                    HttpStatus.TOO_MANY_REQUESTS);
+            });
+    }
+
+    private <T> Function<T, T> impureId(Runnable action) {
+        return x -> {
+            action.run();
+            return x;
+        };
+    }
+
+    private static class DownloadableFileWrapper extends FileDownloadService.QuotaLimitedDownloadableFile {
+
+        private final FileDownloadService.QuotaLimitedDownloadableFile dlFile;
+        private final IQuotaService.WithQuotaOperationHandler quotaHandler;
+
+        private DownloadableFileWrapper(
+            FileDownloadService.QuotaLimitedDownloadableFile dlFile,
+            IQuotaService.WithQuotaOperationHandler quotaHandler
+        ) {
+            super(dlFile.getFileInputStream(), dlFile.getRealFileSize(), dlFile.getFileName(), dlFile.getMimeType());
+            this.dlFile = dlFile;
+            this.quotaHandler = quotaHandler;
+        }
+
+        @Override
+        public void close() {
+            Try.run(quotaHandler::stop);
+            dlFile.close();
+        }
+    }
+
+    static DownloadableFileWrapper wrap(
+        FileDownloadService.QuotaLimitedDownloadableFile dlFile,
+        IQuotaService.WithQuotaOperationHandler quotaHandler
+    ) {
+        return new DownloadableFileWrapper(dlFile, quotaHandler);
     }
 
     @VisibleForTesting
-    protected Try<ResponseEntity<StreamingResponseBody>> downloadFileWithQuota (
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadFile (
         DownloadableFile downloadFile,
-        /*FIXME IQuotaService.WithQuotaOperationHandler quotaHandler,*/
         HttpServletResponse response
     ) {
         return Try.of(() -> {
@@ -193,19 +227,16 @@ public class FileReferenceController {
                     .build()
             );
             StreamingResponseBody stream = out -> {
-                /*FIXME quotaHandler.start();*/
                 try (OutputStream outs = response.getOutputStream()) {
                     byte[] bytes = new byte[1024];
                     int length;
                     while ((length = downloadFile.getFileInputStream().read(bytes)) >= 0) {
                         outs.write(bytes, 0, length);
                     }
-                    outs.close();
                 } catch (final IOException e) {
-                    LOGGER.error("Exception while reading and streaming data {} ", e);
+                    LOGGER.error("Exception while reading and streaming data", e);
                 } finally {
                     downloadFile.close();
-                    /*FIXME quotaHandler.stop();*/
                 }
             };
             return new ResponseEntity<>(stream, headers, HttpStatus.OK);

@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeType;
+
+import java.io.Closeable;
+import java.io.InputStream;
 
 /**
  * POJO to represent a file inline or in the cache system that is ready to be downloaded.<br/>
  *
  * @author Sébastien Binda
  */
-public class DownloadableFile implements Closeable {
+public abstract class DownloadableFile implements Closeable {
 
     /**
      * Class logger.
@@ -52,7 +51,7 @@ public class DownloadableFile implements Closeable {
 
     private final MimeType mimeType;
 
-    public DownloadableFile(InputStream fileInputStream, Long fileSize, String fileName, MimeType mediaType) {
+    protected DownloadableFile(InputStream fileInputStream, Long fileSize, String fileName, MimeType mediaType) {
         super();
         this.fileInputStream = fileInputStream;
         this.fileSize = fileSize;
@@ -81,16 +80,4 @@ public class DownloadableFile implements Closeable {
     public MimeType getMimeType() {
         return mimeType;
     }
-
-    @Override
-    public void close() {
-        if (this.fileInputStream != null) {
-            try {
-                this.fileInputStream.close();
-            } catch (IOException e) {
-                LOGGER.error("Error closing File input stream.", e);
-            }
-        }
-    }
-
 }

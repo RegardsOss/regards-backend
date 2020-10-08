@@ -18,35 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IDownloadTokenRepository;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
@@ -59,8 +38,37 @@ import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailable
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
+import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
+import org.apache.commons.compress.utils.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Predicates.instanceOf;
+import static io.vavr.API.$;
+import static io.vavr.API.Case;
 
 /**
  * Service to handle files download.<br>
@@ -101,6 +109,12 @@ public class FileDownloadService {
     private FileCacheRequestService fileCacheReqService;
 
     @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IQuotaService<DownloadableFile> downloadQuotaService;
+
+    @Autowired
     private DiscoveryClient discoveryClient;
 
     @Autowired
@@ -116,95 +130,101 @@ public class FileDownloadService {
      * @param checksum Checksum of the file to download
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
-    public DownloadableFile downloadFile(String checksum) throws ModuleException {
-        // Try to retrieve file from cache
-        Optional<DownloadableFile> oDownload = downloadCacheFile(checksum);
-        if (oDownload.isPresent()) {
-            return oDownload.get();
-        } else {
-            // 1. Retrieve all the FileReference matching the given checksum
-            Set<FileReference> fileRefs = fileRefService.search(checksum);
-            if (fileRefs.isEmpty()) {
-                throw new EntityNotFoundException(checksum, FileReferenceDTO.class);
-            }
-            Map<String, FileReference> storages = fileRefs.stream()
-                    .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
-            // 2. get the storage location with the higher priority
-            Optional<StorageLocationConfiguration> oStorageLocation = storageLocationConfService
-                    .searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE);
-            if (oStorageLocation.isPresent()) {
-                StorageLocationConfiguration storageLocation = oStorageLocation.get();
+    public Callable<DownloadableFile> downloadFile(String checksum) {
+        //noinspection unchecked
+        return Try.success(checksum)
+            .flatMap(this::downloadCacheFile)
+            .recoverWith(NoSuchElementException.class,
+                Try.of(() -> fileRefService.search(checksum))
+                    .filter(s -> !s.isEmpty())
+                    .mapFailure(
+                        Case($(instanceOf(NoSuchElementException.class)), ex -> new EntityNotFoundException(checksum, FileReferenceDTO.class)),
+                        Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
+                    )
+                    .map(fileRefs -> fileRefs.stream()
+                        .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f)))
+                    .flatMap(storages -> searchOnline(storages)
+                        .orElse(() -> searchNearline(storages))
+                        .toTry(() -> new ModuleException(String
+                            .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
+                                    checksum, Arrays.toString(storages.keySet().toArray()))))
+                    )
+            )
+            // let exceptions bubble up so that Spring Tx manager isn't all fucked up...
+            .get();
+    }
+
+    protected Option<Callable<DownloadableFile>> searchOnline(Map<String, FileReference> storages) {
+        return Option.ofOptional(storageLocationConfService.searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE))
+            .map(storageLocation -> {
                 PluginConfiguration conf = storageLocation.getPluginConfiguration();
                 FileReference fileToDownload = storages.get(conf.getLabel());
-                return new DownloadableFile(downloadOnline(fileToDownload, storageLocation),
-                        fileToDownload.getMetaInfo().getFileSize(), fileToDownload.getMetaInfo().getFileName(),
-                        fileToDownload.getMetaInfo().getMimeType());
-            } else {
-                oStorageLocation = storageLocationConfService.searchActiveHigherPriority(storages.keySet(),
-                                                                                         StorageType.NEARLINE);
-                if (oStorageLocation.isPresent()) {
-                    StorageLocationConfiguration storageLocation = oStorageLocation.get();
-                    PluginConfiguration conf = storageLocation.getPluginConfiguration();
-                    FileReference fileToDownload = storages.get(conf.getLabel());
-                    return new DownloadableFile(download(fileToDownload), fileToDownload.getMetaInfo().getFileSize(),
-                            fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getMimeType());
-                }
-                throw new ModuleException(String
-                        .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
-                                checksum, Arrays.toString(storages.keySet().toArray())));
-            }
-        }
+                return () -> {
+                    Long fileSize = fileToDownload.getMetaInfo().getFileSize();
+                    String fileName = fileToDownload.getMetaInfo().getFileName();
+                    MimeType mimeType = fileToDownload.getMetaInfo().getMimeType();
+                    InputStream is = downloadOnline(fileToDownload, storageLocation);
+                    return isRawData(fileToDownload)
+                        ? new QuotaLimitedDownloadableFile(is, fileSize, fileName, mimeType)
+                        : new StandardDownloadableFile(is, fileSize, fileName, mimeType);
+                };
+            });
+    }
+
+    protected Option<Callable<DownloadableFile>> searchNearline(Map<String, FileReference> storages) {
+        return Option.ofOptional(storageLocationConfService.searchActiveHigherPriority(storages.keySet(), StorageType.NEARLINE))
+            .map(storageLocation -> {
+                PluginConfiguration conf = storageLocation.getPluginConfiguration();
+                FileReference fileToDownload = storages.get(conf.getLabel());
+                return () -> {
+                    Long fileSize = fileToDownload.getMetaInfo().getFileSize();
+                    String fileName = fileToDownload.getMetaInfo().getFileName();
+                    MimeType mimeType = fileToDownload.getMetaInfo().getMimeType();
+                    InputStream is = download(fileToDownload);
+                    return isRawData(fileToDownload)
+                        ? new QuotaLimitedDownloadableFile(is, fileSize, fileName, mimeType)
+                        : new StandardDownloadableFile(is, fileSize, fileName, mimeType);
+                };
+            });
     }
 
     /**
      * Download a file from the cache system if exists.
+     *
+     * Eagerly accesses DB while lazily returning a DownloadableFile
+     * so that InputStream is not opened until it's needed.
+     *
      * @param checksum of the file to download
      * @return
-     * @throws EntityNotFoundException
      */
-    public Optional<DownloadableFile> downloadCacheFile(String checksum) throws EntityNotFoundException {
-        Optional<CacheFile> oCachedFile = cachedFileService.search(checksum);
-        if (oCachedFile.isPresent()) {
-            CacheFile cachedFileToDownload = oCachedFile.get();
-            try {
-                return Optional
-                        .of(new DownloadableFile(new FileInputStream(cachedFileToDownload.getLocation().getPath()),
-                                cachedFileToDownload.getFileSize(), cachedFileToDownload.getFileName(),
-                                cachedFileToDownload.getMimeType()));
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new EntityNotFoundException(String.format("File %s not found in cache system",
-                                                                cachedFileToDownload.getLocation().getPath()));
-            }
-        } else {
-            return Optional.empty();
-        }
+    private Try<Callable<DownloadableFile>> downloadCacheFile(String checksum) {
+        return Option.ofOptional(cachedFileService.search(checksum))
+            .toTry()
+            .map(cachedFileToDownload -> () -> {
+                try {
+                    Long fileSize = cachedFileToDownload.getFileSize();
+                    String fileName = cachedFileToDownload.getFileName();
+                    MimeType mimeType = cachedFileToDownload.getMimeType();
+                    FileInputStream is = new FileInputStream(cachedFileToDownload.getLocation().getPath());
+                    return isRawData(cachedFileToDownload)
+                        ? new QuotaLimitedDownloadableFile(is, fileSize, fileName, mimeType)
+                        : new StandardDownloadableFile(is, fileSize, fileName, mimeType);
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw new EntityNotFoundException(
+                        String.format(
+                            "File %s not found in cache system",
+                            cachedFileToDownload.getLocation().getPath()));
+                }
+            });
     }
 
-    /**
-     * Try to download the given {@link FileReference}.
-     * @param fileToDownload
-     * @return {@link InputStream} of the file
-     * @throws ModuleException
-     */
-    @Transactional(noRollbackFor = { EntityNotFoundException.class })
-    public InputStream downloadFileReference(FileReference fileToDownload) throws ModuleException {
-        Optional<StorageLocationConfiguration> conf = storageLocationConfService
-                .search(fileToDownload.getLocation().getStorage());
-        if (conf.isPresent()) {
-            switch (conf.get().getStorageType()) {
-                case NEARLINE:
-                    return download(fileToDownload);
-                case ONLINE:
-                    return downloadOnline(fileToDownload, conf.get());
-                default:
-                    break;
-            }
-        }
-        throw new ModuleException(
-                String.format("Unable to download file %s (checksum : %s) as its storage location %s is not available",
-                              fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getChecksum(),
-                              fileToDownload.getLocation().toString()));
+    private boolean isRawData(CacheFile cachedFile) {
+        return Objects.equals(cachedFile.getType(), DataType.RAWDATA.name());
+    }
+
+    private boolean isRawData(FileReference fileRef) {
+        return Objects.equals(fileRef.getMetaInfo().getType(), DataType.RAWDATA.name());
     }
 
     /**
@@ -316,4 +336,39 @@ public class FileDownloadService {
         downTokenRepo.deleteByExpirationDateBefore(OffsetDateTime.now());
     }
 
+    public static class StandardDownloadableFile extends DownloadableFile {
+
+        protected StandardDownloadableFile(
+            InputStream fileInputStream,
+            Long fileSize,
+            String fileName,
+            MimeType mediaType
+        ) {
+            super(fileInputStream, fileSize, fileName, mediaType);
+        }
+
+        @Override
+        public void close() {
+            InputStream is = getFileInputStream();
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    LOGGER.error("Error closing File input stream.", e);
+                }
+            }
+        }
+    }
+
+    public static class QuotaLimitedDownloadableFile extends StandardDownloadableFile {
+
+        protected QuotaLimitedDownloadableFile(
+            InputStream fileInputStream,
+            Long fileSize,
+            String fileName,
+            MimeType mediaType
+        ) {
+            super(fileInputStream, fileSize, fileName, mediaType);
+        }
+    }
 }

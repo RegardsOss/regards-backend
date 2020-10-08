@@ -24,9 +24,14 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.IntStream;
 
+import fr.cnes.regards.framework.urn.DataType;
+import io.vavr.control.Try;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +49,9 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.exception.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class
@@ -85,53 +93,54 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
             throws ModuleException, InterruptedException, ExecutionException, FileNotFoundException {
         FileReference fileRef = this
                 .referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test", "somewhere").get();
-        try {
-            downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
-            Assert.fail(
-                    "File should not be available for download as it is not handled by a known storage location plugin");
-        } catch (ModuleException e) {
-            // Nothing to do
-        }
+        Try<Callable<DownloadableFile>> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()));
+        assertTrue("File should not be available for download as it is not handled by a known storage location plugin", result.isFailure());
+        assertTrue(result.getCause() instanceof ModuleException);
     }
 
     @Test
     public void downloadFileReferenceNearline()
             throws ModuleException, InterruptedException, ExecutionException, IOException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
-        try {
-            downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
-            Assert.fail("File should not be available for download as it is not online");
-        } catch (NearlineFileNotAvailableException e) {
-            // A cache request should be created
-            Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
-            Assert.assertTrue("FileCacheRequest should be createdd", oReq.isPresent());
-            Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                                NEARLINE_CONF_LABEL,
-                                oReq.get().getStorage());
-            Assert.assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                                FileRequestStatus.TO_DO,
-                                oReq.get().getStatus());
-            Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
-            runAndWaitJob(jobs);
 
-            Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
-            Assert.assertTrue("File should be present in cache", oCf.isPresent());
-            Assert.assertEquals("File should be present in cache",
-                                cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
-                                oCf.get().getLocation().getPath().toString());
+        Try<DownloadableFile> result =
+            Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
+                .mapTry(Callable::call);
+        assertTrue("File should not be available for download as it is not online", result.isFailure());
+        assertTrue(result.getCause() instanceof NearlineFileNotAvailableException);
 
-            // Now the file is available in cache try to download it again.
-            DownloadableFile file = downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
-            Assert.assertNotNull("File should be downloadable", file);
-            Assert.assertNotNull("File should be downloadable", file.getFileInputStream());
-            Assert.assertEquals("File should be downloadable with a valid name",
-                                fileRef.getMetaInfo().getFileName(),
-                                file.getFileName());
-            Assert.assertEquals("File should be downloadable with a valid mime type",
-                                fileRef.getMetaInfo().getMimeType(),
-                                file.getMimeType());
-            file.getFileInputStream().close();
-        }
+        // A cache request should be created
+        Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("FileCacheRequest should be created", oReq.isPresent());
+        assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
+            NEARLINE_CONF_LABEL,
+            oReq.get().getStorage());
+        assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
+            FileRequestStatus.TO_DO,
+            oReq.get().getStatus());
+        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        runAndWaitJob(jobs);
+
+        Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("File should be present in cache", oCf.isPresent());
+        assertEquals("File should be present in cache",
+            cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
+            oCf.get().getLocation().getPath().toString());
+
+        // Now the file is available in cache try to download it again.
+        result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
+            .mapTry(Callable::call);
+        assertTrue(result.isSuccess());
+        DownloadableFile file = result.get();
+        Assert.assertNotNull("File should be downloadable", file);
+        Assert.assertNotNull("File should be downloadable", file.getFileInputStream());
+        assertEquals("File should be downloadable with a valid name",
+            fileRef.getMetaInfo().getFileName(),
+            file.getFileName());
+        assertEquals("File should be downloadable with a valid mime type",
+            fileRef.getMetaInfo().getMimeType(),
+            file.getMimeType());
+        file.getFileInputStream().close();
     }
 
     @Test(expected = NearlineFileNotAvailableException.class)
@@ -161,13 +170,41 @@ public class FileDownloadServiceTest extends AbstractStorageTest {
     public void testGenerateDownloadUrl() throws ModuleException {
         Assert.assertTrue(downloadTokenRepo.findAll().isEmpty());
         downloadService.generateDownloadUrl(UUID.randomUUID().toString());
-        Assert.assertEquals(1, downloadTokenRepo.findAll().size());
+        assertEquals(1, downloadTokenRepo.findAll().size());
 
         downloadTokenRepo.save(DownloadToken.build("plop", "pllip", OffsetDateTime.now().minusHours(2)));
-        Assert.assertEquals(2, downloadTokenRepo.findAll().size());
+        assertEquals(2, downloadTokenRepo.findAll().size());
         downloadService.purgeTokens();
-        Assert.assertEquals(1, downloadTokenRepo.findAll().size());
+        assertEquals(1, downloadTokenRepo.findAll().size());
 
     }
 
+    @Test
+    public void downloadFileTypeDependsOnFileReferenceType() {
+        Random r = new Random();
+        DataType[] typesCache = DataType.values();
+        IntStream.range(0, 100)
+            .forEach(i -> Try.run(() -> {
+                DataType type = typesCache[r.nextInt(typesCache.length)];
+                FileReference fileRef = generateStoredFileReference(
+                    UUID.randomUUID().toString(),
+                    "someone",
+                    "file.test",
+                    ONLINE_CONF_LABEL,
+                    Optional.empty(),
+                    Optional.of(type.name())
+                );
+
+                DownloadableFile dlFile =
+                    Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
+                        .mapTry(Callable::call)
+                        .get();
+
+                assertTrue(
+                    type.equals(DataType.RAWDATA)
+                        ? dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile
+                        : dlFile instanceof FileDownloadService.StandardDownloadableFile
+                );
+            }));
+    }
 }

@@ -119,12 +119,12 @@ public class CacheService {
      * @param location
      * @param expirationDate
      */
-    public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
+    public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, String type, URL location,
             OffsetDateTime expirationDate, String groupId) {
         Optional<CacheFile> oCf = search(checksum);
         CacheFile cachedFile;
         if (!oCf.isPresent()) {
-            cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId);
+            cachedFile = new CacheFile(checksum, fileSize, fileName, mimeType, location, expirationDate, groupId, type);
         } else {
             cachedFile = oCf.get();
             if (expirationDate.isAfter(cachedFile.getExpirationDate())) {

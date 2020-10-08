@@ -19,3 +19,4 @@ create table t_user_download_quota_counter (id int8 not null, instance_id varcha
 create sequence seq_download_quota_counter start 1 increment 50;
 alter table t_user_download_quota_counter add constraint uk_download_quota_counter_instance_email unique (instance_id, email);
 
+alter table t_cache_file add column type varchar(255);
