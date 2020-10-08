@@ -18,9 +18,16 @@
  */
 package fr.cnes.regards.framework.proxy;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -38,6 +45,7 @@ import fr.cnes.httpclient.HttpClientFactory.Type;
  * @author sbinda
  *
  */
+@ConditionalOnProperty("regards.http.proxy.enabled")
 @Configuration
 public class ProxyConfiguration {
 
@@ -64,8 +72,30 @@ public class ProxyConfiguration {
     @Bean("proxyHttpClient")
     @Primary
     public org.apache.http.client.HttpClient getHttpClient() {
+        LOGGER.info("####################################");
+        LOGGER.info("#### REGARDS HTTP Proxy enabled ####");
+        LOGGER.info("####################################");
+        if ((proxyHost != null) && !proxyHost.isEmpty()) {
+            HttpClientBuilder builder = HttpClientBuilder.create();
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                                         new UsernamePasswordCredentials(proxyLogin, proxyPassword));
+            builder.setDefaultCredentialsProvider(credsProvider);
+            return HttpClientBuilder.create().setProxy(proxy).build();
+        } else {
+            return HttpClientBuilder.create().build();
+        }
+    }
+
+    /**
+     * Method to use jspNego CNES library to create an httpclient whish can connect throught kerberos auth proxy
+     * Not used anymore as it leads to http connections never closed.
+     * @return
+     */
+    private HttpClient buildJspNegoClient() {
         // https://github.com/CNES/JSPNego
-        if (proxyHost != null && !proxyHost.isEmpty()) {
+        if ((proxyHost != null) && !proxyHost.isEmpty()) {
             LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
                         proxyLogin);
             if (proxyPort != null) {
@@ -73,10 +103,10 @@ public class ProxyConfiguration {
             } else {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
             }
-            if (noProxy != null && !noProxy.isEmpty()) {
+            if ((noProxy != null) && !noProxy.isEmpty()) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
             }
-            if (proxyLogin != null && proxyPassword != null) {
+            if ((proxyLogin != null) && (proxyPassword != null)) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
                 fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
             }
