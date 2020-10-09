@@ -51,13 +51,19 @@ public interface INotificationRuleService {
     Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests,
             PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError);
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError);
+
     /**
      * Register {@link NotificationRequestEvent} to schedule notifications
      */
     void registerNotificationRequests(List<NotificationRequestEvent> events);
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     Set<NotificationRequestEvent> handleRetryRequests(List<NotificationRequestEvent> events);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events);
 
     /**
      * Clean cache of rules. Need to be called after each configuration modification.
@@ -70,11 +76,19 @@ public interface INotificationRuleService {
      */
     Pair<Integer, Integer> matchRequestNRecipient();
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Pair<Integer, Integer> matchRequestNRecipientConcurrent(List<NotificationRequest> toBeMatched);
+
     /**
      * @param recipient recipient for which we want to schedule a {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob}
      * @return 1 if there is {@link NotificationRequest} to schedule for this recipient, 0 otherwise
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     Set<Long> scheduleJobForOneRecipient(PluginConfiguration recipient);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient,
+            List<NotificationRequest> requestsToSchedule);
 
     /**
      * Check whether a {@link NotificationRequest} is in success or not and notify its success

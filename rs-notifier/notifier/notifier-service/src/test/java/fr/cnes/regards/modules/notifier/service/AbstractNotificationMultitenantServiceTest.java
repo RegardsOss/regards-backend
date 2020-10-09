@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.google.common.collect.Sets;
@@ -105,7 +106,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected IJobInfoRepository jobInforepo;
 
-    @Autowired
+    @SpyBean
     protected NotificationRuleService notificationService;
 
     @Autowired
@@ -133,7 +134,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected ISubscriber subscriber;
 
     @Before
-    public void before() throws InterruptedException {
+    public void before() throws Exception {
         RECIPIENT_FAIL = true;
         this.notificationService.cleanTenantCache(runtimeTenantResolver.getTenant());
         this.recipientErrorRepo.deleteAll();

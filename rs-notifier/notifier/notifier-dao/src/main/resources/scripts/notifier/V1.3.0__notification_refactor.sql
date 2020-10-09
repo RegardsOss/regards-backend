@@ -14,18 +14,28 @@ ALTER TABLE t_notification_action RENAME TO t_notification_request;
 
 -- add association tables on notification requests
 -- to schedule
-create table ta_notif_request_recipients_toschedule (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
-alter table ta_notif_request_recipients_toschedule add constraint fk_notification_request_id_recipients_toschedule foreign key (notification_request_id) references t_notification_request;
-alter table ta_notif_request_recipients_toschedule add constraint fk_notification_request_recipients_toschedule_id foreign key (recipient_id) references t_plugin_configuration;
+CREATE TABLE ta_notif_request_recipients_toschedule (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
+ALTER TABLE ta_notif_request_recipients_toschedule ADD CONSTRAINT fk_notification_request_id_recipients_toschedule foreign key (notification_request_id) references t_notification_request;
+ALTER TABLE ta_notif_request_recipients_toschedule ADD CONSTRAINT fk_notification_request_recipients_toschedule_id foreign key (recipient_id) references t_plugin_configuration;
 -- scheduled
-create table ta_notif_request_recipients_scheduled (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
-alter table ta_notif_request_recipients_scheduled add constraint fk_notification_request_id_recipients_scheduled foreign key (notification_request_id) references t_notification_request;
-alter table ta_notif_request_recipients_scheduled add constraint fk_notification_request_recipients_scheduled_id foreign key (recipient_id) references t_plugin_configuration;
+CREATE TABLE ta_notif_request_recipients_scheduled (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
+ALTER TABLE ta_notif_request_recipients_scheduled ADD CONSTRAINT fk_notification_request_id_recipients_scheduled foreign key (notification_request_id) references t_notification_request;
+ALTER TABLE ta_notif_request_recipients_scheduled ADD CONSTRAINT fk_notification_request_recipients_scheduled_id foreign key (recipient_id) references t_plugin_configuration;
 -- errors
-create table ta_notif_request_recipients_error (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
-alter table ta_notif_request_recipients_error add constraint fk_notification_request_id_recipients_error foreign key (notification_request_id) references t_notification_request;
-alter table ta_notif_request_recipients_error add constraint fk_notification_request_recipients_error_id foreign key (recipient_id) references t_plugin_configuration;
+CREATE TABLE ta_notif_request_recipients_error (notification_request_id int8 not null, recipient_id int8 not null, primary key (notification_request_id, recipient_id));
+ALTER TABLE ta_notif_request_recipients_error ADD CONSTRAINT fk_notification_request_id_recipients_error foreign key (notification_request_id) references t_notification_request;
+ALTER TABLE ta_notif_request_recipients_error ADD CONSTRAINT fk_notification_request_recipients_error_id foreign key (recipient_id) references t_plugin_configuration;
 -- rules to match
-create table ta_notif_request_rules_to_match (notification_request_id int8 not null, rule_id int8 not null, primary key (notification_request_id, rule_id));
-alter table ta_notif_request_rules_to_match add constraint fk_notification_request_id_rules_to_match foreign key (notification_request_id) references t_notification_request;
-alter table ta_notif_request_rules_to_match add constraint fk_notification_request_rules_to_match_id foreign key (rule_id) references t_rule;
+CREATE TABLE ta_notif_request_rules_to_match (notification_request_id int8 not null, rule_id int8 not null, primary key (notification_request_id, rule_id));
+ALTER TABLE ta_notif_request_rules_to_match ADD CONSTRAINT fk_notification_request_id_rules_to_match foreign key (notification_request_id) references t_notification_request;
+ALTER TABLE ta_notif_request_rules_to_match ADD CONSTRAINT fk_notification_request_rules_to_match_id foreign key (rule_id) references t_rule;
+
+-- Add indexes on t_notification_request
+CREATE INDEX idx_t_notification_request_version ON t_notification_request(version);
+CREATE INDEX idx_t_notification_request_state ON t_notification_request(state);
+CREATE INDEX idx_t_notification_request_request_id ON t_notification_request(request_id);
+
+CREATE INDEX idx_ta_notif_request_recipients_toschedule_recipient_id ON ta_notif_request_recipients_toschedule(recipient_id);
+CREATE INDEX idx_ta_notif_request_recipients_scheduled_recipient_id ON ta_notif_request_recipients_scheduled(recipient_id);
+CREATE INDEX idx_ta_notif_request_recipients_error_recipient_id ON ta_notif_request_recipients_error(recipient_id);
+CREATE INDEX idx_ta_notif_request_rules_to_match_rule_id ON ta_notif_request_rules_to_match(rule_id);

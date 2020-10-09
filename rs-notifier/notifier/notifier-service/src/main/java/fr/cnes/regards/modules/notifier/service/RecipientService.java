@@ -29,12 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
@@ -135,7 +136,11 @@ public class RecipientService implements IRecipientService {
         return pluginToDelete;
     }
 
+    @Autowired //FIXME to remove here only for debug purposes
+    private INotificationRequestRepository notificationRequestRepository;
+
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public int scheduleNotificationJobs() {
         // lets schedule a notification job per recipient. This ensure us that each recipient will have to process an
         // optimum batch of requests at once. Moreover, it also ensures that there will be no influence between each recipient errors
@@ -146,7 +151,7 @@ public class RecipientService implements IRecipientService {
         }
         // Notification requests state cannot be updated anywhere but here!!
         // This is only once we have scheduled jobs for all recipients that the notification request can be considered scheduled
-            notifService.updateState(NotificationState.SCHEDULED, requestScheduledIds);
+        notifService.updateState(NotificationState.SCHEDULED, requestScheduledIds);
         return requestScheduledIds.size();
     }
 }

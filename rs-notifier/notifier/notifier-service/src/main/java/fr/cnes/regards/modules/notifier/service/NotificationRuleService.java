@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +34,13 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -80,7 +88,8 @@ import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
  */
 @Service
 @MultitenantTransactional
-public class NotificationRuleService extends AbstractCacheableRule implements INotificationRuleService {
+public class NotificationRuleService extends AbstractCacheableRule
+        implements INotificationRuleService, ApplicationContextAware {
 
     public static final String OPTIMIST_LOCK_LOG_MSG = "An other schedule has updated some requests handled by this method while it was running";
 
@@ -110,8 +119,20 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     @Autowired
     private IPublisher publisher;
 
-    @Autowired
     private INotificationRuleService self;
+
+    private ApplicationContext applicationContext;
+
+    @EventListener
+    public void onContextRefreshedEvent(ContextRefreshedEvent event) {
+        if (self == null) {
+            try {
+                self = applicationContext.getBean(INotificationRuleService.class);
+            } catch (NoSuchBeanDefinitionException e) {
+                // in this case there is nothing to do but wait for the next event
+            }
+        }
+    }
 
     private Collection<NotificationRequest> notifyRecipient(List<NotificationRequest> notificationRequests,
             PluginConfiguration recipientConfiguration) {
@@ -131,30 +152,35 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     @Override
     public Pair<Integer, Integer> processRequest(List<NotificationRequest> notificationRequests,
             PluginConfiguration recipient) {
-        long startTime = System.currentTimeMillis();
-        LOGGER.debug("------------->>> Reception of {} notification  event, start of notification process {} ms",
-                     notificationRequests.size(),
-                     startTime);
 
         // first lets check is recipient is not null, in this case it means it has been remove from all notification requests so the job simply has nothing to do
         if (recipient != null) {
             Collection<NotificationRequest> notificationsInError = notifyRecipient(notificationRequests, recipient);
             // handle successful notification for this recipient
-            try {
-                return self.handleRecipientResults(notificationRequests, recipient, notificationsInError);
-            } catch (ObjectOptimisticLockingFailureException e) {
-                LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
-                // we retry until it succeed because if it does not succeed on first time it is most likely because of
-                // an other scheduled method that would then most likely happen at next invocation because execution delays are fixed
-                return self.handleRecipientResults(notificationRequests, recipient, notificationsInError);
-            }
+            return handleRecipientResults(notificationRequests, recipient, notificationsInError);
         }
         return Pair.of(notificationRequests.size(), 0);
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError) {
+        try {
+            return self.handleRecipientResultsConcurrent(notificationRequests, recipient, notificationsInError);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
+            notificationRequests = notificationRequestRepo
+                    .findAllById(notificationRequests.stream().map(NotificationRequest::getId)
+                                         .collect(Collectors.toSet()));
+            // we retry until it succeed because if it does not succeed on first time it is most likely because of
+            // an other scheduled method that would then most likely happen at next invocation because execution delays are fixed
+            return handleRecipientResults(notificationRequests, recipient, notificationsInError);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests,
             PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError) {
         Set<NotificationRequest> notificationsSuccessfullySent = notificationRequests.stream()
                 .filter(nr -> !notificationsInError.contains(nr)).collect(Collectors.toSet());
@@ -186,7 +212,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     public void registerNotificationRequests(List<NotificationRequestEvent> events) {
         if (!events.isEmpty()) {
             // first handle retry by identifying NRE with the same requestId as one request with recipient in error
-            Set<NotificationRequestEvent> notRetryEvents = self.handleRetryRequests(events);
+            Set<NotificationRequestEvent> notRetryEvents = handleRetryRequests(events);
             // then check validity
             try {
                 Set<Rule> rules = getRules();
@@ -207,51 +233,56 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Set<NotificationRequestEvent> handleRetryRequests(List<NotificationRequestEvent> events) {
         try {
-            Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream()
-                    .collect(Collectors.toMap(NotificationRequestEvent::getRequestId, Function.identity()));
-            Set<NotificationRequest> alreadyKnownRequests = this.notificationRequestRepo
-                    .findAllByRequestIdIn(eventsPerRequestId.keySet());
-            Set<NotificationRequest> updated = new HashSet<>();
-            Set<NotifierEvent> responseToSend = new HashSet<>();
-            for (NotificationRequest known : alreadyKnownRequests) {
-                if (!known.getRecipientsInError().isEmpty()) {
-                    // This is a retry, lets prepare everything so it can be retried properly
-                    known.getRecipientsToSchedule().addAll(known.getRecipientsInError());
-                    known.getRecipientsInError().clear();
-                    known.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                    updated.add(known);
-                    responseToSend.add(new NotifierEvent(known.getRequestId(),
-                                                         known.getRequestOwner(),
-                                                         NotificationState.GRANTED));
-                    //lets remove this requestId from map so we can later reconstruct the collection of event still to be handled
-                    eventsPerRequestId.put(known.getRequestId(), null);
-                }
-                // This allows to retry if a rule failed to be matched to this notification.
-                // THIS HAS TO BE DONE AFTER RECIPIENTS IN ERROR!!!! Otherwise, the rules won't be applied again
-                if (!known.getRulesToMatch().isEmpty()) {
-                    known.setState(NotificationState.GRANTED);
-                    updated.add(known);
-                    // This is a set so we are not adding multiple time the same notifier event
-                    responseToSend.add(new NotifierEvent(known.getRequestId(),
-                                                         known.getRequestOwner(),
-                                                         NotificationState.GRANTED));
-                    //lets remove this requestId from map so we can later reconstruct the collection of event still to be handled
-                    // in worst case this is done twice, not a problem
-                    eventsPerRequestId.put(known.getRequestId(), null);
-                }
-            }
-            publisher.publish(new ArrayList<>(responseToSend));
-            notificationRequestRepo.saveAll(updated);
-            return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
+            return self.handleRetryRequestsConcurrent(events);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // an other scheduled method that would then most likely happen at next invocation because execution delays are fixed
-            return self.handleRetryRequests(events);
+            return handleRetryRequests(events);
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events) {
+        Map<String, NotificationRequestEvent> eventsPerRequestId = events.stream()
+                .collect(Collectors.toMap(NotificationRequestEvent::getRequestId, Function.identity()));
+        Set<NotificationRequest> alreadyKnownRequests = this.notificationRequestRepo
+                .findAllByRequestIdIn(eventsPerRequestId.keySet());
+        Set<NotificationRequest> updated = new HashSet<>();
+        Set<NotifierEvent> responseToSend = new HashSet<>();
+        for (NotificationRequest known : alreadyKnownRequests) {
+            if (!known.getRecipientsInError().isEmpty()) {
+                // This is a retry, lets prepare everything so it can be retried properly
+                known.getRecipientsToSchedule().addAll(known.getRecipientsInError());
+                known.getRecipientsInError().clear();
+                known.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+                updated.add(known);
+                responseToSend.add(new NotifierEvent(known.getRequestId(),
+                                                     known.getRequestOwner(),
+                                                     NotificationState.GRANTED));
+                //lets remove this requestId from map so we can later reconstruct the collection of event still to be handled
+                eventsPerRequestId.put(known.getRequestId(), null);
+            }
+            // This allows to retry if a rule failed to be matched to this notification.
+            // THIS HAS TO BE DONE AFTER RECIPIENTS IN ERROR!!!! Otherwise, the rules won't be applied again
+            if (!known.getRulesToMatch().isEmpty()) {
+                known.setState(NotificationState.GRANTED);
+                updated.add(known);
+                // This is a set so we are not adding multiple time the same notifier event
+                responseToSend.add(new NotifierEvent(known.getRequestId(),
+                                                     known.getRequestOwner(),
+                                                     NotificationState.GRANTED));
+                //lets remove this requestId from map so we can later reconstruct the collection of event still to be handled
+                // in worst case this is done twice, not a problem
+                eventsPerRequestId.put(known.getRequestId(), null);
+            }
+        }
+        publisher.publish(new ArrayList<>(responseToSend));
+        notificationRequestRepo.saveAll(updated);
+        return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     /**
@@ -288,88 +319,109 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED) //otherwise spring tries to save what we first took from DB even with readOnly=true
     public Pair<Integer, Integer> matchRequestNRecipient() {
+        LOGGER.debug("------------------------ Starting MATCHING");
+        long startTime = System.currentTimeMillis();
+        List<NotificationRequest> grantedToBeMatched = notificationRequestRepo.findByState(NotificationState.GRANTED,
+                                                                                           PageRequest.of(0,
+                                                                                                          properties
+                                                                                                                  .getMaxBulkSize(),
+                                                                                                          Sort.by(Order.asc(
+                                                                                                                  NotificationRequest.REQUEST_DATE_JPQL_NAME))))
+                .getContent();
+        Pair<Integer, Integer> result = matchRequestNRecipientRetryable(grantedToBeMatched);
+        LOGGER.debug("------------------------ Stoping MATCHING in {} ms", System.currentTimeMillis() - startTime);
+        return result;
+    }
+
+    private Pair<Integer, Integer> matchRequestNRecipientRetryable(List<NotificationRequest> toBeMatched) {
         try {
-            Page<NotificationRequest> toBeMatched = notificationRequestRepo.findByState(NotificationState.GRANTED,
-                                                                                        PageRequest.of(0,
-                                                                                                       properties
-                                                                                                               .getMaxBulkSize(),
-                                                                                                       Sort.by(Order.asc(
-                                                                                                               NotificationRequest.REQUEST_DATE_JPQL_NAME))));
-            Set<PluginConfiguration> recipientsActuallyMatched = new HashSet<>();
-            Set<NotificationRequest> requestsActuallyMatched = new HashSet<>();
-            Set<NotificationRequest> requestsCouldNotBeMatched = new HashSet<>();
-            // iterate over notification request that now know which rules are to be matched
-            // (association of pattern strategy(rules) and command(notification requests know what to apply))
-            Set<PluginConfiguration> cannotBeInstantiatedRules = new HashSet<>();
-            for (NotificationRequest notificationRequest : toBeMatched) {
-                for (Rule rule : notificationRequest.getRulesToMatch()) {
-                    try {
-                        IRuleMatcher rulePlugin = this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId());
-                        // check if the  element match with the rule
-                        if (rulePlugin.match(notificationRequest.getPayload())) {
-                            for (PluginConfiguration recipient : rule.getRecipients()) {
-                                notificationRequest.getRecipientsToSchedule().add(recipient);
-                                // this is done so we can know how many recipient have been matched by at least one request
-                                requestsActuallyMatched.add(notificationRequest);
-                                recipientsActuallyMatched.add(recipient);
-                            }
-                        }
-                        notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
-                        notificationRequest.getRulesToMatch().remove(rule);
-                    } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                        // exception from rule plugin instantiation
-                        LOGGER.error(String.format("Error while get plugin with id %S",
-                                                   rule.getRulePlugin().getBusinessId()), e);
-                        // we do not set notification request in error so we can later handle recipients that could be matched
-                        // moreover, we do not stop the matching process as we want to process recipients as soon as possible
-                        // the only draw back is that it is possible to process one recipient twice in case multiple rules
-                        // associate the same recipient to one request and at least one of those rules could not be instantiated
-                        cannotBeInstantiatedRules.add(rule.getRulePlugin());
-                        requestsCouldNotBeMatched.add(notificationRequest);
-                    }
-                }
-            }
-            // None of the notification requests have been set in state error
-            // But there is indeed an issue that can only be resolved later(thanks to human interaction) so we need to say
-            // the request has been in error so callers can handle it and ask for retry later.
-            publisher.publish(requestsCouldNotBeMatched.stream()
-                                      .map(request -> new NotifierEvent(request.getRequestId(),
-                                                                        request.getRequestOwner(),
-                                                                        NotificationState.ERROR))
-                                      .collect(Collectors.toList()));
-            if (!cannotBeInstantiatedRules.isEmpty()) {
-                String message = cannotBeInstantiatedRules.stream().map(couldNotBeInstantiated -> String.format(
-                        "%s plugin with id %s could not be instantiated so notifier cannot fully handle any requests for now.",
-                        couldNotBeInstantiated.getPluginClassName(),
-                        couldNotBeInstantiated.getBusinessId())).collect(Collectors.joining("<br>", "<p>", "</p>"));
-                notificationClient.notify(message,
-                                          String.format("Some %s plugins could not be instanciated",
-                                                        IRuleMatcher.class.getSimpleName()),
-                                          NotificationLevel.FATAL,
-                                          MediaType.TEXT_HTML,
-                                          DefaultRole.ADMIN);
-            }
-            // do not forget to handle all requests that were not matched by any rule and so should be considered successful
-            // right now (for simplicity issue lets set its state to SCHEDULED and wait for the check to be done)
-            toBeMatched.stream()
-                    .filter(r -> !requestsActuallyMatched.contains(r) && !requestsCouldNotBeMatched.contains(r) &&
-                            // because of retry logic in case of previous error in the matching process,
-                            // we have to check that nothing is to be done (already planned)
-                            // This case can happen if the rule that could not be matched earlier does not match the request
-                            r.getRecipientsToSchedule().isEmpty() && r.getRecipientsInError().isEmpty() && r
-                            .getRecipientsScheduled().isEmpty() && r.getRulesToMatch().isEmpty())
-                    .forEach(request -> request.setState(NotificationState.SCHEDULED));
-            // save all notification
-            notificationRequestRepo.saveAll(toBeMatched);
-            return Pair.of(recipientsActuallyMatched.size(), recipientsActuallyMatched.size());
+            return self.matchRequestNRecipientConcurrent(toBeMatched);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // an other scheduled method that would then most likely happen at next invocation because execution delays are fixed
-            return self.matchRequestNRecipient();
+            // Moreover, we cannot retry on the same content as it has to be reloaded from DB
+            return matchRequestNRecipientRetryable(notificationRequestRepo.findAllById(toBeMatched.stream()
+                                                                                               .map(NotificationRequest::getId)
+                                                                                               .collect(Collectors
+                                                                                                                .toSet())));
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+    public Pair<Integer, Integer> matchRequestNRecipientConcurrent(List<NotificationRequest> toBeMatched) {
+        Set<PluginConfiguration> recipientsActuallyMatched = new HashSet<>();
+        Set<NotificationRequest> requestsActuallyMatched = new HashSet<>();
+        Set<NotificationRequest> requestsCouldNotBeMatched = new HashSet<>();
+        // iterate over notification request that now know which rules are to be matched
+        // (association of pattern strategy(rules) and command(notification requests know what to apply))
+        Set<PluginConfiguration> cannotBeInstantiatedRules = new HashSet<>();
+        for (NotificationRequest notificationRequest : toBeMatched) {
+            Set<Rule> couldBeMatched = new HashSet<>();
+            for (Rule rule : notificationRequest.getRulesToMatch()) {
+                try {
+                    IRuleMatcher rulePlugin = this.pluginService.getPlugin(rule.getRulePlugin().getBusinessId());
+                    // check if the  element match with the rule
+                    if (rulePlugin.match(notificationRequest.getPayload())) {
+                        for (PluginConfiguration recipient : rule.getRecipients()) {
+                            notificationRequest.getRecipientsToSchedule().add(recipient);
+                            // this is done so we can know how many recipient have been matched by at least one request
+                            recipientsActuallyMatched.add(recipient);
+                        }
+                        requestsActuallyMatched.add(notificationRequest);
+                    }
+                    notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
+                    couldBeMatched.add(rule);
+                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                    // exception from rule plugin instantiation
+                    LOGGER.error(String.format("Error while get plugin with id %S",
+                                               rule.getRulePlugin().getBusinessId()), e);
+                    // we do not set notification request in error so we can later handle recipients that could be matched
+                    // moreover, we do not stop the matching process as we want to process recipients as soon as possible
+                    // the only draw back is that it is possible to process one recipient twice in case multiple rules
+                    // associate the same recipient to one request and at least one of those rules could not be instantiated
+                    cannotBeInstantiatedRules.add(rule.getRulePlugin());
+                    requestsCouldNotBeMatched.add(notificationRequest);
+                }
+            }
+            // we remove all rules that could be matched now so we can avoid playing with iterators
+            notificationRequest.getRulesToMatch().removeAll(couldBeMatched);
+        }
+        // None of the notification requests have been set in state error
+        // But there is indeed an issue that can only be resolved later(thanks to human interaction) so we need to say
+        // the request has been in error so callers can handle it and ask for retry later.
+        publisher.publish(requestsCouldNotBeMatched.stream().map(request -> new NotifierEvent(request.getRequestId(),
+                                                                                              request.getRequestOwner(),
+                                                                                              NotificationState.ERROR))
+                                  .collect(Collectors.toList()));
+        if (!cannotBeInstantiatedRules.isEmpty()) {
+            String message = cannotBeInstantiatedRules.stream().map(couldNotBeInstantiated -> String.format(
+                    "%s plugin with id %s could not be instantiated so notifier cannot fully handle any requests for now.",
+                    couldNotBeInstantiated.getPluginClassName(),
+                    couldNotBeInstantiated.getBusinessId())).collect(Collectors.joining("<br>", "<p>", "</p>"));
+            notificationClient.notify(message,
+                                      String.format("Some %s plugins could not be instanciated",
+                                                    IRuleMatcher.class.getSimpleName()),
+                                      NotificationLevel.FATAL,
+                                      MediaType.TEXT_HTML,
+                                      DefaultRole.ADMIN);
+        }
+        // do not forget to handle all requests that were not matched by any rule and so should be considered successful
+        // right now (for simplicity issue lets set its state to SCHEDULED and wait for the check to be done)
+        toBeMatched.stream()
+                .filter(r -> !requestsActuallyMatched.contains(r) && !requestsCouldNotBeMatched.contains(r) &&
+                        // because of retry logic in case of previous error in the matching process,
+                        // we have to check that nothing is to be done (already planned)
+                        // This case can happen if the rule that could not be matched earlier does not match the request
+                        r.getRecipientsToSchedule().isEmpty() && r.getRecipientsInError().isEmpty() && r
+                        .getRecipientsScheduled().isEmpty() && r.getRulesToMatch().isEmpty())
+                .forEach(request -> request.setState(NotificationState.SCHEDULED));
+        // save all notification
+        notificationRequestRepo.saveAll(toBeMatched);
+        return Pair.of(requestsActuallyMatched.size(), recipientsActuallyMatched.size());
     }
 
     private Page<NotificationRequest> findPageToScheduleContaining(PluginConfiguration recipient) {
@@ -382,38 +434,61 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public Set<Long> scheduleJobForOneRecipient(PluginConfiguration recipient) {
+        LOGGER.debug("Starting SCHEDULING FOR {}", recipient.getLabel());
+        long startTime = System.currentTimeMillis();
+        Page<NotificationRequest> requestsToSchedule = findPageToScheduleContaining(recipient);
+        Set<Long> result = scheduleJobForOneRecipientRetryable(recipient, requestsToSchedule.getContent());
+        LOGGER.debug("Ending SCHEDULING FOR {} in {} ms", recipient.getLabel(), System.currentTimeMillis() - startTime);
+        return result;
+    }
+
+    public Set<Long> scheduleJobForOneRecipientRetryable(PluginConfiguration recipient,
+            List<NotificationRequest> requestsToSchedule) {
         try {
-            Set<Long> toScheduleId = new HashSet<>();
             // we need to find a page of notification request that contains this recipient to be scheduled
-            Page<NotificationRequest> requestsToSchedule = findPageToScheduleContaining(recipient);
-            if (!requestsToSchedule.isEmpty()) {
-                for (NotificationRequest request : requestsToSchedule) {
-                    request.getRecipientsToSchedule().remove(recipient);
-                    request.getRecipientsScheduled().add(recipient);
-                    // the state of this requests cannot be update right now otherwise if a job should be scheduled for the next rule too it won't be.
-                    toScheduleId.add(request.getId());
-                }
-                JobInfo notificationJobForRecipient = new JobInfo(false,
-                                                                  0,
-                                                                  Sets.newHashSet(new JobParameter(NotificationJob.NOTIFICATION_REQUEST_IDS,
-                                                                                                   toScheduleId),
-                                                                                  new JobParameter(NotificationJob.RECIPIENT_BUSINESS_ID,
-                                                                                                   recipient
-                                                                                                           .getBusinessId())),
-                                                                  null,
-                                                                  NotificationJob.class.getName());
-                jobInfoService.createAsQueued(notificationJobForRecipient);
-                return toScheduleId;
-            }
-            return new HashSet<>();
+            return self.scheduleJobForOneRecipientConcurrent(recipient, requestsToSchedule);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // an other scheduled method that would then most likely happen at next invocation because execution delays are fixed
-            return self.scheduleJobForOneRecipient(recipient);
+            // Moreover, we cannot retry on the same content as it has to be reloaded from DB
+            return scheduleJobForOneRecipientRetryable(recipient,
+                                                       notificationRequestRepo.findAllById(requestsToSchedule.stream()
+                                                                                                   .map(NotificationRequest::getId)
+                                                                                                   .collect(Collectors
+                                                                                                                    .toSet())));
         }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient,
+            List<NotificationRequest> requestsToSchedule) {
+        Set<Long> toScheduleId = new HashSet<>();
+        if (!requestsToSchedule.isEmpty()) {
+            for (NotificationRequest request : requestsToSchedule) {
+                request.getRecipientsToSchedule().remove(recipient);
+                request.getRecipientsScheduled().add(recipient);
+                // the state of this requests cannot be update right now otherwise if a job should be scheduled for the next rule too it won't be.
+                toScheduleId.add(request.getId());
+            }
+            JobInfo notificationJobForRecipient = new JobInfo(false,
+                                                              0,
+                                                              Sets.newHashSet(new JobParameter(NotificationJob.NOTIFICATION_REQUEST_IDS,
+                                                                                               toScheduleId),
+                                                                              new JobParameter(NotificationJob.RECIPIENT_BUSINESS_ID,
+                                                                                               recipient
+                                                                                                       .getBusinessId())),
+                                                              null,
+                                                              NotificationJob.class.getName());
+            jobInfoService.createAsQueued(notificationJobForRecipient);
+            // save recipient to schedule remove and recipient scheduled added
+            notificationRequestRepo.saveAll(requestsToSchedule);
+            return toScheduleId;
+        }
+        return new HashSet<>();
     }
 
     @Override
@@ -428,7 +503,7 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
             }
             notificationRequestRepo.deleteInBatch(successes);
             publisher.publish(responseToSend);
-            return successes.getSize();
+            return successes.getNumberOfElements();
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we do now really care if it worked here because it will be done next time
@@ -450,5 +525,10 @@ public class NotificationRuleService extends AbstractCacheableRule implements IN
         if (!ids.isEmpty()) {
             notificationRequestRepo.updateState(state, ids);
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

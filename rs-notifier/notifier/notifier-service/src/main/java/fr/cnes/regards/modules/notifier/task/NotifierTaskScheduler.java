@@ -80,11 +80,11 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
     private final Task notificationMatchingTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
-        Pair<Integer, Integer> nbNotifPerRecipient = notificationService.matchRequestNRecipient();
-        if (nbNotifPerRecipient != null && nbNotifPerRecipient.getFirst() != 0) {
+        Pair<Integer, Integer> nbNotifNbRecipient = notificationService.matchRequestNRecipient();
+        if (nbNotifNbRecipient != null && nbNotifNbRecipient.getFirst() != 0) {
             LOGGER.info("{} notification requests matched to {} recipients  scheduled in {} ms",
-                        nbNotifPerRecipient.getFirst(),
-                        nbNotifPerRecipient.getSecond(),
+                        nbNotifNbRecipient.getFirst(),
+                        nbNotifNbRecipient.getSecond(),
                         System.currentTimeMillis() - start);
         }
     };

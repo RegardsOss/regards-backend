@@ -26,10 +26,10 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Version;
@@ -50,8 +50,10 @@ import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
  * @author Sylvain Vissiere-Guerinet
  */
 @Entity
-@Table(name = "t_notification_request")
-//TODO indexes
+@Table(name = "t_notification_request",
+        indexes = { @Index(name = "idx_t_notification_request_version", columnList = "version"),
+                @Index(name = "idx_t_notification_request_state", columnList = "state"),
+                @Index(name = "idx_t_notification_request_request_id", columnList = "request_id")})
 public class NotificationRequest {
 
     /**
@@ -67,7 +69,8 @@ public class NotificationRequest {
             joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "recipient_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_toschedule"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_toschedule_id"))
+            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_toschedule_id"), indexes = {
+            @Index(name = "idx_ta_notif_request_recipients_toschedule_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsToSchedule = new HashSet<>();
 
     /**
@@ -78,7 +81,8 @@ public class NotificationRequest {
             joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "recipient_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_scheduled"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_scheduled_id"))
+            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_scheduled_id"), indexes = {
+            @Index(name = "idx_ta_notif_request_recipients_scheduled_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsScheduled = new HashSet<>();
 
     /**
@@ -88,7 +92,8 @@ public class NotificationRequest {
     @JoinTable(name = "ta_notif_request_recipients_error", joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "recipient_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_error"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_error_id"))
+            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_error_id"), indexes = {
+            @Index(name = "idx_ta_notif_request_recipients_error_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsInError = new HashSet<>();
 
     /**
@@ -98,7 +103,8 @@ public class NotificationRequest {
     @JoinTable(name = "ta_notif_request_rules_to_match", joinColumns = @JoinColumn(name = "notification_request_id"),
             inverseJoinColumns = @JoinColumn(name = "rule_id"),
             foreignKey = @ForeignKey(name = "fk_notification_request_id_rules_to_match"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_rules_to_match_id"))
+            inverseForeignKey = @ForeignKey(name = "fk_notification_request_rules_to_match_id"),
+            indexes = { @Index(name = "idx_ta_notif_request_rules_to_match_rule_id", columnList = "rule_id") })
     private final Set<Rule> rulesToMatch = new HashSet<>();
 
     @Id

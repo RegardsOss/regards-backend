@@ -35,8 +35,10 @@ import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
         url = "https://regardsoss.github.io/")
 public class RecipientSenderTestFail extends RabbitMQSender implements IRecipientNotifier {
 
+    public static final String FAIL_PARAM_NAME = "fail";
+
     // if if fail = true the send will deliberaly fail
-    @PluginParameter(label = "If the plugin must fail", name = "fail")
+    @PluginParameter(label = "If the plugin must fail", name = FAIL_PARAM_NAME)
     private boolean fail;
 
     @Override
