@@ -7,14 +7,14 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequestVisitor;
-import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class CreateNotificationActionEventVisitor implements IAbstractFeatureRequestVisitor<NotificationActionEvent> {
+public class CreateNotificationActionEventVisitor implements IAbstractFeatureRequestVisitor<NotificationRequestEvent> {
 
     public static class NotificationActionEventMetadata {
 
@@ -43,52 +43,52 @@ public class CreateNotificationActionEventVisitor implements IAbstractFeatureReq
     }
 
     @Override
-    public NotificationActionEvent visitCreationRequest(FeatureCreationRequest creationRequest) {
-        return new NotificationActionEvent(gson.toJsonTree(creationRequest.getFeature()),
-                                           gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.CREATED)),
-                                           creationRequest.getRequestId(),
-                                           creationRequest.getRequestOwner());
+    public NotificationRequestEvent visitCreationRequest(FeatureCreationRequest creationRequest) {
+        return new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()),
+                                            gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.CREATED)),
+                                            creationRequest.getRequestId(),
+                                            creationRequest.getRequestOwner());
     }
 
     @Override
-    public NotificationActionEvent visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
+    public NotificationRequestEvent visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
         if (deletionRequest.isAlreadyDeleted()) {
-            return new NotificationActionEvent(gson.toJsonTree(deletionRequest.getToNotify()),
-                                               gson.toJsonTree(new NotificationActionEventMetadata(
+            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()),
+                                                gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.ALREADY_DELETED)),
-                                               deletionRequest.getRequestId(),
-                                               deletionRequest.getRequestOwner());
+                                                deletionRequest.getRequestId(),
+                                                deletionRequest.getRequestOwner());
         } else {
-            return new NotificationActionEvent(gson.toJsonTree(deletionRequest.getToNotify()),
-                                               gson.toJsonTree(new NotificationActionEventMetadata(
+            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()),
+                                                gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.DELETED)),
-                                               deletionRequest.getRequestId(),
-                                               deletionRequest.getRequestOwner());
+                                                deletionRequest.getRequestId(),
+                                                deletionRequest.getRequestOwner());
         }
     }
 
     @Override
-    public NotificationActionEvent visitCopyRequest(FeatureCopyRequest copyRequest) {
-        return new NotificationActionEvent(gson.toJsonTree(featureRepo.findByUrn(copyRequest.getUrn()).getFeature()),
-                                           gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.COPY)),
-                                           copyRequest.getRequestId(),
-                                           copyRequest.getRequestOwner());
+    public NotificationRequestEvent visitCopyRequest(FeatureCopyRequest copyRequest) {
+        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(copyRequest.getUrn()).getFeature()),
+                                            gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.COPY)),
+                                            copyRequest.getRequestId(),
+                                            copyRequest.getRequestOwner());
     }
 
     @Override
-    public NotificationActionEvent visitUpdateRequest(FeatureUpdateRequest updateRequest) {
-        return new NotificationActionEvent(gson.toJsonTree(featureRepo.findByUrn(updateRequest.getUrn()).getFeature()),
-                                           gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED)),
-                                           updateRequest.getRequestId(),
-                                           updateRequest.getRequestOwner());
+    public NotificationRequestEvent visitUpdateRequest(FeatureUpdateRequest updateRequest) {
+        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(updateRequest.getUrn()).getFeature()),
+                                            gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED)),
+                                            updateRequest.getRequestId(),
+                                            updateRequest.getRequestOwner());
     }
 
     @Override
-    public NotificationActionEvent visitNotificationRequest(NotificationRequest notificationRequest) {
-        return new NotificationActionEvent(gson.toJsonTree(featureRepo.findByUrn(notificationRequest.getUrn())
+    public NotificationRequestEvent visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
+        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(featureNotificationRequest.getUrn())
                                                                    .getFeature()),
-                                           gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED)),
-                                           notificationRequest.getRequestId(),
-                                           notificationRequest.getRequestOwner());
+                                            gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED)),
+                                            featureNotificationRequest.getRequestId(),
+                                            featureNotificationRequest.getRequestOwner());
     }
 }

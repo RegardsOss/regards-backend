@@ -18,25 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 
 /**
- * Repository to manipulate {@link NotificationRequest in database}
+ * Repository to manipulate {@link FeatureNotificationRequest in database}
  * @author Kevin Marchois
  *
  */
 @Repository
-public interface INotificationRequestRepository extends IAbstractFeatureRequestRepository<NotificationRequest> {
+public interface IFeatureNotificationRequestRepository extends IAbstractFeatureRequestRepository<FeatureNotificationRequest> {
 
 }

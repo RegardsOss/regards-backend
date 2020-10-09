@@ -53,6 +53,8 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
                 columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
 public class FeatureExtractionRequest extends AbstractRequest {
 
+    public static final String REQUEST_TYPE = "EXTRACTION";
+
     @Id
     @SequenceGenerator(name = "featureExtractionRequestSequence", initialValue = 1,
             sequenceName = "seq_feature_extraction_request")

@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
-import fr.cnes.regards.modules.feature.dao.INotificationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
@@ -56,7 +56,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -110,7 +110,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IFeatureDeletionRequestRepository featureDeletionRequestRepo;
 
     @Autowired
-    protected INotificationRequestRepository notificationRequestRepo;
+    protected IFeatureNotificationRequestRepository notificationRequestRepo;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
@@ -440,8 +440,8 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         subscriber.unsubscribeFrom(FeatureCreationRequestEvent.class);
         subscriber.unsubscribeFrom(FeatureDeletionRequestEvent.class);
         subscriber.unsubscribeFrom(FeatureUpdateRequestEvent.class);
+        subscriber.unsubscribeFrom(FeatureNotificationRequestEvent.class);
         subscriber.unsubscribeFrom(NotificationRequestEvent.class);
-        subscriber.unsubscribeFrom(NotificationActionEvent.class);
         cleanAMQPQueues(FeatureCreationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);

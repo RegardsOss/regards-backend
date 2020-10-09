@@ -13,5 +13,5 @@ public interface IAbstractFeatureRequestVisitor<U> {
 
     U visitUpdateRequest(FeatureUpdateRequest updateRequest);
 
-    U visitNotificationRequest(NotificationRequest notificationRequest);
+    U visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest);
 }

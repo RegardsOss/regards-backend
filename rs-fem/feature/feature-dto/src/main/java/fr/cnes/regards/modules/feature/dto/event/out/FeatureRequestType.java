@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.amqp.event.IRequestType;
  */
 public enum FeatureRequestType implements IRequestType {
     CREATION,
-    PATCH, EXTRACTION,
+    PATCH,
     DELETION,
     NOTIFICATION,
     FILE_COPY;

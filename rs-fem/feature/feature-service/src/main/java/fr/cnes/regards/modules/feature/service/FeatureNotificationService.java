@@ -42,22 +42,22 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.INotificationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
- * Service for prepare {@link NotificationActionEvent} from {@link NotificationRequestEvent}
+ * Service for prepare {@link NotificationRequestEvent} from {@link FeatureNotificationRequestEvent}
  * @author Kevin Marchois
  *
  */
@@ -70,7 +70,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureNotificationService.class);
 
     @Autowired
-    private INotificationRequestRepository notificationRequestRepo;
+    private IFeatureNotificationRequestRepository featureNotificationRequestRepository;
 
     @Autowired
     private IFeatureEntityRepository featureRepo;
@@ -94,11 +94,11 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
     @Override
-    public int registerRequests(List<NotificationRequestEvent> events) {
+    public int registerRequests(List<FeatureNotificationRequestEvent> events) {
         long registrationStart = System.currentTimeMillis();
 
-        List<NotificationRequest> notificationsRequest = new ArrayList<>();
-        Set<String> existingRequestIds = this.notificationRequestRepo.findRequestId();
+        List<FeatureNotificationRequest> notificationsRequest = new ArrayList<>();
+        Set<String> existingRequestIds = this.featureNotificationRequestRepository.findRequestId();
 
         events.forEach(item -> prepareNotificationRequest(item, notificationsRequest, existingRequestIds));
         LOGGER.trace("------------->>> {} Notification requests prepared in {} ms",
@@ -106,7 +106,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureDeletionRequest from a list of
-        notificationRequestRepo.saveAll(notificationsRequest);
+        featureNotificationRequestRepository.saveAll(notificationsRequest);
         LOGGER.debug("------------->>> {} Notification requests registered in {} ms",
                      notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
@@ -114,13 +114,13 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     /**
-     * Prepare {@link NotificationRequest} from {@link NotificationRequestEvent} to register in database
-     * @param item {@link NotificationRequestEvent} source
-     * @param notificationsRequest list of {@link NotificationRequest} granted
+     * Prepare {@link FeatureNotificationRequest} from {@link FeatureNotificationRequestEvent} to register in database
+     * @param item {@link FeatureNotificationRequestEvent} source
+     * @param notificationsRequest list of {@link FeatureNotificationRequest} granted
      * @param existingRequestIds list of existing request in database
      */
-    private void prepareNotificationRequest(NotificationRequestEvent item,
-            List<NotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
+    private void prepareNotificationRequest(FeatureNotificationRequestEvent item,
+            List<FeatureNotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
         validator.validate(item, errors);
@@ -148,13 +148,13 @@ public class FeatureNotificationService extends AbstractFeatureService implement
             return;
         }
 
-        NotificationRequest request = NotificationRequest.build(item.getRequestId(),
-                                                                item.getRequestOwner(),
-                                                                item.getRequestDate(),
-                                                                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                                item.getPriority(),
-                                                                item.getUrn(),
-                                                                RequestState.GRANTED);
+        FeatureNotificationRequest request = FeatureNotificationRequest.build(item.getRequestId(),
+                                                                              item.getRequestOwner(),
+                                                                              item.getRequestDate(),
+                                                                              FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                                              item.getPriority(),
+                                                                              item.getUrn(),
+                                                                              RequestState.GRANTED);
         // Monitoring log
         FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
         // Publish GRANTED request
@@ -180,7 +180,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
                 .getContent();
         if(!requestsToSend.isEmpty()) {
-            List<NotificationActionEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(new CreateNotificationActionEventVisitor(gson, featureRepo)))
+            List<NotificationRequestEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(new CreateNotificationActionEventVisitor(gson, featureRepo)))
                     .collect(Collectors.toList());
             effectivelySend(sendingStart, eventToSend);
             abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
@@ -189,7 +189,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
         return requestsToSend.size();
     }
 
-    private void effectivelySend(long scheduleStart, List<NotificationActionEvent> toSend) {
+    private void effectivelySend(long scheduleStart, List<NotificationRequestEvent> toSend) {
         notifierClient.sendNotifications(toSend);
 
         // if there is an event there is a request, moreover each request was retrieved thanks to a Set of id

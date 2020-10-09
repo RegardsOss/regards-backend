@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
@@ -13,6 +14,11 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FeatureExtractionResponseEvent implements ISubscribable {
+
+    /**
+     * This field is just here as to not break compatibility with former version
+     */
+    private final String type = FeatureExtractionRequest.REQUEST_TYPE;
 
     /**
      * The request id
@@ -72,4 +78,7 @@ public class FeatureExtractionResponseEvent implements ISubscribable {
         this.requestOwner = requestOwner;
     }
 
+    public String getType() {
+        return type;
+    }
 }

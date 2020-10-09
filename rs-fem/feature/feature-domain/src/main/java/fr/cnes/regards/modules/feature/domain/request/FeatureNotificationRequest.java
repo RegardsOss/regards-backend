@@ -20,22 +20,12 @@ package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Kevin Marchois
@@ -43,16 +33,15 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
  */
 @Entity
 @DiscriminatorValue(AbstractFeatureRequest.NOTIFICATION)
-public class NotificationRequest extends AbstractFeatureRequest {
+public class FeatureNotificationRequest extends AbstractFeatureRequest {
 
-    public static NotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
+    public static FeatureNotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, RequestState state) {
-        NotificationRequest request = new NotificationRequest();
+        FeatureNotificationRequest request = new FeatureNotificationRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setStep(step);
         request.setUrn(urn);
         request.setPriority(priority);
-
         return request;
     }
 

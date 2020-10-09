@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
@@ -85,11 +85,11 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
             return new INotifierClient() {
 
                 @Override
-                public void sendNotifications(List<NotificationActionEvent> notification) {
+                public void sendNotifications(List<NotificationRequestEvent> notification) {
                     ExecutorService executorToMockSubscribeThread = Executors.newSingleThreadExecutor();
                     executorToMockSubscribeThread.submit(() -> notifierRequestListener
                             .onRequestSuccess(notification.stream()
-                                                      .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(),
+                                                      .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(), ,
                                                                                            NotificationState.SUCCESS))
                                                       .collect(Collectors.toList())));
                 }

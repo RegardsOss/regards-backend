@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -69,7 +69,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     private IPublisher publisherSpy;
 
     @Captor
-    private ArgumentCaptor<List<NotificationActionEvent>> recordsCaptor;
+    private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
     @Autowired
     private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
@@ -87,7 +87,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeatureCreation() throws InterruptedException {
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureCreationRequestEvent> events = super
                 .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
@@ -176,7 +176,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeatureCreationWithDuplicateRequestId() throws InterruptedException {
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureCreationRequestEvent> events = super
                 .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);

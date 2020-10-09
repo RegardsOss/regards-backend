@@ -33,12 +33,12 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
- * Request for notification using event driven mechanism
+ * Request for feature notification using event driven mechanism
  *
  * @author Kevin Marchois
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-public class NotificationRequestEvent extends AbstractRequestEvent implements ISubscribable {
+public class FeatureNotificationRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
     @NotNull
     @Convert(converter = FeatureUrnConverter.class)
@@ -63,14 +63,14 @@ public class NotificationRequestEvent extends AbstractRequestEvent implements IS
         this.priority = priority;
     }
 
-    public static NotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
+    public static FeatureNotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
             PriorityLevel priority) {
         return build(requestOwner, urn, OffsetDateTime.now().minusSeconds(1), priority);
     }
 
-    public static NotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
+    public static FeatureNotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
             OffsetDateTime requestDate, PriorityLevel priority) {
-        NotificationRequestEvent event = new NotificationRequestEvent();
+        FeatureNotificationRequestEvent event = new FeatureNotificationRequestEvent();
         event.setRequestId(generateRequestId());
         event.setRequestOwner(requestOwner);
         event.setRequestDate(requestDate);

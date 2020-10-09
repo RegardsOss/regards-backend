@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
 /**
  * @author Kevin Marchois
@@ -54,7 +54,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     private IPublisher publisherSpy;
 
     @Captor
-    private ArgumentCaptor<List<NotificationActionEvent>> recordsCaptor;
+    private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
     /**
      * Nominal test case of deletion create feature then send delete request
@@ -67,7 +67,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     public void testDeletionWithoutFiles() throws InterruptedException {
         String deletionOwner = "deleter";
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
@@ -110,7 +110,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         String deletionOwner = "deleter";
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationActionEvent.class));
+        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
         long featureNumberInDatabase;
         int cpt = 0;

@@ -42,14 +42,14 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Test for {@link NotificationRequestEvent} publishing
+ * Test for {@link FeatureNotificationRequestEvent} publishing
  * @author Kevin Marchois
  *
  */
@@ -70,13 +70,13 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     private Gson gson;
 
     @Captor
-    private ArgumentCaptor<List<NotificationActionEvent>> recordsCaptor;
+    private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
     @Test
     public void testNotification() {
 
         // mock the publish method to not broke other tests
-        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationActionEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         // use it only to initialize Feature
         List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(2, true);
@@ -101,8 +101,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.featureRepo.save(createdEntity);
         this.featureRepo.save(updatedEntity);
 
-        this.publisher.publish(NotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
-        this.publisher.publish(NotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
+        this.publisher.publish(FeatureNotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
+        this.publisher.publish(FeatureNotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
 
         this.waitRequest(notificationRequestRepo, 2, 30000);
         assertEquals(2, notificationService.sendToNotifier());

@@ -21,10 +21,9 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 
 /**
  * Service for notify {@link Feature}
@@ -36,7 +35,7 @@ public interface IFeatureNotificationService extends IAbstractFeatureService {
     /**
      * Register notification requests in database for further processing from incoming request events
      */
-    int registerRequests(List<NotificationRequestEvent> events);
+    int registerRequests(List<FeatureNotificationRequestEvent> events);
 
     int sendToNotifier();
 

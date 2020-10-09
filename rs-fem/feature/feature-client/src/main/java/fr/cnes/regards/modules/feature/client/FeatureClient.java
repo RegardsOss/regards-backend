@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.client;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +32,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
@@ -82,19 +81,20 @@ public class FeatureClient {
     }
 
     /**
-     * Sends {@link NotificationRequestEvent} to fem manager to handle {@link Feature}s notification.
+     * Sends {@link FeatureNotificationRequestEvent} to fem manager to handle {@link Feature}s notification.
      * @param featureUrns Urn of {@link Feature}s to notify
      * @param priorityLevel {@link PriorityLevel}
      */
     public List<String> notifyFeatures(String notificationOwner, List<FeatureUniformResourceName> featureUrns,
             PriorityLevel priorityLevel) {
-        List<NotificationRequestEvent> events = Lists.newArrayList();
+        List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
-            NotificationRequestEvent event = NotificationRequestEvent.build(notificationOwner, urn, priorityLevel);
+            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent
+                    .build(notificationOwner, urn, priorityLevel);
             events.add(event);
         }
         publisher.publish(events);
-        return events.stream().map(NotificationRequestEvent::getRequestId).collect(Collectors.toList());
+        return events.stream().map(FeatureNotificationRequestEvent::getRequestId).collect(Collectors.toList());
     }
 
     public void createFeatures(List<FeatureCreationRequestEvent> featuresToCreate) {
