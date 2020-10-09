@@ -31,7 +31,7 @@
             <evaluator> <!-- defaults to type ch.qos.logback.classic.boolex.JaninoEventEvaluator -->
                 <expression>return message.contains("SECURITY");</expression>
             </evaluator>
-            <OnMismatch>NEUTRAL</OnMismatch>
+            <OnMismatch>DENY</OnMismatch>
             <OnMatch>ACCEPT</OnMatch>
         </filter>
 
