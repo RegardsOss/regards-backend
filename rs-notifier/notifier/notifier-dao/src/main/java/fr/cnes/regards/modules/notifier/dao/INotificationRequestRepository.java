@@ -47,7 +47,7 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
 
     @Override
     @EntityGraph(
-            attributePaths = { "recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch" })
+            attributePaths = { "recipientsScheduled", "recipientsInError", "recipientsToSchedule", "rulesToMatch", "rulesToMatch.recipients" })
     List<NotificationRequest> findAllById(Iterable<Long> ids);
 
     default Page<NotificationRequest> findByState(NotificationState state, Pageable pageable) {

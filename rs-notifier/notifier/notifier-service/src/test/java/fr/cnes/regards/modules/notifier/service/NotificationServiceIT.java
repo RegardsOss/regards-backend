@@ -985,8 +985,13 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                     logger.debug("Start simulate");
                     // we cannot update based on what we had initialized because scheduling might have been done for
                     // another request so we have to ask DB what is the current state
-                    testService.updateDatabaseToSimulateRetryOnlyRulesToMatch(notificationRepo.findAllById(finalBeingScheduled.stream().map(
-                            NotificationRequest::getId).collect(Collectors.toSet())));
+                    testService.updateDatabaseToSimulateRetryOnlyRulesToMatch(notificationRepo
+                                                                                      .findAllById(finalBeingScheduled
+                                                                                                           .stream()
+                                                                                                           .map(NotificationRequest::getId)
+                                                                                                           .collect(
+                                                                                                                   Collectors
+                                                                                                                           .toSet())));
                     logger.debug("End simulate");
                     CompletableFuture.runAsync(() -> {
                         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -1001,35 +1006,69 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                     .getValue().equals(recipientR1_1.getBusinessId())) {
                 Assert.assertTrue(
                         "Latch could not be released in less then 1 minutes! matchRequestNRecipient was too long.",
-                        latch.await(10, TimeUnit.MINUTES));
+                        latch.await(3, TimeUnit.MINUTES));
             }
             return invocation.callRealMethod();
         }).when(jobInfoService).createAsQueued(Mockito.any());
         recipientService.scheduleNotificationJobs();
-        // we should have: recipientR2_1 to schedule, recipientR1_1 & recipientR1_2 scheduled, request in state TO_SCHEDULE
+        // As we are simulating actions so that rule2 is matched while recipientR1_1 is being scheduled, requests might be in state SCHEDULED or TO_SCHEDULE
+        // So that means: if we schedule recipientR2_1 before recipientR1_1, the request cannot be set in state SCHEDULED. Otherwise, recipientR2_1 would never be processed.
+        // if we schedule recipientR2_1 after recipientR1_1, the request should be in state SCHEDULED. Because when we will request DB for request containing recipientR2_1, we will see them
         List<NotificationRequest> scheduledNMatchedRequests = notificationRepo
                 .findAllById(beingScheduled.stream().map(NotificationRequest::getId).collect(Collectors.toSet()));
-        Assert.assertTrue("All request that have been scheduled and matched at the same time should be in state "
-                                  + NotificationState.TO_SCHEDULE_BY_RECIPIENT + " but not " + scheduledNMatchedRequests
-                                  .get(0).getState(),
-                          scheduledNMatchedRequests.stream().allMatch(request -> request.getState()
-                                  == NotificationState.TO_SCHEDULE_BY_RECIPIENT));
         for (NotificationRequest scheduledNMatched : scheduledNMatchedRequests) {
             Assert.assertTrue("Request scheduled and matched at the same time should not have any rules to match left",
                               scheduledNMatched.getRulesToMatch().isEmpty());
-            Assert.assertEquals(
-                    "Request scheduled and matched at the same time should have only one recipient to schedule",
-                    1,
-                    scheduledNMatched.getRecipientsToSchedule().size());
-            Assert.assertTrue("Request scheduled and matched at the same time should have recipientR2_1 to schedule",
-                              scheduledNMatched.getRecipientsToSchedule().contains(recipientR2_1));
-            Assert.assertEquals("Request scheduled and matched at the same time should have 2 recipients scheduled",
-                                2,
-                                scheduledNMatched.getRecipientsScheduled().size());
-            Assert.assertTrue("Request scheduled and matched at the same time should have recipientR1_1 scheduled",
-                              scheduledNMatched.getRecipientsScheduled().contains(recipientR1_1));
-            Assert.assertTrue("Request scheduled and matched at the same time should have recipientR1_2 scheduled",
-                              scheduledNMatched.getRecipientsScheduled().contains(recipientR1_2));
+            if (scheduledNMatched.getState() == NotificationState.TO_SCHEDULE_BY_RECIPIENT) {
+                Assert.assertEquals("Request scheduled and matched at the same time in state "
+                                            + NotificationState.TO_SCHEDULE_BY_RECIPIENT
+                                            + " should have only one recipient to schedule",
+                                    1,
+                                    scheduledNMatched.getRecipientsToSchedule().size());
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.TO_SCHEDULE_BY_RECIPIENT
+                                          + " should have recipientR2_1 to schedule",
+                                  scheduledNMatched.getRecipientsToSchedule().contains(recipientR2_1));
+
+                Assert.assertEquals("Request scheduled and matched at the same time in state "
+                                            + NotificationState.TO_SCHEDULE_BY_RECIPIENT
+                                            + " should have 2 recipients scheduled",
+                                    2,
+                                    scheduledNMatched.getRecipientsScheduled().size());
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.TO_SCHEDULE_BY_RECIPIENT
+                                          + " should have recipientR1_1 scheduled",
+                                  scheduledNMatched.getRecipientsScheduled().contains(recipientR1_1));
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.TO_SCHEDULE_BY_RECIPIENT
+                                          + " should have recipientR1_2 scheduled",
+                                  scheduledNMatched.getRecipientsScheduled().contains(recipientR1_2));
+            } else if (scheduledNMatched.getState() == NotificationState.SCHEDULED) {
+                Assert.assertEquals("Request scheduled and matched at the same time in state "
+                                            + NotificationState.SCHEDULED
+                                            + " should have no more recipient to schedule",
+                                    0,
+                                    scheduledNMatched.getRecipientsToSchedule().size());
+                Assert.assertEquals("Request scheduled and matched at the same time in state "
+                                            + NotificationState.SCHEDULED
+                                            + " should have 3 recipients scheduled",
+                                    3,
+                                    scheduledNMatched.getRecipientsScheduled().size());
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.SCHEDULED
+                                          + " should have recipientR1_1 scheduled",
+                                  scheduledNMatched.getRecipientsScheduled().contains(recipientR1_1));
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.SCHEDULED
+                                          + " should have recipientR1_2 scheduled",
+                                  scheduledNMatched.getRecipientsScheduled().contains(recipientR1_2));
+                Assert.assertTrue("Request scheduled and matched at the same time in state "
+                                          + NotificationState.SCHEDULED
+                                          + " should have recipientR2_1 scheduled",
+                                  scheduledNMatched.getRecipientsScheduled().contains(recipientR2_1));
+            } else {
+                Assert.fail("Either concurrency test is not complete or the code is bugged, but a breakpoint to know!");
+            }
             Assert.assertTrue("Request scheduled and matched at the same time should not have any recipient in error",
                               scheduledNMatched.getRecipientsInError().isEmpty());
         }

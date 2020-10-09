@@ -136,9 +136,6 @@ public class RecipientService implements IRecipientService {
         return pluginToDelete;
     }
 
-    @Autowired //FIXME to remove here only for debug purposes
-    private INotificationRequestRepository notificationRequestRepository;
-
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public int scheduleNotificationJobs() {
@@ -149,9 +146,6 @@ public class RecipientService implements IRecipientService {
         for (PluginConfiguration recipient : recipients) {
             requestScheduledIds.addAll(notifService.scheduleJobForOneRecipient(recipient));
         }
-        // Notification requests state cannot be updated anywhere but here!!
-        // This is only once we have scheduled jobs for all recipients that the notification request can be considered scheduled
-        notifService.updateState(NotificationState.SCHEDULED, requestScheduledIds);
         return requestScheduledIds.size();
     }
 }

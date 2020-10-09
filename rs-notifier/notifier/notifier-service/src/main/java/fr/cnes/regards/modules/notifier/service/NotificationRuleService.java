@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -471,6 +469,10 @@ public class NotificationRuleService extends AbstractCacheableRule
             for (NotificationRequest request : requestsToSchedule) {
                 request.getRecipientsToSchedule().remove(recipient);
                 request.getRecipientsScheduled().add(recipient);
+                // because of concurrency issues, we have to try to set this request state to SCHEDULED here and we can't do this later
+                if(request.getRecipientsToSchedule().isEmpty()) {
+                    request.setState(NotificationState.SCHEDULED);
+                }
                 // the state of this requests cannot be update right now otherwise if a job should be scheduled for the next rule too it won't be.
                 toScheduleId.add(request.getId());
             }
@@ -518,13 +520,6 @@ public class NotificationRuleService extends AbstractCacheableRule
                         PageRequest.of(0,
                                        properties.getMaxBulkSize(),
                                        Sort.by(Order.asc(NotificationRequest.REQUEST_DATE_JPQL_NAME))));
-    }
-
-    @Override
-    public void updateState(NotificationState state, Set<Long> ids) {
-        if (!ids.isEmpty()) {
-            notificationRequestRepo.updateState(state, ids);
-        }
     }
 
     @Override

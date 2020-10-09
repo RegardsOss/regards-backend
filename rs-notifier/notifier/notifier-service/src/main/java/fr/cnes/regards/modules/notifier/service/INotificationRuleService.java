@@ -95,6 +95,4 @@ public interface INotificationRuleService {
      * @return number of request in success detected this time.
      */
     int checkSuccess();
-
-    void updateState(NotificationState state, Set<Long> ids);
 }
