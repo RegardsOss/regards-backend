@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
@@ -36,8 +35,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Lists;
 import com.netflix.zuul.context.RequestContext;
 
-import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
-
 /**
  * @author sbinda
  *
@@ -47,7 +44,7 @@ import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
 public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
 
     @Autowired
-    private HttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
     public static final String HEADER_HOST = "Host";
 
@@ -61,7 +58,6 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
             ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
             ApacheHttpClientFactory httpClientFactory) {
         super(helper, properties, connectionManagerFactory, httpClientFactory);
-        // TODO : Les paramètres ne sont pas reportés dans la requête proxyfiée !!!!!!!
     }
 
     /* (non-Javadoc)
@@ -70,10 +66,9 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
     @Override
     protected CloseableHttpClient newClient() {
         if (httpClient == null) {
-
             return super.newClient();
         } else {
-            return new ProxyfiedHttpClient((fr.cnes.httpclient.HttpClient) httpClient);
+            return httpClient;
         }
     }
 
