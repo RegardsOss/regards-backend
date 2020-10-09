@@ -22,6 +22,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
@@ -32,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import fr.cnes.httpclient.HttpClient;
 import fr.cnes.httpclient.HttpClientFactory;
 import fr.cnes.httpclient.HttpClientFactory.Type;
 
@@ -71,7 +71,7 @@ public class ProxyConfiguration {
 
     @Bean("proxyHttpClient")
     @Primary
-    public org.apache.http.client.HttpClient getHttpClient() {
+    public HttpClient getHttpClient() {
         LOGGER.info("####################################");
         LOGGER.info("#### REGARDS HTTP Proxy enabled ####");
         LOGGER.info("####################################");
