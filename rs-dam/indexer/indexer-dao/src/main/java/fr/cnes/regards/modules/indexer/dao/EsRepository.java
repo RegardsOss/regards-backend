@@ -312,6 +312,8 @@ public class EsRepository implements IEsRepository {
      */
     private final Gson gson;
 
+    private RequestOptions options = RequestOptions.DEFAULT;
+
     /**
      * SearchAll cache used by {@link EsRepository#searchAll} to avoid redo same ES request while changing page.
      * SortedSet is necessary to be sure several consecutive calls return same ordered set
@@ -324,20 +326,12 @@ public class EsRepository implements IEsRepository {
                 public Tuple<SortedSet<Object>, Set<IFacet<?>>> load(CacheKey key) throws Exception {
                     // Using method Objects.hashCode(Object) to compare to be sure that the set will always be returned
                     // with same order
-                    //                    Tuple<SortedSet<Object>, Set<IFacet<?>>> results = new TreeSet<>(Comparator.comparing(Objects::hashCode));
-                    //                    results.addAll(searchJoined(key.getSearchKey(),
-                    //                                                key.getCriterion(),
-                    //                                                key.getSourceAttribute(),
-                    //                                                key.getFacetsMap()));
-                    //                    return results;
                     return searchJoined(key.getSearchKey(),
                                         key.getCriterion(),
                                         key.getSourceAttribute(),
                                         key.getFacetsMap());
                 }
             });
-
-    private RequestOptions options = RequestOptions.DEFAULT;
 
     /**
      * Constructor
