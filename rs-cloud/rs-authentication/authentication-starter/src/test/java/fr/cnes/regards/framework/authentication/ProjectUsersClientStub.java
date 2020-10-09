@@ -50,8 +50,8 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
     private static List<ProjectUser> users = new ArrayList<>();
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(final int pPage,
-            final int pSize) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(String pStatus,
+            String pEmailStart, int pPage, int pSize) {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
         final PagedModel<EntityModel<ProjectUser>> resource = new PagedModel<>(HateoasUtils.wrapList(users), metadata,
                 new ArrayList<>());
@@ -119,6 +119,16 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<EntityModel<ProjectUser>> createUser(final AccessRequestDto pDto) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<EntityModel<ProjectUser>> retrieveCurrentProjectUser() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<EntityModel<ProjectUser>> updateCurrentProjectUser(ProjectUser updatedProjectUser) {
         return null;
     }
 
