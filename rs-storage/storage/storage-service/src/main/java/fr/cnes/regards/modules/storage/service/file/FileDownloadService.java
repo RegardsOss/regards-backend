@@ -130,7 +130,7 @@ public class FileDownloadService {
      * @param checksum Checksum of the file to download
      */
     @Transactional(noRollbackFor = { EntityNotFoundException.class })
-    public Callable<DownloadableFile> downloadFile(String checksum) {
+    public Callable<DownloadableFile> downloadFile(String checksum) throws ModuleException {
         //noinspection unchecked
         return Try.success(checksum)
             .flatMap(this::downloadCacheFile)
