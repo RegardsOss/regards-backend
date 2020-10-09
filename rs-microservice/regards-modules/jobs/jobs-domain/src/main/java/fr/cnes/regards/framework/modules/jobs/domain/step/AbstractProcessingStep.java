@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain.step;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 
 /**
@@ -29,6 +32,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
  * @author Marc Sordi
  */
 public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements IProcessingStep<I, O> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProcessingStep.class);
 
     protected final J job;
 
@@ -44,6 +49,9 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
             job.advanceCompletion();
             error = false;
             return out;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw e;
         } finally {
             if (error) {
                 // Always run this method even if exception occurs
