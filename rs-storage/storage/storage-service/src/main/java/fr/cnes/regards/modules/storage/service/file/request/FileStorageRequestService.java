@@ -167,10 +167,9 @@ public class FileStorageRequestService {
                     .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
                             && f.getLocation().getStorage().equals(request.getStorage()))
                     .findFirst();
-            Optional<FileStorageRequest> oReq = existingRequests.stream()
-                    .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
-                            && f.getStorage().equals(request.getStorage())
-                            && f.getStatus().equals(FileRequestStatus.TO_DO))
+            Optional<FileStorageRequest> oReq = existingRequests.stream().filter(f -> f.getMetaInfo().getChecksum()
+                    .equals(request.getChecksum()) && f.getStorage().equals(request.getStorage())
+                    && ((f.getStatus() == FileRequestStatus.TO_DO) || (f.getStatus() == FileRequestStatus.ERROR)))
                     .findFirst();
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                     .filter(f -> f.getFileReference().getMetaInfo().getChecksum().equals(request.getChecksum())
@@ -459,8 +458,6 @@ public class FileStorageRequestService {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
         Collection<FileStorageRequest> remainingRequests = Sets.newHashSet();
         remainingRequests.addAll(fileStorageRequests);
-        // FIXME : Check if file reference exists before schedule storage job.
-        // see handleFileToStoreAlreadyExists
         try {
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IStorageLocation storagePlugin = pluginService.getPlugin(conf.getBusinessId());
