@@ -169,11 +169,13 @@ public class FileStorageRequestService {
                     .findFirst();
             Optional<FileStorageRequest> oReq = existingRequests.stream()
                     .filter(f -> f.getMetaInfo().getChecksum().equals(request.getChecksum())
-                            && f.getStorage().equals(request.getStorage()))
+                            && f.getStorage().equals(request.getStorage())
+                            && f.getStatus().equals(FileRequestStatus.TO_DO))
                     .findFirst();
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                     .filter(f -> f.getFileReference().getMetaInfo().getChecksum().equals(request.getChecksum())
-                            && f.getStorage().equals(request.getStorage()))
+                            && f.getStorage().equals(request.getStorage())
+                            && f.getStatus().equals(FileRequestStatus.TO_DO))
                     .findFirst();
             RequestResult result = handleRequest(request, oFileRef, oReq, oDelReq, groupId);
             if (result.getFileReference().isPresent()) {
