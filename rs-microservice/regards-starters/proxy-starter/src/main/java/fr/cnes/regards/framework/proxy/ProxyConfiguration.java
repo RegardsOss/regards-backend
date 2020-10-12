@@ -76,10 +76,13 @@ public class ProxyConfiguration {
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
-                                         new UsernamePasswordCredentials(proxyLogin, proxyPassword));
-            builder.setDefaultCredentialsProvider(credsProvider);
+            if (((proxyLogin != null) && !proxyLogin.isEmpty())
+                    && ((proxyPassword != null) && !proxyPassword.isEmpty())) {
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                                             new UsernamePasswordCredentials(proxyLogin, proxyPassword));
+                builder.setDefaultCredentialsProvider(credsProvider);
+            }
             return HttpClientBuilder.create().setProxy(proxy).build();
         } else {
             return HttpClientBuilder.create().build();
