@@ -22,7 +22,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
     /**
      * Create a list of {@link FeatureCreationRequest} from a list of {@link Feature} stored in a {@link FeatureCreationCollection}
      * and return a {@link RequestInfo} full of request ids and occured errors
-     * @param toHandle {@link FeatureUpdateCollection} it contain all {@link Feature} to handle
+     * @param collection {@link FeatureCreationCollection} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
      */
     RequestInfo<String> registerRequests(FeatureCreationCollection collection);
