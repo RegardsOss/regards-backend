@@ -41,15 +41,13 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
+import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -66,7 +64,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     private Path tmpZipLocation;
 
-    private DumpConfiguration conf;
+    private DumpSettings conf;
 
     @Value("${regards.dump.zip-limit}")
     private int zipLimit;
@@ -81,21 +79,20 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
     private IAIPMetadataService metadataService;
 
     @Autowired
-    private StorageClientMock storageClient;
+    private IDumpSettingsRepository dumpConf;
 
     @Autowired
-    private IDumpConfigurationRepository dumpConf;
+    private StorageClientMock storageClient;
 
     @Override
     public void doInit() {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
+
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpConfiguration(true, "", "target/dump", null);
+        conf = new DumpSettings(true, "", "target/dump", null);
         dumpConf.save(conf);
         // no notification
         initNotificationSettings(false);
@@ -109,7 +106,8 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         int nbAIPToDump = nbSIP * 4 / 5;
 
         // Create aips and update aip dates
-        initData(nbSIP);
+        storageClient.setBehavior(true, true);
+        initRandomData(nbSIP);
         updateAIPLastUpdateDate(nbAIPToDump);
 
         // Create zips
@@ -145,7 +143,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         // Create aips
         int nbSIP = 14; // put at least nbSIP > 1
         storageClient.setBehavior(true, true);
-        initData(nbSIP);
+        initRandomData(nbSIP);
 
         // Create dump
         AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
@@ -161,15 +159,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals((int) Math.ceil((double) nbSIP / zipLimit), readZipEntryNames(dumpFolder[0]).size());
     }
 
-    public void initData(int nbSIP) {
-        storageClient.setBehavior(true, true);
-        for (int i = 0; i < nbSIP; i++) {
-            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
-                            getRandomSession(), getRandomSessionOwner(), getRandomCategories());
-        }
-        // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-    }
 
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
@@ -210,11 +199,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     protected void doAfter() throws IOException {
-        // clean tables (dump + sip + aip + request + job)
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
         //clear dump location
         FileUtils.deleteDirectory(Paths.get(conf.getDumpLocation()).toFile());
         FileUtils.deleteDirectory(this.tmpZipLocation.toFile());

@@ -48,7 +48,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  */
 @Component
 @Profile("!noschedule")
-@EnableScheduling
 public class RequestPendingScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestPendingScheduler.class);

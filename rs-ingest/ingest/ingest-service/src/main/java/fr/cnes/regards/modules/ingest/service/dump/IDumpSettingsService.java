@@ -16,22 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+package fr.cnes.regards.modules.ingest.service.dump;
 
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 
 /**
- * JPA repository to access {@link DumpConfiguration}
+ *
  * @author Iliana Ghazali
  */
-@Repository
-public interface IDumpConfigurationRepository extends JpaRepository<DumpConfiguration, Long> {
 
+public interface IDumpSettingsService {
+
+    DumpSettings retrieve();
+
+    DumpSettings update(DumpSettings dumpSettings) throws EntityNotFoundException;
 }
-

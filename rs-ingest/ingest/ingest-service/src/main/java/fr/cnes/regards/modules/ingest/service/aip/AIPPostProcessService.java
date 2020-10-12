@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 
 /**
- *
+ * Service to handle {@link IngestPostProcessingJob}. Create {@link AIPPostProcessRequest} to post-process aips.
  * @author Iliana Ghazali
  */
 @Service

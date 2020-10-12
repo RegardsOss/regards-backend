@@ -20,23 +20,36 @@
 
 package fr.cnes.regards.modules.ingest.service.schedule;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.modules.ingest.service.aip.AIPSaveMetadataService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
+import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJob;
 
 /**
- *
+ * Task to schedule {@link AIPSaveMetadataJob} through {@link AIPSaveMetadataService}
  * @author Iliana Ghazali
  */
-@Component
 public class AIPSaveMetadataJobTask implements Runnable {
 
-    @Autowired
     private AIPSaveMetadataService aipSaveMetadataService;
+
+    private String tenant;
+
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    public AIPSaveMetadataJobTask(AIPSaveMetadataService aipSaveMetadataService, String tenant,
+            IRuntimeTenantResolver runtimeTenantResolver) {
+        this.aipSaveMetadataService = aipSaveMetadataService;
+        this.tenant = tenant;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+    }
 
     @Override
     public void run() {
-        aipSaveMetadataService.scheduleJobs();
+        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            aipSaveMetadataService.scheduleJobs();
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 }

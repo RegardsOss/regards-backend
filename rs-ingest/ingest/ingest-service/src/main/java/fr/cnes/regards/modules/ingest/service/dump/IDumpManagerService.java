@@ -16,20 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.dao;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+package fr.cnes.regards.modules.ingest.service.dump;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationManager;
+import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 /**
- * {@link DumpSettings} repository
+ * Dump Configuration Service Interface for {@link IngestConfigurationManager}
  * @author Iliana Ghazali
  */
-@Repository
-public interface IAIPSaveMetadataRequestRepository extends JpaRepository<AIPSaveMetadataRequest, Long> {
 
+public interface IDumpManagerService {
+
+    /**
+     * Update the {@link DumpSettings} and the {@link AIPSaveMetadataScheduler} with the new configuration
+     * @param newDumpSettings the new dump configuration
+     */
+    void updateDumpAndScheduler(DumpSettings newDumpSettings) throws ModuleException;
+
+    /**
+     * Get the current {@link DumpSettings} for the tenant
+     * @return current dumpSettings
+     */
+    DumpSettings getCurrentDumpSettings();
 }
-

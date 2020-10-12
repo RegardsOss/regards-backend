@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.domain.settings;
+package fr.cnes.regards.modules.ingest.domain.notification;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

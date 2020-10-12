@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
 
 /**
  * {@link IAIPNotificationSettingsService}
@@ -63,4 +63,10 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
             throw new EntityNotFoundException(aipNotificationSettings.getId().toString(), AIPNotificationSettings.class);
         } return notificationSettingsRepository.save(aipNotificationSettings);
     }
+
+    @Override
+    public AIPNotificationSettings getCurrentNotificationSettings() {
+        return notificationSettingsRepository.findFirstBy().orElse(null);
+    }
+
 }

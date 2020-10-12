@@ -18,33 +18,40 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
-import java.util.Optional;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
+import fr.cnes.regards.modules.ingest.service.dump.IDumpSettingsService;
+import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.AIP_SAVE_METADATA_REQUESTS;
 
 /**
- * This component schedule jobs
+ * Scheduler handle {@link AIPSaveMetadataJobTask}s
  * @author Iliana Ghazali
  */
-@Profile("!noschedule")
 @Component
-public class AIPSaveMetadataScheduler {
+public class AIPSaveMetadataScheduler extends AbstractTaskScheduler {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(AIPSaveMetadataScheduler.class);
 
     @Autowired
     private TaskScheduler taskScheduler;
-
-    @Autowired
-    AIPSaveMetadataJobTask metadataTask;
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -53,25 +60,86 @@ public class AIPSaveMetadataScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IDumpConfigurationRepository dumpRepository;
+    private IDumpSettingsService dumpSettingsService;
+
+    @Autowired
+    private AIPSaveMetadataService aipSaveMetadataService;
+
+    private Map<String, ScheduledFuture> schedulersByTenant = Maps.newHashMap();
+
 
     /**
-     * Bulk save queued items every second.
+     * Create schedulers when the application context has been refreshed see {@link ApplicationStartedEvent}
      */
+    @EventListener
+    public void onApplicationStartedEvent(ApplicationStartedEvent event) {
+        initAIPSaveMetaDataJobsSchedulers();
+    }
 
-    @Scheduled(fixedDelayString = "${regards.aips.save-metadata.bulk.delay:3600000}", initialDelay = 1_000)
-    protected void scheduleAIPSaveMetaDataJobs() {
+    /**
+     * Initialize scheduled {@link AIPSaveMetadataJobTask}s for all tenants to save aip metadata
+     */
+    public void initAIPSaveMetaDataJobsSchedulers() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
+                traceScheduling(tenant, AIP_SAVE_METADATA_REQUESTS);
                 // check if dump is required
-                Optional<DumpConfiguration> dumpConfOpt = dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID);
-                if (dumpConfOpt.isPresent() && dumpConfOpt.get().isActiveModule()) {
-                    taskScheduler.schedule(metadataTask, new CronTrigger(dumpConfOpt.get().getCronTrigger()));
+                DumpSettings dumpConf = dumpSettingsService.retrieve();
+                if (dumpConf.isActiveModule()) {
+                    schedulersByTenant.put(tenant, taskScheduler
+                            .schedule(new AIPSaveMetadataJobTask(aipSaveMetadataService, tenant, runtimeTenantResolver),
+                                      new CronTrigger(dumpConf.getCronTrigger())));
                 }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
+    }
+
+    /**
+     * Create a new scheduled {@link AIPSaveMetadataJobTask} for the tenant created
+     * @param event to inform of a new connection see {@link TenantConnectionReady}
+     */
+    @EventListener
+    public void onTenantConnectionReady(TenantConnectionReady event) {
+        String tenant = event.getTenant();
+        runtimeTenantResolver.forceTenant(tenant);
+        updateScheduler(tenant, dumpSettingsService.retrieve());
+    }
+
+    /**
+     * Update the scheduler configured for the tenant
+     * Cancel the previous {@link AIPSaveMetadataJobTask} (if existing) and put a new task
+     * @param tenant tenant to be updated
+     */
+    public void updateScheduler(String tenant, DumpSettings newDumpSettings) {
+        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            traceScheduling(tenant, AIP_SAVE_METADATA_REQUESTS);
+            // cancel the existing scheduler, wait until the end to cancel it
+            ScheduledFuture schedulerToRestart = schedulersByTenant.get(tenant);
+            if (schedulerToRestart != null) {
+                schedulerToRestart.cancel(false);
+            }
+            // update scheduler only if the module is active
+            if (newDumpSettings.isActiveModule()) {
+                schedulersByTenant.put(tenant, taskScheduler
+                        .schedule(new AIPSaveMetadataJobTask(aipSaveMetadataService, tenant, runtimeTenantResolver),
+                                  new CronTrigger(newDumpSettings.getCronTrigger())));
+            }
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    public Map<String, ScheduledFuture> getSchedulersByTenant() {
+        return schedulersByTenant;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

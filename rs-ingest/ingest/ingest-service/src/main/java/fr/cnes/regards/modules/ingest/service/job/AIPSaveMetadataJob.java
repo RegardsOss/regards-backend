@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest
 import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 
 /**
+ * This job is used to dump aips.
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -86,13 +87,13 @@ public class AIPSaveMetadataJob extends AbstractJob<Void> {
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {
-            logger.error(String.format(e.getClass().getSimpleName() + " " + e.getMessage()));
+            logger.error(String.format(e.getClass().getSimpleName(), e.getMessage()));
         } catch (RsRuntimeException e) {
             logger.error(e.getMessage());
             metadataService.handleError(metadataRequest, e.getMessage());
             throw e;
         } catch (NothingToDoException e) {
-            logger.info(String.format("[AIP SAVE METADATA JOB] ", e.getMessage()));
+            logger.info("[AIP SAVE METADATA JOB] {}", e.getMessage());
             metadataService.handleSuccess(metadataRequest); // request is in success, even if nothing was dumped
         } logger.debug("[AIP SAVE META JOB] Job handled for 1 AIPSaveMetaDataRequest request in {}ms",
                        System.currentTimeMillis() - start);

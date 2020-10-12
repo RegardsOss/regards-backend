@@ -31,12 +31,15 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.dump.IDumpManagerService;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
 
 /**
  * Configuration manager for current module
@@ -54,7 +57,11 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
     private IIngestProcessingChainRepository ingestChainRepository;
 
     @Autowired
-    private IDumpConfigurationRepository dumpRepository;
+    private IDumpManagerService dumpManagerService;
+
+    @Autowired
+    private IAIPNotificationSettingsService notificationSettingsService;
+
 
     @Override
     public Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -75,9 +82,18 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                         LOGGER.error(e.getMessage(), e);
                     }
                 }
-            } else if (DumpConfiguration.class.isAssignableFrom(item.getKey())) {
-                DumpConfiguration conf = item.getTypedValue();
-                dumpRepository.save(conf);
+            } else if (DumpSettings.class.isAssignableFrom(item.getKey())) {
+                try {
+                    dumpManagerService.updateDumpAndScheduler(item.getTypedValue());
+                } catch (ModuleException e) {
+                    LOGGER.error("Not able to update new dump settings, cause by:", e.getMessage());
+                }
+            } else if (AIPNotificationSettings.class.isAssignableFrom(item.getKey())) {
+                try {
+                    notificationSettingsService.update(item.getTypedValue());
+                } catch (EntityNotFoundException e) {
+                    LOGGER.error("Not able to update new notification settings, cause by:", e.getMessage());
+                }
             }
         }
         return importErrors;
@@ -89,7 +105,16 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
         for (IngestProcessingChain ipc : ingestChainRepository.findAll()) {
             configuration.add(ModuleConfigurationItem.build(ipc));
         }
-        configuration.add(ModuleConfigurationItem.build(dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID)));
+        DumpSettings dumpSettings = dumpManagerService.getCurrentDumpSettings();
+        if(dumpSettings != null) {
+            configuration.add(ModuleConfigurationItem.build(dumpSettings));
+        }
+
+        AIPNotificationSettings notifSettings = notificationSettingsService.getCurrentNotificationSettings();
+        if(notifSettings != null) {
+            configuration.add(ModuleConfigurationItem.build(notifSettings));
+        }
+
         return ModuleConfiguration.build(info, configuration);
     }
 }

@@ -21,7 +21,7 @@
 package fr.cnes.regards.modules.ingest.service.notification;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
 
 /**
  * Service to handle optional notifications
@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 public interface IAIPNotificationSettingsService {
 
     /**
-     * Retrieve {@link AIPNotificationSettings}
+     * Retrieve {@link AIPNotificationSettings}. If they do not exist, new settings are created.
      */
     AIPNotificationSettings retrieve();
 
@@ -39,5 +39,10 @@ public interface IAIPNotificationSettingsService {
      * Update {@link AIPNotificationSettings}
      */
     AIPNotificationSettings update(AIPNotificationSettings pAipNotificationSettings) throws EntityNotFoundException;
+
+    /**
+     * Get current {@link AIPNotificationSettings}
+     */
+    AIPNotificationSettings getCurrentNotificationSettings();
 
 }

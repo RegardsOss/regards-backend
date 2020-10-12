@@ -50,14 +50,12 @@ import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
+import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
 import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataJobTask;
@@ -86,7 +84,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
-    private IDumpConfigurationRepository dumpConfRepo;
+    private IDumpSettingsRepository dumpConfRepo;
 
     @Autowired
     AIPSaveMetadataService saveMetadataService;
@@ -103,15 +101,12 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-
     @Override
     public void doInit() {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // clear before test
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
         dumpConfRepo.deleteAll();
 
         // dump location is in microservice workspace by default
@@ -128,7 +123,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         // add aip to db
         int nbSIP = 6;
         storageClient.setBehavior(true, true);
-        initData(nbSIP);
+        initRandomData(nbSIP);
 
         // dump all aips created
         JobInfo jobInfo = runSaveMetadataJob();
@@ -156,7 +151,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         // add aip to db
         int nbSIP = 3;
         storageClient.setBehavior(true, true);
-        initData(nbSIP);
+        initRandomData(nbSIP);
 
         // change provider id to create duplicated jsonNames
         updateAIPProviderIdVersion();
@@ -185,8 +180,8 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(InternalRequestState.ERROR, errorRequests.get(0).getState());
 
         // Check folder target/workspace/<microservice>/ does not contain dump
-        Assert.assertEquals(0, this.dumpLocation.toFile().listFiles().length);
-        dumpConfRepo.deleteById(DumpConfiguration.DUMP_CONF_ID);
+        Assert.assertEquals("Dump folder should be empty",0, this.dumpLocation.toFile().listFiles().length);
+        dumpConfRepo.deleteById(DumpSettings.DUMP_CONF_ID);
     }
 
     @Test
@@ -211,15 +206,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
     }
 
-    public void initData(int nbSIP) {
-        for (int i = 0; i < nbSIP; i++) {
-            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
-                            getRandomSession(), getRandomSessionOwner(), getRandomCategories());
-        }
-        // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-    }
-
     public void updateAIPProviderIdVersion() {
         List<AIPEntity> aips = aipRepository.findAll();
         for (AIPEntity aip : aips) {
@@ -231,11 +217,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
     @Override
     protected void doAfter() throws IOException {
-        // clean tables (dump + sip + aip + request + job)
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
         dumpConfRepo.deleteAll();
         //clear dump location
         FileUtils.deleteDirectory(this.dumpLocation.toFile());

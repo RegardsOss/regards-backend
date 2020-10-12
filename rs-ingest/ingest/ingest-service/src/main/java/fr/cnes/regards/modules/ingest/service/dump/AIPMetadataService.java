@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,22 +40,22 @@ import org.springframework.transaction.annotation.Transactional;
 import fr.cnes.regards.framework.dump.DumpService;
 import fr.cnes.regards.framework.dump.ObjectDump;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.ingest.dao.IDumpConfigurationRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpConfiguration;
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 
 /**
- * Service to dump aips
+ * see {@link IAIPMetadataService}
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -74,7 +73,7 @@ public class AIPMetadataService implements IAIPMetadataService {
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
     @Autowired
-    private IDumpConfigurationRepository dumpRepository;
+    private IDumpSettingsService dumpSettingsService;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -87,6 +86,18 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Override
+    public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) {
+        OffsetDateTime creationDate = metadataRequest.getCreationDate();
+        try {
+            // Write dump
+            dumpService.generateDump(dumpLocation, tmpZipLocation, creationDate);
+        } catch (IOException e) {
+            LOGGER.error("Error while writing aip dump", e);
+            throw new RsRuntimeException(e.getClass().getSimpleName() + " " + e.getMessage(), e);
+        }
+    }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -104,18 +115,6 @@ public class AIPMetadataService implements IAIPMetadataService {
         } catch (DuplicateUniqueNameException e) {
             self.handleError(metadataRequest, e.getMessage());
             throw new RsRuntimeException(e);
-        }
-    }
-
-    @Override
-    public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) {
-        OffsetDateTime creationDate = metadataRequest.getCreationDate();
-        try {
-            // Write dump
-            dumpService.generateDump(dumpLocation, tmpZipLocation, creationDate);
-        } catch (IOException e) {
-            LOGGER.error("Error while writing aip dump", e);
-            throw new RsRuntimeException(e.getClass().getSimpleName() + " " + e.getMessage(), e);
         }
     }
 
@@ -174,11 +173,12 @@ public class AIPMetadataService implements IAIPMetadataService {
     @Override
     public void resetLastUpdateDate() {
         // reset last dump date if already present
-        Optional<DumpConfiguration> lastDumpOpt = dumpRepository.findById(DumpConfiguration.DUMP_CONF_ID);
-        if (lastDumpOpt.isPresent()) {
-            DumpConfiguration lastDump = lastDumpOpt.get();
-            lastDump.setLastDumpReqDate(null);
-            dumpRepository.save(lastDump);
+        DumpSettings lastDump = dumpSettingsService.retrieve();
+        lastDump.setLastDumpReqDate(null);
+        try {
+            dumpSettingsService.update(lastDump);
+        } catch (EntityNotFoundException e) {
+            LOGGER.error("LastReqDumpDate was not updated to null, caused by : {}", e.getMessage());
         }
     }
 

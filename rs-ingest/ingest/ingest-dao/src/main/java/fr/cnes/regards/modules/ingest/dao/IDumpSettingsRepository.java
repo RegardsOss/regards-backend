@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.ingest.service;/*
+/*
  * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
@@ -16,29 +16,22 @@ package fr.cnes.regards.modules.ingest.service;/*
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.ingest.dao;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 
 /**
- *
+ * JPA repository to access {@link DumpSettings}
  * @author Iliana Ghazali
  */
+@Repository
+public interface IDumpSettingsRepository extends JpaRepository<DumpSettings, Long> {
 
-@Service
-@MultitenantTransactional
-public class IngestNotificationService {
-
-    public static final String DEBUG_MSG_NOTIFICATION_REQUESTS_IN_MS = "------------->>> {} Notification requests in {} ms";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestNotificationService.class);
-
-
-
-
-
-
+    Optional<DumpSettings> findFirstBy();
 }
+

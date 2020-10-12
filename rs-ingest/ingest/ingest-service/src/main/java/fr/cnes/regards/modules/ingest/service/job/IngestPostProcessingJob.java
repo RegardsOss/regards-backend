@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessR
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
+ * This job is used to create XML files from aip contents.
  * @author Iliana Ghazali
  * @author Sébastien Binda
  */

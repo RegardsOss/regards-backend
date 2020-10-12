@@ -24,12 +24,12 @@ import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- *
+ * Model to handle dump settings
  * @author Iliana Ghazali
  */
 @Entity
-@Table(name = "t_dump_configuration")
-public class DumpConfiguration {
+@Table(name = "t_dump_settings")
+public class DumpSettings {
 
     // only one configuration per tenant
     public static final long DUMP_CONF_ID = 0;
@@ -50,7 +50,7 @@ public class DumpConfiguration {
     @Column(name = "last_dump_req_date")
     private OffsetDateTime lastDumpReqDate;
 
-    public DumpConfiguration(boolean activeModule, String cronTrigger, String dumpLocation,
+    public DumpSettings(boolean activeModule, String cronTrigger, String dumpLocation,
             OffsetDateTime lastDumpReqDate) {
         this.id = DUMP_CONF_ID;
         this.activeModule = activeModule;
@@ -59,7 +59,11 @@ public class DumpConfiguration {
         this.lastDumpReqDate = lastDumpReqDate;
     }
 
-    public DumpConfiguration() {
+    public DumpSettings() {
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public OffsetDateTime getLastDumpReqDate() {
