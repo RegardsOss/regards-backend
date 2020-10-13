@@ -76,7 +76,7 @@ public class ProxyConfiguration {
     @Value("${http.proxy.port:#{null}}")
     private Integer proxyPort;
 
-    @Value("${http.proxy.noproxy:#{}}")
+    @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
     private List<String> noProxy;
 
     @Bean("proxyHttpClient")
