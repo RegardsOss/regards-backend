@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum"),
-                @UniqueConstraint(name = "uk_sip_provider_id_last", columnNames = { "last", "provider_id" }) })
+                @UniqueConstraint(name = "uk_sip_provider_id_last", columnNames = "last,provider_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {
 
