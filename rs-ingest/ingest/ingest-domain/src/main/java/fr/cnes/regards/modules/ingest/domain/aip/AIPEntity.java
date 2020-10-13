@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -25,11 +28,8 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -46,8 +46,8 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
         @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
         @Index(name = "idx_aip_categories", columnList = "categories"),
         @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
-        @Index(name = "idx_aipid", columnList = "aip_id") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_aip_provider_id_last", columnNames = "last,providerId") })
+        @Index(name = "idx_aipid", columnList = "aip_id") })
+// There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 public class AIPEntity extends AbstractAIPEntity {
 
     /**
@@ -67,18 +67,6 @@ public class AIPEntity extends AbstractAIPEntity {
             value = "fr.cnes.regards.framework.oais.OAISDataObjectLocation") })
     private Set<OAISDataObjectLocation> manifestLocations = new HashSet<>();
 
-    public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
-        AIPEntity aipEntity = AbstractAIPEntity.build(state, aip);
-        aipEntity.setSip(sip);
-        // Extracted from SIP
-        aipEntity.setProviderId(sip.getProviderId());
-        aipEntity.setSessionOwner(sip.getSessionOwner());
-        aipEntity.setSession(sip.getSession());
-        aipEntity.setCategories(sip.getCategories());
-        aipEntity.setVersion(aip.getVersion());
-        return aipEntity;
-    }
-
     public Set<OAISDataObjectLocation> getManifestLocations() {
         return manifestLocations;
     }
@@ -94,6 +82,18 @@ public class AIPEntity extends AbstractAIPEntity {
     public void setSip(SIPEntity sip) {
         this.sip = sip;
         this.setIpType(sip.getIpType());
+    }
+
+    public static AIPEntity build(SIPEntity sip, AIPState state, AIP aip) {
+        AIPEntity aipEntity = AbstractAIPEntity.build(state, aip);
+        aipEntity.setSip(sip);
+        // Extracted from SIP
+        aipEntity.setProviderId(sip.getProviderId());
+        aipEntity.setSessionOwner(sip.getSessionOwner());
+        aipEntity.setSession(sip.getSession());
+        aipEntity.setCategories(sip.getCategories());
+        aipEntity.setVersion(aip.getVersion());
+        return aipEntity;
     }
 
 }

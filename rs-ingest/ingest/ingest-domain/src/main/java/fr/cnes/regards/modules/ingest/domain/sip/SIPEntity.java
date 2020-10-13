@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -31,9 +35,6 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.UUID;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -53,17 +54,18 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  *
  */
 @Entity
-@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
-        @Index(name = "idx_sip_state", columnList = "state"),
-        @Index(name = "idx_sip_providerId", columnList = "provider_id"),
-        @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
-        @Index(name = "idx_sip_version", columnList = "version"),
-        @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
-        @Index(name = "idx_sip_session", columnList = "session_name") },
+@Table(name = "t_sip",
+        indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
+                @Index(name = "idx_sip_state", columnList = "state"),
+                @Index(name = "idx_sip_providerId", columnList = "provider_id"),
+                @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
+                @Index(name = "idx_sip_version", columnList = "version"),
+                @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
+                @Index(name = "idx_sip_session", columnList = "session_name") },
         // PostgreSQL manage both single indexes and multiple ones
         uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
-                @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum"),
-                @UniqueConstraint(name = "uk_sip_provider_id_last", columnNames = "last,provider_id") })
+                @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
+// There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {
 
@@ -107,33 +109,6 @@ public class SIPEntity extends AbstractOAISEntity {
     @Column
     private boolean last = false;
 
-    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state) {
-
-        SIPEntity sipEntity = new SIPEntity();
-
-        OaisUniformResourceName urn = generationUrn(tenant, sip, version);
-        sipEntity.setProviderId(sip.getId());
-        sipEntity.setSipId(urn);
-        sipEntity.setCreationDate(OffsetDateTime.now());
-        sipEntity.setState(state);
-        sipEntity.setSip(sip);
-        // Extract from IngestMetadata
-        sipEntity.setSession(metadata.getSession());
-        sipEntity.setSessionOwner(metadata.getSessionOwner());
-        sipEntity.setCategories(metadata.getCategories());
-
-        sipEntity.setVersion(version);
-        // Extracted from SIP for search purpose
-        sipEntity.setTags(new HashSet<>(sip.getTags()));
-
-        return sipEntity;
-    }
-
-    public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
-        UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version, null, null);
-    }
-
     public String getSipId() {
         return sipId;
     }
@@ -142,12 +117,12 @@ public class SIPEntity extends AbstractOAISEntity {
         this.sipId = sipId;
     }
 
-    public void setSipId(OaisUniformResourceName sipId) {
-        this.sipId = sipId.toString();
-    }
-
     public OaisUniformResourceName getSipIdUrn() {
         return OaisUniformResourceName.fromString(sipId);
+    }
+
+    public void setSipId(OaisUniformResourceName sipId) {
+        this.sipId = sipId.toString();
     }
 
     public SIPState getState() {
@@ -215,6 +190,33 @@ public class SIPEntity extends AbstractOAISEntity {
             return false;
         }
         return true;
+    }
+
+    public static SIPEntity build(String tenant, IngestMetadata metadata, SIP sip, Integer version, SIPState state) {
+
+        SIPEntity sipEntity = new SIPEntity();
+
+        OaisUniformResourceName urn = generationUrn(tenant, sip, version);
+        sipEntity.setProviderId(sip.getId());
+        sipEntity.setSipId(urn);
+        sipEntity.setCreationDate(OffsetDateTime.now());
+        sipEntity.setState(state);
+        sipEntity.setSip(sip);
+        // Extract from IngestMetadata
+        sipEntity.setSession(metadata.getSession());
+        sipEntity.setSessionOwner(metadata.getSessionOwner());
+        sipEntity.setCategories(metadata.getCategories());
+
+        sipEntity.setVersion(version);
+        // Extracted from SIP for search purpose
+        sipEntity.setTags(new HashSet<>(sip.getTags()));
+
+        return sipEntity;
+    }
+
+    public static OaisUniformResourceName generationUrn(String tenant, SIP sip, Integer version) {
+        UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
+        return new OaisUniformResourceName(OAISIdentifier.SIP, sip.getIpType(), tenant, uuid, version, null, null);
     }
 
 }
