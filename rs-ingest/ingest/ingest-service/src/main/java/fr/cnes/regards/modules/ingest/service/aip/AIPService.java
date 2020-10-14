@@ -31,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -164,18 +165,34 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode) {
+    public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode, Map<String, AIPEntity> currentLatestPerProviderId) {
         // lets get the old last version
-        AIPEntityLight latest = aipLigthRepository.findLast(aipEntity.getProviderId());
-        if(latest == null) {
+        AIPEntityLight dbLatest = aipLigthRepository.findLast(aipEntity.getProviderId());
+        if(dbLatest == null) {
             //then this is the first version (according to our code, not necessarily V1) ingested
             aipEntity.setLast(true);
+            currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
         } else {
-            if(latest.getVersion() < aipEntity.getVersion()) {
-                latest.setLast(false);
-                aipEntity.setLast(true);
+            if(dbLatest.getVersion() < aipEntity.getVersion()) {
+                dbLatest.setLast(false);
                 // only update latest here, new aip is going to be handled later
-                aipRepository.updateLast(latest.getId(), latest.isLast());
+                aipRepository.updateLast(dbLatest.getId(), dbLatest.isLast());
+                // in this case we need to check if this aipEntity is really the latest between the ones we have already handled
+                AIPEntity currentLatest = currentLatestPerProviderId.get(aipEntity.getProviderId());
+                if(currentLatest != null) {
+                    if (currentLatest.getVersion() < aipEntity.getVersion()) {
+                        currentLatest.setLast(false);
+                        aipEntity.setLast(true);
+                        currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
+                        aipRepository.updateLast(currentLatest.getId(), currentLatest.isLast());
+                    } else {
+                        aipEntity.setLast(false);
+                    }
+                } else {
+                    // there is no particular check to be done so this is the current latest aipEntity
+                    aipEntity.setLast(true);
+                    currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
+                }
             } else {
                 aipEntity.setLast(false);
             }
@@ -186,7 +203,7 @@ public class AIPService implements IAIPService {
             if (aipEntity.isLast() && versioningMode == VersioningMode.REPLACE) {
                 sessionNotifier.incrementProductReplace(aipEntity);
                 OAISDeletionPayloadDto deletionPayload = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
-                deletionPayload.withAipId(latest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE);
+                deletionPayload.withAipId(dbLatest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE);
                 oaisDeletionRequestService.registerOAISDeletionCreator(deletionPayload);
             }
         }
