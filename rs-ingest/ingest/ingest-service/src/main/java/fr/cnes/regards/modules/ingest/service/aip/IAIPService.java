@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -145,5 +146,5 @@ public interface IAIPService {
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 
-    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode);
+    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode, Map<String, AIPEntity> currentLatestPerProviderId);
 }
