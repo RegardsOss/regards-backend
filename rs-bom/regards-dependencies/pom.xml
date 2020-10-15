@@ -549,6 +549,27 @@
 				<artifactId>workspace-rest</artifactId>
 				<version>${framework.modules.workspace.version}</version>
 			</dependency>
+			<!-- Dump -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+				<artifactId>dump-domain</artifactId>
+				<version>${dump.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+				<artifactId>dump-dao</artifactId>
+				<version>${dump.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+				<artifactId>dump-service</artifactId>
+				<version>${dump.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+				<artifactId>dump-rest</artifactId>
+				<version>${dump.starter.version}</version>
+			</dependency>
             <!-- Regards Locks -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
