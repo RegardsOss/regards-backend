@@ -41,14 +41,14 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     private final String dumpId;
 
-    public ObjectDump(OffsetDateTime creationDate, String jsonName, Object jsonContent, String aipId) {
+    public ObjectDump(OffsetDateTime creationDate, String jsonName, Object jsonContent, String objId) {
         Assert.notNull(creationDate, "Objects cannot be dumped without creation date, Please provide one.");
         Assert.notNull(jsonName, "Objects cannot be dumped without a proper name, Please provide one.");
-        Assert.notNull(aipId, "Objects cannot be dumped without a an object id, Please provide one.");
+        Assert.notNull(objId, "Objects cannot be dumped without a an object id, Please provide one.");
         this.creationDate = creationDate;
         this.jsonName = jsonName;
         this.jsonContent = jsonContent;
-        this.dumpId = aipId;
+        this.dumpId = objId;
     }
 
     public OffsetDateTime getCreationDate() {
