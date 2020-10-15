@@ -165,21 +165,22 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode, Map<String, AIPEntity> currentLatestPerProviderId) {
+    public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
+            Map<String, AIPEntity> currentLatestPerProviderId) {
         // lets get the old last version
         AIPEntityLight dbLatest = aipLigthRepository.findLast(aipEntity.getProviderId());
-        if(dbLatest == null) {
+        if (dbLatest == null) {
             //then this is the first version (according to our code, not necessarily V1) ingested
             aipEntity.setLast(true);
             currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
         } else {
-            if(dbLatest.getVersion() < aipEntity.getVersion()) {
+            if (dbLatest.getVersion() < aipEntity.getVersion()) {
                 dbLatest.setLast(false);
                 // only update latest here, new aip is going to be handled later
                 aipRepository.updateLast(dbLatest.getId(), dbLatest.isLast());
                 // in this case we need to check if this aipEntity is really the latest between the ones we have already handled
                 AIPEntity currentLatest = currentLatestPerProviderId.get(aipEntity.getProviderId());
-                if(currentLatest != null) {
+                if (currentLatest != null) {
                     if (currentLatest.getVersion() < aipEntity.getVersion()) {
                         currentLatest.setLast(false);
                         aipEntity.setLast(true);
@@ -200,11 +201,21 @@ public class AIPService implements IAIPService {
             // In case versioning mode is IGNORE or MANUAL, we do not even reach this point in code
             // In case versioning mode is INC_VERSION, then we have nothing particular to do
             // But in case it is REPLACE...
-            if (aipEntity.isLast() && versioningMode == VersioningMode.REPLACE) {
+            if (versioningMode == VersioningMode.REPLACE) {
                 sessionNotifier.incrementProductReplace(aipEntity);
-                OAISDeletionPayloadDto deletionPayload = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
-                deletionPayload.withAipId(dbLatest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE);
-                oaisDeletionRequestService.registerOAISDeletionCreator(deletionPayload);
+                if (aipEntity.isLast()) {
+                    // we are the last aip so we need to delete the old latest
+                    oaisDeletionRequestService
+                            .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
+                                                                 .withAipId(dbLatest.getAipId())
+                                                                 .withSelectionMode(SearchSelectionMode.INCLUDE));
+                } else {
+                    //we are not the last aip but we have been added at the same time than the latest, so we need to be removed
+                    oaisDeletionRequestService
+                            .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
+                                                                 .withAipId(aipEntity.getAipId())
+                                                                 .withSelectionMode(SearchSelectionMode.INCLUDE));
+                }
             }
         }
     }
@@ -338,7 +349,9 @@ public class AIPService implements IAIPService {
         if (!aipsRelatedToSip.isEmpty()) {
             // we can find any aip from one sip as they are generated at same time so they all have the same session information
             AIPEntity aipForSessionInfo = aipsRelatedToSip.stream().findAny().get();
-            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(), aipForSessionInfo.getSession(), aipsRelatedToSip);
+            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(),
+                                           aipForSessionInfo.getSession(),
+                                           aipsRelatedToSip);
             aipsRelatedToSip.forEach(entity -> entity.setState(AIPState.DELETED));
             if (deleteIrrevocably) {
                 requestService.deleteAllByAip(aipsRelatedToSip);
