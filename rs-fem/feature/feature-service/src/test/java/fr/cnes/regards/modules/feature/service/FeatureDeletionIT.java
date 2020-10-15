@@ -87,14 +87,15 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
             fail("Doesn't have all features haven't be deleted");
         }
 
-        mockNotificationSuccess();
-
+        if(initNotificationSettings()) {
+            mockNotificationSuccess();
+            // the publisher must be called 2 times one for feature creation and one for feature deletion
+            Mockito.verify(publisherSpy, Mockito.times(2)).publish(recordsCaptor.capture());
+            // each call concern properties.getMaxBulkSize().intValue() features
+            assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(0).size());
+            assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(1).size());
+        }
         assertEquals(0, this.featureRepo.count());
-        // the publisher must be called 2 times one for feature creation and one for feature deletion
-        Mockito.verify(publisherSpy, Mockito.times(2)).publish(recordsCaptor.capture());
-        // each call concern properties.getMaxBulkSize().intValue() features
-        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(0).size());
-        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getAllValues().get(1).size());
     }
 
     /**

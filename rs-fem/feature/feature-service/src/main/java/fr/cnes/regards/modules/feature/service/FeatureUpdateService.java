@@ -50,11 +50,8 @@ import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -68,6 +65,7 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 
@@ -112,6 +110,9 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureUpdateRequestEvent> events) {
@@ -292,7 +293,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
 
         long processStart = System.currentTimeMillis();
         Set<FeatureEntity> entities = new HashSet<>();
-        Set<Long> successfulRequestIds = new HashSet<>();
+        Set<FeatureUpdateRequest> successfulRequest = new HashSet<>();
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
 
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
@@ -369,13 +370,21 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 // Register
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
                 entities.add(entity);
-                successfulRequestIds.add(request.getId());
+                successfulRequest.add(request);
             }
         }
 
         featureRepo.saveAll(entities);
         featureUpdateRequestRepo.saveAll(errorRequests);
-        featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequestIds);
+
+        // if notifications are required
+        FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
+        if(notificationSettings.isActiveNotification()) {
+            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream().map(
+                    AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+        } else {
+            featureUpdateRequestRepo.deleteInBatch(successfulRequest);
+        }
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms",
                      requests.size(),

@@ -57,10 +57,8 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -81,6 +79,7 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationSta
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
@@ -132,6 +131,10 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
+
 
     @Override
     public RequestInfo<String> registerRequests(List<FeatureCreationRequestEvent> events) {
@@ -358,10 +361,10 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     @Override
     public void handleSuccessfulCreation(Set<FeatureCreationRequest> requests) {
         long startSuccessProcess = System.currentTimeMillis();
-        Set<Long> requestWithoutFilesIds = new HashSet<>();
+        Set<FeatureCreationRequest> requestWithoutFiles = new HashSet<>();
         for (FeatureCreationRequest request : requests) {
             // Register request
-            requestWithoutFilesIds.add(request.getId());
+            requestWithoutFiles.add(request);
             // Monitoring log
             FeatureLogger.creationSuccess(request.getRequestOwner(),
                                           request.getRequestId(),
@@ -389,13 +392,22 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             }
         }
 
-        if (!requestWithoutFilesIds.isEmpty()) {
+        // See if notifications are required
+        FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
+        if (!requestWithoutFiles.isEmpty() && notificationSettings.isActiveNotification()) {
             // notify creation of feature without files
-            featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, requestWithoutFilesIds);
-
+            featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, requestWithoutFiles.stream().map(
+                    AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+        } else {
+            // Successful requests are deleted now!
+            featureCreationRequestRepo.deleteInBatch(requestWithoutFiles);
+            LOGGER.trace("------------->>> {} creation requests without files deleted in {} ms",
+                         requestWithoutFiles.size(),
+                         System.currentTimeMillis() - startSuccessProcess);
         }
+
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
-                     requestWithoutFilesIds.size(),
+                     requestWithoutFiles.size(),
                      System.currentTimeMillis() - startSuccessProcess);
     }
 

@@ -15,7 +15,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
- */
+ *//*
+
 package fr.cnes.regards.modules.feature.service;
 
 import java.time.OffsetDateTime;
@@ -59,12 +60,14 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
+*/
 /**
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
  *
- */
+ *//*
+
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
         locations = { "classpath:regards_local.properties", "classpath:batch.properties",
@@ -177,3 +180,4 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                 .build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid, 1);
     }
 }
+*/

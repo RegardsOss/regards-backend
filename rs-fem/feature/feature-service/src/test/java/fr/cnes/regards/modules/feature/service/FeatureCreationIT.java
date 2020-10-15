@@ -116,29 +116,9 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
             fail("Doesn't have all features at the end of time");
         }
 
-        // now that feature are created, lets do logic to get to notification of the creation
-        // lets check that for feature created, there is a request in step LOCAL_TO_BE_NOTIFIED
-        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
-                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                OffsetDateTime.now(),
-                PageRequest.of(0,
-                               properties.getMaxBulkSize(),
-                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
-        Assert.assertEquals("There should be at least max bulk size request in step LOCAL_TO_BE_NOTIFIED",
-                            properties.getMaxBulkSize().intValue(),
-                            requestsToSend.getSize());
-        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED",
-                            1,
-                            requestsToSend.getTotalPages());
-        // now that we are sure only right requests are in step LOCAL_TO_BE_NOTIFIED, lets ask them to be sent (method called by task scheduler)
-        featureNotificationService.sendToNotifier();
-
-        // lets capture events sent and check that there is properties.getMaxBulkSize NotificationActionEvent
-        Mockito.verify(publisherSpy).publish(recordsCaptor.capture());
-        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getValue().size());
-
-        //simulate that notification has been handle with success
-        featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
+        if(initNotificationSettings()) {
+            testNotification();
+        }
 
         events.clear();
         // lets add one feature which is the same as the first to test versioning code
@@ -170,6 +150,32 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
                 .findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0"));
         Assert.assertTrue(featureRepo.findByUrn(urnsForId1.get(0).getUrn()).getFeature().isLast());
         Assert.assertFalse(featureRepo.findByUrn(urnsForId1.get(1).getUrn()).getFeature().isLast());
+    }
+
+    private void testNotification() {
+        // now that feature are created, lets do logic to get to notification of the creation
+        // lets check that for feature created, there is a request in step LOCAL_TO_BE_NOTIFIED
+        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
+                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                OffsetDateTime.now(),
+                PageRequest.of(0,
+                               properties.getMaxBulkSize(),
+                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
+        Assert.assertEquals("There should be at least max bulk size request in step LOCAL_TO_BE_NOTIFIED",
+                            properties.getMaxBulkSize().intValue(),
+                            requestsToSend.getSize());
+        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED",
+                            1,
+                            requestsToSend.getTotalPages());
+        // now that we are sure only right requests are in step LOCAL_TO_BE_NOTIFIED, lets ask them to be sent (method called by task scheduler)
+        featureNotificationService.sendToNotifier();
+
+        // lets capture events sent and check that there is properties.getMaxBulkSize NotificationActionEvent
+        Mockito.verify(publisherSpy).publish(recordsCaptor.capture());
+        assertEquals(properties.getMaxBulkSize().intValue(), recordsCaptor.getValue().size());
+
+        //simulate that notification has been handle with success
+        featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
     }
 
     @Test

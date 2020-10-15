@@ -518,7 +518,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         waitFeature(nbFeatures, null, nbFeatures * 1000);
     }
 
-    public boolean initNotificationSettings(boolean state){
+    public boolean updateNotificationSettings(boolean state){
         // Set notification to true/false
         FeatureNotificationSettings notificationSettings = featureSettingsNotificationService.retrieve();
         notificationSettings.setActiveNotification(state);
@@ -528,5 +528,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             LOGGER.error("Notification settings not initialized properly");
         }
         return state;
+    }
+
+    public boolean initNotificationSettings() {
+        return featureSettingsNotificationService.retrieve().isActiveNotification();
     }
 }

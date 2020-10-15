@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -72,6 +73,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
@@ -109,6 +111,9 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
     @Autowired
     private FeatureConfigurationProperties properties;
+
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
 
     @Autowired
     private Gson gson;
@@ -272,17 +277,22 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
         if (!requestsAlreadyDeleted.isEmpty()) {
 
-            // PROPAGATE to NOTIFIER
-            String unknown = "unknown";
-            for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
-                // Build fake incomplete feature
-                Feature fakeFeature = Feature
-                        .build(unknown, unknown, fdr.getUrn(), IGeometry.unlocated(), EntityType.DATA, unknown);
-                fdr.setToNotify(fakeFeature);
-                fdr.setAlreadyDeleted(true);
-                fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+            // PROPAGATE to NOTIFIER if required
+            FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
+            if(notificationSettings.isActiveNotification()) {
+                String unknown = "unknown";
+                for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
+                    // Build fake incomplete feature
+                    Feature fakeFeature = Feature
+                            .build(unknown, unknown, fdr.getUrn(), IGeometry.unlocated(), EntityType.DATA, unknown);
+                    fdr.setToNotify(fakeFeature);
+                    fdr.setAlreadyDeleted(true);
+                    fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                }
+                deletionRepo.saveAll(requestsAlreadyDeleted);
+            } else {
+                this.deletionRepo.deleteInBatch(requestsAlreadyDeleted);
             }
-            deletionRepo.saveAll(requestsAlreadyDeleted);
 
             // PROPAGATE to CATALOG
             requestsAlreadyDeleted

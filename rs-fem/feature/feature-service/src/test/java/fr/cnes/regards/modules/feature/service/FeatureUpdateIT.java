@@ -236,22 +236,25 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
 
         // we wait for delay before schedule
         Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 1000);
-
         this.featureUpdateService.scheduleRequests();
-        // wait until request are in state LOCAL_TO_BE_NOTIFIED
-        cpt = 0;
-        while (cpt < 10 && featureUpdateRequestRepository
-                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                       OffsetDateTime.now().plusDays(1),
-                                                       PageRequest.of(0, properties.getMaxBulkSize())).getSize()
-                < properties.getMaxBulkSize() / 2) {
-            Thread.sleep(1000);
-            cpt++;
+
+        if(initNotificationSettings()) {
+            // wait until request are in state LOCAL_TO_BE_NOTIFIED
+            cpt = 0;
+            while (cpt < 10 && featureUpdateRequestRepository
+                    .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                           OffsetDateTime.now().plusDays(1),
+                                                           PageRequest.of(0, properties.getMaxBulkSize())).getSize()
+                    < properties.getMaxBulkSize() / 2) {
+                Thread.sleep(1000);
+                cpt++;
+            }
+            if(cpt == 10) {
+                fail("Update request where not handled in less than 10_000 ms");
+            }
+            mockNotificationSuccess();
         }
-        if(cpt == 10) {
-            fail("Update request where not handled in less than 10_000 ms");
-        }
-        mockNotificationSuccess();
+
 
         List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(
                 FeatureRequestStep.LOCAL_DELAYED,
