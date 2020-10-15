@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 
 /**
@@ -42,12 +42,9 @@ import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
  * @author Iliana Ghazali
  */
 @RegardsTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dump_it", "regards.dump.location=target/dump" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_dump_it", "regards.dump.location=target/dump" })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class DumpControllerIT extends AbstractRegardsTransactionalIT {
-
-    @Autowired
-    IAIPMetadataService aipMetadataServiceRefactor;
 
     @Autowired
     IDumpSettingsRepository dumpRepository;

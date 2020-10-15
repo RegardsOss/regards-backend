@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.domain.notification;
+package fr.cnes.regards.modules.ingest.domain.settings;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,14 +35,14 @@ import java.util.Objects;
 public class AIPNotificationSettings {
 
     // only one setting per tenant
-    private static final long INGEST_SETTING_ID = 0L;
+    private static final long INGEST_NOTIFICATION_SETTING_ID = 0L;
 
     @Id
     @Column(name = "id", unique = true)
     private Long id;
 
     /**
-     * To notify changes on aip requests
+     * To activate notifications on aip requests
      */
     @Column(name = "active_notifications", nullable = false)
     private boolean activeNotification = false;
@@ -56,7 +56,7 @@ public class AIPNotificationSettings {
     }
 
     public AIPNotificationSettings() {
-        this.id = INGEST_SETTING_ID;
+        this.id = INGEST_NOTIFICATION_SETTING_ID;
     }
 
     public Long getId() {
@@ -70,7 +70,7 @@ public class AIPNotificationSettings {
         if (o == null || getClass() != o.getClass())
             return false;
         AIPNotificationSettings that = (AIPNotificationSettings) o;
-        return activeNotification == that.activeNotification && id.equals(that.id);
+        return activeNotification == id.equals(that.id);
     }
 
     @Override

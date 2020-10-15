@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
 /**
- * Storing info that a metadata should be saved on storage
+ * Request to save aip metadata
  * @author Iliana Ghazali
  */
 @Entity

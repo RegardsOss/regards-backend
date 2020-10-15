@@ -76,8 +76,6 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private IAIPRepository aipRepository;
 
@@ -182,6 +180,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         return (AIPPostProcessRequest) requestService.scheduleRequest(postProcessRequest);
     }
     public void clearRequest() {
+        ingestServiceTest.waitDuring(1000);
         abstractRequestRepository.deleteAll();
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
 

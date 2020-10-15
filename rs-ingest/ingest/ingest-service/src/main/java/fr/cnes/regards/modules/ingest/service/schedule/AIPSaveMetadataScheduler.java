@@ -35,14 +35,13 @@ import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionRe
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
-import fr.cnes.regards.modules.ingest.service.dump.IDumpSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IDumpSettingsService;
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.AIP_SAVE_METADATA_REQUESTS;
 
 /**
- * Scheduler handle {@link AIPSaveMetadataJobTask}s
+ * Scheduler to handle {@link AIPSaveMetadataJobTask}s
  * @author Iliana Ghazali
  */
 @Component
@@ -73,13 +72,13 @@ public class AIPSaveMetadataScheduler extends AbstractTaskScheduler {
      */
     @EventListener
     public void onApplicationStartedEvent(ApplicationStartedEvent event) {
-        initAIPSaveMetaDataJobsSchedulers();
+        initAIPSaveMetadataJobsSchedulers();
     }
 
     /**
      * Initialize scheduled {@link AIPSaveMetadataJobTask}s for all tenants to save aip metadata
      */
-    public void initAIPSaveMetaDataJobsSchedulers() {
+    public void initAIPSaveMetadataJobsSchedulers() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

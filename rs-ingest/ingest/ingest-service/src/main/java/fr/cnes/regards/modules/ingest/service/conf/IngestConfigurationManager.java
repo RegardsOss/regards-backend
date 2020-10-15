@@ -35,11 +35,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
-import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
-import fr.cnes.regards.modules.ingest.service.dump.IDumpManagerService;
-import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IDumpManagerService;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 
 /**
  * Configuration manager for current module

@@ -23,7 +23,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 
 /**
  * JPA repository to access {@link DumpSettings}

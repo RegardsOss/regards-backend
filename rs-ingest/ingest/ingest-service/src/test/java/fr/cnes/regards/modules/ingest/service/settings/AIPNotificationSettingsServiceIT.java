@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.notification;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import java.util.Optional;
 
@@ -34,7 +34,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 
 /**
  * Test for {@link AIPNotificationSettingsService}
@@ -70,7 +72,7 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
         // check configuration was saved in db
         Optional<AIPNotificationSettings> settingsOpt = notificationSettingsRepository.findFirstBy();
         Assert.assertTrue("Settings were not initialized properly",
-                          settingsOpt.isPresent() && notificationSettings.equals(settingsOpt.get()));
+                          settingsOpt.isPresent() && notificationSettings.getId().equals(settingsOpt.get().getId()));
         Assert.assertEquals("active_notifications was initialized with default value", false,
                           settingsOpt.get().isActiveNotification());
     }

@@ -18,10 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.dump;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.CronSequenceGenerator;
@@ -32,11 +29,12 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
+import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationManager;
 
 /**
- * Dump Configuration Service
+ * see {@link IDumpManagerService}
  * @author Iliana Ghazali
  */
 

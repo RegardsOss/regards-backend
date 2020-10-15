@@ -32,11 +32,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPSaveMetadataJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.ingest.service.settings.IDumpSettingsService;
 
 /**
  * Service to handle {@link AIPSaveMetadataJob}. Create {@link AIPSaveMetadataRequest} to dump aips between two dates.

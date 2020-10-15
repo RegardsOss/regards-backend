@@ -48,12 +48,14 @@ import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
-import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.test.IngestServiceTest;
@@ -98,6 +100,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @Autowired
     private IAIPNotificationSettingsService notificationSettingsService;
 
+
     @Before
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -116,6 +119,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     @After
     public void clear() throws Exception {
         ingestServiceTest.clear();
+        ingestServiceTest.init();
         doAfter();
     }
 
@@ -197,7 +201,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     public void initNotificationSettings(boolean state){
-        // Set notification to false
+        // Set notification to true/false
         AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
         notificationSettings.setActiveNotification(state);
         try {
@@ -207,4 +211,12 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         }
     }
 
+    public void initRandomData(int nbSIP) {
+        for (int i = 0; i < nbSIP; i++) {
+            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
+                            getRandomSession(), getRandomSessionOwner(), getRandomCategories());
+        }
+        // Wait
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+    }
 }

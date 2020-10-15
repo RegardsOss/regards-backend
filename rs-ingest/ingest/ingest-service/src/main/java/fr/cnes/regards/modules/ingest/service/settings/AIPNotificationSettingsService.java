@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.notification;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import java.util.Optional;
 
@@ -28,10 +28,10 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
 /**
- * {@link IAIPNotificationSettingsService}
+ * see {@link IAIPNotificationSettingsService}
  * @author Iliana Ghazali
  */
 

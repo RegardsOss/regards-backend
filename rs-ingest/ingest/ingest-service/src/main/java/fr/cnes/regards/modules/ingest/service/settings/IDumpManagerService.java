@@ -17,14 +17,14 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.cnes.regards.modules.ingest.service.dump;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationManager;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 /**
- * Dump Configuration Service Interface for {@link IngestConfigurationManager}
+ * Dump Manager Service used to update the {@link AIPSaveMetadataScheduler} from {@link IngestConfigurationManager}
  * @author Iliana Ghazali
  */
 

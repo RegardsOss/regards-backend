@@ -41,7 +41,7 @@ public interface IAIPMetadataService {
      * @throws NothingToDoException exception occurs if there is no aip to dump
      */
     void writeZips(AIPSaveMetadataRequest metadataRequest, Path tmpZipLocation)
-            throws NothingToDoException;
+            throws NothingToDoException, IOException;
 
     /**
      * Util to write zips
@@ -56,7 +56,7 @@ public interface IAIPMetadataService {
      * @param dumpLocation location to write a zip made up of zips
      * @param tmpZipLocation temporary location to retrieve zips (in the job workspace)
      */
-    void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation);
+    void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) throws IOException;
 
     /** Reset the last dump request date by putting a null value
      * The next dump will then contain all the aip contents present in the database

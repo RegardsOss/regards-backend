@@ -87,11 +87,10 @@ public class AIPSaveMetadataJob extends AbstractJob<Void> {
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {
-            logger.error(String.format(e.getClass().getSimpleName(), e.getMessage()));
-        } catch (RsRuntimeException e) {
-            logger.error(e.getMessage());
-            metadataService.handleError(metadataRequest, e.getMessage());
-            throw e;
+            String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();
+            logger.error(errorMessage, e);
+            metadataService.handleError(metadataRequest, errorMessage);
+            throw new RsRuntimeException(e);
         } catch (NothingToDoException e) {
             logger.info("[AIP SAVE METADATA JOB] {}", e.getMessage());
             metadataService.handleSuccess(metadataRequest); // request is in success, even if nothing was dumped

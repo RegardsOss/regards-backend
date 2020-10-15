@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
@@ -51,11 +51,11 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
- *
+ * Test for {@link AIPMetadataService}
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_it",
-        "regards.amqp.enabled=true", "regards.dump.zip-limit = 3" },
+        "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
@@ -66,14 +66,8 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     private DumpSettings conf;
 
-    @Value("${regards.dump.zip-limit}")
+    @Value("${regards.aip.dump.zip-limit}")
     private int zipLimit;
-
-    @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
 
     @Autowired
     private IAIPMetadataService metadataService;
@@ -100,7 +94,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     @Test
     @Purpose("Test creation of multiple zips between lastDumpReqDate and reqDumpDate")
-    public void writeZipsTest() throws NothingToDoException {
+    public void writeZipsTest() {
         // Params
         int nbSIP = 14; // put at least nbSIP > 1
         int nbAIPToDump = nbSIP * 4 / 5;
@@ -111,13 +105,18 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         updateAIPLastUpdateDate(nbAIPToDump);
 
         // Create zips
-        metadataService.writeZips(createSaveMetadataRequest(), this.tmpZipLocation);
+        try {
+            metadataService.writeZips(createSaveMetadataRequest(), this.tmpZipLocation);
+        } catch (Exception | NothingToDoException e) {
+            LOGGER.error("Error occurred while generating of zips", e);
+        }
 
         // CHECK RESULTS
         // Number of zips created
         File[] zipFolder = this.tmpZipLocation.toFile().listFiles();
         int nbZipCreated = zipFolder.length;
-        Assert.assertEquals((int) Math.ceil((double) nbAIPToDump / zipLimit), nbZipCreated);
+        Assert.assertEquals("Unexpected number of created zips", (int) Math.ceil((double) nbAIPToDump / zipLimit),
+                            nbZipCreated);
 
         // Number of files per zip
         int indexZip = 0, nbFiles, totalNbFiles = 0;
@@ -134,12 +133,12 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         }
 
         // Total number of aips dumped
-        Assert.assertEquals(nbAIPToDump, totalNbFiles);
+        Assert.assertEquals("The number of files created from aips is not expected", nbAIPToDump, totalNbFiles);
     }
 
     @Test
     @Purpose("Test dump of aips is successfully created")
-    public void writeDumpTest() throws NothingToDoException {
+    public void writeDumpTest() {
         // Create aips
         int nbSIP = 14; // put at least nbSIP > 1
         storageClient.setBehavior(true, true);
@@ -147,19 +146,28 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
         // Create dump
         AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
-        metadataService.writeZips(metadataRequest, this.tmpZipLocation);
-        metadataService.writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), this.tmpZipLocation);
+        try {
+            metadataService.writeZips(metadataRequest, this.tmpZipLocation);
+            metadataService
+                    .writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), this.tmpZipLocation);
+        } catch (NothingToDoException | IOException e) {
+            LOGGER.error("Error occurred while dumping aips", e);
+        }
 
         // CHECK RESULTS
         // Number of dump created
         File[] dumpFolder = Paths.get(this.conf.getDumpLocation()).toFile().listFiles();
-        Assert.assertEquals(1, dumpFolder.length);
+        Assert.assertEquals("Only one dump was expected" , 1, dumpFolder.length);
 
         // Number of zips in dump
-        Assert.assertEquals((int) Math.ceil((double) nbSIP / zipLimit), readZipEntryNames(dumpFolder[0]).size());
+        Assert.assertEquals("The number of created zips in dump is not expected",
+                            (int) Math.ceil((double) nbSIP / zipLimit), readZipEntryNames(dumpFolder[0]).size());
     }
 
-
+    /**
+     * Create a request to save aip metadata
+     * @return AIPSaveMetadataRequest
+     */
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
         AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate,
@@ -168,6 +176,10 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         return aipSaveMetadataRequest;
     }
 
+    /**
+     * Update aip last dates by decreasing the number of days
+     * @param nbAIPToDump number of aips to update
+     */
     private void updateAIPLastUpdateDate(int nbAIPToDump) {
         List<AIPEntity> listAip = aipRepository.findAll();
         int index = 1;
@@ -180,6 +192,11 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         aipRepository.saveAll(listAip);
     }
 
+    /**
+     * List all filenames contained in a zip
+     * @param parentZip zip to scan
+     * @return list of filenames
+     */
     public List<String> readZipEntryNames(File parentZip) {
         List<String> listNames = new LinkedList<>();
         ZipEntry zipEntry;

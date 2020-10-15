@@ -124,10 +124,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // clear before test
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
-
         //init notification to true
         initNotificationSettings(true);
     }
@@ -346,11 +342,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doAfter() {
-        // clean tables (sip + aip + request + job)
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
-        aipRepository.deleteAll();
-        sipRepository.deleteAll();
         aipNotificationSettingsRepository.deleteAll();
     }
 

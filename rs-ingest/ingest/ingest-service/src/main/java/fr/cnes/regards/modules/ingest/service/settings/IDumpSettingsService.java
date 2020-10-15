@@ -18,31 +18,30 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.notification;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.ingest.domain.notification.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 
 /**
- * Service to handle optional notifications
+ * Service to handle {@link DumpSettings}
  * @author Iliana Ghazali
  */
 
-public interface IAIPNotificationSettingsService {
+public interface IDumpSettingsService {
 
     /**
-     * Retrieve {@link AIPNotificationSettings}. If they do not exist, new settings are created.
+     * Retrieve {@link DumpSettings} from database. If they do not exist, new ones are created by default and save in database.
+     * @return
      */
-    AIPNotificationSettings retrieve();
+    DumpSettings retrieve();
 
     /**
-     * Update {@link AIPNotificationSettings}
+     * Update {@link DumpSettings} with the new settings provided. If DumpSettings are not already in the database,
+     * {@link EntityNotFoundException} is thrown.
+     * @param dumpSettings new DumpSettings
+     * @return DumpSettings updated
+     * @throws EntityNotFoundException
      */
-    AIPNotificationSettings update(AIPNotificationSettings pAipNotificationSettings) throws EntityNotFoundException;
-
-    /**
-     * Get current {@link AIPNotificationSettings}
-     */
-    AIPNotificationSettings getCurrentNotificationSettings();
-
+    DumpSettings update(DumpSettings dumpSettings) throws EntityNotFoundException;
 }

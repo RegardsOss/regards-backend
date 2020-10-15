@@ -48,11 +48,12 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.service.settings.IDumpSettingsService;
 
 /**
  * see {@link IAIPMetadataService}
@@ -66,7 +67,7 @@ public class AIPMetadataService implements IAIPMetadataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPMetadataService.class);
 
     // Limit number of AIPs to retrieve in one page
-    @Value("${regards.dump.zip-limit:1000}")
+    @Value("${regards.aip.dump.zip-limit:1000}")
     private int zipLimit;
 
     @Autowired
@@ -88,30 +89,22 @@ public class AIPMetadataService implements IAIPMetadataService {
     private INotificationClient notificationClient;
 
     @Override
-    public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) {
-        OffsetDateTime creationDate = metadataRequest.getCreationDate();
-        try {
-            // Write dump
-            dumpService.generateDump(dumpLocation, tmpZipLocation, creationDate);
-        } catch (IOException e) {
-            LOGGER.error("Error while writing aip dump", e);
-            throw new RsRuntimeException(e.getClass().getSimpleName() + " " + e.getMessage(), e);
-        }
+    public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)
+            throws IOException {
+        // Write dump (create a zip of multiple zips)
+        dumpService.generateDump(dumpLocation, tmpZipLocation, metadataRequest.getCreationDate());
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void writeZips(AIPSaveMetadataRequest metadataRequest, Path tmpZipLocation)
-            throws NothingToDoException {
+            throws NothingToDoException, IOException {
         Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
+                // zip json files generated from aips
                 pageToRequest = self.dumpOnePage(metadataRequest, pageToRequest, tmpZipLocation);
             } while (pageToRequest != null);
-        } catch (IOException e) {
-            String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();
-            self.handleError(metadataRequest, errorMessage);
-            throw new RsRuntimeException(errorMessage, e);
         } catch (DuplicateUniqueNameException e) {
             self.handleError(metadataRequest, e.getMessage());
             throw new RsRuntimeException(e);
@@ -119,43 +112,45 @@ public class AIPMetadataService implements IAIPMetadataService {
     }
 
     @Override
-    public Pageable dumpOnePage(AIPSaveMetadataRequest metadataRequest, Pageable pageToRequest,
-            Path workspace) throws IOException, DuplicateUniqueNameException, NothingToDoException {
-        // Write Zips
-        List<ObjectDump> objectDumps;
-        List<ObjectDump> duplicatedJsonNames;
-
-        Page<AIPEntity> aipToDump = null;
+    public Pageable dumpOnePage(AIPSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation)
+            throws IOException, DuplicateUniqueNameException, NothingToDoException {
+        // Find aips to zip
+        Page<AIPEntity> aipToDump;
         OffsetDateTime previousDumpDate = metadataRequest.getPreviousDumpDate();
         OffsetDateTime dumpDate = metadataRequest.getCreationDate();
+        // If previousDumpDate is null, find all aips with lastUpdate < previousDumpDate
         if (previousDumpDate == null) {
             aipToDump = aipRepository.findByLastUpdateLessThan(dumpDate, pageToRequest);
         } else {
+            // else find all aips with previousDumpDate < lastUpdate < dumpDate
             aipToDump = aipRepository.findByLastUpdateBetween(previousDumpDate, dumpDate, pageToRequest);
         }
 
+        // If no aip was found, throw NothingToDoException
         if (!aipToDump.hasContent()) {
             throw new NothingToDoException(
                     String.format("There is nothing to dump between %s and %s", previousDumpDate, dumpDate));
         }
 
-        // Convert objects
-        objectDumps = convertAipToObjectDump(aipToDump.getContent());
+        // If some aips were found, convert them into ObjectDump
+        List<ObjectDump> objectDumps = convertAipToObjectDump(aipToDump.getContent());
 
-        // Check if names are unique in the collection
+        // Check if json names <providerId>-<version> are unique in the collection
+        // If yes, throw DuplicateUniqueNameException
+        List<ObjectDump> duplicatedJsonNames;
         duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
         if (!duplicatedJsonNames.isEmpty()) {
             String errorMessage = duplicatedJsonNames.stream().map(ObjectDump::getJsonName).collect(Collectors.joining(
-                    ", ", "Some AIPs to dump had same generated names "
-                            + "(providerId-version.json) which should be unique: ",
+                    ", ", "Some AIPs to dump had the same generated names "
+                            + "(providerId-version.json) should be unique: ",
                     ". Please edit your AIPs so there is no duplicates."));
             handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);
         }
 
-        // Create zip
+        // If no error was detected, create zip that contains json files generated from aips
         try {
-            dumpService.generateJsonZip(objectDumps, workspace);
+            dumpService.generateJsonZip(objectDumps, tmpZipLocation);
         } catch (IOException e) {
             LOGGER.error("Error while dumping one page of aip", e);
             throw e;
@@ -172,7 +167,7 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     @Override
     public void resetLastUpdateDate() {
-        // reset last dump date if already present
+        // reset last dump date to null if already present
         DumpSettings lastDump = dumpSettingsService.retrieve();
         lastDump.setLastDumpReqDate(null);
         try {
@@ -186,8 +181,8 @@ public class AIPMetadataService implements IAIPMetadataService {
     public void handleError(AIPSaveMetadataRequest metadataRequest, String errorMessage) {
         notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
                                                               metadataRequest.getPreviousDumpDate(),
-                                                              metadataRequest.getCreationDate()), NotificationLevel.ERROR,
-                                  DefaultRole.ADMIN);
+                                                              metadataRequest.getCreationDate()),
+                                  NotificationLevel.ERROR, DefaultRole.ADMIN);
         metadataRequest.addError(errorMessage);
         metadataRequest.setState(InternalRequestState.ERROR);
         metadataRequestRepository.save(metadataRequest);

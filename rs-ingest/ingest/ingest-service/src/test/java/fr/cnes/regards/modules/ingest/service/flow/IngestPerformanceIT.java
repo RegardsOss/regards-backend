@@ -97,7 +97,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
     }

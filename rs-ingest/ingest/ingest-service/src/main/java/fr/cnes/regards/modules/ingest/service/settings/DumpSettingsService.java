@@ -18,23 +18,17 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.dump;
+package fr.cnes.regards.modules.ingest.service.settings;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 
 /**
  * {@link IDumpSettingsService}

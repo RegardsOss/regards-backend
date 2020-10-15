@@ -136,8 +136,6 @@ public class AIPUpdateRunnerJobTest extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
         // no notification
         initNotificationSettings(false);
     }

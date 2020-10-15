@@ -49,23 +49,21 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
-import fr.cnes.regards.modules.ingest.service.dump.IAIPMetadataService;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataJobTask;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
- *
+ * Test for {@link AIPSaveMetadataJob}
  * @author Iliana Ghazali
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_test",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_savemetadata_job_it",
         "regards.amqp.enabled=true" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
@@ -75,31 +73,26 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     private Path dumpLocation;
 
     @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
+    private IJobInfoRepository jobInfoRepository;
+
+    @Autowired
+    private IJobService jobService;
 
     @Autowired
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepository;
-
-    @Autowired
     private IDumpSettingsRepository dumpConfRepo;
 
     @Autowired
-    AIPSaveMetadataService saveMetadataService;
-
-    @Autowired
-    IAIPMetadataService metadataService;
-
-    @Autowired
-    private IJobService jobService;
+    private AIPSaveMetadataService saveMetadataService;
 
     @Autowired
     private IWorkspaceService workspaceService;
 
     @Autowired
     private StorageClientMock storageClient;
+
 
     @Override
     public void doInit() {
@@ -181,7 +174,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
         // Check folder target/workspace/<microservice>/ does not contain dump
         Assert.assertEquals("Dump folder should be empty",0, this.dumpLocation.toFile().listFiles().length);
-        dumpConfRepo.deleteById(DumpSettings.DUMP_CONF_ID);
     }
 
     @Test
@@ -221,5 +213,4 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         //clear dump location
         FileUtils.deleteDirectory(this.dumpLocation.toFile());
     }
-
 }

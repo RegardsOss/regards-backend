@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.domain.dump;
+package fr.cnes.regards.modules.ingest.domain.settings;
 
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -28,7 +28,7 @@ import java.time.OffsetDateTime;
  * @author Iliana Ghazali
  */
 @Entity
-@Table(name = "t_dump_settings")
+@Table(name = "t_ingest_dump_settings")
 public class DumpSettings {
 
     // only one configuration per tenant

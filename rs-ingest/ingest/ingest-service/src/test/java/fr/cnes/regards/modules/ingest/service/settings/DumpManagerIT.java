@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.dump;
+package fr.cnes.regards.modules.ingest.service.settings;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -34,11 +34,9 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 
@@ -53,6 +51,8 @@ import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class DumpManagerIT extends IngestMultitenantServiceTest {
 
+    private String tenant;
+
     @Autowired
     private DumpManagerService dumpManagerService;
 
@@ -61,16 +61,6 @@ public class DumpManagerIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IDumpSettingsRepository dumpRepository;
-
-    @Autowired
-    private IAbstractRequestRepository requestRepository;
-
-    @Autowired
-    IJobInfoRepository jobInfoRepository;
-
-    private String tenant;
-
-    @Autowired
 
     @Override
     public void doInit() {
@@ -87,7 +77,7 @@ public class DumpManagerIT extends IngestMultitenantServiceTest {
         // Create new dump configuration and scheduler
         // activate task execution every minute
         dumpRepository.save(new DumpSettings(true, "0 * * * * *", "target/dump", null));
-        saveMetadataScheduler.initAIPSaveMetaDataJobsSchedulers();
+        saveMetadataScheduler.initAIPSaveMetadataJobsSchedulers();
 
         // Update scheduler with a new dump configuration
         // change task execution every 10 seconds

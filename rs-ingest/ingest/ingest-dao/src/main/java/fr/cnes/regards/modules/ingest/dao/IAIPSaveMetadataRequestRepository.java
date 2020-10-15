@@ -21,11 +21,11 @@ package fr.cnes.regards.modules.ingest.dao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.dump.DumpSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 
 /**
- * {@link DumpSettings} repository
+ * JPA to access {@link AIPSaveMetadataRequest} repository
  * @author Iliana Ghazali
  */
 @Repository
