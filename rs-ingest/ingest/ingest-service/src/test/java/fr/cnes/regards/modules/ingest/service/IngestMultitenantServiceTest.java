@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -178,6 +179,11 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
             List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
+        publishSIPEvent(Sets.newHashSet(sip), storages, session, sessionOwner, categories, chainLabel, versioningMode);
+    }
+
+    protected void publishSIPEvent(Collection<SIP> sips, List<String> storages, String session, String sessionOwner,
+            List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
         IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
@@ -187,7 +193,8 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
                                                         Sets.newHashSet(categories),
                                                         versioningMode,
                                                         storagesMeta);
-        ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+        ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
+
 
 }
