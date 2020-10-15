@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -230,7 +231,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     @Override
     @Transactional
-    public void broadcastAll(String exchangeName, Optional<String> queueName, int priority, List<Object> messages,
+    public void broadcastAll(String exchangeName, Optional<String> queueName, int priority, Collection<?> messages,
             Map<String, Object> headers) {
         messages.forEach(message -> broadcast(exchangeName, queueName, priority, message, headers));
     }

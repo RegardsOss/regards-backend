@@ -592,7 +592,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration pluginConf = loadPluginConfiguration(businessId);
 
         if (pluginConf == null) {
-            LOGGER.error("Plugin Configuration with business id {} does not seems to exists. Did you confuse businessId and id?");
+            LOGGER.error("Plugin Configuration with business id {} does not seems to exists. Did you confuse businessId and id?", businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
         // Get the plugin implementation associated

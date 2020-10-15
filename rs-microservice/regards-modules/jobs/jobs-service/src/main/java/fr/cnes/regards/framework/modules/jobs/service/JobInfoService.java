@@ -25,8 +25,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +41,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -51,7 +56,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
  */
 @Service
 @MultitenantTransactional
-public class JobInfoService implements IJobInfoService {
+public class JobInfoService implements IJobInfoService, ApplicationContextAware {
 
     public static final String SOME_FUNNY_MESSAGE = "Please use create method for creating, you dumb...";
 
@@ -70,14 +75,26 @@ public class JobInfoService implements IJobInfoService {
     @Autowired
     private IPublisher publisher;
 
-    @Autowired
     private IJobInfoService self;
+
+    private ApplicationContext applicationContext;
 
     /**
      * {@link JobInfo} JPA Repository
      */
     @Autowired
     private IJobInfoRepository jobInfoRepository;
+
+    @EventListener
+    public void onContextRefreshedEvent(ContextRefreshedEvent event) {
+        if (self == null) {
+            try {
+                self = applicationContext.getBean(IJobInfoService.class);
+            } catch (NoSuchBeanDefinitionException e) {
+                // in this case there is nothing to do but wait for the next event
+            }
+        }
+    }
 
     @Override
     public JobInfo findHighestPriorityQueuedJobAndSetAsToBeRun() {
@@ -157,8 +174,10 @@ public class JobInfoService implements IJobInfoService {
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
-                                               jobInfo.getId(), OffsetDateTime.now());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(),
+                                               status.getEstimatedCompletion(),
+                                               jobInfo.getId(),
+                                               OffsetDateTime.now());
         }
     }
 
@@ -194,5 +213,10 @@ public class JobInfoService implements IJobInfoService {
     @Override
     public Page<JobInfo> retrieveJobs(String className, Pageable page, JobStatus... statuses) {
         return jobInfoRepository.findByClassNameAndStatusStatusIn(className, statuses, page);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
