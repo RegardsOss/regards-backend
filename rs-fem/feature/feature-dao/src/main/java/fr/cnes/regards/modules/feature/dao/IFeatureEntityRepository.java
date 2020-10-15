@@ -32,6 +32,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 @Repository
@@ -62,4 +63,12 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     @Modifying
     @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
     void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
+
+    /**
+     * For dump purposes
+     */
+    Page<FeatureEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
+            Pageable pageable);
+
+    Page<FeatureEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
 }

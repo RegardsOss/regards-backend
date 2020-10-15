@@ -85,7 +85,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
     @Override
     @Before
-    public void before() throws InterruptedException {
+    public void before() throws Exception {
         this.featureCopyRepo.deleteAll();
         super.before();
     }

@@ -40,6 +40,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import fr.cnes.regards.modules.feature.service.settings.IDumpManagerService;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 
 /**
  * Configuration manager for current module
@@ -52,6 +56,13 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private IDumpManagerService dumpManagerService;
+
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
+
 
     @Override
     public Set<String> resetConfiguration() {
@@ -69,27 +80,37 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
-
         Set<String> importErrors = new HashSet<>();
-        Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
-
-        // First create connections
-        for (PluginConfiguration plgConf : configurations) {
-            try {
-                Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
-                if (existingOne.isPresent()) {
-                    existingOne.get().setLabel(plgConf.getLabel());
-                    existingOne.get().setParameters(plgConf.getParameters());
-                    pluginService.updatePluginConfiguration(existingOne.get());
-                } else {
-                    pluginService.savePluginConfiguration(plgConf);
+        for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
+            if (PluginConfiguration.class.isAssignableFrom(item.getKey())) {
+                PluginConfiguration plgConf = item.getTypedValue();
+                try {
+                    Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
+                    if (existingOne.isPresent()) {
+                        existingOne.get().setLabel(plgConf.getLabel());
+                        existingOne.get().setParameters(plgConf.getParameters());
+                        pluginService.updatePluginConfiguration(existingOne.get());
+                    } else {
+                        pluginService.savePluginConfiguration(plgConf);
+                    }
+                } catch (ModuleException e) {
+                    LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
+                    importErrors.add(e.getMessage());
                 }
-            } catch (ModuleException e) {
-                LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
-                importErrors.add(e.getMessage());
+            } else if (DumpSettings.class.isAssignableFrom(item.getKey())) {
+                try {
+                    dumpManagerService.updateDumpAndScheduler(item.getTypedValue());
+                } catch (ModuleException e) {
+                    LOGGER.error("Not able to update new dump settings, cause by:", e.getMessage());
+                }
+            } else if (FeatureNotificationSettings.class.isAssignableFrom(item.getKey())) {
+                try {
+                    notificationSettingsService.update(item.getTypedValue());
+                } catch (EntityNotFoundException e) {
+                    LOGGER.error("Not able to update new notification settings, cause by:", e.getMessage());
+                }
             }
         }
-
         return importErrors;
     }
 
@@ -113,6 +134,17 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             exportedConf.setIsActive(true);
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
+
+        DumpSettings dumpSettings = dumpManagerService.getCurrentDumpSettings();
+        if(dumpSettings != null) {
+            configurations.add(ModuleConfigurationItem.build(dumpSettings));
+        }
+
+        FeatureNotificationSettings notifSettings = notificationSettingsService.getCurrentNotificationSettings();
+        if(notifSettings != null) {
+            configurations.add(ModuleConfigurationItem.build(notifSettings));
+        }
+
         return ModuleConfiguration.build(info, true, configurations);
     }
 

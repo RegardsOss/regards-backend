@@ -30,6 +30,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -77,6 +78,8 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     protected static final String CREATION = "CREATION";
 
     protected static final String DELETION = "DELETION";
+    
+    protected static final String FEATURE_SAVE_METADATA = "SAVE_METADATA";
 
     @Id
     @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request")
@@ -110,7 +113,7 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         this.errors = errors;
         return (T) this;
     }
-
+    
     public Set<String> getErrors() {
         return errors;
     }
