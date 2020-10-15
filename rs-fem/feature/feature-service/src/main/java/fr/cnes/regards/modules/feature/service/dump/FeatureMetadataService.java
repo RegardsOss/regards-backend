@@ -43,6 +43,8 @@ import fr.cnes.regards.framework.dump.DumpService;
 import fr.cnes.regards.framework.dump.ObjectDump;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -53,9 +55,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.settings.IDumpSettingsService;
 
 /**
  * see {@link IFeatureMetadataService}
@@ -128,14 +128,14 @@ public class FeatureMetadataService implements IFeatureMetadataService {
             featureToDump = featureRepository.findByLastUpdateBetween(previousDumpDate, dumpDate, pageToRequest);
         }
 
+        // If some features were found, convert them into ObjectDump
+        List<ObjectDump> objectDumps = convertFeatureToObjectDump(featureToDump.getContent());
+
         // If no feature was found, throw NothingToDoException
-        if (!featureToDump.hasContent()) {
+        if (objectDumps.isEmpty()) {
             throw new NothingToDoException(
                     String.format("There is nothing to dump between %s and %s", previousDumpDate, dumpDate));
         }
-
-        // If some features were found, convert them into ObjectDump
-        List<ObjectDump> objectDumps = convertFeatureToObjectDump(featureToDump.getContent());
 
         // Check if json names <id_feature>-<version> are unique in the collection
         // If yes, throw DuplicateUniqueNameException
@@ -160,6 +160,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         return featureToDump.hasNext() ? featureToDump.nextPageable() : null;
     }
 
+    //FIXME abstract
     private List<ObjectDump> convertFeatureToObjectDump(Collection<FeatureEntity> featureEntities) {
         return featureEntities.stream().map(featureEntity -> new ObjectDump(featureEntity.getCreationDate(),
                                                                             featureEntity.getProviderId() + "-" + featureEntity
@@ -169,19 +170,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void resetLastUpdateDate() {
-        // reset last dump date to null if already present
-        DumpSettings lastDump = dumpSettingsService.retrieve();
-        lastDump.setLastDumpReqDate(null);
-        try {
-            dumpSettingsService.update(lastDump);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("LastReqDumpDate was not updated to null, caused by : {}", e.getMessage());
-        }
-    }
-
-    @Override
+    @Override //FIXME abstract
     public void handleError(FeatureSaveMetadataRequest metadataRequest, String errorMessage) {
         notificationClient.notify(errorMessage, String.format("Error while dumping features for period %s to %s",
                                                               metadataRequest.getPreviousDumpDate(),
@@ -193,7 +182,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         // no need to clean up workspace as job service is doing so
     }
 
-    @Override
+    @Override//FIXME abstract
     public void handleSuccess(FeatureSaveMetadataRequest metadataRequest) {
         featureSaveMetadataRepository.delete(metadataRequest);
         // we do not need to clean up workspace as job service is doing so for us

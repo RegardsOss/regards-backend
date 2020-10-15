@@ -31,17 +31,17 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.job.FeatureSaveMetadataJob;
-import fr.cnes.regards.modules.feature.service.settings.IDumpSettingsService;
 
 /**
  * Service to handle {@link FeatureSaveMetadataJob}

@@ -38,8 +38,8 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
+import fr.cnes.regards.framework.dump.IDumpSettingsRepository;
+import fr.cnes.regards.framework.dump.DumpSettings;
 
 /**
  * {@link DumpController} REST API test

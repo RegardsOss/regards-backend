@@ -48,14 +48,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.dump.IDumpSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
-import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataJobTask;
 
 /**
  * Test for {@link FeatureSaveMetadataJob}

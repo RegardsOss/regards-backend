@@ -19,12 +19,10 @@
 package fr.cnes.regards.modules.feature.service.conf;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,18 +30,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import fr.cnes.regards.modules.feature.service.settings.IDumpManagerService;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
 
 /**
  * Configuration manager for current module
@@ -58,11 +56,13 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    private IDumpManagerService dumpManagerService;
+    private FeatureSaveMetadataScheduler featureSaveMetadataScheduler;
 
     @Autowired
     private IFeatureNotificationSettingsService notificationSettingsService;
 
+    @Autowired
+    private IDumpSettingsService dumpSettingsService;
 
     @Override
     public Set<String> resetConfiguration() {
@@ -99,15 +99,15 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
                 }
             } else if (DumpSettings.class.isAssignableFrom(item.getKey())) {
                 try {
-                    dumpManagerService.updateDumpAndScheduler(item.getTypedValue());
+                    featureSaveMetadataScheduler.updateDumpAndScheduler(item.getTypedValue());
                 } catch (ModuleException e) {
-                    LOGGER.error("Not able to update new dump settings, cause by:", e.getMessage());
+                    LOGGER.error("Not able to update new dump settings, cause by:", e);
                 }
             } else if (FeatureNotificationSettings.class.isAssignableFrom(item.getKey())) {
                 try {
                     notificationSettingsService.update(item.getTypedValue());
                 } catch (EntityNotFoundException e) {
-                    LOGGER.error("Not able to update new notification settings, cause by:", e.getMessage());
+                    LOGGER.error("Not able to update new notification settings, cause by:", e);
                 }
             }
         }
@@ -125,7 +125,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
     }
 
     @Override
-    public ModuleConfiguration exportConfiguration() throws ModuleException {
+    public ModuleConfiguration exportConfiguration() {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
         // export connections
         for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
@@ -135,26 +135,16 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
 
-        DumpSettings dumpSettings = dumpManagerService.getCurrentDumpSettings();
-        if(dumpSettings != null) {
+        DumpSettings dumpSettings = dumpSettingsService.retrieve();
+        if (dumpSettings != null) {
             configurations.add(ModuleConfigurationItem.build(dumpSettings));
         }
 
         FeatureNotificationSettings notifSettings = notificationSettingsService.getCurrentNotificationSettings();
-        if(notifSettings != null) {
+        if (notifSettings != null) {
             configurations.add(ModuleConfigurationItem.build(notifSettings));
         }
 
         return ModuleConfiguration.build(info, true, configurations);
-    }
-
-    /**
-     * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
-     * @param items {@link ModuleConfigurationItem}s
-     * @return  {@link PluginConfiguration}s
-     */
-    private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
     }
 }

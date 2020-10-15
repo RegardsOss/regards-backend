@@ -62,10 +62,6 @@
         	<groupId>org.mapstruct</groupId>
         	<artifactId>mapstruct</artifactId>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>-->
-<!--			<artifactId>plugins-domain</artifactId>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>

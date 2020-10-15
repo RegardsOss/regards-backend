@@ -34,11 +34,12 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+
 
 /**
  * Test for {@link DumpManagerService}
@@ -61,7 +62,6 @@ public class DumpManagerIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IDumpSettingsRepository dumpRepository;
 
-
     @Override
     public void doInit() {
         simulateApplicationReadyEvent();
@@ -77,7 +77,7 @@ public class DumpManagerIT extends AbstractFeatureMultitenantServiceTest {
         // Create new dump configuration and scheduler
         // activate task execution every minute
         dumpRepository.save(new DumpSettings(true, "0 * * * * *", "target/dump", null));
-        saveMetadataScheduler.initFeatureSaveMetadataJobsSchedulers();
+        saveMetadataScheduler.initSchedulers();
 
         // Update scheduler with a new dump configuration
         // change task execution every 10 seconds

@@ -42,14 +42,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
