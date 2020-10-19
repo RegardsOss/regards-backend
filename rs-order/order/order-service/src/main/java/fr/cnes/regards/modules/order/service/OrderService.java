@@ -60,6 +60,9 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -699,7 +702,10 @@ public class OrderService implements IOrderService {
     @Override
     public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
-        List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
+        List<Pair<OrderDataFile, String>> downloadErrorFiles = new ArrayList<>();
+
+        String externalDlErrorPrefix = "Error while downloading external file";
+        String storageDlErrorPrefix = "Error while downloading file from Archival Storage";
 
         try (ZipArchiveOutputStream zos = new ZipArchiveOutputStream(os)) {
             zos.setEncoding("ASCII");
@@ -718,13 +724,10 @@ public class OrderService implements IOrderService {
                             noProxyHosts, timeout)) {
                         readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
                     } catch (IOException e) {
-                        LOGGER.error(String.format("Error while downloading external file (url : %s)",
-                                dataFile.getUrl()),
-                                e);
-                        StringWriter sw = new StringWriter();
-                        e.printStackTrace(new PrintWriter(sw));
-                        dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
-                        downloadErrorFiles.add(dataFile);
+                        String stack = getStack(e);
+                        LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
+                        dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
+                        downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
                         i.remove();
                     }
                 } else { // Managed by Storage
@@ -732,23 +735,21 @@ public class OrderService implements IOrderService {
                     dataFile.setDownloadError(null);
                     Response response = null;
                     try {
-                        FeignSecurityManager.asSystem();
+                        FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
                         // To download through storage client we must be authentify as system.
                         // To download file with accessrights checked, we should use catalogDownloadClient
                         // but the accessRight have already been checked here.
                         response = storageClient.downloadFile(dataFile.getChecksum());
                     } catch (RuntimeException e) {
-                        LOGGER.error("Error while downloading file from Archival Storage", e);
-                        StringWriter sw = new StringWriter();
-                        e.printStackTrace(new PrintWriter(sw));
-                        dataFile.setDownloadError("Error while downloading file from Archival Storage\n"
-                                + sw.toString());
+                        String stack = getStack(e);
+                        LOGGER.error(storageDlErrorPrefix, e);
+                        dataFile.setDownloadError(String.format("%s\n%s", storageDlErrorPrefix, stack));
                     } finally {
                         FeignSecurityManager.reset();
                     }
                     // Unable to download file from storage
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
-                        downloadErrorFiles.add(dataFile);
+                        downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.of(response))));
                         i.remove();
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                 dataFile.getChecksum());
@@ -761,6 +762,19 @@ public class OrderService implements IOrderService {
                     }
                 }
             }
+            if (!downloadErrorFiles.isEmpty()) {
+                zos.putArchiveEntry(new ZipArchiveEntry("NOTICE.txt"));
+                StringJoiner joiner = new StringJoiner("\n");
+                downloadErrorFiles.forEach(p ->
+                    joiner.add(String.format(
+                        "Failed to download file (%s): %s.",
+                        p.getLeft().getFilename(),
+                        p.getRight()
+                    ))
+                );
+                zos.write(joiner.toString().getBytes());
+                zos.closeArchiveEntry();
+            }
             zos.flush();
             zos.finish();
         } catch (IOException | RuntimeException e) {
@@ -769,16 +783,45 @@ public class OrderService implements IOrderService {
         // Set statuses of all downloaded files
         availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
         // Set statuses of all not downloaded files
-        downloadErrorFiles.forEach(f -> f.setState(FileState.DOWNLOAD_ERROR));
+        downloadErrorFiles.forEach(f -> f.getLeft().setState(FileState.DOWNLOAD_ERROR));
         // use one set to save everybody
-        availableFiles.addAll(downloadErrorFiles);
+        availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).collect(Collectors.toList()));
         dataFileService.save(availableFiles);
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
         orderJobService.manageUserOrderJobInfos(orderOwner);
     }
 
-    private void readInputStreamAndAddToZip(List<OrderDataFile> downloadErrorFiles, ZipArchiveOutputStream zos,
+    private String humanizeError(Optional<Response> response) {
+        return response
+            .map(r -> {
+                Response.Body body = r.body();
+                boolean nullBody = body == null;
+                switch (r.status()) {
+                    case 429:
+                        if (nullBody)
+                            return "Download failed due to exceeded quota";
+
+                        try (InputStream is = body.asInputStream()) {
+                            return IOUtils.toString(is, StandardCharsets.UTF_8);
+                        } catch (IOException|NullPointerException e) {
+                            return "Download failed due to exceeded quota";
+                        }
+                    default:
+                        return String.format("Server returned HTTP error code %d", r.status());
+                }
+            })
+            .orElse("Server returned no content")
+            ;
+    }
+
+    protected String getStack(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
+    }
+
+    private void readInputStreamAndAddToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles, ZipArchiveOutputStream zos,
                                             Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, String dataObjectIpId,
                                             InputStream is) throws IOException {
         // Add filename to multiset
@@ -806,12 +849,12 @@ public class OrderService implements IOrderService {
         if (dataFile.getFilesize() != null) {
             // Check that file has been completely been copied
             if (copiedBytes != dataFile.getFilesize()) {
-                downloadErrorFiles.add(dataFile);
                 i.remove();
-                LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                        dataObjectIpId, dataFile.getFilename());
-                dataFile.setDownloadError("Cannot completely download data file from storage, only " + copiedBytes + "/"
-                        + dataFile.getFilesize() + " bytes");
+                LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})", dataObjectIpId, dataFile.getFilename());
+                String downloadError =
+                    String.format("Cannot completely download data file from storage, only %d/%d bytes", copiedBytes, dataFile.getFilesize());
+                downloadErrorFiles.add(Pair.of(dataFile, downloadError));
+                dataFile.setDownloadError(downloadError);
             }
         }
     }
