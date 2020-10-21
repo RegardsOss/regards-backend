@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
@@ -44,6 +46,9 @@ public class PBatchController {
     }
 
     @PostMapping(path = BATCH_PATH)
+    @ResourceAccess(
+            description = "Attempt to create a batch for future executions",
+            role = DefaultRole.REGISTERED_USER)
     public PBatchResponse createBatch(@RequestBody PBatchRequest data) {
         PUserAuth auth = authFactory.authFromUserEmailAndRole(
                 tenantResolver.getTenant(),

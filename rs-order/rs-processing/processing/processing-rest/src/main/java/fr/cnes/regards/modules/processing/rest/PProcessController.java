@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
@@ -42,12 +44,18 @@ public class PProcessController {
     }
 
     @GetMapping(path = PROCESS_PATH)
+    @ResourceAccess(
+            description = "Find all registered processes",
+            role = DefaultRole.REGISTERED_USER)
     public List<PProcessDTO> findAll() {
         String tenant = tenantResolver.getTenant();
         return processService.findByTenant(tenant).collectList().block();
     }
 
     @GetMapping(path= PROCESS_PATH + "/{" + PROCESS_BUSINESS_ID_PARAM + "}")
+    @ResourceAccess(
+            description = "Find process by their business uuid",
+            role = DefaultRole.REGISTERED_USER)
     public PProcessDTO findByUuid(@PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processId) {
         String tenant = tenantResolver.getTenant();
         return processService.findByTenant(tenant).filter(p -> p.getProcessId().equals(processId))

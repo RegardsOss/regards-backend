@@ -3,6 +3,8 @@ package fr.cnes.regards.modules.processing.controller;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
@@ -49,12 +51,18 @@ public class ProcessPluginConfigController {
     }
 
     @GetMapping(path = PROCESS_CONFIG_PATH, consumes = MediaType.ALL_VALUE)
+    @ResourceAccess(
+            description = "Find all registered configured processes",
+            role = DefaultRole.REGISTERED_USER)
     public Collection<ProcessPluginConfigurationRightsDTO> findAll() {
         return rightsConfigService.findAllRightsPluginConfigs().collectList().block();
     }
 
 
     @GetMapping(path = PROCESS_CONFIG_BID_PATH, consumes = MediaType.ALL_VALUE)
+    @ResourceAccess(
+            description = "Find a configured process by its business uuid",
+            role = DefaultRole.REGISTERED_USER)
     public ProcessPluginConfigurationRightsDTO findByBusinessId(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
@@ -62,6 +70,9 @@ public class ProcessPluginConfigController {
     }
 
     @PostMapping(path = PROCESS_CONFIG_PATH)
+    @ResourceAccess(
+            description = "Create a process configuration from a plugin",
+            role = DefaultRole.ADMIN)
     public ProcessPluginConfigurationRightsDTO create(
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto
     ) {
@@ -70,6 +81,9 @@ public class ProcessPluginConfigController {
     }
 
     @PutMapping(path = PROCESS_CONFIG_BID_PATH)
+    @ResourceAccess(
+            description = "Update the given process with the given rights configuration",
+            role = DefaultRole.ADMIN)
     public ProcessPluginConfigurationRightsDTO update(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto
@@ -79,13 +93,19 @@ public class ProcessPluginConfigController {
     }
 
     @DeleteMapping(path = PROCESS_CONFIG_BID_PATH, consumes = MediaType.ALL_VALUE)
-    public ProcessPluginConfigurationRightsDTO save(
+    @ResourceAccess(
+            description = "Delete the given process",
+            role = DefaultRole.ADMIN)
+    public ProcessPluginConfigurationRightsDTO delete(
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId
     ) {
         return rightsConfigService.delete(processBusinessId).block();
     }
 
     @GetMapping(path = PROCESS_METADATA_PATH, consumes = MediaType.ALL_VALUE)
+    @ResourceAccess(
+            description = "List all detected process plugins",
+            role = DefaultRole.ADMIN)
     public Collection<PluginMetaData> listAllDetectedPlugins() {
         return PluginUtils.getPlugins().values();
     }
@@ -98,6 +118,9 @@ public class ProcessPluginConfigController {
     }
 
     @PostMapping(path = PROCESS_BY_DATASETS_PATH)
+    @ResourceAccess(
+            description = "Find processes attached to any of the given datasets",
+            role = DefaultRole.REGISTERED_USER)
     public Map<String, List<ProcessLabelDTO>> findProcessesByDatasets(
             @RequestBody List<String> datasets
     ) {
@@ -107,6 +130,9 @@ public class ProcessPluginConfigController {
     }
 
     @PutMapping(path = PROCESS_LINKDATASET_PATH)
+    @ResourceAccess(
+            description = "Attach the given dataset to all the given processes",
+            role = DefaultRole.ADMIN)
     public void attachDatasetToProcesses (
             @RequestBody List<UUID> processBusinessIds,
             @PathVariable(DATASET_PARAM) String dataset
@@ -115,6 +141,9 @@ public class ProcessPluginConfigController {
     }
 
     @PutMapping(path = PROCESS_CONFIG_BID_USERROLE_PATH, consumes = MediaType.ALL_VALUE)
+    @ResourceAccess(
+            description = "Attache the given role to the given process",
+            role = DefaultRole.ADMIN)
     public void attachRoleToProcess (
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestParam(USER_ROLE_PARAM) String userRole

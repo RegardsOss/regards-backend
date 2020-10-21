@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.processing.rest;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -44,6 +46,9 @@ public class PMonitoringController {
     }
 
     @GetMapping(path = MONITORING_EXECUTIONS_PATH)
+    @ResourceAccess(
+            description = "List executions filtered by tenant/user/date/status depending on the given parameters",
+            role = DefaultRole.ADMIN)
     public List<PExecution> executions(
             @RequestParam(name = TENANT_PARAM) String tenant,
             @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
