@@ -86,6 +86,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     private IJobInfoRepository jobInfoRepository;
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onContextRefreshedEvent(ContextRefreshedEvent event) {
         if (self == null) {
             try {
