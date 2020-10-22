@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.hateoas.EntityModel;
@@ -33,20 +34,18 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
+import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
+import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -66,6 +65,7 @@ import fr.cnes.regards.modules.feature.service.flow.FeatureCreationRequestEventH
 import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.FeatureUpdateRequestEventHandler;
 import fr.cnes.regards.modules.feature.service.flow.NotificationRequestEventHandler;
+import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -78,6 +78,8 @@ import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.storage.client.FileRequestGroupEventHandler;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -116,6 +118,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IFeatureNotificationRequestRepository notificationRequestRepo;
 
     @Autowired
+    protected IFeatureSaveMetadataRequestRepository featureSaveMetadataRequestRepository;
+
+    @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
@@ -137,10 +142,17 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
     @Autowired
+    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
+
+    @Autowired
     protected IFeatureNotificationService featureNotificationService;
 
     @Autowired
     protected IFeatureNotificationSettingsService featureSettingsNotificationService;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
+
 
     @Autowired(required = false)
     private IAmqpAdmin amqpAdmin;
@@ -148,25 +160,65 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     @Autowired(required = false)
     private IRabbitVirtualHostAdmin vhostAdmin;
 
+    @Autowired
+    private IFeatureRequestService featureRequestService;
+
+    // ------------------------
+    // TO CLEAN TESTS
+    // ------------------------
+
     @Before
     public void before() throws Exception {
-        this.featureCreationRequestRepo.deleteAllInBatch();
-        this.featureUpdateRequestRepo.deleteAllInBatch();
-        this.featureDeletionRequestRepo.deleteAllInBatch();
-        this.featureRepo.deleteAllInBatch();
-        this.notificationRequestRepo.deleteAllInBatch();
+        cleanRepo();
+        simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
         doInit();
     }
 
-    /**
-     * Custom test initialization to override
-     * @throws Exception
-     */
     protected void doInit() throws Exception {
         // Override to init something
     }
 
+    @After
+    public void after() throws Exception {
+        cleanQueues();
+       // cleanRepo();
+        doAfter();
+    }
+
+    protected void doAfter() throws Exception {
+        // Override to init something
+    }
+
+    public void cleanRepo() {
+        this.featureCreationRequestRepo.deleteAllInBatch();
+        this.featureUpdateRequestRepo.deleteAllInBatch();
+        this.featureDeletionRequestRepo.deleteAllInBatch();
+        this.featureSaveMetadataRequestRepository.deleteAllInBatch();
+        this.featureRepo.deleteAllInBatch();
+        this.notificationRequestRepo.deleteAllInBatch();
+        this.jobInfoRepository.deleteAll();
+        this.featureNotificationSettingsRepo.deleteAll();
+    }
+
+    public void cleanQueues() {
+        subscriber.unsubscribeFrom(FeatureCreationRequestEvent.class);
+        subscriber.unsubscribeFrom(FeatureDeletionRequestEvent.class);
+        subscriber.unsubscribeFrom(FeatureUpdateRequestEvent.class);
+        subscriber.unsubscribeFrom(FeatureNotificationRequestEvent.class);
+        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
+        subscriber.unsubscribeFrom(FileRequestsGroupEvent.class);
+        cleanAMQPQueues(FeatureCreationRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(NotificationRequestEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(FileRequestGroupEventHandler.class, ONE_PER_MICROSERVICE_TYPE);
+    }
+
+
+    // ------------------------
+    // WAIT FUNCTIONS
+    // ------------------------
 
     /**
      * Wait until feature are properly created
@@ -251,6 +303,26 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         } while (true);
     }
 
+    protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo)
+
+            throws InterruptedException {
+        int cpt = 0;
+
+        // we will expect that all feature reference remain in database with the error state
+        do {
+            Thread.sleep(1000);
+            if (cpt == 60) {
+                fail("Timeout");
+            }
+            cpt++;
+        } while (!repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
+    }
+
+
+    // ------------------------
+    // MOCK FUNCTIONS
+    // ------------------------
+
     public String mockModelClient(String filename) {
         return mockModelClient(filename, cps, factory, getDefaultTenant(), modelAttrAssocClientMock);
     }
@@ -298,6 +370,107 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             LOGGER.debug(errorMessage);
             throw new AssertionError(errorMessage);
         }
+    }
+
+
+
+    public IModelAttrAssocClient getModelAttrAssocClientMock() {
+        return modelAttrAssocClientMock;
+    }
+
+
+    protected void mockFeatureCreationStorageSuccess() {
+        // mock rs-storage response success for file storage
+        Pageable pageToRequest = PageRequest.of(0, properties.getMaxBulkSize());
+        Page<FeatureCreationRequest> fcrPage;
+        do {
+            // find first page of requests to handle
+            fcrPage = featureCreationRequestRepo.findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, pageToRequest);
+            // simulate storage response
+            featureRequestService.handleStorageSuccess(fcrPage.stream().map(AbstractFeatureRequest::getGroupId).collect(Collectors.toSet()));
+            // get next page of requests if present
+            if(fcrPage.hasNext()) {
+                fcrPage.nextPageable();
+            }
+        } while (fcrPage.hasNext());
+    }
+
+    protected void mockNotificationSuccess() {
+        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
+                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                OffsetDateTime.now().plusDays(1),
+                PageRequest.of(0,
+                               properties.getMaxBulkSize(),
+                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
+        if (!requestsToSend.isEmpty()) {
+            featureNotificationService.sendToNotifier();
+            //simulate that notification has been handle with success
+            featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
+        }
+        for (int i = 1; i < requestsToSend.getTotalPages(); i++) {
+            requestsToSend = abstractFeatureRequestRepo
+                    .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                           OffsetDateTime.now().plusDays(1),
+                                                           requestsToSend.nextPageable());
+            if (!requestsToSend.isEmpty()) {
+                featureNotificationService.sendToNotifier();
+                //simulate that notification has been handle with success
+                featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
+            }
+        }
+    }
+
+
+
+
+
+    // ------------------------
+    // UTILS
+    // ------------------------
+
+    /**
+     * Internal method to clean AMQP queues, if actives
+     */
+    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
+        if (vhostAdmin != null) {
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
+            } catch (AmqpIOException e) {
+                //todo
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
+    }
+
+    /**
+     * Create features
+     * @param nbFeatures number of features to create
+     */
+    protected void initData(int nbFeatures) {
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true);
+        this.featureCreationService.registerRequests(events);
+        this.featureCreationService.scheduleRequests();
+        waitFeature(nbFeatures, null, nbFeatures * 1000);
+    }
+
+
+    public boolean initDefaultNotificationSettings() {
+        return featureSettingsNotificationService.retrieve().isActiveNotification();
+    }
+
+
+    public IComputationPluginService getCps() {
+        return cps;
+    }
+
+
+    public MultitenantFlattenedAttributeAdapterFactory getFactory() {
+        return factory;
     }
 
     protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
@@ -353,21 +526,9 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         return events;
     }
 
-    public IComputationPluginService getCps() {
-        return cps;
-    }
-
-    public IModelAttrAssocClient getModelAttrAssocClientMock() {
-        return modelAttrAssocClientMock;
-    }
-
-    public MultitenantFlattenedAttributeAdapterFactory getFactory() {
-        return factory;
-    }
-
-    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner,
-            boolean prepareFeatureWithFiles, Integer featureToCreateNumber) throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, true);
+    protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
+            int featureToCreateNumber, boolean isToNotify, boolean override) throws InterruptedException {
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber, override);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
@@ -375,8 +536,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         }
 
         this.featureCreationService.registerRequests(events);
-
-        assertEquals(featureToCreateNumber.intValue(), this.featureCreationRequestRepo.count());
+        assertEquals(featureToCreateNumber, this.featureCreationRequestRepo.count());
 
         this.featureCreationService.scheduleRequests();
         // if they are several page to create
@@ -392,18 +552,33 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != featureToCreateNumber));
 
-        assertEquals(featureToCreateNumber.intValue(), this.featureRepo.count());
+        assertEquals(featureToCreateNumber, this.featureRepo.count());
 
         // in that case all features hasn't been saved
         if (cpt == 100) {
             fail("Doesn't have all features at the end of time");
         }
 
-        mockNotificationSuccess();
-        // if they are several page to create
-        for (int i = 0; i < (featureToCreateNumber % properties.getMaxBulkSize()); i++) {
-            mockNotificationSuccess();
+        if(prepareFeatureWithFiles) {
+            mockFeatureCreationStorageSuccess();
         }
+
+        if(isToNotify) {
+            mockNotificationSuccess();
+            // if they are several page to create
+            for (int i = 0; i < (featureToCreateNumber % properties.getMaxBulkSize()); i++) {
+                mockNotificationSuccess();
+            }
+            Assert.assertEquals("Not all requests to be notified were deleted", 0L, featureCreationRequestRepo.count());
+        }
+
+        return events;
+    }
+    protected List<FeatureDeletionRequestEvent> prepareDeletionTestData(String deletionOwner,
+            boolean prepareFeatureWithFiles, Integer featureToCreateNumber, boolean isToNotify) throws InterruptedException {
+
+        // create features
+        prepareCreationTestData(prepareFeatureWithFiles, featureToCreateNumber, isToNotify, true);
 
         // get urn from feature we just created
         List<FeatureUniformResourceName> entityCreatedUrn = this.featureRepo.findAll().stream()
@@ -423,114 +598,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         }
 
         return deletionEvents;
-
     }
 
-    protected void mockNotificationSuccess() {
-        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
-                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                OffsetDateTime.now().plusDays(1),
-                PageRequest.of(0,
-                               properties.getMaxBulkSize(),
-                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
-        if (!requestsToSend.isEmpty()) {
-            featureNotificationService.sendToNotifier();
-            //simulate that notification has been handle with success
-            featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
-        }
-        for (int i = 1; i < requestsToSend.getTotalPages(); i++) {
-            requestsToSend = abstractFeatureRequestRepo
-                    .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                           OffsetDateTime.now().plusDays(1),
-                                                           requestsToSend.nextPageable());
-            if (!requestsToSend.isEmpty()) {
-                featureNotificationService.sendToNotifier();
-                //simulate that notification has been handle with success
-                featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
-            }
-        }
-    }
-
-    @After
-    public void after() throws Exception {
-        subscriber.unsubscribeFrom(FeatureCreationRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureDeletionRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureUpdateRequestEvent.class);
-        subscriber.unsubscribeFrom(FeatureNotificationRequestEvent.class);
-        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
-        cleanAMQPQueues(FeatureCreationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureUpdateRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(FeatureDeletionRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(NotificationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        doAfter();
-    }
-
-    /**
-     * Custom test cleaning to override
-     * @throws Exception
-     */
-    protected void doAfter() throws Exception {
-        // Override to init something
-    }
-
-    /**
-     * Internal method to clean AMQP queues, if actives
-     */
-    public void cleanAMQPQueues(Class<? extends IHandler<?>> handler, Target target) {
-        if (vhostAdmin != null) {
-            // Re-set tenant because above simulation clear it!
-
-            // Purge event queue
-            try {
-                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(handler, target), false);
-            } catch (AmqpIOException e) {
-                //todo
-            } finally {
-                vhostAdmin.unbind();
-            }
-        }
-    }
-
-    protected void waitForErrorState(JpaRepository<? extends AbstractRequest, ?> repo)
-
-            throws InterruptedException {
-        int cpt = 0;
-
-        // we will expect that all feature reference remain in database with the error state
-        do {
-            Thread.sleep(1000);
-            if (cpt == 60) {
-                fail("Timeout");
-            }
-            cpt++;
-        } while (!repo.findAll().stream().allMatch(request -> RequestState.ERROR.equals(request.getState())));
-    }
-
-    /**
-     * Create features
-     * @param nbFeatures number of features to create
-     */
-    protected void initData(int nbFeatures) {
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true);
-        this.featureCreationService.registerRequests(events);
-        this.featureCreationService.scheduleRequests();
-        waitFeature(nbFeatures, null, nbFeatures * 1000);
-    }
-
-    public boolean updateNotificationSettings(boolean state){
-        // Set notification to true/false
-        FeatureNotificationSettings notificationSettings = featureSettingsNotificationService.retrieve();
-        notificationSettings.setActiveNotification(state);
-        try {
-            featureSettingsNotificationService.update(notificationSettings);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("Notification settings not initialized properly");
-        }
-        return state;
-    }
-
-    public boolean initNotificationSettings() {
-        return featureSettingsNotificationService.retrieve().isActiveNotification();
-    }
 }

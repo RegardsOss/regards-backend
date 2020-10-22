@@ -75,6 +75,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IFeatureUpdateRequestRepository featureUpdateRequestRepository;
 
+    private boolean isToNotify;
+
+    @Override
+    public void doInit() {
+        // initialize notification
+        this.isToNotify = initDefaultNotificationSettings();
+    }
+
     /**
      * Test update scheduler we will create 4 {@link FeatureUpdateRequest}
      * fur1, fur2, fur3, fur4
@@ -85,7 +93,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
      */
     @Test
     public void testSchedulerSteps() throws InterruptedException {
-
+        // create features
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(3, true);
         this.featureCreationService.registerRequests(events);
 
@@ -98,9 +106,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 3));
 
-        FeatureEntity toUpdate = super.featureRepo.findAll().get(0);
-        FeatureEntity updatingByScheduler = super.featureRepo.findAll().get(1);
-        FeatureEntity toDelete = super.featureRepo.findAll().get(2);
+        List<FeatureEntity> entities = super.featureRepo.findAll();
+        FeatureEntity toUpdate = entities.get(0);
+        FeatureEntity updatingByScheduler = entities.get(1);
+        FeatureEntity toDelete = entities.get(2);
 
         FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent
                 .build("TEST", toDelete.getUrn(), PriorityLevel.NORMAL);
@@ -180,34 +189,11 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
      */
     @Test
     public void testFeaturePriority() throws InterruptedException {
+        // create features
+        int featureToCreateNumber = properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2);
+        List<FeatureCreationRequestEvent> events = prepareCreationTestData(true, featureToCreateNumber, this.isToNotify, true);
 
-        List<FeatureCreationRequestEvent> events = super
-                .initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true);
-
-        this.featureCreationService.registerRequests(events);
-
-        assertEquals(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2),
-                     this.featureCreationRequestRepo.count());
-
-        featureCreationService.scheduleRequests();
-        featureCreationService.scheduleRequests();
-
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = this.featureRepo.count();
-            Thread.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
-                / 2))));
-
-        assertEquals(properties.getMaxBulkSize().intValue() + (properties.getMaxBulkSize().intValue() / 2),
-                     this.featureRepo.count());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
-        }
+        // create update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
         updateEvents = events.stream()
                 .map(event -> FeatureUpdateRequestEvent.build("test", event.getMetadata(), event.getFeature()))
@@ -238,9 +224,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 1000);
         this.featureUpdateService.scheduleRequests();
 
-        if(initNotificationSettings()) {
+        // in case notification are active, mock their successes
+        if(this.isToNotify) {
             // wait until request are in state LOCAL_TO_BE_NOTIFIED
-            cpt = 0;
+            int cpt = 0;
             while (cpt < 10 && featureUpdateRequestRepository
                     .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
                                                            OffsetDateTime.now().plusDays(1),

@@ -82,6 +82,11 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-webmvc-core</artifactId>
 		</dependency>
+		<!-- dump dependency -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+			<artifactId>dump-rest</artifactId>
+		</dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>

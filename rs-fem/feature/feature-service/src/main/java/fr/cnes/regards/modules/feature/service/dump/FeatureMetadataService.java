@@ -39,12 +39,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.dump.DumpService;
-import fr.cnes.regards.framework.dump.ObjectDump;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.dump.service.DumpService;
+import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -74,9 +71,6 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Autowired
     private IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository;
-
-    @Autowired
-    private IDumpSettingsService dumpSettingsService;
 
     @Autowired
     private IFeatureEntityRepository featureRepository;
@@ -160,7 +154,6 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         return featureToDump.hasNext() ? featureToDump.nextPageable() : null;
     }
 
-    //FIXME abstract
     private List<ObjectDump> convertFeatureToObjectDump(Collection<FeatureEntity> featureEntities) {
         return featureEntities.stream().map(featureEntity -> new ObjectDump(featureEntity.getCreationDate(),
                                                                             featureEntity.getProviderId() + "-" + featureEntity
@@ -170,7 +163,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                 .collect(Collectors.toList());
     }
 
-    @Override //FIXME abstract
+    @Override
     public void handleError(FeatureSaveMetadataRequest metadataRequest, String errorMessage) {
         notificationClient.notify(errorMessage, String.format("Error while dumping features for period %s to %s",
                                                               metadataRequest.getPreviousDumpDate(),
@@ -182,7 +175,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         // no need to clean up workspace as job service is doing so
     }
 
-    @Override//FIXME abstract
+    @Override
     public void handleSuccess(FeatureSaveMetadataRequest metadataRequest) {
         featureSaveMetadataRepository.delete(metadataRequest);
         // we do not need to clean up workspace as job service is doing so for us

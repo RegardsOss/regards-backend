@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.modules.dump.service.AbstractDumpScheduler;
+import fr.cnes.regards.framework.modules.dump.service.scheduler.AbstractDumpScheduler;
 import fr.cnes.regards.modules.feature.service.dump.FeatureSaveMetadataService;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;

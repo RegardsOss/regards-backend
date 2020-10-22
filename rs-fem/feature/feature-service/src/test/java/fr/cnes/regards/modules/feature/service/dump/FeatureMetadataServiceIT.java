@@ -61,7 +61,7 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
         "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
-@ActiveProfiles(value = { "testAmqp", "nohandler", "noscheduler" })
+@ActiveProfiles(value = { "nohandler", "noscheduler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     OffsetDateTime lastDumpReqDate = OffsetDateTime.of(2020, 8, 31, 15, 15, 50, 345875000, ZoneOffset.of("+01:00"));
@@ -87,7 +87,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpSettings(true, "", "target/dump", null);
+        conf = new DumpSettings(true, "* * * 1-7 * SUN", "target/dump", null);
         dumpConf.save(conf);
     }
 

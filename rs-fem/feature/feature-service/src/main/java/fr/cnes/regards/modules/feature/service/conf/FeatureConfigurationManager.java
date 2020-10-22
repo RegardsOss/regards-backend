@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
@@ -140,7 +140,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             configurations.add(ModuleConfigurationItem.build(dumpSettings));
         }
 
-        FeatureNotificationSettings notifSettings = notificationSettingsService.getCurrentNotificationSettings();
+        FeatureNotificationSettings notifSettings = notificationSettingsService.retrieve();
         if (notifSettings != null) {
             configurations.add(ModuleConfigurationItem.build(notifSettings));
         }

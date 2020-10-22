@@ -46,7 +46,7 @@ import static org.junit.Assert.fail;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_deletion",
         "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
         "spring.jpa.properties.hibernate.order_inserts=true" })
-@ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
+@ActiveProfiles(value = { "noscheduler", "nohandler" })
 public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
@@ -55,6 +55,12 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
     @Autowired
     private FeatureDeletionService featureDeletionService;
 
+    private boolean isToNotify;
+
+    @Override
+    public void doInit() {
+        this.isToNotify = initDefaultNotificationSettings();
+    }
     /**
      * Test storage listener we will prepare data send {@linkFeatureDeletionReventEvent} and call handleDeletionSuccess
      * from {@link FeatureRequestService} to mock storage call back
@@ -70,7 +76,10 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
         requestService.handleDeletionSuccess(toDelete.stream().map(AbstractFeatureRequest::getGroupId)
                                                      .collect(Collectors.toSet()));
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // Feature entity and FeatureDeletionRequest must be deleted
         assertEquals(0, this.featureRepo.count());
         assertEquals(0, this.featureDeletionRequestRepo.count());
@@ -87,8 +96,6 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
     @Test
     public void testHandlerStorageError() throws InterruptedException {
         prepareData();
-
-        this.featureCreationRequestRepo.deleteAll();
 
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
         requestService.handleDeletionError(toDelete.stream().map(AbstractFeatureRequest::getGroupId)
@@ -109,7 +116,7 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         int cpt = 0;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
                                                                            true,
-                                                                           properties.getMaxBulkSize());
+                                                                           properties.getMaxBulkSize(), this.isToNotify);
 
         this.featureDeletionService.registerRequests(events);
 

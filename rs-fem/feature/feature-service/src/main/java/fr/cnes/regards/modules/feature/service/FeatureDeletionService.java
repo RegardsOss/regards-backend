@@ -118,6 +118,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     @Autowired
     private Gson gson;
 
+
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureDeletionRequestEvent> events) {
         long registrationStart = System.currentTimeMillis();
@@ -268,18 +269,16 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         }
 
         // Manage dispatched requests
-        manageRequestsAlreadyDeleted(requestsAlreadyDeleted);
+        boolean isToNotify = notificationSettingsService.retrieve().isActiveNotification();
+        manageRequestsAlreadyDeleted(requestsAlreadyDeleted, isToNotify);
         manageRequestsWithFiles(requestsWithFiles);
-        manageRequestsWithoutFile(requestsWithoutFiles);
+        manageRequestsWithoutFile(requestsWithoutFiles, isToNotify);
     }
 
-    private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted) {
-
+    private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted, boolean isToNotify) {
         if (!requestsAlreadyDeleted.isEmpty()) {
-
             // PROPAGATE to NOTIFIER if required
-            FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-            if(notificationSettings.isActiveNotification()) {
+            if(isToNotify) {
                 String unknown = "unknown";
                 for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
                     // Build fake incomplete feature
@@ -316,7 +315,6 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     private void manageRequestsWithFiles(Map<FeatureDeletionRequest, FeatureEntity> requestsWithFiles) {
-
         // Request file deletion
         for (Entry<FeatureDeletionRequest, FeatureEntity> entry : requestsWithFiles.entrySet()) {
             publishFiles(entry.getKey(), entry.getValue());
@@ -326,18 +324,22 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         // No feedback at the moment
     }
 
-    private void manageRequestsWithoutFile(Map<FeatureDeletionRequest, FeatureEntity> requestsWithoutFiles) {
-        sendFeedbacksAndClean(requestsWithoutFiles);
+    private void manageRequestsWithoutFile(Map<FeatureDeletionRequest, FeatureEntity> requestsWithoutFiles, boolean isToNotify) {
+        sendFeedbacksAndClean(requestsWithoutFiles, isToNotify);
     }
 
-    private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests) {
-        // PREPARE PROPAGATION to NOTIFIER
-        for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
-            entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-            entry.getKey().setAlreadyDeleted(false);
-            entry.getKey().setToNotify(entry.getValue().getFeature());
+    private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests, boolean isToNotify) {
+        // PREPARE PROPAGATION to NOTIFIER if required
+        if(isToNotify) {
+            for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
+                entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                entry.getKey().setAlreadyDeleted(false);
+                entry.getKey().setToNotify(entry.getValue().getFeature());
+            }
+            deletionRepo.saveAll(sucessfullRequests.keySet());
+        } else {
+            this.deletionRepo.deleteInBatch(sucessfullRequests.keySet());
         }
-        deletionRepo.saveAll(sucessfullRequests.keySet());
 
         // PROPAGATE to CATALOG
         sucessfullRequests.values()
@@ -404,8 +406,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         for (FeatureDeletionRequest fdr : requests) {
             sucessfullRequests.put(fdr, featureByUrn.get(fdr.getUrn()));
         }
-
-        sendFeedbacksAndClean(sucessfullRequests);
+        sendFeedbacksAndClean(sucessfullRequests, notificationSettingsService.retrieve().isActiveNotification());
     }
 
     @Override

@@ -51,7 +51,6 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -378,8 +377,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         featureUpdateRequestRepo.saveAll(errorRequests);
 
         // if notifications are required
-        FeatureNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-        if(notificationSettings.isActiveNotification()) {
+        if(notificationSettingsService.retrieve().isActiveNotification()) {
             featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream().map(
                     AbstractFeatureRequest::getId).collect(Collectors.toSet()));
         } else {

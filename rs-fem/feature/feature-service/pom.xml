@@ -123,10 +123,6 @@
             <artifactId>oais-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>json-dump-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.dump</groupId>
             <artifactId>dump-service</artifactId>
         </dependency>

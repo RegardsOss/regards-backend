@@ -30,6 +30,11 @@ import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettin
 public interface IFeatureNotificationSettingsService {
 
     /**
+     * Initialize new {@link FeatureNotificationSettings} in the repository
+     */
+    void initNotificationSettings();
+
+    /**
      * Retrieve {@link FeatureNotificationSettings}. If they do not exist, new settings are created.
      */
     FeatureNotificationSettings retrieve();
@@ -38,10 +43,4 @@ public interface IFeatureNotificationSettingsService {
      * Update {@link FeatureNotificationSettings}
      */
     FeatureNotificationSettings update(FeatureNotificationSettings pFeatureNotificationSettings) throws EntityNotFoundException;
-
-    /**
-     * Get current {@link FeatureNotificationSettings}
-     */
-    FeatureNotificationSettings getCurrentNotificationSettings();
-
 }

@@ -83,11 +83,14 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
     @Autowired
     private FeatureStorageListener listener;
 
+    private boolean isToNotify;
+
     @Override
     @Before
     public void before() throws Exception {
         this.featureCopyRepo.deleteAll();
         super.before();
+        this.isToNotify = initDefaultNotificationSettings();
     }
 
     @Test
@@ -98,7 +101,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onStoreSuccess(Sets.newHashSet(info));
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
         // the FeatureCreationRequest must be deleted
         assertEquals(0, fcrRepo.count());
         // the FeatureEntity must remain
@@ -132,7 +137,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         initData(info);
 
         this.listener.onReferenceSuccess(Sets.newHashSet(info));
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // the FeatureCreationRequest must be deleted
         assertEquals(0, fcrRepo.count());

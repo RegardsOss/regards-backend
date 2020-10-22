@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -56,6 +58,17 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
+    @Autowired
+    private IFeatureNotificationSettingsRepository notificationSettingsRepository;
+
+    private boolean isToNotify;
+
+    @Override
+    public void doInit() {
+        // check if notifications are required
+        this.isToNotify = initDefaultNotificationSettings();
+    }
+
     /**
      * Nominal test case of deletion create feature then send delete request
      * we will test that the {@link FeatureDeletionRequest}
@@ -71,7 +84,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         long featureNumberInDatabase;
         int cpt = 0;
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
-                                                                           properties.getMaxBulkSize());
+                                                                           properties.getMaxBulkSize(), this.isToNotify);
 
         this.featureDeletionService.registerRequests(events);
 
@@ -87,7 +100,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
             fail("Doesn't have all features haven't be deleted");
         }
 
-        if(initNotificationSettings()) {
+        if(this.isToNotify) {
             mockNotificationSuccess();
             // the publisher must be called 2 times one for feature creation and one for feature deletion
             Mockito.verify(publisherSpy, Mockito.times(2)).publish(recordsCaptor.capture());
@@ -117,11 +130,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         int cpt = 0;
 
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
-                                                                           properties.getMaxBulkSize());
-
+                                                                           properties.getMaxBulkSize(), this.isToNotify);
         this.featureDeletionService.registerRequests(events);
-
         this.featureDeletionService.scheduleRequests();
+
+
+
         do {
             featureNumberInDatabase = this.featureDeletionRequestRepo.count();
             Thread.sleep(100);
@@ -141,8 +155,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
-        // the publisher must not be called
-        Mockito.verify(publisherSpy, Mockito.times(0)).publish(recordsCaptor.capture());
+        // the publisher has been called because of storage successes (feature creation with files)
+        Mockito.verify(publisherSpy, Mockito.times(1)).publish(recordsCaptor.capture());
 
     }
 
@@ -158,10 +172,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         String deletionOwner = "deleter";
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
                                                                            properties.getMaxBulkSize()
-                                                                                   + (properties.getMaxBulkSize() / 2));
-
+                                                                                   + (properties.getMaxBulkSize() / 2), this.isToNotify);
         this.featureDeletionService.registerRequests(events);
 
         this.featureDeletionService.scheduleRequests();
@@ -176,13 +189,18 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         if (cpt == 100) {
             fail("Doesn't have all features at the end of time");
         }
-        // first feature batch has been successfully deleted, now let simulate notification success
-        mockNotificationSuccess();
-
+        if(this.isToNotify) {
+            // first feature batch has been successfully deleted, now let simulate notification success
+            mockNotificationSuccess();
+        }
         // there should remain properties.getMaxBulkSize / 2 request to be handled (scheduleRequest only schedule properties.getMaxBulkSize requests)
         List<FeatureDeletionRequest> notScheduled = this.featureDeletionRequestRepo.findAll();
-
         assertEquals(properties.getMaxBulkSize() / 2, notScheduled.size());
         assertTrue(notScheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
+    }
+
+    @Override
+    public void doAfter() {
+        notificationSettingsRepository.deleteAll();
     }
 }

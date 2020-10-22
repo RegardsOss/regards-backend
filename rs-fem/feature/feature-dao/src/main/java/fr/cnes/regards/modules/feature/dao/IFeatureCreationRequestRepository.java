@@ -37,7 +37,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
 
     Set<FeatureCreationRequest> findByGroupIdIn(Set<String> groupIds);
 
-    Page<ILightFeatureCreationRequest> findByStep(FeatureRequestStep step, Pageable page);
+    Page<FeatureCreationRequest> findByStep(FeatureRequestStep step, Pageable page);
 
     /**
      * Get a page of {@link ILightFeatureCreationRequest} with specified step.

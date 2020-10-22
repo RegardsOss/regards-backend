@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -42,13 +40,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.dump.IDumpSettingsRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
@@ -74,9 +72,6 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
 
     @Autowired
     private IJobService jobService;
-
-    @Autowired
-    private IFeatureSaveMetadataRequestRepository metadataRequestRepository;
 
     @Autowired
     private IDumpSettingsRepository dumpConfRepo;
@@ -123,7 +118,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         Assert.assertEquals(JobStatus.SUCCEEDED, errorJobInfoOpt.get().getStatus().getStatus());
 
         // Check all requests were deleted
-        List<FeatureSaveMetadataRequest> errorRequests = metadataRequestRepository.findAll();
+        List<FeatureSaveMetadataRequest> errorRequests = featureSaveMetadataRequestRepository.findAll();
         Assert.assertEquals(0, errorRequests.size());
 
         // Check folder target/workspace/<microservice>/ exists and contains 1 dump
@@ -160,24 +155,12 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceT
         Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus());
 
         // Check request in ERROR
-        List<FeatureSaveMetadataRequest> errorRequests = metadataRequestRepository.findAll();
+        List<FeatureSaveMetadataRequest> errorRequests = featureSaveMetadataRequestRepository.findAll();
         Assert.assertEquals(1, errorRequests.size());
         Assert.assertEquals(RequestState.ERROR, errorRequests.get(0).getState());
 
         // Check folder target/workspace/<microservice>/ does not contain dump
         Assert.assertEquals("Dump folder should be empty", 0, this.dumpLocation.toFile().listFiles().length);
-    }
-
-    @Test
-    @Purpose("Test scheduler task")
-    public void testTask() throws ExecutionException, InterruptedException {
-        // launch task
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService
-                .submit(new FeatureSaveMetadataJobTask(saveMetadataService, getDefaultTenant(), runtimeTenantResolver))
-                .get();
-        // test dump was created properly
-        //checkDumpSuccess();
     }
 
     private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {

@@ -14,6 +14,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+//FIXME rename
 public class CreateNotificationActionEventVisitor implements IAbstractFeatureRequestVisitor<NotificationRequestEvent> {
 
     public static class NotificationActionEventMetadata {

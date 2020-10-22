@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
- *//*
+ */
 
 package fr.cnes.regards.modules.feature.service;
 
@@ -23,9 +23,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 import org.assertj.core.util.Lists;
 import org.junit.Ignore;
@@ -33,9 +30,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -45,6 +39,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.config.FeaturePerformanceITConfig;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
@@ -54,19 +49,14 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 
-*/
 /**
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
  *
- *//*
+ */
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
@@ -76,29 +66,8 @@ import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @Ignore("warning this test might not pass according to your setup for better perf test see FeatureGeodeIT")
-@ContextConfiguration(classes = { FeaturePerformanceIT.Config.class })
+@ContextConfiguration(classes = { FeaturePerformanceITConfig.class })
 public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest {
-
-    @Configuration
-    public static class Config {
-
-        @Bean
-        @Primary
-        public INotifierClient notifierClient(INotifierRequestListener notifierRequestListener) {
-            return new INotifierClient() {
-
-                @Override
-                public void sendNotifications(List<NotificationRequestEvent> notification) {
-                    ExecutorService executorToMockSubscribeThread = Executors.newSingleThreadExecutor();
-                    executorToMockSubscribeThread.submit(() -> notifierRequestListener
-                            .onRequestSuccess(notification.stream()
-                                                      .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(), ,
-                                                                                           NotificationState.SUCCESS))
-                                                      .collect(Collectors.toList())));
-                }
-            };
-        }
-    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturePerformanceIT.class);
 
@@ -166,7 +135,9 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                     NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
-        //        mockNotificationSuccess();
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess();
+        }
 
         LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms",
                     NB_FEATURES,
@@ -180,4 +151,4 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceTest 
                 .build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid, 1);
     }
 }
-*/
+

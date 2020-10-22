@@ -57,12 +57,6 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Before
-    public void init() {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        notificationSettingsRepository.deleteAll();
-    }
-
     @Test
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
@@ -73,7 +67,7 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
         Optional<FeatureNotificationSettings> settingsOpt = notificationSettingsRepository.findFirstBy();
         Assert.assertTrue("Settings were not initialized properly",
                           settingsOpt.isPresent() && notificationSettings.getId().equals(settingsOpt.get().getId()));
-        Assert.assertEquals("active_notifications was initialized with default value", false,
+        Assert.assertEquals("active_notifications was initialized with default value", notificationSettings.isActiveNotification(),
                             settingsOpt.get().isActiveNotification());
     }
 
@@ -92,6 +86,8 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Test exception is thrown when entity is not found on update")
     public void testUpdateEntityNotFound() throws EntityNotFoundException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        notificationSettingsRepository.deleteAll();
         FeatureNotificationSettings notificationSettings = new FeatureNotificationSettings();
         notificationSettingsService.update(notificationSettings);
     }

@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -67,7 +67,7 @@ public class FeatureSaveMetadataService {
      * Schedule Jobs
      */
     public JobInfo scheduleJobs() {
-        LOGGER.trace("[SAVE METADATA SCHEDULER] Scheduling job ...");
+        LOGGER.trace("[DUMP SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         JobInfo jobInfo = null;
 

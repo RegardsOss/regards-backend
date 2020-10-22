@@ -75,6 +75,12 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
+    private boolean isToNotify;
+
+    @Override
+    public void doInit() {
+        this.isToNotify = initDefaultNotificationSettings();
+    }
     @Test
     public void testDuplicatedFeatureCreationWithOverride() throws InterruptedException {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
@@ -93,7 +99,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
         //end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // publish a duplicated feature creation
         publisher.publish(events);
@@ -108,7 +116,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
         //end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // that must publish a FeatureDeletionRequestEvent
         waitRequest(this.featureDeletionRequestRepo, 1, 30000);
@@ -121,7 +131,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onDeletionSuccess(Sets.newHashSet(info));
 
         //end deletion process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // it must remain only 1 FeatureEntity in database
         waitRequest(this.featureRepo, 1, 30000);
@@ -146,7 +158,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         FeatureEntity featureInDatabase = this.featureRepo.findAll().get(0);
 
         // end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // publish a duplicated feature creation
         publisher.publish(events);
@@ -159,7 +173,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.featureDeletionService.scheduleRequests();
 
         // end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         waitRequest(this.featureRepo, 1, 30000);
         // it mustn't be the created one of the fist feature creation
@@ -186,7 +202,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
         // end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // publish a duplicated feature creation
         publisher.publish(events);
@@ -201,7 +219,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
         // end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // it must remain the 2 FeatureEntity in database
         waitRequest(this.featureRepo, 2, 30000);
@@ -227,7 +247,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
         // end creation process
-        mockNotificationSuccess();
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // publish a duplicated feature creation
         publisher.publish(events);
@@ -238,7 +260,8 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(this.featureRepo, 2, 30000);
 
         // end creation process
-        mockNotificationSuccess();
-
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
     }
 }

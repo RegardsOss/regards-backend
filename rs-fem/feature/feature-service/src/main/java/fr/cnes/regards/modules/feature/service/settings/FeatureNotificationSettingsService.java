@@ -23,10 +23,19 @@ package fr.cnes.regards.modules.feature.service.settings;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 
@@ -42,31 +51,60 @@ public class FeatureNotificationSettingsService implements IFeatureNotificationS
     @Autowired
     private IFeatureNotificationSettingsRepository notificationSettingsRepository;
 
+    @Autowired
+    private ITenantResolver tenantsResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IFeatureNotificationSettingsService self;
+
+    @EventListener
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
+        //for each tenant try to create notification settings, if it do not exists then create with default value
+        for(String tenant: tenantsResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.initNotificationSettings();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
     @Override
-    public FeatureNotificationSettings retrieve() {
+    public void initNotificationSettings() {
         Optional<FeatureNotificationSettings> notificationSettingsOpt = notificationSettingsRepository.findFirstBy();
-        FeatureNotificationSettings notificationSettings;
         if (!notificationSettingsOpt.isPresent()) {
             // init new settings
-            notificationSettings = new FeatureNotificationSettings();
-            notificationSettings = notificationSettingsRepository.save(notificationSettings);
-        } else {
-            // get existing settings
-            notificationSettings = notificationSettingsOpt.get();
+            notificationSettingsRepository.save(new FeatureNotificationSettings());
         }
-        return notificationSettings;
+    }
+
+    @EventListener
+    public void onTenantConnectionReady(TenantConnectionReady event) {
+        runtimeTenantResolver.forceTenant(event.getTenant());
+        try {
+            self.initNotificationSettings();
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     @Override
-    public FeatureNotificationSettings update(FeatureNotificationSettings featureNotificationSettings) throws
-            EntityNotFoundException {
+    public FeatureNotificationSettings retrieve() {
+        return notificationSettingsRepository.findFirstBy().orElseThrow(() -> new RsRuntimeException(
+                "Tenant has not been correctly initialized by system!! Go and shout on the devs!"));
+    }
+
+    @Override
+    public FeatureNotificationSettings update(FeatureNotificationSettings featureNotificationSettings)
+            throws EntityNotFoundException {
         if (!notificationSettingsRepository.existsById(featureNotificationSettings.getId())) {
-            throw new EntityNotFoundException(featureNotificationSettings.getId().toString(), FeatureNotificationSettings.class);
-        } return notificationSettingsRepository.save(featureNotificationSettings);
-    }
-
-    @Override
-    public FeatureNotificationSettings getCurrentNotificationSettings() {
-        return notificationSettingsRepository.findFirstBy().orElse(null);
+            throw new EntityNotFoundException(featureNotificationSettings.getId().toString(),
+                                              FeatureNotificationSettings.class);
+        }
+        return notificationSettingsRepository.save(featureNotificationSettings);
     }
 }

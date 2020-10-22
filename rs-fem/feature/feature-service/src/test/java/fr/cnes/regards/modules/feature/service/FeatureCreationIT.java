@@ -116,7 +116,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
             fail("Doesn't have all features at the end of time");
         }
 
-        if(initNotificationSettings()) {
+        if(initDefaultNotificationSettings()) {
             testNotification();
         }
 
@@ -336,11 +336,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         // check that half of the FeatureCreationRequest with step to LOCAL_SCHEDULED
         // have their priority to HIGH and half to AVERAGE
-        Page<ILightFeatureCreationRequest> scheduled = this.featureCreationRequestRepo
+        Page<FeatureCreationRequest> scheduled = this.featureCreationRequestRepo
                 .findByStep(FeatureRequestStep.LOCAL_SCHEDULED, PageRequest.of(0, properties.getMaxBulkSize()));
         int highPriorityNumber = 0;
         int otherPriorityNumber = 0;
-        for (ILightFeatureCreationRequest request : scheduled) {
+        for (FeatureCreationRequest request : scheduled) {
             if (request.getPriority().equals(PriorityLevel.HIGH)) {
                 highPriorityNumber++;
             } else {
