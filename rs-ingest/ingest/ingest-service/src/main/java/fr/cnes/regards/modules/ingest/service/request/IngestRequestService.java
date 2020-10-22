@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -79,8 +81,8 @@ import fr.cnes.regards.modules.ingest.service.job.ChooseVersioningJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
@@ -154,8 +156,11 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
-                                      jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
@@ -185,9 +190,9 @@ public class IngestRequestService implements IIngestRequestService {
                 List<IngestRequest> requests = loadByIds(ids);
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
-                String message = String
-                        .format("Ingest request job with id \"%s\" fails with status \"%s\"", jobEvent.getJobId(),
-                                jobEvent.getJobEventType());
+                String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
+                                               jobEvent.getJobId(),
+                                               jobEvent.getJobEventType());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
@@ -206,8 +211,10 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.GRANTED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.GRANTED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -215,8 +222,10 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.DENIED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.DENIED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -396,7 +405,9 @@ public class IngestRequestService implements IIngestRequestService {
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 // Find if this is the last version and set last flag accordingly
-                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), currentLatestPerProviderId);
+                aipService.handleVersioning(aipEntity,
+                                            request.getMetadata().getVersioningMode(),
+                                            currentLatestPerProviderId);
                 aipService.save(aipEntity);
                 if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
                     if (postProcessToSchedule.get(chain.get()) != null) {
@@ -421,8 +432,10 @@ public class IngestRequestService implements IIngestRequestService {
             sipService.save(sipEntity);
 
             // add ingest request event to list of ingest request events to publish
-            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                                 sipEntity.getSipId(), RequestState.SUCCESS));
+            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+                                                                 request.getSip().getId(),
+                                                                 sipEntity.getSipId(),
+                                                                 RequestState.SUCCESS));
         }
 
         // NOTIFICATIONS
@@ -537,8 +550,11 @@ public class IngestRequestService implements IIngestRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
-                                      jobParameters, authResolver.getUser(), ChooseVersioningJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      ChooseVersioningJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", ChooseVersioningJob.class.getName(), jobInfo.getId());
     }
@@ -553,14 +569,16 @@ public class IngestRequestService implements IIngestRequestService {
             handleRequestGranted(request);
             ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
         }
-        ingestRequestToSchedulePerChain.keySet().forEach(
-                chain -> scheduleIngestProcessingJobByChain(chain, ingestRequestToSchedulePerChain.get(chain)));
+        ingestRequestToSchedulePerChain.keySet().forEach(chain -> scheduleIngestProcessingJobByChain(chain,
+                                                                                                     ingestRequestToSchedulePerChain
+                                                                                                             .get(chain)));
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
-                                       request.getRequestId(), request.getSip().getId()));
+                                       request.getRequestId(),
+                                       request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
@@ -570,8 +588,10 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.ERROR, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.ERROR,
+                                                   request.getErrors()));
     }
 
     /**
