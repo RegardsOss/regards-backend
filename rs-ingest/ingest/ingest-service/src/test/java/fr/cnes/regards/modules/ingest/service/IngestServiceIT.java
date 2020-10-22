@@ -97,13 +97,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() throws ModuleException {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
-
         Mockito.clearInvocations(ingestRequestService);
     }
 

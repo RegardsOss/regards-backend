@@ -105,11 +105,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         this.isToNotify = initDefaultNotificationSettings();
-
     }
 
     public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError) {

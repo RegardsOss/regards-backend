@@ -48,13 +48,6 @@ public class IngestProcessingChainServiceIT extends IngestMultitenantServiceTest
     @Autowired
     private IPluginService pluginService;
 
-    @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
     @Test
     public void checkDefaultProcessingChain() {
         Page<IngestProcessingChain> results = ingestProcessingService

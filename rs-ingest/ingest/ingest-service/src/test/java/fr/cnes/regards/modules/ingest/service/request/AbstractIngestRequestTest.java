@@ -88,12 +88,7 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
 
     @Before
     public void init() throws InterruptedException {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         ingestServiceTest.init();
-        // init notification to false
-        initNotificationSettings(false);
     }
 
     protected void initSipAndAip(String checksum, String providerId) {
@@ -117,17 +112,6 @@ public abstract class AbstractIngestRequestTest extends AbstractMultitenantServi
         return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name"));
     }
 
-
-    public void initNotificationSettings(boolean state){
-        // Set notification to false
-        AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-        notificationSettings.setActiveNotification(state);
-        try {
-            notificationSettingsService.update(notificationSettings);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("Notification settings not initialized properly");
-        }
-    }
 
     @After
     public void doAfter() {

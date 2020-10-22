@@ -96,12 +96,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
     private IRequestService requestService;
 
     @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
-    @Override
     protected void doAfter() throws Exception {
         // WARNING : clean context manually because Spring doesn't do it between tests
         subscriber.unsubscribeFrom(IngestRequestFlowItem.class);

@@ -41,7 +41,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
@@ -56,22 +55,19 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.test.IngestServiceTest;
 
 /**
@@ -130,10 +126,18 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @Before
     public void init() throws Exception {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // clear AMQP queues and repositories
         ingestServiceTest.init();
-        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         notificationSettingsRepository.deleteAll();
+        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+
+        // simulate application started and ready
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        // override this method to custom action performed before
         doInit();
     }
 
@@ -147,10 +151,13 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
 
     @After
     public void clear() throws Exception {
+        // unsubscribe from AMQP queues
         ingestServiceTest.clear();
+        // clean AMQP queues and repositories
         ingestServiceTest.init();
+        //notificationSettingsRepository.deleteAll();
         ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        notificationSettingsRepository.deleteAll();
+        // override this method to custom action performed after
         doAfter();
     }
 

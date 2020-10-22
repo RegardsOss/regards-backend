@@ -110,13 +110,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
-    @Override
     protected void doAfter() throws Exception {
         sessionNotifier.debugSession();
     }

@@ -65,12 +65,6 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     @Autowired
     private IIngestRequestService ingestRequestService;
 
-    @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
     /**
      * Lets test that everything goes well with {@link VersioningMode#INC_VERSION}.
      * That means:

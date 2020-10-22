@@ -78,13 +78,9 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpSettings(true, "", "target/dump", null);
+        conf = new DumpSettings(true, "* * * 1-7 * SUN", "target/dump", null);
         dumpConf.save(conf);
     }
 

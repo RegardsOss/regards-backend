@@ -120,9 +120,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         initNotificationSettings(true);
     }
 
@@ -339,17 +336,13 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     }
 
     /**
-     * Set
+     * Change state of notification settings
      * @param state
      */
     private void initNotificationSettings(boolean state) {
        AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
-       notificationSettings.setActiveNotification(true);
-    }
-
-    @Override
-    public void doAfter() {
-        aipNotificationSettingsRepository.deleteAll();
+       notificationSettings.setActiveNotification(state);
+       aipNotificationSettingsRepository.save(notificationSettings);
     }
 
 }

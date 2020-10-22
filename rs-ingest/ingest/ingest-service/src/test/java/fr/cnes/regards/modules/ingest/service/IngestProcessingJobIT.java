@@ -131,13 +131,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() throws ModuleException {
-
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         initFullProcessingChain();
-
         Mockito.clearInvocations(ingestRequestService);
         Mockito.clearInvocations(storageClient);
     }
