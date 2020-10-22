@@ -24,7 +24,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>1.3.0-SNAPSHOT</version>
+		<version>1.4.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>metric-regards-starter</artifactId>
 	<description>REGARDS metric starter</description>
