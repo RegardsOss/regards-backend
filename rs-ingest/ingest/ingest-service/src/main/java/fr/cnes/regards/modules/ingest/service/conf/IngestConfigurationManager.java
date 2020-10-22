@@ -89,13 +89,15 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                 try {
                     aipSaveMetadataScheduler.updateDumpAndScheduler(item.getTypedValue());
                 } catch (ModuleException e) {
-                    LOGGER.error("Not able to update new dump settings, cause by:", e);
+                    importErrors.add(String.format("New dump settings were not updated, cause by: %s", e.getMessage()));
+                    LOGGER.error("New dump settings were not updated, cause by:", e);
                 }
             } else if (AIPNotificationSettings.class.isAssignableFrom(item.getKey())) {
                 try {
                     notificationSettingsService.update(item.getTypedValue());
                 } catch (EntityNotFoundException e) {
-                    LOGGER.error("Not able to update new notification settings, cause by:", e);
+                    importErrors.add(String.format("New notification settings were not updated, cause by: %s", e.getMessage()));
+                    LOGGER.error("New notification settings were not updated, cause by:", e);
                 }
             }
         }

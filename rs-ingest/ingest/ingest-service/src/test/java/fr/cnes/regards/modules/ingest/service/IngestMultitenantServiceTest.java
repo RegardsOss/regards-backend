@@ -234,7 +234,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         IngestMetadataDto mtd = IngestMetadataDto
                 .build(sessionOwner, session, chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
                        Sets.newHashSet(categories), versioningMode, storagesMeta);
-        ingestServiceTest.sendIngestRequestEvent(sip, mtd);
+        ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
 
     public boolean initDefaultNotificationSettings() {
