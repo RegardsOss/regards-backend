@@ -172,6 +172,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         cleanRepo();
         simulateApplicationStartedEvent();
         simulateApplicationReadyEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         doInit();
     }
 

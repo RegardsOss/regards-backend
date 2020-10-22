@@ -86,7 +86,6 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Test exception is thrown when entity is not found on update")
     public void testUpdateEntityNotFound() throws EntityNotFoundException {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         notificationSettingsRepository.deleteAll();
         FeatureNotificationSettings notificationSettings = new FeatureNotificationSettings();
         notificationSettingsService.update(notificationSettings);
