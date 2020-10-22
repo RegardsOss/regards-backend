@@ -19,7 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.request;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -380,6 +384,9 @@ public class IngestRequestService implements IIngestRequestService {
         SIPEntity sipEntity;
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
+        //keep track of aip already handled during this execution for versioning process
+        Map<String, AIPEntity> currentLatestPerProviderId = new HashMap<>();
+
         for (IngestRequest request : requests) {
             Optional<IngestProcessingChain> chain = processingChainRepository
                     .findOneByName((request.getMetadata().getIngestChain()));
@@ -389,7 +396,7 @@ public class IngestRequestService implements IIngestRequestService {
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 // Find if this is the last version and set last flag accordingly
-                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode());
+                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), currentLatestPerProviderId);
                 aipService.save(aipEntity);
                 if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
                     if (postProcessToSchedule.get(chain.get()) != null) {

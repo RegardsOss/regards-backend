@@ -40,30 +40,12 @@ public interface IIngestService {
      */
     void handleIngestRequests(Collection<IngestRequestFlowItem> items);
 
-    //    /**
-    //     * Redirect collection of SIP to data flow (REST to messages)
-    //     * @param sips raw {@link SIPCollection}
-    //     *
-    //     * Use {@link #handleSIPCollection(SIPCollection)} instead.
-    //     */
-    //    @Deprecated
-    //    RequestInfoDto redirectToDataflow(SIPCollection sips);
-
     /**
      * Handle SIP collection directly scheduling a generation job
      * @param sips raw {@link SIPCollection}
      * @throws EntityInvalidException if max bulk size exceeded
      */
     RequestInfoDto handleSIPCollection(SIPCollection sips) throws EntityInvalidException;
-
-    //    /**
-    //     * Redirect collection of SIP to data flow (REST to messages)
-    //     * @param input JSON file containing a SIP collection
-    //     *
-    //     * Use {@link #handleSIPCollection(InputStream)} instead.
-    //     */
-    //    @Deprecated
-    //    RequestInfoDto redirectToDataflow(InputStream input) throws ModuleException;
 
     /**
      * Handle SIP collection directly scheduling a generation job

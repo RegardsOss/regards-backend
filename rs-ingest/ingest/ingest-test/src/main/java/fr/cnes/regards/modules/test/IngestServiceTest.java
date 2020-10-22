@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.test;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -318,8 +322,15 @@ public class IngestServiceTest {
      * @param mtd
      */
     public void sendIngestRequestEvent(SIP sip, IngestMetadataDto mtd) {
-        IngestRequestFlowItem flowItem = IngestRequestFlowItem.build(mtd, sip);
-        publisher.publish(flowItem);
+        sendIngestRequestEvent(Sets.newHashSet(sip), mtd);
+    }
+
+    public void sendIngestRequestEvent(Collection<SIP> sips, IngestMetadataDto mtd) {
+        List<IngestRequestFlowItem> toSend = new ArrayList<>(sips.size());
+        for(SIP sip: sips) {
+            toSend.add(IngestRequestFlowItem.build(mtd, sip));
+        }
+        publisher.publish(toSend);
     }
 
 }

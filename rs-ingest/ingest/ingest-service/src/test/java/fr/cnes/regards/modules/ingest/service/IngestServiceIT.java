@@ -100,14 +100,12 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        
+
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
 
         Mockito.clearInvocations(ingestRequestService);
     }
-
-
 
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
         SIPCollection sips = SIPCollection
@@ -127,9 +125,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     public void ingestWithPostProcess() throws EntityInvalidException, InterruptedException {
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, CHAIN_PP_LABEL,
-                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto
+                .build(SESSION_OWNER, SESSION, CHAIN_PP_LABEL, Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
@@ -145,7 +142,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertEquals("There should be one post process request created", 1L, postProcessRepo.count());
 
         // No job scheduled yet
-        Assert.assertEquals(0L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName()).longValue());
+        Assert.assertEquals(0L, jobInfoService
+                .retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.values()).longValue());
 
         // Check that post process job is scheduled
         aipPostProcessService.scheduleJob();

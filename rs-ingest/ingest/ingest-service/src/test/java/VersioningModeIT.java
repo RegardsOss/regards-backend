@@ -47,6 +47,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
     private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
+    private static final List<String> TAG_2 = Lists.newArrayList("toto", "tutu", "tata");
+    private static final List<String> TAG_3 = Lists.newArrayList("toto", "tutu", "titi");
 
     private static final String STORAGE_0 = "fake";
 
@@ -284,6 +286,78 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         }
         Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
+                .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
+    }
+
+    @Test
+    public void testReplaceWithTwoVersionAtSameTime() {
+        // this allows to have a first version than a second version replacing the first(which is now in state DELETED)
+        testReplace();
+        // lets submit the third and forth SIP with different TAGS so it is accepted by system
+        publishSIPEvent(Lists.newArrayList(create(PROVIDER_ID, TAG_2), create(PROVIDER_ID, TAG_3)),
+                        Lists.newArrayList(STORAGE_0),
+                        SESSION_0,
+                        SESSION_OWNER_0,
+                        CATEGORIES_0,
+                        Optional.empty(),
+                        VersioningMode.REPLACE);
+        ingestServiceTest.waitForAIP(3, 20_000, AIPState.STORED);
+        // once the 2 new AIPs are stored, we ask for the deletion of the old ones, so lets wait for this deletion
+        // 3 = V1 which has already been deleted previously, V2 which is replaced by V3 and V2 which should be replaced by V4
+        ingestServiceTest.waitForAIP(3, 20_000, AIPState.DELETED);
+        // lets check that second SIP version is the latest
+        SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
+        Assert.assertEquals(String.format("There should be only four SIP with providerId \"%s\" at this time",
+                                          PROVIDER_ID), 4, sips.length);
+        Assert.assertTrue(String.format(
+                "This SIP should be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
+                sips[3].getVersion(),
+                PROVIDER_ID), sips[3].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
+                            SIPState.STORED,
+                            sips[3].getState());
+        Assert.assertFalse(String.format(
+                "This SIP should not be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
+                sips[2].getVersion(),
+                PROVIDER_ID), sips[2].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED),
+                            SIPState.DELETED,
+                            sips[2].getState());
+        // lets check associated AIPs
+        AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
+        Assert.assertEquals(String.format("There should be only 4 AIP with providerId \"%s\" at this time",
+                                          PROVIDER_ID), 4, aips.length);
+        Assert.assertTrue(String.format(
+                "This AIP should be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
+                aips[3].getVersion(),
+                PROVIDER_ID), aips[3].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
+                            AIPState.STORED,
+                            aips[3].getState());
+        Assert.assertFalse(String.format(
+                "This AIP should not be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
+                aips[2].getVersion(),
+                PROVIDER_ID), aips[2].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
+                            AIPState.DELETED,
+                            aips[2].getState());
+
+        // session monitoring
+        // 1 - for new version
+        Mockito.verify(sessionNotifier, Mockito.times(4))
+                .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(4))
+                .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(4))
+                .incrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(4))
+                .decrementProductStorePending(Mockito.any(IngestRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(4))
+                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
+        // 6 - for old version removal
+        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(6)).requestDeleted(Mockito.any(AbstractRequest.class));
+        Mockito.verify(sessionNotifier, Mockito.times(3))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
 
