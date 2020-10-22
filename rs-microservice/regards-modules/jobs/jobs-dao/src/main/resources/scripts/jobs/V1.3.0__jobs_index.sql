@@ -1,0 +1,1 @@
+create index IF NOT EXISTS idx_jobs_queued on t_job_info (id) where status = 'QUEUED';

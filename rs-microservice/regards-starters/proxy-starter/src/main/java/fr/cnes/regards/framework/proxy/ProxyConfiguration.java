@@ -18,13 +18,25 @@
  */
 package fr.cnes.regards.framework.proxy;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,8 +76,8 @@ public class ProxyConfiguration {
     @Value("${http.proxy.port:#{null}}")
     private Integer proxyPort;
 
-    @Value("${http.proxy.noproxy:#{null}}")
-    private String noProxy;
+    @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
+    private List<String> noProxy;
 
     @Bean("proxyHttpClient")
     @Primary
@@ -76,10 +88,28 @@ public class ProxyConfiguration {
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
-                                         new UsernamePasswordCredentials(proxyLogin, proxyPassword));
-            builder.setDefaultCredentialsProvider(credsProvider);
+            if (((proxyLogin != null) && !proxyLogin.isEmpty())
+                    && ((proxyPassword != null) && !proxyPassword.isEmpty())) {
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                                             new UsernamePasswordCredentials(proxyLogin, proxyPassword));
+                builder.setDefaultCredentialsProvider(credsProvider);
+            }
+            if(noProxy!=null) {
+                HttpRoutePlanner routePlannerHandlingNoProxy = new DefaultProxyRoutePlanner(proxy) {
+
+                    @Override
+                    public HttpRoute determineRoute(final HttpHost host, final HttpRequest request, final HttpContext context) throws HttpException {
+                        String hostname = host.getHostName();
+                        if (noProxy.contains(hostname)) {
+                            // Return direct route
+                            return new HttpRoute(host);
+                        }
+                        return super.determineRoute(host, request, context);
+                    }
+                };
+                return HttpClientBuilder.create().setProxy(proxy).setRoutePlanner(routePlannerHandlingNoProxy).build();
+            }
             return HttpClientBuilder.create().setProxy(proxy).build();
         } else {
             return HttpClientBuilder.create().build();
@@ -102,7 +132,8 @@ public class ProxyConfiguration {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
             }
             if ((noProxy != null) && !noProxy.isEmpty()) {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
+                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy.stream().collect(
+                        Collectors.joining(",")));
             }
             if ((proxyLogin != null) && (proxyPassword != null)) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
