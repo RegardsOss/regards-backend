@@ -61,6 +61,18 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>gson-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>multitenant-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

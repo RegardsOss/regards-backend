@@ -100,7 +100,6 @@
         <module>urn-regards-starter</module>
         <module>amqp-regards-client</module>
         <module>json-random-starter</module>
-        <module>json-dump-starter</module>
     </modules>
 
     <dependencies>
