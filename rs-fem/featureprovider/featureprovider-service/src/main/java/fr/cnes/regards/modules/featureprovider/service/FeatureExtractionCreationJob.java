@@ -43,14 +43,14 @@ import io.micrometer.core.instrument.Timer;
  * @author Marc SORDI
  *
  */
-public class FeatureReferenceCreationJob extends AbstractJob<Void> {
+public class FeatureExtractionCreationJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
     private List<FeatureExtractionRequest> featureExtractionRequests;
 
     @Autowired
-    private IFeatureExtractionRequestRepository featureReferenceRequestRepo;
+    private IFeatureExtractionRequestRepository featureExtractionRequestRepo;
 
     @Autowired
     private IFeatureExtractionService featureService;
@@ -64,7 +64,7 @@ public class FeatureReferenceCreationJob extends AbstractJob<Void> {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
-        featureExtractionRequests = this.featureReferenceRequestRepo
+        featureExtractionRequests = this.featureExtractionRequestRepo
                 .findAllById(getValue(parameters, IDS_PARAMETER, type));
     }
 

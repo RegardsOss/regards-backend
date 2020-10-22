@@ -31,11 +31,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
-import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
+import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 
 /**
  * This handler absorbs the incoming reference creation request flow
@@ -54,7 +53,7 @@ public class FeatureExtractionRequestEventHandler
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private FeatureConfigurationProperties confProperties;
+    private FeatureProviderConfigurationProperties confProperties;
 
     @Autowired
     private ISubscriber subscriber;
@@ -63,7 +62,7 @@ public class FeatureExtractionRequestEventHandler
     private IFeatureExtractionService featureReferenceService;
 
     @Autowired
-    private IRequestDeniedService requestDeniedService;
+    private IFeatureExtractionService featureExtractionService;
 
     @Override
     public Class<FeatureExtractionRequestEvent> getMType() {
@@ -74,7 +73,7 @@ public class FeatureExtractionRequestEventHandler
     public boolean handleConversionError(String tenant, Message message, String errorMessage) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
-            return requestDeniedService.denyMessage(message, errorMessage);
+            return featureExtractionService.denyMessage(message, errorMessage);
         } finally {
             runtimeTenantResolver.clearTenant();
         }

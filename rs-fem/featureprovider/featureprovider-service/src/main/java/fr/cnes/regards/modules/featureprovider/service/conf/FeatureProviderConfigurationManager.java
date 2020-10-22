@@ -45,9 +45,9 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
  * @author Marc Sordi
  */
 @Component
-public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
+public class FeatureProviderConfigurationManager extends AbstractModuleManager<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureProviderConfigurationManager.class);
 
     @Autowired
     private IPluginService pluginService;

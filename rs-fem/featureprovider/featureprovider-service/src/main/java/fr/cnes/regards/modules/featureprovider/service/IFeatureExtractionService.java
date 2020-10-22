@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.featureprovider.service;
 import javax.validation.Valid;
 import java.util.List;
 
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import fr.cnes.regards.framework.amqp.event.IRequestValidation;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -33,7 +35,7 @@ import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureExtractionService {
+public interface IFeatureExtractionService extends IRequestDeniedService, IRequestValidation {
 
     /**
      * Register {@link FeatureExtractionRequest}in database for further processing from incoming request events

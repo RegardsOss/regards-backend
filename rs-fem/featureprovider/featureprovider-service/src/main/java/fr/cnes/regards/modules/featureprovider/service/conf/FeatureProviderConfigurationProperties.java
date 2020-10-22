@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
-public class FeatureConfigurationProperties {
+public class FeatureProviderConfigurationProperties {
 
     /**
      * Max number of requests to process at a time

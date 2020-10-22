@@ -14,8 +14,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-//FIXME rename
-public class CreateNotificationActionEventVisitor implements IAbstractFeatureRequestVisitor<NotificationRequestEvent> {
+public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRequestVisitor<NotificationRequestEvent> {
 
     public static class NotificationActionEventMetadata {
 
@@ -38,7 +37,7 @@ public class CreateNotificationActionEventVisitor implements IAbstractFeatureReq
 
     private IFeatureEntityRepository featureRepo;
 
-    public CreateNotificationActionEventVisitor(Gson gson, IFeatureEntityRepository featureRepo) {
+    public CreateNotificationRequestEventVisitor(Gson gson, IFeatureEntityRepository featureRepo) {
         this.gson = gson;
         this.featureRepo = featureRepo;
     }

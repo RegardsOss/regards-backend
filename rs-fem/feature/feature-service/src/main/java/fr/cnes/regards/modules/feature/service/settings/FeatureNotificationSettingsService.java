@@ -61,6 +61,7 @@ public class FeatureNotificationSettingsService implements IFeatureNotificationS
     private IFeatureNotificationSettingsService self;
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
         //for each tenant try to create notification settings, if it do not exists then create with default value
         for(String tenant: tenantsResolver.getAllActiveTenants()) {
@@ -83,6 +84,7 @@ public class FeatureNotificationSettingsService implements IFeatureNotificationS
     }
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onTenantConnectionReady(TenantConnectionReady event) {
         runtimeTenantResolver.forceTenant(event.getTenant());
         try {

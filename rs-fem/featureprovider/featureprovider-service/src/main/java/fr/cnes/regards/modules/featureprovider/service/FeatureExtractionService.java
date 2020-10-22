@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepo
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
-import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
+import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 
 /**
  * Feature reference service management
@@ -83,7 +83,7 @@ import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfiguration
  */
 @Service
 @MultitenantTransactional
-public class FeatureExtractionService implements IFeatureExtractionService, IRequestDeniedService, IRequestValidation {
+public class FeatureExtractionService implements IFeatureExtractionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureExtractionService.class);
 
@@ -119,7 +119,7 @@ public class FeatureExtractionService implements IFeatureExtractionService, IReq
     private Validator validator;
 
     @Autowired
-    private FeatureConfigurationProperties properties;
+    private FeatureProviderConfigurationProperties properties;
 
     @Autowired
     private IPluginService pluginService;
@@ -264,14 +264,14 @@ public class FeatureExtractionService implements IFeatureExtractionService, IReq
 
             featureReferenceRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
-            jobParameters.add(new JobParameter(FeatureReferenceCreationJob.IDS_PARAMETER, requestIds));
+            jobParameters.add(new JobParameter(FeatureExtractionCreationJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
             JobInfo jobInfo = new JobInfo(false,
                                           requestsToSchedule.get(0).getPriority().getPriorityLevel(),
                                           jobParameters,
                                           authResolver.getUser(),
-                                          FeatureReferenceCreationJob.class.getName());
+                                          FeatureExtractionCreationJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
             LOGGER.trace("------------->>> {} reference requests scheduled in {} ms",

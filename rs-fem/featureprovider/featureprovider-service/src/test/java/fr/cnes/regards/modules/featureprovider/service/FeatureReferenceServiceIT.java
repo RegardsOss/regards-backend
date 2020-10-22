@@ -68,7 +68,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
-import fr.cnes.regards.modules.featureprovider.service.conf.FeatureConfigurationProperties;
+import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -116,7 +116,7 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    protected FeatureConfigurationProperties properties;
+    protected FeatureProviderConfigurationProperties properties;
 
     @Autowired
     protected ISubscriber subscriber;

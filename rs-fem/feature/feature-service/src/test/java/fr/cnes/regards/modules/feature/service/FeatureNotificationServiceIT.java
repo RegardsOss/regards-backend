@@ -116,11 +116,11 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         Mockito.verify(publisher).publish(recordsCaptor.capture());
         // the first publish message to be intercepted must be the creation of createdEntity
-        assertEquals(gson.toJson(new CreateNotificationActionEventVisitor.NotificationActionEventMetadata(
+        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
                 FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(0).getMetadata().toString());
         assertEquals(gson.toJson(createdEntity.getFeature()), recordsCaptor.getValue().get(0).getPayload().toString());
         // the second message is the update of updatedEntity
-        assertEquals(gson.toJson(new CreateNotificationActionEventVisitor.NotificationActionEventMetadata(
+        assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
                 FeatureManagementAction.NOTIFIED)), recordsCaptor.getValue().get(1).getMetadata().toString());
         assertEquals(gson.toJson(updatedEntity.getFeature()), recordsCaptor.getValue().get(1).getPayload().toString());
 

@@ -45,9 +45,9 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-public class FeatureTaskScheduler extends AbstractTaskScheduler {
+public class FeatureProviderTaskScheduler extends AbstractTaskScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTaskScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureProviderTaskScheduler.class);
 
     private static final Long MAX_TASK_DELAY = 60L; // In second
 

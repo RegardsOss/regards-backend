@@ -180,7 +180,7 @@ public class FeatureNotificationService extends AbstractFeatureService implement
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
                 .getContent();
         if(!requestsToSend.isEmpty()) {
-            List<NotificationRequestEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(new CreateNotificationActionEventVisitor(gson, featureRepo)))
+            List<NotificationRequestEvent> eventToSend = requestsToSend.stream().map(r -> r.accept(new CreateNotificationRequestEventVisitor(gson, featureRepo)))
                     .collect(Collectors.toList());
             effectivelySend(sendingStart, eventToSend);
             abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,

@@ -36,7 +36,23 @@ public class FeatureNotfierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestDenied(List<NotifierEvent> denied) {
+        handleNotificationIssue(denied);
+    }
 
+    private void handleNotificationIssue(List<NotifierEvent> denied) {
+        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
+                  denied.size(),
+                  NotifierEvent.class.getSimpleName(),
+                  NotificationState.ERROR);
+        List<String> requestIds = denied.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
+        Set<AbstractFeatureRequest> errorRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
+        if (!errorRequest.isEmpty()) {
+            featureNotificationService.handleNotificationError(errorRequest);
+            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT,
+                      denied.size(),
+                      NotificationState.ERROR,
+                      NotifierEvent.class.getSimpleName());
+        }
     }
 
     @Override
@@ -60,15 +76,6 @@ public class FeatureNotfierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestError(List<NotifierEvent> error) {
-        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
-                  error.size(),
-                  NotifierEvent.class.getSimpleName(),
-                  NotificationState.ERROR);
-        List<String> requestIds = error.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
-        Set<AbstractFeatureRequest> errorRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
-        if(!errorRequest.isEmpty()) {
-            featureNotificationService.handleNotificationError(errorRequest);
-            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, error.size(), NotificationState.ERROR, NotifierEvent.class.getSimpleName());
-        }
+        handleNotificationIssue(error);
     }
 }

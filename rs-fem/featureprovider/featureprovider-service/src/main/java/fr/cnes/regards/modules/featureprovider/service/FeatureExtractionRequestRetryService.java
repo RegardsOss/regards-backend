@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Service
-public class RequestRetryService implements IRequestRetryService {
+public class FeatureExtractionRequestRetryService implements IFeatureExtractionRequestRetryService {
 
     @Autowired
     private IFeatureExtractionRequestRepository featureExtractionRequestRepository;

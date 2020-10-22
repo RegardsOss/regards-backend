@@ -7,7 +7,7 @@ import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IRequestRetryService {
+public interface IFeatureExtractionRequestRetryService {
 
     void retryRequest(Set<FeatureExtractionRequest> requestsToRetry);
 }
