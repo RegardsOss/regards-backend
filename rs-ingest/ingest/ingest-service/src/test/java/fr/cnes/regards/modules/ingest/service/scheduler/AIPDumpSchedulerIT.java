@@ -46,9 +46,9 @@ import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
  */
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it", "regards.amqp.enabled=true" },
+        properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
+@ActiveProfiles(value = {"noschedule"})
 public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
 
     private String tenant;
@@ -61,10 +61,7 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
         this.tenant = getDefaultTenant();
-        runtimeTenantResolver.forceTenant(this.tenant);
         dumpRepository.deleteAll();
     }
 

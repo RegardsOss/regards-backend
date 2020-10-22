@@ -91,9 +91,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // clear before test
         dumpConfRepo.deleteAll();
 

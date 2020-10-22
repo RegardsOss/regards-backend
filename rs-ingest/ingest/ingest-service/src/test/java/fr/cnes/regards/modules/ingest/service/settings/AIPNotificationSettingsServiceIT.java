@@ -43,9 +43,9 @@ import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsS
  * @author Iliana Ghazali
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it",
-                "regards.amqp.enabled=true" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
+        locations = { "classpath:application-test.properties" })
+@ActiveProfiles(value = {"noschedule"})
 public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceTest {
 
     @Autowired
@@ -54,18 +54,13 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
     @Autowired
     IAIPNotificationSettingsRepository notificationSettingsRepository;
 
-    @Autowired
-    IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Before
-    public void init() {
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        notificationSettingsRepository.deleteAll();
-    }
-
     @Test
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
+        // simulate application started event for notification settings
+        simulateApplicationStartedEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
         // init new configuration
         AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
 
@@ -92,6 +87,7 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Test exception is thrown when entity is not found on update")
     public void testUpdateEntityNotFound() throws EntityNotFoundException {
+        notificationSettingsRepository.deleteAll();
         AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
         notificationSettingsService.update(notificationSettings);
     }

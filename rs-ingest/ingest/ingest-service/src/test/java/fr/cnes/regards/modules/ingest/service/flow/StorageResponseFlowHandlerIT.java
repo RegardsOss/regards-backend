@@ -80,9 +80,6 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
 
         storageClientMock.setBehavior(true, true);
 
-        simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         if (Files.exists(DATA_REPOSITORY)) {
             // Delete directory recursively
             Files.walk(DATA_REPOSITORY).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);

@@ -120,13 +120,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private IngestMetadataDto mtd;
 
-    @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
     public void initData() {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         SIPEntity sip4 = new SIPEntity();
