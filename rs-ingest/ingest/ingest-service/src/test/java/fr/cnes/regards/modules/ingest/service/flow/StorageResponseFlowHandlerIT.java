@@ -89,9 +89,6 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
         }
         // Create data repository
         Files.createDirectory(DATA_REPOSITORY);
-
-        // no notification
-        initNotificationSettings(false);
     }
 
     @Test
@@ -108,7 +105,12 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceTest {
         LOGGER.info("{} SIP(s) INGESTED in {} ms", NB_SIPS, System.currentTimeMillis() - start);
 
         // Wait for storage responses
-        waitIngestRequests(0, 10_000L, null);
+        if (!initDefaultNotificationSettings()) {
+            waitIngestRequests(0, 10_000L, null);
+        } else {
+            ingestRequestRepository.deleteAll();
+            Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());
+        }
         LOGGER.info("No request remaining at the moment");
 
         // Simulate copies of files and AIPs

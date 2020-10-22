@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -139,9 +140,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
         Mockito.clearInvocations(ingestRequestService);
         Mockito.clearInvocations(storageClient);
-
-        // no notification
-        initNotificationSettings(false);
     }
 
     private void initFullProcessingChain() throws ModuleException {
@@ -238,8 +236,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         storageResponseHandler.onStoreSuccess(requestInfos);
 
         // Check status of IngestRequest
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
-        Assert.assertEquals("Request sould be deleted as requests is done success", 0, reqs.size());
+        Assert.assertEquals("Request should be deleted as requests is done success", 0, reqs.size());
     }
 
     @Requirements({ @Requirement("REGARDS_DSL_ING_PRO_160"), @Requirement("REGARDS_DSL_STO_AIP_010") })

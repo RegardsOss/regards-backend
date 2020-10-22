@@ -37,10 +37,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.dump.DumpService;
-import fr.cnes.regards.framework.dump.ObjectDump;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.dump.service.DumpService;
+import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -48,12 +47,10 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.service.settings.IDumpSettingsService;
 
 /**
  * see {@link IAIPMetadataService}
@@ -72,9 +69,6 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     @Autowired
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
-
-    @Autowired
-    private IDumpSettingsService dumpSettingsService;
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -163,18 +157,6 @@ public class AIPMetadataService implements IAIPMetadataService {
                                                                     aipEntity.getProviderId() + "-" + aipEntity
                                                                             .getVersion(), aipEntity.getAip(),
                                                                     aipEntity.getAipId())).collect(Collectors.toList());
-    }
-
-    @Override
-    public void resetLastUpdateDate() {
-        // reset last dump date to null if already present
-        DumpSettings lastDump = dumpSettingsService.retrieve();
-        lastDump.setLastDumpReqDate(null);
-        try {
-            dumpSettingsService.update(lastDump);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("LastReqDumpDate was not updated to null, caused by : {}", e.getMessage());
-        }
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -50,6 +51,7 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestSte
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -77,9 +79,6 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
 
     private static final String SESSION = "SESSION" + "_" + "0001";
-
-    @Autowired
-    IAIPNotificationService notificationService;
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
@@ -124,7 +123,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        //init notification to true
         initNotificationSettings(true);
     }
 
@@ -338,6 +336,15 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
             }
         }
         Assert.assertEquals("AIPs were not updated", false, isTagMissing);
+    }
+
+    /**
+     * Set
+     * @param state
+     */
+    private void initNotificationSettings(boolean state) {
+       AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
+       notificationSettings.setActiveNotification(true);
     }
 
     @Override

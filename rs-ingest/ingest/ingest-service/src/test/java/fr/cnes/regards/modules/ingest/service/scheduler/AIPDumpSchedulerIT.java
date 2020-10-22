@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.ingest.service.settings;
+package fr.cnes.regards.modules.ingest.service.scheduler;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -34,14 +34,14 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 
 /**
- * Test for {@link DumpManagerService}
+ * Test for {@link AIPSaveMetadataScheduler}
  * @author Iliana Ghazali
  */
 
@@ -49,12 +49,9 @@ import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
         properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it", "regards.amqp.enabled=true" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
-public class DumpManagerIT extends IngestMultitenantServiceTest {
+public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
 
     private String tenant;
-
-    @Autowired
-    private DumpManagerService dumpManagerService;
 
     @Autowired
     private AIPSaveMetadataScheduler saveMetadataScheduler;
@@ -77,11 +74,11 @@ public class DumpManagerIT extends IngestMultitenantServiceTest {
         // Create new dump configuration and scheduler
         // activate task execution every minute
         dumpRepository.save(new DumpSettings(true, "0 * * * * *", "target/dump", null));
-        saveMetadataScheduler.initAIPSaveMetadataJobsSchedulers();
+        saveMetadataScheduler.initSchedulers();
 
         // Update scheduler with a new dump configuration
         // change task execution every 10 seconds
-        dumpManagerService.updateDumpAndScheduler(new DumpSettings(true, "*/10 * * * * *", "target/dump", null));
+        saveMetadataScheduler.updateDumpAndScheduler(new DumpSettings(true, "*/10 * * * * *", "target/dump", null));
 
         // Wait for scheduler execution
         // if the get() execution time exceeds trigger newly scheduled, then the new scheduler was not taken into account
@@ -100,7 +97,7 @@ public class DumpManagerIT extends IngestMultitenantServiceTest {
         // Test update dump with incorrect cron
         DumpSettings dumpSettings = new DumpSettings(true, "* * *", "target/dump", null);
         try {
-            dumpManagerService.updateDumpAndScheduler(dumpSettings);
+            saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
             Assert.fail(String.format("%s was expected", EntityInvalidException.class.getName()));
         } catch (ModuleException e) {
             LOGGER.error("Exception successfully thrown", e);
@@ -110,7 +107,7 @@ public class DumpManagerIT extends IngestMultitenantServiceTest {
         // Test update with dump settings that do not exist in db
         dumpSettings = new DumpSettings(true, "* * 0 * * *", "target/", null);
         try {
-            dumpManagerService.updateDumpAndScheduler(dumpSettings);
+            saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
             Assert.fail(String.format("%s was expected", EntityNotFoundException.class.getName()));
         } catch (ModuleException e) {
             LOGGER.error("Exception successfully thrown", e);

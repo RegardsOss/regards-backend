@@ -38,12 +38,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
@@ -88,8 +86,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceTest {
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
         conf = new DumpSettings(true, "", "target/dump", null);
         dumpConf.save(conf);
-        // no notification
-        initNotificationSettings(false);
     }
 
     @Test

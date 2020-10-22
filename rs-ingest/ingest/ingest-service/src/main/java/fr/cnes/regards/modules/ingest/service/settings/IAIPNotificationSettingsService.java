@@ -31,6 +31,11 @@ import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 public interface IAIPNotificationSettingsService {
 
     /**
+     * Initialize new {@link AIPNotificationSettings} in the repository
+     */
+    void initNotificationSettings();
+
+    /**
      * Retrieve {@link AIPNotificationSettings}. If they do not exist, new settings are created.
      */
     AIPNotificationSettings retrieve();
@@ -39,10 +44,4 @@ public interface IAIPNotificationSettingsService {
      * Update {@link AIPNotificationSettings}
      */
     AIPNotificationSettings update(AIPNotificationSettings pAipNotificationSettings) throws EntityNotFoundException;
-
-    /**
-     * Get current {@link AIPNotificationSettings}
-     */
-    AIPNotificationSettings getCurrentNotificationSettings();
-
 }

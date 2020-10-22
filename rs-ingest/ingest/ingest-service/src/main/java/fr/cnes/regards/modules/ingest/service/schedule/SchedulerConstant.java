@@ -80,4 +80,8 @@ public class SchedulerConstant {
      * For aip metadata
      */
     public static final String AIP_SAVE_METADATA_REQUESTS = "AIP SAVE METADATA REQUESTS";
+
+    public static final String AIP_SAVE_METADATA_REQUEST_LOCK = "scheduledAIPSaveMetadata";
+
+    public static final String AIP_SAVE_METADATA_TITLE = "AIP save metadata scheduling";
 }

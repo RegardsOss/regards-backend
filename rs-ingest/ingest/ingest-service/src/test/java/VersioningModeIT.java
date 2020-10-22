@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
@@ -66,7 +67,6 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     public void doInit() {
         simulateApplicationReadyEvent();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        initNotificationSettings(false);
     }
 
     /**
@@ -278,6 +278,10 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
         // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted + IngestRequest
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
@@ -595,6 +599,10 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
         // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted + IngestRequest
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());

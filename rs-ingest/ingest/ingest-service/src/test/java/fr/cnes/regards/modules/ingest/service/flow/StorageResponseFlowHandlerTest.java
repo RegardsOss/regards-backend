@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -86,12 +87,6 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
 
     @Autowired
     private IAIPRepository aipRepo;
-
-    @Override
-    public void doInit(){
-        // no notification
-        initNotificationSettings(false);
-    }
 
     private Set<RequestInfo> initAips(int nbAips) {
         Set<RequestInfo> rq = Sets.newHashSet();
@@ -156,6 +151,10 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         storageResponseFlowHandler.onStoreSuccess(responses);
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         Assert.assertEquals(0, requestService.findRequestDtos(
                 SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                         .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
@@ -171,6 +170,10 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         storageResponseFlowHandler.onReferenceSuccess(responses);
         System.out.printf("Duration : %d ms\n", System.currentTimeMillis() - start);
         // Check results
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         Assert.assertEquals(0, requestService.findRequestDtos(
                 SearchRequestsParameters.build().withSessionOwner("sessionOwner")
                         .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());

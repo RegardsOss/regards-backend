@@ -19,12 +19,11 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,24 +36,36 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
+import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
@@ -86,6 +97,12 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected IIngestRequestRepository ingestRequestRepository;
 
     @Autowired
+    protected IOAISDeletionRequestRepository oaisDeletionRequestRepository;
+
+    @Autowired
+    protected IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
     protected ISIPRepository sipRepository;
 
     @Autowired
@@ -98,13 +115,22 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
-    private IAIPNotificationSettingsService notificationSettingsService;
+    protected IAIPNotificationSettingsService notificationSettingsService;
 
+    @Autowired
+    protected IAIPNotificationService notificationService;
+
+    @Autowired IAIPNotificationSettingsRepository notificationSettingsRepository;
+
+    @Autowired
+    protected IAbstractRequestRepository abstractRequestRepository;
 
     @Before
     public void init() throws Exception {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ingestServiceTest.init();
+        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        notificationSettingsRepository.deleteAll();
         doInit();
     }
 
@@ -120,6 +146,8 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     public void clear() throws Exception {
         ingestServiceTest.clear();
         ingestServiceTest.init();
+        ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        notificationSettingsRepository.deleteAll();
         doAfter();
     }
 
@@ -134,9 +162,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected SIP create(String providerId, List<String> tags) {
         String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "test", "resources", "data", fileName),
-                           "MD5",
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
                            UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
@@ -190,25 +216,14 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
             List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        chainLabel
-                                                                .orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                        Sets.newHashSet(categories),
-                                                        versioningMode,
-                                                        storagesMeta);
+        IngestMetadataDto mtd = IngestMetadataDto
+                .build(sessionOwner, session, chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                       Sets.newHashSet(categories), versioningMode, storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
     }
 
-    public void initNotificationSettings(boolean state){
-        // Set notification to true/false
-        AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-        notificationSettings.setActiveNotification(state);
-        try {
-            notificationSettingsService.update(notificationSettings);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("Notification settings not initialized properly");
-        }
+    public boolean initDefaultNotificationSettings() {
+        return notificationSettingsService.retrieve().isActiveNotification();
     }
 
     public void initRandomData(int nbSIP) {
@@ -216,7 +231,60 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
             publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
                             getRandomSession(), getRandomSessionOwner(), getRandomCategories());
         }
-        // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
+        // Wait for SIP ingestion
+        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
+        // Wait for all requests to finish in case of no notification else delete requests
+        if (!initDefaultNotificationSettings()) {
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 1000);
+        } else {
+            ingestRequestRepository.deleteAll();
+            Assert.assertEquals("All ingest requests should have been deleted", 0L, ingestRequestRepository.count());
+        }
+    }
+
+    // simulation notification success when required
+    public void mockNotificationSuccess(String type) {
+        List<? extends AbstractRequest> requests;
+        switch (type) {
+            case RequestTypeConstant.INGEST_VALUE:
+                requests = ingestRequestRepository.findAll();
+                IngestRequest ingestRequest;
+                for (AbstractRequest request : requests) {
+                    ingestRequest = (IngestRequest) request;
+                    Assert.assertEquals(IngestRequestStep.LOCAL_TO_BE_NOTIFIED, ingestRequest.getStep());
+                    Assert.assertEquals(InternalRequestState.RUNNING, ingestRequest.getState());
+                }
+                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+                Assert.assertEquals("Ingest requests were not deleted as expected", 0L,
+                                    ingestRequestRepository.count());
+
+                break;
+            case RequestTypeConstant.OAIS_DELETION_VALUE:
+                requests = oaisDeletionRequestRepository.findAll();
+                OAISDeletionRequest deletionRequest;
+                for (AbstractRequest request : requests) {
+                    deletionRequest = (OAISDeletionRequest) request;
+                    Assert.assertEquals(DeletionRequestStep.LOCAL_TO_BE_NOTIFIED, deletionRequest.getStep());
+                    Assert.assertEquals(InternalRequestState.RUNNING, deletionRequest.getState());
+                }
+                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+                Assert.assertEquals("Deletion requests were not deleted as expected", 0L,
+                                    oaisDeletionRequestRepository.count());
+                break;
+            case RequestTypeConstant.UPDATE_VALUE:
+                requests = aipUpdateRequestRepository.findAll();
+                AIPUpdateRequest updateRequest;
+                for (AbstractRequest request : requests) {
+                    updateRequest = (AIPUpdateRequest) request;
+                    Assert.assertEquals(AIPUpdateRequestStep.LOCAL_TO_BE_NOTIFIED, updateRequest.getStep());
+                    Assert.assertEquals(InternalRequestState.RUNNING, updateRequest.getState());
+                }
+                notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
+                Assert.assertEquals("Update requests were not deleted as expected", 0L,
+                                    aipUpdateRequestRepository.count());
+                break;
+            default:
+                break;
+        }
     }
 }

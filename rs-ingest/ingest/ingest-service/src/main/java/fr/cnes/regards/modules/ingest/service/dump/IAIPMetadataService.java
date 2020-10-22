@@ -58,11 +58,6 @@ public interface IAIPMetadataService {
      */
     void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) throws IOException;
 
-    /** Reset the last dump request date by putting a null value
-     * The next dump will then contain all the aip contents present in the database
-     */
-    void resetLastUpdateDate();
-
     /** Handle request in error and notify client
      * @param metadataRequest request that contains the information about the dump
      * @param errorMessage message indicating the reason the dump was not performed

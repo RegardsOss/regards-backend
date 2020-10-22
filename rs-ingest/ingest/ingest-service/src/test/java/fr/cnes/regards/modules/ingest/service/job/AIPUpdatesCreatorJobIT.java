@@ -49,6 +49,7 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
@@ -79,16 +80,8 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
     @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
-
-    @Autowired
     private IAIPService aipService;
 
-    @Autowired
-    protected IJobService jobService;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -121,8 +114,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         simulateApplicationReadyEvent();
         // Re-set tenant because above simulation clear it!
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // no notification
-        initNotificationSettings(false);
     }
 
     @Override
@@ -148,7 +139,13 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceTest {
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over
-        ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+        // delete requests, if notification are active mock success of notifications to delete ingest requests
+        if(!initDefaultNotificationSettings()) {
+            ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
+        } else {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+            ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        }
     }
 
     /**

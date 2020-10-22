@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -42,6 +40,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -49,14 +48,11 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IDumpSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.dump.AIPSaveMetadataService;
-import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataJobTask;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -93,7 +89,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-
     @Override
     public void doInit() {
         simulateApplicationReadyEvent();
@@ -122,7 +117,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         JobInfo jobInfo = runSaveMetadataJob();
         Assert.assertNotEquals(null, jobInfo);
         UUID jobInfoId = jobInfo.getId();
-        Thread.sleep(1000);
+        ingestServiceTest.waitDuring(1000L);
 
         // CHECK RESULTS
         // Check job info is successful
@@ -135,7 +130,8 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(0, errorRequests.size());
 
         // Check folder target/workspace/<microservice>/ exists and contains 1 dump
-        Assert.assertTrue("The dump location does not exist or does not contain one zip", Files.exists(this.dumpLocation) && this.dumpLocation.toFile().listFiles().length == 1);
+        Assert.assertTrue("The dump location does not exist or does not contain one zip",
+                          Files.exists(this.dumpLocation) && this.dumpLocation.toFile().listFiles().length == 1);
     }
 
     @Test
@@ -157,7 +153,7 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
             Assert.assertTrue("DuplicateUniqueNameException was expected",
                               e.getMessage().contains("DuplicateUniqueNameException"));
         }
-        Thread.sleep(1000);
+        ingestServiceTest.waitDuring(1000L);
 
         // Check job info in ERROR
         Pageable pageToRequest = PageRequest.of(0, 100);
@@ -173,19 +169,8 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
         Assert.assertEquals(InternalRequestState.ERROR, errorRequests.get(0).getState());
 
         // Check folder target/workspace/<microservice>/ does not contain dump
-        Assert.assertEquals("Dump folder should be empty",0, this.dumpLocation.toFile().listFiles().length);
+        Assert.assertEquals("Dump folder should be empty", 0, this.dumpLocation.toFile().listFiles().length);
     }
-
-    @Test
-    @Purpose("Test scheduler task")
-    public void testTask() throws ExecutionException, InterruptedException {
-        // launch task
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(new AIPSaveMetadataJobTask(saveMetadataService, getDefaultTenant(), runtimeTenantResolver)).get();
-        // test dump was created properly
-        checkDumpSuccess();
-    }
-
 
     private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {
         // Run Job and wait for end

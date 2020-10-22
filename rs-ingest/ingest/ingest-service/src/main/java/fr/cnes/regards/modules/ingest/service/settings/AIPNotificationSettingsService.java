@@ -23,10 +23,16 @@ package fr.cnes.regards.modules.ingest.service.settings;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
@@ -42,31 +48,60 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
     @Autowired
     private IAIPNotificationSettingsRepository notificationSettingsRepository;
 
+    @Autowired
+    private ITenantResolver tenantsResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IAIPNotificationSettingsService self;
+
+    @EventListener
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
+        //for each tenant try to create notification settings, if it do not exists then create with default value
+        for(String tenant: tenantsResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.initNotificationSettings();
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
     @Override
-    public AIPNotificationSettings retrieve() {
+    public void initNotificationSettings() {
         Optional<AIPNotificationSettings> notificationSettingsOpt = notificationSettingsRepository.findFirstBy();
-        AIPNotificationSettings notificationSettings;
         if (!notificationSettingsOpt.isPresent()) {
             // init new settings
-            notificationSettings = new AIPNotificationSettings();
-            notificationSettings = notificationSettingsRepository.save(notificationSettings);
-        } else {
-            // get existing settings
-            notificationSettings = notificationSettingsOpt.get();
+            notificationSettingsRepository.save(new AIPNotificationSettings());
         }
-        return notificationSettings;
+    }
+
+    @EventListener
+    public void onTenantConnectionReady(TenantConnectionReady event) {
+        runtimeTenantResolver.forceTenant(event.getTenant());
+        try {
+            self.initNotificationSettings();
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
     }
 
     @Override
-    public AIPNotificationSettings update(AIPNotificationSettings aipNotificationSettings) throws EntityNotFoundException {
+    public AIPNotificationSettings retrieve() {
+        return notificationSettingsRepository.findFirstBy().orElseThrow(() -> new RsRuntimeException(
+                "Tenant has not been correctly initialized by system!! Go and shout on the devs!"));
+    }
+
+    @Override
+    public AIPNotificationSettings update(AIPNotificationSettings aipNotificationSettings)
+            throws EntityNotFoundException {
         if (!notificationSettingsRepository.existsById(aipNotificationSettings.getId())) {
-            throw new EntityNotFoundException(aipNotificationSettings.getId().toString(), AIPNotificationSettings.class);
-        } return notificationSettingsRepository.save(aipNotificationSettings);
+            throw new EntityNotFoundException(aipNotificationSettings.getId().toString(),
+                                              AIPNotificationSettings.class);
+        }
+        return notificationSettingsRepository.save(aipNotificationSettings);
     }
-
-    @Override
-    public AIPNotificationSettings getCurrentNotificationSettings() {
-        return notificationSettingsRepository.findFirstBy().orElse(null);
-    }
-
 }

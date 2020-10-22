@@ -33,12 +33,13 @@ import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.settings.DumpSettings;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
-import fr.cnes.regards.modules.ingest.service.settings.IDumpManagerService;
+import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 
 /**
@@ -57,11 +58,13 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
     private IIngestProcessingChainRepository ingestChainRepository;
 
     @Autowired
-    private IDumpManagerService dumpManagerService;
+    private AIPSaveMetadataScheduler aipSaveMetadataScheduler;
+
+    @Autowired
+    private IDumpSettingsService dumpSettingsService;
 
     @Autowired
     private IAIPNotificationSettingsService notificationSettingsService;
-
 
     @Override
     public Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -70,9 +73,9 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
             if (IngestProcessingChain.class.isAssignableFrom(item.getKey())) {
                 IngestProcessingChain ipc = item.getTypedValue();
                 if (processingService.existsChain(ipc.getName())) {
-                    importErrors.add(String
-                            .format("Ingest processing chain already exists with same name, skipping import of %s.",
-                                    ipc.getName()));
+                    importErrors.add(String.format(
+                            "Ingest processing chain already exists with same name, skipping import of %s.",
+                            ipc.getName()));
                 } else {
                     try {
                         processingService.createNewChain(ipc);
@@ -84,15 +87,15 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                 }
             } else if (DumpSettings.class.isAssignableFrom(item.getKey())) {
                 try {
-                    dumpManagerService.updateDumpAndScheduler(item.getTypedValue());
+                    aipSaveMetadataScheduler.updateDumpAndScheduler(item.getTypedValue());
                 } catch (ModuleException e) {
-                    LOGGER.error("Not able to update new dump settings, cause by:", e.getMessage());
+                    LOGGER.error("Not able to update new dump settings, cause by:", e);
                 }
             } else if (AIPNotificationSettings.class.isAssignableFrom(item.getKey())) {
                 try {
                     notificationSettingsService.update(item.getTypedValue());
                 } catch (EntityNotFoundException e) {
-                    LOGGER.error("Not able to update new notification settings, cause by:", e.getMessage());
+                    LOGGER.error("Not able to update new notification settings, cause by:", e);
                 }
             }
         }
@@ -105,13 +108,13 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
         for (IngestProcessingChain ipc : ingestChainRepository.findAll()) {
             configuration.add(ModuleConfigurationItem.build(ipc));
         }
-        DumpSettings dumpSettings = dumpManagerService.getCurrentDumpSettings();
-        if(dumpSettings != null) {
+        DumpSettings dumpSettings = dumpSettingsService.retrieve();
+        if (dumpSettings != null) {
             configuration.add(ModuleConfigurationItem.build(dumpSettings));
         }
 
-        AIPNotificationSettings notifSettings = notificationSettingsService.getCurrentNotificationSettings();
-        if(notifSettings != null) {
+        AIPNotificationSettings notifSettings = notificationSettingsService.retrieve();
+        if (notifSettings != null) {
             configuration.add(ModuleConfigurationItem.build(notifSettings));
         }
 
