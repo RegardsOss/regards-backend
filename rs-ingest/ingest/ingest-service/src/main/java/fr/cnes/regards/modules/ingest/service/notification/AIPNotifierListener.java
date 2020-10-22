@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
@@ -57,6 +56,7 @@ public class AIPNotifierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestDenied(List<NotifierEvent> denied) {
+        handleNotificationIssue(denied);
     }
 
     @Override
@@ -85,8 +85,12 @@ public class AIPNotifierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestError(List<NotifierEvent> errorEvents) {
+        handleNotificationIssue(errorEvents);
+    }
+
+    private void handleNotificationIssue(List<NotifierEvent> events) {
         // Retrieve requests ids from events
-        List<Long> requestIds = errorEvents.stream()
+        List<Long> requestIds = events.stream()
                 .filter(event -> event.getRequestOwner().equals(this.microserviceName))
                 .map(event -> Long.parseLong(event.getRequestId())).collect(Collectors.toList());
 
@@ -99,6 +103,5 @@ public class AIPNotifierListener implements INotifierRequestListener {
             notificationService.handleNotificationError(errorRequest);
             AIPNotificationLogger.notificationEventErrorHandled(nbRequests);
         }
-
     }
 }
