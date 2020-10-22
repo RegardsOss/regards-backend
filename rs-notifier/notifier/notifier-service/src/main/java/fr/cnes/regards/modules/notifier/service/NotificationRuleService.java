@@ -122,6 +122,7 @@ public class NotificationRuleService extends AbstractCacheableRule
     private ApplicationContext applicationContext;
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onContextRefreshedEvent(ContextRefreshedEvent event) {
         if (self == null) {
             try {
