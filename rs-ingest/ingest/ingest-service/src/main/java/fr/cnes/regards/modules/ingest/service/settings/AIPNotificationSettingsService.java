@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -58,6 +60,7 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
     private IAIPNotificationSettingsService self;
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
         //for each tenant try to create notification settings, if it do not exists then create with default value
         for(String tenant: tenantsResolver.getAllActiveTenants()) {
@@ -80,6 +83,7 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
     }
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onTenantConnectionReady(TenantConnectionReady event) {
         runtimeTenantResolver.forceTenant(event.getTenant());
         try {
