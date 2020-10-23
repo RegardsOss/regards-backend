@@ -309,7 +309,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             // If no files in error = DONE
             if (errorCount == 0) {
                 order.setStatus(OrderStatus.DONE);
-            } else if (errorCount == order.getDatasetTasks().stream().mapToInt(DatasetTask::getFilesCount).sum()) {
+            } else if (errorCount == order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()) {
                 // If all files in error => FAILED
                 order.setStatus(OrderStatus.FAILED);
             } else { // DONE_WITH_WARNING

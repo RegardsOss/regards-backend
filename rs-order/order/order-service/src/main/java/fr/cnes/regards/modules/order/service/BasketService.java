@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
 
@@ -210,15 +211,14 @@ public class BasketService implements IBasketService {
         BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
         itemsSelection.setSelectionRequest(selectionRequest);
         itemsSelection.setObjectsCount((int) subSummary.getDocumentsCount());
-        int filesCount = 0;
-        long filesSize = 0;
-        for (DataType fileType : DataTypeSelection.ALL.getFileTypes()) {
-            FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType.toString());
-            filesCount += filesSummary.getFilesCount();
-            filesSize += filesSummary.getFilesSize();
-        }
-        itemsSelection.setFilesCount(filesCount);
-        itemsSelection.setFilesSize(filesSize);
+        DataTypeSelection.ALL.getFileTypes().stream()
+            .map(DataType::toString)
+            .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
+            .forEach(ft -> {
+                FilesSummary fs = subSummary.getFileTypesSummaryMap().get(ft);
+                itemsSelection.setFileTypeCount(ft, fs.getFilesCount());
+                itemsSelection.setFileTypeSize(ft, fs.getFilesSize());
+            });
         itemsSelection.setDate(selectionRequest.getSelectionDate());
         return itemsSelection;
     }
@@ -237,12 +237,13 @@ public class BasketService implements IBasketService {
         // Occurs only in tests
         if (curDsSelectionSubSummary == null) {
             datasetSelection.setObjectsCount(0);
-            datasetSelection.setFilesCount(0);
-            datasetSelection.setFilesSize(0);
         } else {
             datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
-            datasetSelection.setFilesCount((int) curDsSelectionSubSummary.getFilesCount());
-            datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+            curDsSelectionSubSummary.getFileTypesSummaryMap()
+                .forEach((fileType, fs) -> {
+                    datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
+                    datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());
+                });
         }
     }
 

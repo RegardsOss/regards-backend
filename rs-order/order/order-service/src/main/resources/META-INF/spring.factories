@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration,\
+fr.cnes.regards.modules.order.dao.adapter.StringToLongMapTypeAdapter

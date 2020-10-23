@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.urn.DataType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -162,12 +163,16 @@ public class OrderServiceUnvalableFilesIT {
         return request;
     }
 
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
             String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFilesSize(filesSize);
-        item.setFilesCount(filesCount);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
         item.setObjectsCount(objectsCount);
         item.setDate(OffsetDateTime.now());
         item.setSelectionRequest(createBasketSelectionRequest(query));
@@ -182,9 +187,13 @@ public class OrderServiceUnvalableFilesIT {
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(3_000_171l);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 

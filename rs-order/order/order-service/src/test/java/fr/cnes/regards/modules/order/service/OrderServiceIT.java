@@ -182,12 +182,16 @@ public class OrderServiceIT {
         return request;
     }
 
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
                                                                  String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFilesSize(filesSize);
-        item.setFilesCount(filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
         item.setObjectsCount(objectsCount);
         item.setDate(OffsetDateTime.now());
         item.setSelectionRequest(createBasketSelectionRequest(query));
@@ -202,10 +206,14 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFilesSize(1_000_000l);
-        dsSelection.setFilesCount(1);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com");
@@ -221,10 +229,14 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFilesSize(1_000_000l);
-        dsSelection.setFilesCount(1);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, null, "http://perdu.com");
@@ -241,10 +253,14 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFilesSize(1_000_000l);
-        dsSelection.setFilesCount(1);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
         try {
@@ -264,10 +280,14 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFilesSize(1_000_000l);
-        dsSelection.setFilesCount(1);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
         orderService.createOrder(basket, "myCommand", "http://perdu.com");
@@ -365,9 +385,13 @@ public class OrderServiceIT {
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(3_000_171l);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -419,9 +443,13 @@ public class OrderServiceIT {
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(3_000_171l);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 

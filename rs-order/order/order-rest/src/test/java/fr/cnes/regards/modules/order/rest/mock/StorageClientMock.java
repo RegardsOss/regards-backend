@@ -2,11 +2,14 @@ package fr.cnes.regards.modules.order.rest.mock;
 
 import feign.Request;
 import feign.Response;
+import fr.cnes.regards.modules.order.rest.OrderControllerIT;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,8 @@ import java.util.Map;
 public class StorageClientMock implements IStorageRestClient {
 
     public static final String NO_QUOTA_MSG_STUB = "No quota to download this file";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientMock.class);
 
     @Override
     public Response downloadFile(String checksum) {

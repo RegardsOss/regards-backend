@@ -41,6 +41,8 @@ import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.MalformedJwtException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -69,6 +71,8 @@ import java.util.List;
 @RestController
 @RequestMapping("")
 public class OrderController implements IResourceController<OrderDto> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
     public static final String ADMIN_ROOT_PATH = "/orders";
     public static final String CSV = "/csv";

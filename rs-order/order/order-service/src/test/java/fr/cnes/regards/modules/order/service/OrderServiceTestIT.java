@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -134,8 +135,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
@@ -162,8 +167,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
 
@@ -171,8 +180,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
         dsSelection2.setDatasetLabel("DS-2");
         dsSelection2.setObjectsCount(3);
-        dsSelection2.setFilesCount(12);
-        dsSelection2.setFilesSize(12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
@@ -182,7 +195,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
         //Wait order in waiting user status
         int loop = 0;
-        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
+        while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 30)) {
             Thread.sleep(1_000);
             loop++;
         }
@@ -223,8 +236,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
@@ -269,8 +286,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
 
@@ -278,8 +299,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
         dsSelection2.setDatasetLabel("DS-2");
         dsSelection2.setObjectsCount(3);
-        dsSelection2.setFilesCount(12);
-        dsSelection2.setFilesSize(12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
@@ -343,8 +368,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFilesCount(12);
-        dsSelection.setFilesSize(12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
 
@@ -352,8 +381,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         dsSelection2.setDatasetIpid(SearchClientMock.DS2_IP_ID.toString());
         dsSelection2.setDatasetLabel("DS-2");
         dsSelection2.setObjectsCount(3);
-        dsSelection2.setFilesCount(12);
-        dsSelection2.setFilesSize(12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection2.setFileTypeCount(DataType.RAWDATA.name(), 12L);
+        dsSelection2.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         dsSelection2.addItemsSelection(createDatasetItemSelection(1L, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
@@ -409,12 +442,16 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         LOGGER.info("Order has been removed !!");
     }
 
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
                                                                  String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFilesSize(filesSize);
-        item.setFilesCount(filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
         item.setObjectsCount(objectsCount);
         item.setDate(OffsetDateTime.now());
         item.setSelectionRequest(createBasketSelectionRequest(query));

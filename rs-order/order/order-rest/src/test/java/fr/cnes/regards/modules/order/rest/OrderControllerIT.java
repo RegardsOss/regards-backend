@@ -65,6 +65,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -291,16 +293,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
         BasketDatedItemsSelection bDIS = new BasketDatedItemsSelection();
         bDIS.setDate(OffsetDateTime.now());
         bDIS.setObjectsCount(2);
-        bDIS.setFilesCount(2);
-        bDIS.setFilesSize(45050);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 2L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 45050L);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name(), 2L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name(), 45050L);
         bDIS.setSelectionRequest(selectionRequest);
 
         BasketDatasetSelection bDS = new BasketDatasetSelection();
         bDS.setDatasetIpid("URN:DATASET:EXAMPLE-DATASET:V1");
         bDS.setDatasetLabel("example dataset");
         bDS.setObjectsCount(2);
-        bDS.setFilesCount(2);
-        bDS.setFilesSize(45050);
+        bDS.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        bDS.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 2L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 45050L);
+        bDS.setFileTypeCount(DataType.RAWDATA.name(), 2L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name(), 45050L);
         bDS.addItemsSelection(bDIS);
 
         Basket b = new Basket();
@@ -587,6 +597,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Assert.assertEquals(1816l, resultFile.length());
     }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderControllerIT.class);
+
     @Test
     public void testDownloadZipFile_contains_notice_when_inner_downloads_fail()
         throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
@@ -600,10 +612,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
             customizer().expectStatusOk(), "Should return result",
             order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
-        File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
-        //resultFile.deleteOnExit();
 
         Set<String> failures = new HashSet<>();
+        Object o = resultActions.andReturn().getAsyncResult();
+        System.out.println(o);
         try (InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
              ZipInputStream zis = new ZipInputStream(is)
         ) {
@@ -616,7 +628,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
                     int len = 0;
                     while ((len = zis.read(buffer)) > 0)
                     {
-                        sb.append(new String(buffer, 0, len, StandardCharsets.UTF_8));
+                        String s = new String(buffer, 0, len, StandardCharsets.UTF_8);
+                        sb.append(s);
                     }
                     failures.addAll(Arrays.asList(sb.toString().split("\n")));
                     break;

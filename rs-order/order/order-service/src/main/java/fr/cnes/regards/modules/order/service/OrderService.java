@@ -486,8 +486,15 @@ public class OrderService implements IOrderService {
         DatasetTask dsTask = new DatasetTask();
         dsTask.setDatasetIpid(dsSel.getDatasetIpid());
         dsTask.setDatasetLabel(dsSel.getDatasetLabel());
-        dsTask.setFilesCount(dsSel.getFilesCount());
-        dsTask.setFilesSize(dsSel.getFilesSize());
+        dsTask.setFilesCount(
+            DataTypeSelection.ALL.getFileTypes().stream()
+                .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                .sum()
+        );
+        dsTask.setFilesSize(
+            DataTypeSelection.ALL.getFileTypes().stream()
+                .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                .sum());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
 
         dsSel.getItemsSelections().forEach(item -> {
