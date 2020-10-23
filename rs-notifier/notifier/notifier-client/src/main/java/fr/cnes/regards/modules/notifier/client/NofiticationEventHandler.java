@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
@@ -48,10 +47,10 @@ public class NofiticationEventHandler
     public void handleBatch(String tenant, List<NotifierEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
+            LOGGER.debug("[NOTIFIER RESPONSES HANDLER] Handling {} NotifierEvent...", messages.size());
             long start = System.currentTimeMillis();
             handle(messages);
-            LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms",
+            LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms",
                          messages.size(),
                          System.currentTimeMillis() - start);
         } finally {
@@ -88,7 +87,7 @@ public class NofiticationEventHandler
             }
         }
         // now manage message in right order
-        if(!denied.isEmpty()) {
+        if (!denied.isEmpty()) {
             manageDenied(denied);
         }
         if (!granted.isEmpty()) {
