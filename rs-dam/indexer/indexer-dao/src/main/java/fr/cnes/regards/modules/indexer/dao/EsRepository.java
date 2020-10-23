@@ -49,6 +49,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -103,9 +104,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -113,6 +112,9 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filter.Filter;
+import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.Range.Bucket;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -127,6 +129,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.hipparchus.util.FastMath;
+import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1961,40 +1964,114 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
-            long totalFileSize = 0;
             for (String fileType : fileTypes) {
-                ValueCount valueCount = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += valueCount.getValue();
-                Sum sum = aggs.get("total_" + fileType + "_files_size");
-                totalFileSize += sum.getValue();
+
+                // ref
+                // ref:count
+                String refCountName = "total_" + fileType + "_ref_files_count";
+                ValueCount refValueCount = ((Filter) aggs.get(refCountName)).getAggregations().get(refCountName);
+                // ref:size
+                String refSumName = "total_" + fileType + "_ref_files_size";
+                Sum refSum = ((Filter) aggs.get(refSumName)).getAggregations().get(refSumName);
+                // ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + refValueCount.getValue(),
+                            (long) (fs.getFilesSize()+refSum.getValue())
+                        );
+                    });
+
+                // !ref
+                // !ref:count
+                String notRefCountName = "total_" + fileType + "_!ref_files_count";
+                ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations().get(notRefCountName);
+                // !ref:size
+                String notRefSumName = "total_" + fileType + "_!ref_files_size";
+                Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations()
+                    .get(notRefSumName);
+                // !ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + notRefValueCount.getValue(),
+                            (long) (fs.getFilesSize()+notRefSum.getValue())
+                        );
+                    });
+
+                // total
+                // total:count
+                long totalFileCount = refValueCount.getValue() + notRefValueCount.getValue();
+                // total:size
+                long totalFileSize = (long) (refSum.getValue() + notRefSum.getValue());
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType,
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(totalFileCount, totalFileSize);
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + totalFileCount,
+                            fs.getFilesSize() + totalFileSize
+                        );
+                    });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
+                summary.addFilesSize(totalFileSize);
             }
-            summary.addFilesCount(totalFileCount);
-            summary.addFilesSize(totalFileSize);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
-                // Usualy discriminant = tag name
+                // Usually discriminant = tag name
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap()
+                        .put(discriminant, new DocFilesSubSummary(
+                            Arrays.stream(fileTypes)
+                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
+                                .toArray(String[]::new))
+                        );
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
-                long filesSize = 0;
                 for (String fileType : fileTypes) {
-                    ValueCount valueCount = discAggs.get(fileType + "_files_count");
-                    filesCount += valueCount.getValue();
-                    Sum sum = discAggs.get(fileType + "_files_size");
-                    filesSize += sum.getValue();
+                    ValueCount refValueCount = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
+                        .get(fileType + "_ref_files_count");
+                    Sum refSum = ((Filter) discAggs.get(fileType + "_ref_files_size")).getAggregations()
+                        .get(fileType + "_ref_files_size");
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    refFilesSummary.addFilesCount(refValueCount.getValue());
+                    refFilesSummary.addFilesSize((long) refSum.getValue());
+
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
+                        .get(fileType + "_!ref_files_count");
+                    Sum notRefSum = ((Filter) discAggs.get(fileType + "_!ref_files_size")).getAggregations()
+                        .get(fileType + "_!ref_files_size");
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    notRefFilesSummary.addFilesCount(notRefValueCount.getValue());
+                    notRefFilesSummary.addFilesSize((long) notRefSum.getValue());
+
                     FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
-                    filesSummary.addFilesCount(valueCount.getValue());
-                    filesSummary.addFilesSize((long) sum.getValue());
+                    long filesCount = refValueCount.getValue() + notRefValueCount.getValue();
+                    long filesSize = (long) (refSum.getValue() + notRefSum.getValue());
+                    filesSummary.addFilesCount(filesCount);
+                    filesSummary.addFilesSize(filesSize);
+
+                    discSummary.addFilesCount(filesCount);
+                    discSummary.addFilesSize(filesSize);
                 }
-                discSummary.addFilesCount(filesCount);
-                discSummary.addFilesSize(filesSize);
 
             }
         } catch (IOException e) {
@@ -2003,18 +2080,58 @@ public class EsRepository implements IEsRepository {
     }
 
     private <T extends IIndexable & IDocFiles> void addFilesCountAndSumAggs(SearchKey<T, T> searchKey,
-            String discriminantProperty, Optional<String> discriminentPropertyInclude, SearchSourceBuilder builder,
+            String discriminantProperty, Optional<String> discriminantPropertyInclude, SearchSourceBuilder builder,
             String[] fileTypes) throws IOException {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileSizeField = "feature.files." + fileType + ".filesize";
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
             // file count
-            builder.aggregation(AggregationBuilders.count("total_" + fileType + "_files_count")
-                                        .field("feature.files." + fileType
-                                                       + ".filesize")); // Only count files with a size
+            String refCount = "total_" + fileType + "_ref_files_count";
+            String notRefCount = "total_" + fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg =
+                AggregationBuilders
+                    .filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(refCount)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg =
+                AggregationBuilders
+                    .filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(notRefCount)
+                        .field(fileSizeField));
+
             // file size sum
-            builder.aggregation(AggregationBuilders.sum("total_" + fileType + "_files_size")
-                                        .field("feature.files." + fileType + ".filesize"));
+            String refSum = "total_" + fileType + "_ref_files_size";
+            String notRefSum = "total_" + fileType + "_!ref_files_size";
+
+            FilterAggregationBuilder refSumAgg =
+                AggregationBuilders
+                    .filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(refSum)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg =
+                AggregationBuilders
+                    .filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(notRefSum)
+                        .field(fileSizeField));
+
+            // add aggs to builder
+            builder.aggregation(refCountAgg);
+            builder.aggregation(notRefCountAgg);
+            builder.aggregation(refSumAgg);
+            builder.aggregation(notRefSumAgg);
         }
 
         // Discriminant distribution aggregator
@@ -2023,20 +2140,61 @@ public class EsRepository implements IEsRepository {
 
         if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
             termsAggBuilder.field(discriminantProperty + KEYWORD_SUFFIX);
-            if (discriminentPropertyInclude.isPresent()) {
-                termsAggBuilder.includeExclude(new IncludeExclude(discriminentPropertyInclude.get(), null));
+            if (discriminantPropertyInclude.isPresent()) {
+                termsAggBuilder.includeExclude(new IncludeExclude(discriminantPropertyInclude.get(), null));
             }
         } else {
             termsAggBuilder.field(discriminantProperty);
         }
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files count
-            termsAggBuilder.subAggregation(AggregationBuilders.count(fileType + "_files_count")
-                                                   .field("feature.files." + fileType + ".filesize"));
+            String fileSizeField = "feature.files." + fileType + ".filesize";
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
+            // file count
+            String refCount = fileType + "_ref_files_count";
+            String notRefCount = fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg =
+                AggregationBuilders
+                    .filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(refCount)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg =
+                AggregationBuilders
+                    .filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(notRefCount)
+                        .field(fileSizeField));
+
             // file size sum
-            termsAggBuilder.subAggregation(AggregationBuilders.sum(fileType + "_files_size")
-                                                   .field("feature.files." + fileType + ".filesize"));
+            String refSum = fileType + "_ref_files_size";
+            String notRefSum = fileType + "_!ref_files_size";
+
+            FilterAggregationBuilder refSumAgg =
+                AggregationBuilders
+                    .filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(refSum)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg =
+                AggregationBuilders
+                    .filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(notRefSum)
+                        .field(fileSizeField));
+
+            // add aggs to builder
+            termsAggBuilder.subAggregation(refCountAgg);
+            termsAggBuilder.subAggregation(notRefCountAgg);
+            termsAggBuilder.subAggregation(refSumAgg);
+            termsAggBuilder.subAggregation(notRefSumAgg);
         }
         builder.aggregation(termsAggBuilder);
     }
@@ -2061,29 +2219,77 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
             for (String fileType : fileTypes) {
-                Cardinality cardinality = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += cardinality.getValue();
+                // ref
+                Cardinality refCardinality = ((Filter) aggs.get("total_" + fileType + "_ref_files_count")).getAggregations()
+                    .get("total_" + fileType + "_ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(refCardinality.getValue(), 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + refCardinality.getValue(), 0);
+                    });
+
+                // !ref
+                Cardinality notRefCardinality = ((Filter) aggs.get("total_" + fileType + "_!ref_files_count")).getAggregations()
+                    .get("total_" + fileType + "_!ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(notRefCardinality.getValue(), 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + notRefCardinality.getValue(), 0);
+                    });
+
+                // total
+                long totalFileCount = refCardinality.getValue() + notRefCardinality.getValue();
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType,
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(totalFileCount, 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + totalFileCount, 0);
+                    });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
             }
-            summary.addFilesCount(totalFileCount);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap()
+                        .put(discriminant, new DocFilesSubSummary(
+                            Arrays.stream(fileTypes)
+                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
+                                .toArray(String[]::new)
+                        ));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
                 for (String fileType : fileTypes) {
-                    Cardinality cardinality = discAggs.get(fileType + "_files_count");
-                    filesCount += cardinality.getValue();
-                    discSummary.getFileTypesSummaryMap().get(fileType).addFilesCount(cardinality.getValue());
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
+                        .get(fileType + "_ref_files_count");
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
+                        .get(fileType + "_!ref_files_count");
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    refFilesSummary.addFilesCount(refCardinality.getValue());
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    notRefFilesSummary.addFilesCount(notRefCardinality.getValue());
+
+                    FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
+                    long cardinality = refCardinality.getValue() + notRefCardinality.getValue();
+                    filesSummary.addFilesCount(cardinality);
+                    discSummary.addFilesCount(cardinality);
                 }
-                discSummary.addFilesCount(filesCount);
             }
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -2103,10 +2309,32 @@ public class EsRepository implements IEsRepository {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
             // file cardinality
-            builder.aggregation(AggregationBuilders.cardinality("total_" + fileType + "_files_count")
-                                        .field("feature.files." + fileType + ".uri"
-                                                       + KEYWORD_SUFFIX)); // Only count files with a size
+            String refCardinality = "total_" + fileType + "_ref_files_count";
+            String notRefCardinality = "total_" + fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg =
+                AggregationBuilders
+                    .filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(refCardinality)
+                        .field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg =
+                AggregationBuilders
+                    .filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(notRefCardinality)
+                        .field(fileUriField));
+
+            builder.aggregation(refCardinalityAgg);
+            builder.aggregation(notRefCardinalityAgg);
         }
 
         // Discriminant distribution aggregator
@@ -2123,9 +2351,32 @@ public class EsRepository implements IEsRepository {
 
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files cardinality
-            termsAggBuilder.subAggregation(AggregationBuilders.cardinality(fileType + "_files_count")
-                                                   .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX));
+            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
+            // file cardinality
+            String refCardinality = fileType + "_ref_files_count";
+            String notRefCardinality = fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg =
+                AggregationBuilders
+                    .filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(refCardinality)
+                        .field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg =
+                AggregationBuilders
+                    .filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(notRefCardinality)
+                        .field(fileUriField));
+
+            termsAggBuilder.subAggregation(refCardinalityAgg);
+            termsAggBuilder.subAggregation(notRefCardinalityAgg);
         }
         builder.aggregation(termsAggBuilder);
     }
