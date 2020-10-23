@@ -47,7 +47,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -78,9 +77,6 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IIngestService ingestService;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaRepo;
 
     @Autowired
     private IAIPPostProcessRequestRepository postProcessRepo;
@@ -126,7 +122,6 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     @Test
     @Purpose("Test postprocess requests creation")
     public void ingestWithPostProcess() throws EntityInvalidException {
-        Assert.assertEquals("There should be no store metadata request in db", 0L, storeMetaRepo.count());
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection.build(IngestMetadataDto
@@ -159,7 +154,6 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
     @Test
     @Purpose("Ingest a SIP with no contentInformation to store. Only manifest should be stored.")
     public void ingestWithoutAnyDataFile() throws EntityInvalidException {
-        Assert.assertEquals("There should be no store metadata request in db", 0L, storeMetaRepo.count());
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection
@@ -175,9 +169,6 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(providerId.equals(entity.getProviderId()));
         Assert.assertTrue(entity.getVersion() == 1);
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
-
-        // A store meta request should be created
-        Assert.assertEquals("There should be one store metadata request created", 1L, storeMetaRepo.count());
     }
 
     /**

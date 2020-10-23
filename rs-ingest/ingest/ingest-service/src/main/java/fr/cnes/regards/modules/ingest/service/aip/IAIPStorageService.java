@@ -25,7 +25,6 @@ import java.util.Set;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.manifest.StoreLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -46,14 +45,6 @@ public interface IAIPStorageService {
      * @throws ModuleException
      */
     List<String> storeAIPFiles(List<AIPEntity> aips, IngestMetadata metadata) throws ModuleException;
-
-    /**
-     * Store AIPs
-     * @param requests
-     * @return group id
-     * @throws ModuleException
-     */
-    List<String> storeAIPs(List<AIPStoreMetaDataRequest> requests) throws ModuleException;
 
     /**
      * Update provided {@link AIPEntity} aips content info with files metadata

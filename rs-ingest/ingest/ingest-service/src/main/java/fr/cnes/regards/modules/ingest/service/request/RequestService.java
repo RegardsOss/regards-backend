@@ -55,7 +55,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -66,7 +65,6 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -95,9 +93,6 @@ public class RequestService implements IRequestService {
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository aipStoreMetaDataRepository;
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
@@ -174,10 +169,6 @@ public class RequestService implements IRequestService {
         List<IngestRequest> requests = ingestRequestRepository.findAllByAipsIdIn(aipIds);
         requests.forEach(sessionNotifier::ingestRequestErrorDeleted);
         ingestRequestRepository.deleteAll(requests);
-
-        List<AIPStoreMetaDataRequest> storeMetaRequests = aipStoreMetaDataRepository.findAllByAipIdIn(aipIds);
-        storeMetaRequests.forEach(sessionNotifier::decrementMetaStoreError);
-        aipStoreMetaDataRepository.deleteAll(storeMetaRequests);
 
         List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
         aipUpdateRequestRepository.deleteAll(updateRequests);
@@ -318,8 +309,6 @@ public class RequestService implements IRequestService {
                 sessionNotifier.ingestRequestErrorDeleted(ingReq.get());
                 sessionNotifier.decrementProductCount(ingReq.get());
             }
-        } else if (request instanceof AIPStoreMetaDataRequest) {
-            sessionNotifier.decrementMetaStoreError((AIPStoreMetaDataRequest) request);
         }
         request.setState(InternalRequestState.TO_SCHEDULE);
         request.clearError();

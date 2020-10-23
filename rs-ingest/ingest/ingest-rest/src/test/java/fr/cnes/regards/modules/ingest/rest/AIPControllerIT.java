@@ -453,12 +453,12 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                         .value("Optional. If you add the % character, we will use the like operator to match provider id")));
 
         params.add(constrainedFields
-                           .withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID, AIPController.REQUEST_PARAM_PROVIDER_ID,
-                                     "A list of provider ids filter")
-                           .optional().type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. If you add the % character, we will use the like operator to match provider id")));
+                .withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID, AIPController.REQUEST_PARAM_PROVIDER_ID,
+                          "A list of provider ids filter")
+                .optional().type(JSON_STRING_TYPE)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                        .value("Optional. If you add the % character, we will use the like operator to match provider id")));
 
         params.add(constrainedFields
                 .withPath(rootPath + AIPController.REQUEST_PARAM_SESSION_OWNER,
@@ -495,10 +495,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + "last", "last",
-                          "is it the last version?")
-                .optional().type(JSON_BOOLEAN_TYPE)
+        params.add(constrainedFields.withPath(rootPath + "last", "last", "is it the last version?").optional()
+                .type(JSON_BOOLEAN_TYPE)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
 
         params.add(constrainedFields
