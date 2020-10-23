@@ -19,7 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -37,6 +42,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
@@ -48,8 +54,8 @@ import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPLocation;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
-import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 
@@ -128,7 +134,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         }
 
         // UPDATE AIPs
-        if(!this.requests.isEmpty()) {
+        if (!this.requests.isEmpty()) {
             // save request by aip to edit
             ListMultimap<String, AIPUpdateRequest> requestByAIP = ArrayListMultimap.create();
             for (AIPUpdateRequest request : this.requests) {
@@ -168,7 +174,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     // Save the AIP through the service
                     updates.add(aipWrapper.getAip());
                     // if notifications are required
-                    if(isToNotify) {
+                    if (isToNotify) {
                         // add request to list of requests with aip successfully modified
                         requestsToNotify.addAll(updateRequests);
                     }
@@ -194,8 +200,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
         // Keep only ERROR requests
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> (request.getState() != InternalRequestState.ERROR) && (request.getState()
-                        != InternalRequestState.ABORTED)).collect(Collectors.toList());
+                .filter(request -> (request.getState() != InternalRequestState.ERROR)
+                        && (request.getState() != InternalRequestState.ABORTED))
+                .collect(Collectors.toList());
 
         // If notifications are active, send them to notifier
         // remark : only requests corresponding to modified aip are notified
@@ -211,8 +218,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
         // Save ERROR requests
         List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> (request.getState() == InternalRequestState.ERROR) || (request.getState()
-                        == InternalRequestState.ABORTED)).collect(Collectors.toList());
+                .filter(request -> (request.getState() == InternalRequestState.ERROR)
+                        || (request.getState() == InternalRequestState.ABORTED))
+                .collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
@@ -281,7 +289,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         return aip;
     }
 
-    private List<AIPUpdateRequest> getOrderedTaskList(String aipId, ListMultimap<String, AIPUpdateRequest> requestByAIP) {
+    private List<AIPUpdateRequest> getOrderedTaskList(String aipId,
+            ListMultimap<String, AIPUpdateRequest> requestByAIP) {
         List<AIPUpdateRequest> aipUpdateRequests = requestByAIP.get(aipId);
         aipUpdateRequests.sort(AIPUpdateRunnerJob::compareUpdateRequests);
         return aipUpdateRequests;
