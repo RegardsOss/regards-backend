@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
  * Type of requests available threw the REST endpoint
  */
 public enum RequestTypeEnum {
+
     /**
      * Ingest requests
      */
@@ -37,10 +38,6 @@ public enum RequestTypeEnum {
      */
     AIP_UPDATES_CREATOR(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE),
     /**
-     * Save metadata requests
-     */
-    STORE_METADATA(RequestTypeConstant.STORE_METADATA_VALUE),
-    /**
      * 1 OAIS (SIP and AIP) Remove request
      */
     OAIS_DELETION(RequestTypeConstant.OAIS_DELETION_VALUE),
@@ -50,14 +47,12 @@ public enum RequestTypeEnum {
     OAIS_DELETION_CREATOR(RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
 
     RequestTypeEnum(String value) {
-        if(!value.equals(this.name())) {
+        if (!value.equals(this.name())) {
             throw new IllegalArgumentException("Some issue occured with " + value);
         }
-        if(value.length() > AbstractRequest.MAX_TYPE_LENGTH) {
+        if (value.length() > AbstractRequest.MAX_TYPE_LENGTH) {
             throw new IllegalArgumentException("Enumerate value too long");
         }
     }
-
-
 
 }

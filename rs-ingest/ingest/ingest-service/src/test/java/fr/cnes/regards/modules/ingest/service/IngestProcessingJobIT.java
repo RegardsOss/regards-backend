@@ -37,7 +37,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -50,7 +49,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -59,7 +57,6 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -129,9 +126,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepo;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaRequestRepo;
 
     @SpyBean
     private IStorageClient storageClient;
@@ -248,8 +242,6 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         // Check status of IngestRequest
         reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
         Assert.assertEquals("Request sould be deleted as requests is done success", 0, reqs.size());
-        List<AIPStoreMetaDataRequest> metaReqs = storeMetaRequestRepo.findAllByAipIdIn(Lists.newArrayList(aip.getId()));
-        Assert.assertEquals(1, metaReqs.size());
 
     }
 

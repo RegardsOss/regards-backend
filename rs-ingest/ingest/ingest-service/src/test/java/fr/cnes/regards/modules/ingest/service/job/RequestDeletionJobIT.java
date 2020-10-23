@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPStoreMetaDataRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -53,7 +52,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -96,9 +94,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private ISIPRepository sipRepository;
-
-    @Autowired
-    private IAIPStoreMetaDataRepository storeMetaDataRepository;
 
     @Autowired
     private IAIPUpdatesCreatorRepository aipUpdatesCreatorRepository;
@@ -172,11 +167,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
         aips = aipRepository.findAll();
 
-        // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPStoreMetaDataRequest storeMetaDataRequest = AIPStoreMetaDataRequest.build(aips.get(0), null, true, true);
-        storeMetaDataRequest.setState(InternalRequestState.ERROR);
-        storeMetaDataRepository.save(storeMetaDataRequest);
 
+        // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
                 .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
@@ -235,7 +227,7 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
     @Test
     public void testDeleteJob() {
         initData();
-        Assert.assertEquals("Something went wrong while creating requests", 6, abstractRequestRepository.count());
+        Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
                 .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
         waitForRequestReach(5, 20_000);

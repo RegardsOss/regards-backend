@@ -1,9 +1,13 @@
 package fr.cnes.regards.modules.ingest.service;
-import javax.persistence.criteria.Predicate;
+
+import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.persistence.criteria.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,7 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
+
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -31,11 +35,10 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestversioning", "spring.jpa.show-sql=false",
-                "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100",
-                "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
-                "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestversioning",
+        "spring.jpa.show-sql=false", "regards.amqp.enabled=true", "regards.scheduler.pool.size=4",
+        "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
+        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class VersioningModeIT extends IngestMultitenantServiceTest {
 
@@ -46,7 +49,9 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
     private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
+
     private static final List<String> TAG_2 = Lists.newArrayList("toto", "tutu", "tata");
+
     private static final List<String> TAG_3 = Lists.newArrayList("toto", "tutu", "titi");
 
     private static final String STORAGE_0 = "fake";
@@ -88,20 +93,22 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
 
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -121,38 +128,32 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         // lets check that second SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, sips.length);
-        Assert.assertTrue(String.format(
-                "This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[1].getVersion(),
-                PROVIDER_ID), sips[1].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                          PROVIDER_ID),
+                            2, sips.length);
+        Assert.assertTrue(String
+                .format("This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[1].getVersion(), PROVIDER_ID), sips[1].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[1].getState());
-        Assert.assertFalse(String.format(
-                "This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[0].getVersion(),
-                PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+        Assert.assertFalse(String
+                .format("This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[0].getVersion(), PROVIDER_ID), sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIPs
         aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, aips.length);
-        Assert.assertTrue(String.format(
-                "This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[1].getVersion(),
-                PROVIDER_ID), aips[1].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                          PROVIDER_ID),
+                            2, aips.length);
+        Assert.assertTrue(String
+                .format("This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[1].getVersion(), PROVIDER_ID), aips[1].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[1].getState());
-        Assert.assertFalse(String.format(
-                "This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[0].getVersion(),
-                PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+        Assert.assertFalse(String
+                .format("This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[0].getVersion(), PROVIDER_ID), aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .incrementProductGenerationPending(Mockito.any(IngestRequest.class));
@@ -179,31 +180,28 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, true);
 
         // lets submit the first SIP
-        publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.REPLACE);
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
 
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -218,51 +216,40 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
 
         // lets submit the second SIP with different TAGS so it is accepted by system
-        publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.REPLACE);
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
         ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
         // lets check that second SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, sips.length);
-        Assert.assertTrue(String.format(
-                "This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[1].getVersion(),
-                PROVIDER_ID), sips[1].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                          PROVIDER_ID),
+                            2, sips.length);
+        Assert.assertTrue(String
+                .format("This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[1].getVersion(), PROVIDER_ID), sips[1].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[1].getState());
-        Assert.assertFalse(String.format(
-                "This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[0].getVersion(),
-                PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED),
-                            SIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[0].getVersion(), PROVIDER_ID), sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED), SIPState.DELETED,
                             sips[0].getState());
         // lets check associated AIPs
         aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, aips.length);
-        Assert.assertTrue(String.format(
-                "This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[1].getVersion(),
-                PROVIDER_ID), aips[1].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                          PROVIDER_ID),
+                            2, aips.length);
+        Assert.assertTrue(String
+                .format("This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[1].getVersion(), PROVIDER_ID), aips[1].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[1].getState());
-        Assert.assertFalse(String.format(
-                "This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[0].getVersion(),
-                PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
-                            AIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[0].getVersion(), PROVIDER_ID), aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED), AIPState.DELETED,
                             aips[0].getState());
 
         // session monitoring
@@ -285,16 +272,23 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     }
 
     @Test
+    public void testIncWithTwoVersionAtSameTime() {
+        // this allows to have a first version than a second version replacing the first(which is now in state DELETED)
+        testReplace();
+        // lets submit the third and forth SIP with different TAGS so it is accepted by system
+        publishSIPEvent(Lists.newArrayList(create(PROVIDER_ID, TAG_2), create(PROVIDER_ID, TAG_3)),
+                        Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.empty(),
+                        VersioningMode.INC_VERSION);
+        ingestServiceTest.waitForAIP(3, 20_000, AIPState.STORED);
+    }
+
+    @Test
     public void testReplaceWithTwoVersionAtSameTime() {
         // this allows to have a first version than a second version replacing the first(which is now in state DELETED)
         testReplace();
         // lets submit the third and forth SIP with different TAGS so it is accepted by system
         publishSIPEvent(Lists.newArrayList(create(PROVIDER_ID, TAG_2), create(PROVIDER_ID, TAG_3)),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
+                        Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.empty(),
                         VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(3, 20_000, AIPState.STORED);
         // once the 2 new AIPs are stored, we ask for the deletion of the old ones, so lets wait for this deletion
@@ -303,38 +297,32 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only four SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 4, sips.length);
-        Assert.assertTrue(String.format(
-                "This SIP should be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
-                sips[3].getVersion(),
-                PROVIDER_ID), sips[3].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                          PROVIDER_ID),
+                            4, sips.length);
+        Assert.assertTrue(String
+                .format("This SIP should be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
+                        sips[3].getVersion(), PROVIDER_ID), sips[3].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[3].getState());
-        Assert.assertFalse(String.format(
-                "This SIP should not be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
-                sips[2].getVersion(),
-                PROVIDER_ID), sips[2].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED),
-                            SIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This SIP should not be the latest as it is version %s out of 4 SIP for providerId \"%s\"",
+                        sips[2].getVersion(), PROVIDER_ID), sips[2].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED), SIPState.DELETED,
                             sips[2].getState());
         // lets check associated AIPs
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only 4 AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 4, aips.length);
-        Assert.assertTrue(String.format(
-                "This AIP should be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
-                aips[3].getVersion(),
-                PROVIDER_ID), aips[3].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                          PROVIDER_ID),
+                            4, aips.length);
+        Assert.assertTrue(String
+                .format("This AIP should be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
+                        aips[3].getVersion(), PROVIDER_ID), aips[3].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[3].getState());
-        Assert.assertFalse(String.format(
-                "This AIP should not be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
-                aips[2].getVersion(),
-                PROVIDER_ID), aips[2].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
-                            AIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This AIP should not be the latest as it is version %s out of 4 AIP for providerId \"%s\"",
+                        aips[2].getVersion(), PROVIDER_ID), aips[2].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED), AIPState.DELETED,
                             aips[2].getState());
 
         // session monitoring
@@ -369,31 +357,28 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, true);
 
         // lets submit the first SIP
-        publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.IGNORE);
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.IGNORE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
 
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -408,33 +393,30 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
 
         // lets submit the second SIP with different TAGS so it is accepted by system
-        publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.IGNORE);
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.IGNORE);
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED);
 
         // Well nothing should have changed
         // lets check that first SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
         // check that session has been notified
         Mockito.verify(sessionNotifier, Mockito.times(2))
@@ -443,8 +425,7 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
         // check that request is in state IGNORE, there is only this test request in DB so if there is one IGNORED, it is ours
-        Assert.assertEquals("There should be one request in IGNORED state",
-                            1,
+        Assert.assertEquals("There should be one request in IGNORED state", 1,
                             ingestRequestRepository.countByState(InternalRequestState.IGNORED));
 
     }
@@ -461,31 +442,28 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         storageClient.setBehavior(true, true);
 
         // lets submit the first SIP
-        publishSIPEvent(create(PROVIDER_ID, TAG_0),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.MANUAL);
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.MANUAL);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED);
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
 
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -500,33 +478,30 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
 
         // lets submit the second SIP with different TAGS so it is accepted by system
-        publishSIPEvent(create(PROVIDER_ID, TAG_1),
-                        Lists.newArrayList(STORAGE_0),
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0,
-                        Optional.empty(),
-                        VersioningMode.MANUAL);
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0,
+                        CATEGORIES_0, Optional.empty(), VersioningMode.MANUAL);
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.WAITING_VERSIONING_MODE);
 
         // Well nothing should have changed
         // lets check that first SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
         // check that session has been notified
         Mockito.verify(sessionNotifier, Mockito.times(2))
@@ -536,8 +511,7 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .decrementProductGenerationPending(Mockito.any(IngestRequest.class));
         // check that request is in state WAITING_VERSIONING_MODE, there is only this test request in DB so if there is one WAITING_VERSIONING_MODE, it is ours
-        Assert.assertEquals("There should be one request in WAITING_VERSIONING_MODE state",
-                            1,
+        Assert.assertEquals("There should be one request in WAITING_VERSIONING_MODE state", 1,
                             ingestRequestRepository.countByState(InternalRequestState.WAITING_VERSIONING_MODE));
     }
 
@@ -549,44 +523,38 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
             Set<Predicate> predicates = Sets.newHashSet();
             predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        }).ifPresent(request -> ingestRequestService
-                .fromWaitingTo(Lists.newArrayList(request), VersioningMode.INC_VERSION));
+        }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request),
+                                                                   VersioningMode.INC_VERSION));
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, sips.length);
-        Assert.assertTrue(String.format(
-                "This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[1].getVersion(),
-                PROVIDER_ID), sips[1].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                          PROVIDER_ID),
+                            2, sips.length);
+        Assert.assertTrue(String
+                .format("This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[1].getVersion(), PROVIDER_ID), sips[1].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[1].getState());
-        Assert.assertFalse(String.format(
-                "This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[0].getVersion(),
-                PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+        Assert.assertFalse(String
+                .format("This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[0].getVersion(), PROVIDER_ID), sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIPs
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, aips.length);
-        Assert.assertTrue(String.format(
-                "This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[1].getVersion(),
-                PROVIDER_ID), aips[1].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                          PROVIDER_ID),
+                            2, aips.length);
+        Assert.assertTrue(String
+                .format("This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[1].getVersion(), PROVIDER_ID), aips[1].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[1].getState());
-        Assert.assertFalse(String.format(
-                "This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[0].getVersion(),
-                PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+        Assert.assertFalse(String
+                .format("This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[0].getVersion(), PROVIDER_ID), aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
         // check session notifier
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -611,46 +579,40 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
             Set<Predicate> predicates = Sets.newHashSet();
             predicates.add(cb.equal(root.get(STATE_ATTRIBUTE), InternalRequestState.WAITING_VERSIONING_MODE));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        }).ifPresent(request -> ingestRequestService
-                .fromWaitingTo(Lists.newArrayList(request), VersioningMode.REPLACE));
+        }).ifPresent(request -> ingestRequestService.fromWaitingTo(Lists.newArrayList(request),
+                                                                   VersioningMode.REPLACE));
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED);
         // once the 2 AIPs are stored, we ask for the deletion of the old one, so lets wait for this deletion
         ingestServiceTest.waitForAIP(1, 20_000, AIPState.DELETED);
         // lets check that second SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, sips.length);
-        Assert.assertTrue(String.format(
-                "This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[1].getVersion(),
-                PROVIDER_ID), sips[1].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                          PROVIDER_ID),
+                            2, sips.length);
+        Assert.assertTrue(String
+                .format("This SIP should be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[1].getVersion(), PROVIDER_ID), sips[1].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[1].getState());
-        Assert.assertFalse(String.format(
-                "This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
-                sips[0].getVersion(),
-                PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED),
-                            SIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This SIP should not be the latest as it is version %s out of 2 SIP for providerId \"%s\"",
+                        sips[0].getVersion(), PROVIDER_ID), sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.DELETED), SIPState.DELETED,
                             sips[0].getState());
         // lets check associated AIPs
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only two AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 2, aips.length);
-        Assert.assertTrue(String.format(
-                "This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[1].getVersion(),
-                PROVIDER_ID), aips[1].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                          PROVIDER_ID),
+                            2, aips.length);
+        Assert.assertTrue(String
+                .format("This AIP should be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[1].getVersion(), PROVIDER_ID), aips[1].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[1].getState());
-        Assert.assertFalse(String.format(
-                "This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
-                aips[0].getVersion(),
-                PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED),
-                            AIPState.DELETED,
+        Assert.assertFalse(String
+                .format("This AIP should not be the latest as it is version %s out of 2 AIP for providerId \"%s\"",
+                        aips[0].getVersion(), PROVIDER_ID), aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.DELETED), AIPState.DELETED,
                             aips[0].getState());
         // check session notifier
         Mockito.verify(sessionNotifier, Mockito.times(1))
@@ -688,24 +650,25 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one SIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, sips.length);
+                                          PROVIDER_ID),
+                            1, sips.length);
         Assert.assertTrue(String.format("This SIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), sips[0].isLast());
-        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED),
-                            SIPState.STORED,
+                                        PROVIDER_ID),
+                          sips[0].isLast());
+        Assert.assertEquals(String.format("This SIP should be in state %s", SIPState.STORED), SIPState.STORED,
                             sips[0].getState());
         // lets check associated AIP
         AIPEntity[] aips = aipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new AIPEntity[0]);
         Assert.assertEquals(String.format("There should be only one AIP with providerId \"%s\" at this time",
-                                          PROVIDER_ID), 1, aips.length);
+                                          PROVIDER_ID),
+                            1, aips.length);
         Assert.assertTrue(String.format("This AIP should be the latest as it is the only one for providerId \"%s\"",
-                                        PROVIDER_ID), aips[0].isLast());
-        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED),
-                            AIPState.STORED,
+                                        PROVIDER_ID),
+                          aips[0].isLast());
+        Assert.assertEquals(String.format("This AIP should be in state %s", AIPState.STORED), AIPState.STORED,
                             aips[0].getState());
         // check that request is in state IGNORE, there is only this test request in DB so if there is one IGNORED, it is ours
-        Assert.assertEquals("There should be one request in IGNORED state",
-                            1,
+        Assert.assertEquals("There should be one request in IGNORED state", 1,
                             ingestRequestRepository.countByState(InternalRequestState.IGNORED));
         // check session notifier
         Mockito.verify(sessionNotifier, Mockito.times(1))

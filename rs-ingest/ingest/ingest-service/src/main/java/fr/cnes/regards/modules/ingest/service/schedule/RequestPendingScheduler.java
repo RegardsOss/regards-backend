@@ -79,7 +79,6 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
         requestService.unblockRequests(RequestTypeEnum.AIP_UPDATES_CREATOR);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION);
         requestService.unblockRequests(RequestTypeEnum.OAIS_DELETION_CREATOR);
-        requestService.unblockRequests(RequestTypeEnum.STORE_METADATA);
         requestService.unblockRequests(RequestTypeEnum.UPDATE);
     };
 

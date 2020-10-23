@@ -113,7 +113,7 @@ public class IngestServiceTest {
                 jobInfoRepo.deleteAll();
                 pluginConfRepo.deleteAllInBatch();
                 cleanAMQPQueues(FileRequestGroupEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-                done = true;
+                done = waitAllRequestsFinished();
             } catch (DataAccessException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -308,6 +308,20 @@ public class IngestServiceTest {
         } while (true);
     }
 
+    public boolean waitAllRequestsFinished() {
+        try {
+            Thread.sleep(1000);
+            // Wait
+            long count = abstractRequestRepository
+                    .countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED, InternalRequestState.CREATED,
+                                                    InternalRequestState.RUNNING, InternalRequestState.TO_SCHEDULE));
+            LOGGER.info("{} Current request running", count);
+            return count == 0;
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+
     public void waitDuring(long delay) {
         try {
             Thread.sleep(delay);
@@ -327,7 +341,7 @@ public class IngestServiceTest {
 
     public void sendIngestRequestEvent(Collection<SIP> sips, IngestMetadataDto mtd) {
         List<IngestRequestFlowItem> toSend = new ArrayList<>(sips.size());
-        for(SIP sip: sips) {
+        for (SIP sip : sips) {
             toSend.add(IngestRequestFlowItem.build(mtd, sip));
         }
         publisher.publish(toSend);
