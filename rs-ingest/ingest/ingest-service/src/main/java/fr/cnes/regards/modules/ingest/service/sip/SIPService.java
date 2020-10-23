@@ -99,8 +99,8 @@ public class SIPService implements ISIPService {
     public SIPEntity save(SIPEntity sip) {
         // update last update
         sip.setLastUpdate(OffsetDateTime.now());
-        // save
-        return sipRepository.save(sip);
+        // Flush is needed for last version flag as only one sip can have last flag set to true !
+        return sipRepository.saveAndFlush(sip);
     }
 
     @Override

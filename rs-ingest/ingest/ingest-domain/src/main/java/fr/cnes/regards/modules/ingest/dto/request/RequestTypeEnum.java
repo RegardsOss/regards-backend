@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
  * Type of requests available through the REST endpoint
  */
 public enum RequestTypeEnum {
+
     /**
      * Ingest requests
      */
@@ -57,14 +58,12 @@ public enum RequestTypeEnum {
     OAIS_DELETION_CREATOR(RequestTypeConstant.OAIS_DELETION_CREATOR_VALUE);
 
     RequestTypeEnum(String value) {
-        if(!value.equals(this.name())) {
+        if (!value.equals(this.name())) {
             throw new IllegalArgumentException("Some issue occured with " + value);
         }
-        if(value.length() > AbstractRequest.MAX_TYPE_LENGTH) {
+        if (value.length() > AbstractRequest.MAX_TYPE_LENGTH) {
             throw new IllegalArgumentException("Enumerate value too long");
         }
     }
-
-
 
 }

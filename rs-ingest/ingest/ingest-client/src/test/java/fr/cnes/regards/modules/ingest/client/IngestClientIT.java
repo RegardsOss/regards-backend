@@ -25,7 +25,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,13 +111,11 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                        Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
         ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
 
-        Mockito.verify(listener, Mockito.times(1)).onGranted(Mockito.anyCollection());
-        Assert.assertEquals(clientInfo.getRequestId(), listener.getGranted().iterator().next().getRequestId());
-
         Thread.sleep(5_000);
-
-        Mockito.verify(listener, Mockito.times(1)).onSuccess(Mockito.anyCollection());
-        Assert.assertEquals(clientInfo.getRequestId(), listener.getSuccess().iterator().next().getRequestId());
+        Assert.assertTrue("Missing granted request response", listener.getGranted().stream()
+                .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
+        Assert.assertTrue("Missing success request response", listener.getSuccess().stream()
+                .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
     }
 
     private SIP create(String providerId) {

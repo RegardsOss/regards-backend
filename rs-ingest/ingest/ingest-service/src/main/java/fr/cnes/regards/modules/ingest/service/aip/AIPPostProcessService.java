@@ -17,7 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import java.util.List;
@@ -35,6 +34,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -77,7 +77,6 @@ public class AIPPostProcessService {
     @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}")
     private Integer aipRequestIterationLimit;
 
-
     /**
      * Schedule a {@link IngestPostProcessingJob} for the given {@link IngestProcessingChain} to post process given {@link AIPEntity}s
      */
@@ -101,7 +100,7 @@ public class AIPPostProcessService {
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(IngestPostProcessingJob.AIP_POST_PROCESS_REQUEST_IDS, requestIds));
             jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB.getPriority(), jobParameters,
-                                          authResolver.getUser(), IngestPostProcessingJob.class.getName());
+                    authResolver.getUser(), IngestPostProcessingJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[AIP POSTPROCESS SCHEDULER] 1 Job scheduled for {} AIPPostProcessRequest(s) in {} ms",
                          waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
@@ -109,6 +108,5 @@ public class AIPPostProcessService {
         return jobInfo;
 
     }
-
 
 }

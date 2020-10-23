@@ -276,10 +276,11 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        IngestRequest ingestRequest = IngestRequest.build(null, IngestMetadata
-                .build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(), StorageMetadata.build("RAS")),
-                                                          InternalRequestState.ERROR, IngestRequestStep.LOCAL_SCHEDULED,
-                                                          aipEntity.getSip().getSip());
+        IngestRequest ingestRequest = IngestRequest
+                .build(null,
+                       IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(),
+                                            StorageMetadata.build("RAS")),
+                       InternalRequestState.ERROR, IngestRequestStep.LOCAL_SCHEDULED, aipEntity.getSip().getSip());
         ingestRequest.setAips(Lists.newArrayList(aipEntity));
         abstractRequestRepository.save(ingestRequest);
 

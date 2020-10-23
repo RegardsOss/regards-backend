@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -36,6 +35,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -143,7 +145,7 @@ public class AIPService implements IAIPService {
     @Override
     public AIPEntity save(AIPEntity entity) {
         entity.setLastUpdate(OffsetDateTime.now());
-        return aipRepository.save(entity);
+        return aipRepository.saveAndFlush(entity);
     }
 
     @Override
@@ -207,14 +209,12 @@ public class AIPService implements IAIPService {
                     // we are the last aip so we need to delete the old latest
                     oaisDeletionRequestService
                             .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                                                 .withAipId(dbLatest.getAipId())
-                                                                 .withSelectionMode(SearchSelectionMode.INCLUDE));
+                                    .withAipId(dbLatest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE));
                 } else {
                     //we are not the last aip but we have been added at the same time than the latest, so we need to be removed
                     oaisDeletionRequestService
                             .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                                                 .withAipId(aipEntity.getAipId())
-                                                                 .withSelectionMode(SearchSelectionMode.INCLUDE));
+                                    .withAipId(aipEntity.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE));
                 }
             }
         }
@@ -224,8 +224,8 @@ public class AIPService implements IAIPService {
     public Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
         LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
         long start = System.currentTimeMillis();
-        Page<AIPEntityLight> response = aipLigthRepository
-                .findAll(AIPEntitySpecification.searchAll(filters, pageable), pageable);
+        Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),
+                                                                   pageable);
         LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
         return response;
     }
@@ -309,7 +309,7 @@ public class AIPService implements IAIPService {
         Collection<RequestInfo> deleteRequestInfos = storageClient.delete(filesToDelete);
 
         request.setRemoteStepGroupIds(deleteRequestInfos.stream().map(RequestInfo::getGroupId)
-                                              .collect(Collectors.toList()));
+                .collect(Collectors.toList()));
         // Put the request as un-schedule.
         // The answering event from storage will put again the request to be executed
         request.setState(InternalRequestState.TO_SCHEDULE);
@@ -345,8 +345,7 @@ public class AIPService implements IAIPService {
         if (!aipsRelatedToSip.isEmpty()) {
             // we can find any aip from one sip as they are generated at same time so they all have the same session information
             AIPEntity aipForSessionInfo = aipsRelatedToSip.stream().findAny().get();
-            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(),
-                                           aipForSessionInfo.getSession(),
+            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(), aipForSessionInfo.getSession(),
                                            aipsRelatedToSip);
             aipsRelatedToSip.forEach(entity -> entity.setState(AIPState.DELETED));
             if (deleteIrrevocably) {

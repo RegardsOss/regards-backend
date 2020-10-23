@@ -1,8 +1,9 @@
 package fr.cnes.regards.modules.ingest.service.session;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +63,8 @@ public class SessionNotifier {
     // Product count
 
     public void incrementProductCount(IngestRequest request, int nbProducts) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_COUNT,
-                                  SessionNotificationState.OK,
-                                  nbProducts);
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_COUNT,
+                                  SessionNotificationState.OK, nbProducts);
     }
 
     public void incrementProductCount(IngestRequest request) {
@@ -74,55 +72,37 @@ public class SessionNotifier {
     }
 
     public void decrementProductCount(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_COUNT,
-                                  SessionNotificationState.OK,
-                                  1);
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_COUNT,
+                                  SessionNotificationState.OK, 1);
     }
 
     // AIP generation
 
     public void incrementProductGenerationPending(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_GEN_PENDING,
-                                  SessionNotificationState.OK,
-                                  1);
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_PENDING,
+                                  SessionNotificationState.OK, 1);
     }
 
     public void decrementProductGenerationPending(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_GEN_PENDING,
-                                  SessionNotificationState.OK,
-                                  1);
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_PENDING,
+                                  SessionNotificationState.OK, 1);
     }
 
     public void incrementProductGenerationError(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_GEN_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  1);
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_ERROR,
+                                  SessionNotificationState.ERROR, 1);
     }
 
     public void decrementProductGenerationError(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_GEN_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  1);
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_GEN_ERROR,
+                                  SessionNotificationState.ERROR, 1);
     }
 
     // File storage
 
     public void incrementProductStorePending(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORE_PENDING,
-                                  SessionNotificationState.OK,
-                                  request.getAips().size());
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_PENDING,
+                                  SessionNotificationState.OK, request.getAips().size());
         // Synchronize number of products according to available AIP(s)
         if (request.getAips().size() > 1) {
             // Increment number of total products (case of one SIP for many AIPs)
@@ -133,90 +113,60 @@ public class SessionNotifier {
     }
 
     public void decrementProductStorePending(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORE_PENDING,
-                                  SessionNotificationState.OK,
-                                  request.getAips().size());
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_PENDING,
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void decrementProductStore(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORED,
-                                  SessionNotificationState.OK,
-                                  request.getAips().size());
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORED,
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void incrementProductStoreSuccess(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORED,
-                                  SessionNotificationState.OK,
-                                  request.getAips().size());
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_STORED,
+                                  SessionNotificationState.OK, request.getAips().size());
     }
 
     public void incrementProductStoreError(IngestRequest request) {
-        sessionNotifier.increment(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORE_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  request.getAips().size());
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
+                                  SessionNotificationState.ERROR, request.getAips().size());
     }
 
     public void decrementProductStoreError(IngestRequest request) {
-        sessionNotifier.decrement(request.getSessionOwner(),
-                                  request.getSession(),
-                                  PRODUCT_STORE_ERROR,
-                                  SessionNotificationState.ERROR,
-                                  request.getAips().size());
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_STORE_ERROR,
+                                  SessionNotificationState.ERROR, request.getAips().size());
     }
 
     public void incrementProductIgnored(IngestRequest request) {
         if (request.getState() == InternalRequestState.IGNORED) {
             this.decrementProductGenerationPending(request);
-            sessionNotifier.increment(request.getSessionOwner(),
-                                      request.getSession(),
-                                      PRODUCT_IGNORED,
-                                      SessionNotificationState.OK,
-                                      1);
+            sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_IGNORED,
+                                      SessionNotificationState.OK, 1);
         }
     }
 
     public void incrementNewProductVersion(AIPEntity aipEntity) {
-        sessionNotifier.increment(aipEntity.getSessionOwner(),
-                                  aipEntity.getSession(),
-                                  NEW_PRODUCT_VERSIONS,
-                                  SessionNotificationState.OK,
-                                  1);
+        sessionNotifier.increment(aipEntity.getSessionOwner(), aipEntity.getSession(), NEW_PRODUCT_VERSIONS,
+                                  SessionNotificationState.OK, 1);
     }
 
     public void incrementProductReplace(AIPEntity aipEntity) {
-        sessionNotifier.increment(aipEntity.getSessionOwner(),
-                                  aipEntity.getSession(),
-                                  PRODUCT_REPLACED,
-                                  SessionNotificationState.OK,
-                                  1);
+        sessionNotifier.increment(aipEntity.getSessionOwner(), aipEntity.getSession(), PRODUCT_REPLACED,
+                                  SessionNotificationState.OK, 1);
     }
 
     public void incrementProductWaitingVersioningMode(IngestRequest request) {
         if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
             this.decrementProductGenerationPending(request);
-            sessionNotifier.increment(request.getSessionOwner(),
-                                      request.getSession(),
-                                      PRODUCT_WAITING_VERSIONING_MODE,
-                                      SessionNotificationState.OK,
-                                      1);
+            sessionNotifier.increment(request.getSessionOwner(), request.getSession(), PRODUCT_WAITING_VERSIONING_MODE,
+                                      SessionNotificationState.OK, 1);
         }
     }
 
     public void decrementProductWaitingVersioningMode(IngestRequest request) {
         if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
-            sessionNotifier.decrement(request.getSessionOwner(),
-                                      request.getSession(),
-                                      PRODUCT_WAITING_VERSIONING_MODE,
-                                      SessionNotificationState.OK,
-                                      1);
+            sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), PRODUCT_WAITING_VERSIONING_MODE,
+                                      SessionNotificationState.OK, 1);
         }
     }
 
@@ -303,17 +253,14 @@ public class SessionNotifier {
         }
         if ((nbStorePending > 0)) {
             // -x product_storing
-            sessionNotifier.decrement(sessionOwner,
-                                      session,
-                                      PRODUCT_STORE_PENDING,
-                                      SessionNotificationState.OK,
+            sessionNotifier.decrement(sessionOwner, session, PRODUCT_STORE_PENDING, SessionNotificationState.OK,
                                       nbStorePending);
         }
         if (nbStored > 0) {
             // -x product_stored
             sessionNotifier.decrement(sessionOwner, session, PRODUCT_STORED, SessionNotificationState.OK, nbStored);
         }
-        sessionNotifier
-                .decrement(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK, nbGenerated + nbStored);
+        sessionNotifier.decrement(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
+                                  nbGenerated + nbStored);
     }
 }

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

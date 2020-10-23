@@ -426,7 +426,7 @@ public class RequestService implements IRequestService {
                 }
                 break;
             case RequestTypeConstant.AIP_POST_PROCESS_VALUE:
-                spec = AbstractRequestSpecifications.searchRequestBlockingAIPPostProcess(sessionOwnerOp,sessionOp);
+                spec = AbstractRequestSpecifications.searchRequestBlockingAIPPostProcess(sessionOwnerOp, sessionOp);
                 break;
             case RequestTypeConstant.INGEST_VALUE:
                 // Ingest cannot be blocked

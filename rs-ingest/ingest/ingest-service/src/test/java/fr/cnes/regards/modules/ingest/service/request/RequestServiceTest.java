@@ -139,7 +139,8 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
 
     private IngestRequest createIngestRequest(AIPEntity aipEntity) {
         IngestRequest ingestRequest = IngestRequest
-                .build(null, IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(),
+                .build(null,
+                       IngestMetadata.build("SESSION_OWNER", "SESSION", "ingestChain", new HashSet<>(),
                                             StorageMetadata.build("RAS")),
                        InternalRequestState.CREATED, IngestRequestStep.LOCAL_SCHEDULED, aipEntity.getSip().getSip());
         ingestRequest.setAips(Lists.newArrayList(aipEntity));
@@ -179,6 +180,7 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip,"sampleId");
         return (AIPPostProcessRequest) requestService.scheduleRequest(postProcessRequest);
     }
+
     public void clearRequest() {
         ingestServiceTest.waitDuring(1000);
         abstractRequestRepository.deleteAll();
@@ -270,7 +272,6 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
                             storageDeletionRequest.getState());
         clearRequest();
         // END ------- Test StorageDeletionRequest
-
 
         // BEGIN ------- Test AIPPostProcessRequest
         createIngestRequest(aips.get(0));
