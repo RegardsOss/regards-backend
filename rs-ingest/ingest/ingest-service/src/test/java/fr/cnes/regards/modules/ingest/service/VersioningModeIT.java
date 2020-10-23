@@ -1,3 +1,4 @@
+package fr.cnes.regards.modules.ingest.service;
 import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -23,7 +24,6 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
