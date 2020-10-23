@@ -19,25 +19,31 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
-import fr.cnes.regards.modules.ingest.service.request.RequestService;
 
 /**
  * @author Iliana Ghazali
@@ -47,24 +53,18 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
 public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     @Autowired
-    private IIngestProcessingChainRepository processingChainRepository;
-
-    @Autowired
     private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
     @Autowired
     private IPluginService pluginService;
 
-    @Autowired
-    private RequestService requestService;
-
     public static final String AIP_POST_PROCESS_REQUEST_IDS = "AIP_POST_PROCESS_REQUEST_IDS";
 
     private Map<Long, AIPPostProcessRequest> requests;
 
-    private Map<String, Long> mapAipReq = new HashMap<>();
+    private final Map<String, Long> mapAipReq = new HashMap<>();
 
-    private Map<String, List<String>> mapPluginAip = new HashMap<>();
+    private final Map<String, List<String>> mapPluginAip = new HashMap<>();
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -164,8 +164,8 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
     //--------------------------------------
 
     /**
-     * Create two mappings. 
-     * One between aipId and its corresponding reqId. 
+     * Create two mappings.
+     * One between aipId and its corresponding reqId.
      * The other between the plugin id and the set of aipIds it has to process.
      */
     private void createMapsAipReqPluginId() {
@@ -238,7 +238,8 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             errorMsg = error.getValue();
             this.requests.get(reqId).setState(InternalRequestState.ERROR);
             this.requests.get(reqId).setErrors(errorMsg);
-            logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]", reqId, aipId, String.join(",\n", errorMsg));
+            logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]", reqId, aipId,
+                         String.join(",\n", errorMsg));
         }
     }
 

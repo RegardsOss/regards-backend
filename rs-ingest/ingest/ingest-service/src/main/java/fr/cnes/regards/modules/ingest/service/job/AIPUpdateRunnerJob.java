@@ -32,7 +32,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
