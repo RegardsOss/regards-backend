@@ -63,8 +63,8 @@ public interface IFeatureExtractionRequestRepository extends JpaRepository<Featu
     Set<String> findRequestId();
 
     @Modifying
-    @Query("update FeatureExtractionRequest frr set frr.state = :newState where frr.requestId in :requestIds")
-    void updateStepByRequestIdIn(@Param("newState") FeatureRequestStep step, @Param("requestIds") Set<String> requestIds);
+    @Query("update FeatureExtractionRequest frr set frr.step = :newStep where frr.requestId in :requestIds")
+    void updateStepByRequestIdIn(@Param("newStep") FeatureRequestStep step, @Param("requestIds") Set<String> requestIds);
 
     @Modifying
     @Query("update FeatureExtractionRequest frr set frr.state = :newState where frr.requestId in :requestIds")
