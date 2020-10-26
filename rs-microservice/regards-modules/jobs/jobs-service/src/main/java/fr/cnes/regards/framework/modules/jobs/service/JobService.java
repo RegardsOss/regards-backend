@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -17,9 +19,6 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -173,7 +171,7 @@ public class JobService implements IJobService {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                + "of the end, pray for your soul", e);
+                                             + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -194,7 +192,7 @@ public class JobService implements IJobService {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                            + "of the end, pray for your soul", e);
+                                         + "of the end, pray for your soul", e);
                 }
             }
         }
@@ -256,8 +254,7 @@ public class JobService implements IJobService {
                 return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes")
-            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
@@ -345,6 +342,26 @@ public class JobService implements IJobService {
         }
     }
 
+    @Override
+    public void cleanDeadJobs() {
+        List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
+        List<JobEvent> failEvents = new ArrayList<>();
+        int deadAfter = updateCompletionPeriod * timeSlotNumber;
+        OffsetDateTime deadLimitDate = OffsetDateTime.now();
+        for (JobInfo job : jobs) {
+            if (job.getLastCompletionUpdate().plus(deadAfter, ChronoUnit.MILLIS).isBefore(deadLimitDate)) {
+                job.updateStatus(JobStatus.FAILED);
+                LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
+                            job.getId(),
+                            job.getClassName(),
+                            deadAfter);
+                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
+            }
+        }
+        publisher.publish(failEvents);
+        this.jobInfoService.saveAll(jobs);
+    }
+
     private class StopJobHandler implements IHandler<StopJobEvent> {
 
         @Override
@@ -354,21 +371,6 @@ public class JobService implements IJobService {
                 JobService.this.abort(wrapper.getContent().getJobId());
             }
         }
-    }
-
-    @Override
-    public void cleanDeadJobs() {
-        List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
-        List<JobEvent> failEvents = new ArrayList<>();
-        for (JobInfo job : jobs) {
-            if (job.getLastCompletionUpdate().plus(updateCompletionPeriod * timeSlotNumber, ChronoUnit.MILLIS)
-                    .isBefore(OffsetDateTime.now())) {
-                job.updateStatus(JobStatus.FAILED);
-                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
-            }
-        }
-        publisher.publish(failEvents);
-        this.jobInfoService.saveAll(jobs);
     }
 
 }
