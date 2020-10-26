@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
+import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
-
-import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +31,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -60,9 +60,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     JobInfo findCompleteById(UUID id);
 
     @Modifying
-    @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2, j.lastCompletionUpdate = ?4 where j.id = ?3 "
-            + "and j.status.status = 'RUNNING'")
-    void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id, OffsetDateTime updateDate);
+    @Query("update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "
+            + "j.lastCompletionUpdate = :updateCompletionDate where j.id = :id and j.status.status = 'RUNNING'")
+    void updateCompletion(@Param("completion") int percentCompleted,
+            @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion, @Param("id") UUID id,
+            @Param("updateCompletionDate") OffsetDateTime updateDate);
 
     /**
      * Count the number of jobs with provided statuses
@@ -81,8 +83,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search currently expired jobs
      */
     default List<JobInfo> findExpiredJobs() {
-        return findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime.now(), false, JobStatus.QUEUED,
-                                                                         JobStatus.TO_BE_RUN, JobStatus.RUNNING);
+        return findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime.now(),
+                                                                         false,
+                                                                         JobStatus.QUEUED,
+                                                                         JobStatus.TO_BE_RUN,
+                                                                         JobStatus.RUNNING);
     }
 
     /**
@@ -96,7 +101,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search succeeded jobs since given number of days
      */
     default List<JobInfo> findSucceededJobsSince(int days) {
-        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days), false,
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days),
+                                                                      false,
                                                                       JobStatus.SUCCEEDED);
     }
 
@@ -104,8 +110,10 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search failed and aborted jobs since given number of days
      */
     default List<JobInfo> findFailedOrAbortedJobsSince(int days) {
-        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days), false,
-                                                                      JobStatus.FAILED, JobStatus.ABORTED);
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days),
+                                                                      false,
+                                                                      JobStatus.FAILED,
+                                                                      JobStatus.ABORTED);
     }
 
     /**
@@ -121,7 +129,10 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Count user jobs that will be launched in the future and jobs that are currently running
      */
     default long countUserFutureAndRunningJobs(String user) {
-        return countByOwnerAndStatusStatusIn(user, JobStatus.PENDING, JobStatus.QUEUED, JobStatus.TO_BE_RUN,
+        return countByOwnerAndStatusStatusIn(user,
+                                             JobStatus.PENDING,
+                                             JobStatus.QUEUED,
+                                             JobStatus.TO_BE_RUN,
                                              JobStatus.RUNNING);
     }
 

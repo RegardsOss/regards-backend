@@ -362,7 +362,7 @@ public class JobService implements IJobService {
         List<JobEvent> failEvents = new ArrayList<>();
         for (JobInfo job : jobs) {
             if (job.getLastCompletionUpdate().plus(updateCompletionPeriod * timeSlotNumber, ChronoUnit.MILLIS)
-                    .isAfter(OffsetDateTime.now())) {
+                    .isBefore(OffsetDateTime.now())) {
                 job.updateStatus(JobStatus.FAILED);
                 failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
             }
