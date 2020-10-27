@@ -742,8 +742,9 @@ public class OrderService implements IOrderService {
                     dataFile.setDownloadError(null);
                     Response response = null;
                     try {
+                        // To download through storage client we must be authenticate as user in order to
+                        // impact the download quotas, but we upgrade the privileges so that the request passes.
                         FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-                        // To download through storage client we must be authentify as system.
                         // To download file with accessrights checked, we should use catalogDownloadClient
                         // but the accessRight have already been checked here.
                         response = storageClient.downloadFile(dataFile.getChecksum());

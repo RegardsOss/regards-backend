@@ -38,6 +38,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,9 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Autowired
     private IStorageRestClient storageClient;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
@@ -215,7 +220,9 @@ public class OrderDataFileService implements IOrderDataFileService {
             }
         } else {
             try {
-                FeignSecurityManager.asSystem();
+                // To download through storage client we must be authenticate as user in order to
+                // impact the download quotas, but we upgrade the privileges so that the request passes.
+                FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
                 response = storageClient.downloadFile(dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
