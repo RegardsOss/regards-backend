@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map.Entry;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,9 @@ public class CatalogDownloadController {
     @Autowired
     protected ICatalogSearchService searchService;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
     /**
      * Download a file that user has right to
      * @param aipId aip id where is the file
@@ -94,7 +98,9 @@ public class CatalogDownloadController {
             @PathVariable(CHECKSUM_PATH_PARAM) String checksum) throws ModuleException, IOException {
         UniformResourceName urn = UniformResourceName.fromString(aipId);
         if (this.searchService.hasAccess(urn)) {
-            FeignSecurityManager.asSystem();
+            // To download through storage client we must be authenticate as user in order to
+            // impact the download quotas, but we upgrade the privileges so that the request passes.
+            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
             try {
                 Response response = storageRestClient.downloadFile(checksum);
                 InputStreamResource isr = null;
