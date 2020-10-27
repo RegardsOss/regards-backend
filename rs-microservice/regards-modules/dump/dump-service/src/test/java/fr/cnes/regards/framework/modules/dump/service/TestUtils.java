@@ -17,6 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+package fr.cnes.regards.framework.modules.dump.service;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +29,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
 
 /**
  *

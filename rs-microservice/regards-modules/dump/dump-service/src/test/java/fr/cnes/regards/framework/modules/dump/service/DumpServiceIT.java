@@ -17,6 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+package fr.cnes.regards.framework.modules.dump.service;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,29 +35,24 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.modules.dump.service.DumpService;
-import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
 /**
  *
  * @author Iliana Ghazali
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ComponentScan(basePackages = { "fr.cnes.regards.framework" })
-@EnableAutoConfiguration
-@TestPropertySource(properties = { "spring.application.name=rs-test", "regards.json.dump.max.per.sub.zip=4" })
-public class DumpServiceIT {
+@TestPropertySource(properties = { "spring.application.name=rs-test","spring.jpa.properties.hibernate.default_schema=dumpit",
+        "regards.json.dump.max.per.sub.zip=4","regards.cipher.key-location=src/test/resources/testKey",
+        "regards.cipher.iv=1234567812345678" })
+public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private DumpService dumpService;

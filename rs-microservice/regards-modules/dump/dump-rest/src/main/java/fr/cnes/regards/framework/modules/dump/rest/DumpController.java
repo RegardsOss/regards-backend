@@ -1,4 +1,5 @@
-package fr.cnes.regards.framework.modules.dump.rest;/*
+package fr.cnes.regards.framework.modules.dump.rest;
+/*
  * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
