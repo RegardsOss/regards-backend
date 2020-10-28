@@ -62,7 +62,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
-import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 
@@ -237,7 +236,7 @@ public class DatasetController implements IResourceController<Dataset> {
             // do things cleanly so let's be pigs and do shit without any problems....
             // And ugliest of the ugliest, this exception is thrown at transaction commit that's why it is done here and
             // not into service
-            if (e.getMessage().contains("fk_access_right_access_dataset_id")) {
+            if ((e.getMessage() != null) && e.getMessage().contains("fk_access_right_access_dataset_id")) {
                 throw new AssociatedAccessRightExistsException();
             }
             throw e;
