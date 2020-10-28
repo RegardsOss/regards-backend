@@ -36,6 +36,8 @@ public class DocFilesSummary extends AbstractDocSummary {
      */
     private final ConcurrentMap<String, DocFilesSubSummary> subSummariesMap = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<String, FilesSummary> fileTypesSummaryMap = new ConcurrentHashMap<>();
+
     public DocFilesSummary() {
     }
 
@@ -45,6 +47,10 @@ public class DocFilesSummary extends AbstractDocSummary {
 
     public Map<String, DocFilesSubSummary> getSubSummariesMap() {
         return subSummariesMap;
+    }
+
+    public Map<String, FilesSummary> getFileTypesSummaryMap() {
+        return fileTypesSummaryMap;
     }
 
     @Override
