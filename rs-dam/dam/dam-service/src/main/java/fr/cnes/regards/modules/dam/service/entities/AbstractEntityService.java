@@ -626,7 +626,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         datasets.remove(toDelete);
         // Remove relate files
         for (Map.Entry<DataType, DataFile> entry : toDelete.getFiles().entries()) {
-            if (localStorageService.isFileLocallyStored(toDelete, entry.getValue())) {
+            if ((entry != null) && (entry.getValue() != null)
+                    && localStorageService.isFileLocallyStored(toDelete, entry.getValue())) {
                 localStorageService.removeFile(toDelete, entry.getValue());
             }
         }
