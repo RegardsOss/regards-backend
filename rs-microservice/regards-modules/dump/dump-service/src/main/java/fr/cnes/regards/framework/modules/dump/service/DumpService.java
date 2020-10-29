@@ -21,6 +21,7 @@
 package fr.cnes.regards.framework.modules.dump.service;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -121,7 +122,7 @@ public class DumpService {
 
         // add json files to zip
         try (ByteArrayOutputStream tmpZipByte = new ByteArrayOutputStream();
-                ZipOutputStream tmpZip = new ZipOutputStream(new BufferedOutputStream(tmpZipByte))) {
+                ZipOutputStream tmpZip = new ZipOutputStream(new BufferedOutputStream(tmpZipByte), StandardCharsets.UTF_8)) {
             // add all json files to zip in memory
             for (ObjectDump objectDump : zipCollection) {
                 filename = objectDump.getJsonName() + ".json";
@@ -137,9 +138,7 @@ public class DumpService {
             tmpZip.close();
 
             // write zip
-            try (FileOutputStream zip = new FileOutputStream(tmpZipLocation.resolve(zipName).toFile())) {
-                zip.write(tmpZipByte.toByteArray());
-            }
+            Files.write(tmpZipLocation.resolve(zipName), tmpZipByte.toByteArray());
         }
     }
 
