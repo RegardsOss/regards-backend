@@ -87,6 +87,8 @@ public class FeatureSaveMetadataJob extends AbstractJob<Void> {
             // Write dump
             metadataService.writeZips(metadataRequest, getWorkspace());
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
+            logger.info("[FEATURE SAVE METADATA JOB] Dump successfully done between {} {}",
+                        metadataRequest.getPreviousDumpDate(), metadataRequest.getRequestDate());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {
             String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();
@@ -96,8 +98,9 @@ public class FeatureSaveMetadataJob extends AbstractJob<Void> {
         } catch (NothingToDoException e) {
             logger.info("[FEATURE SAVE METADATA JOB] {}", e.getMessage());
             metadataService.handleSuccess(metadataRequest); // request is in success, even if nothing was dumped
-        } logger.debug("[FEATURE SAVE META JOB] Job handled for 1 FeatureSaveMetaDataRequest request in {}ms",
-                       System.currentTimeMillis() - start);
+        }
+        logger.debug("[FEATURE SAVE META JOB] Job handled for 1 FeatureSaveMetaDataRequest request in {}ms",
+                     System.currentTimeMillis() - start);
         // there is only one request per job so interruption can be ignored i.e this job(i.e. request) will be fully handled.
     }
 }
