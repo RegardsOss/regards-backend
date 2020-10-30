@@ -131,44 +131,6 @@ public class AIPSaveMetadataJobIT extends IngestMultitenantServiceTest {
                           Files.exists(this.dumpLocation) && this.dumpLocation.toFile().listFiles().length == 1);
     }
 
-    @Test
-    @Purpose("Check if the dump of AIPs is not created (in error)")
-    public void checkDumpError() throws InterruptedException {
-        // add aip to db
-        int nbSIP = 3;
-        storageClient.setBehavior(true, true);
-        initRandomData(nbSIP);
-
-        // change provider id to create duplicated jsonNames
-        updateAIPProviderIdVersion();
-
-        // dump all aips created
-        try {
-            runSaveMetadataJob();
-            Assert.fail();
-        } catch (ExecutionException | InterruptedException e) {
-            Assert.assertTrue("DuplicateUniqueNameException was expected",
-                              e.getMessage().contains("DuplicateUniqueNameException"));
-        }
-        ingestServiceTest.waitDuring(1000L);
-
-        // Check job info in ERROR
-        Pageable pageToRequest = PageRequest.of(0, 100);
-        Page<JobInfo> errorJobInfo = jobInfoRepository
-                .findByClassNameAndStatusStatusIn(AIPSaveMetadataJob.class.getName(), JobStatus.values(),
-                                                  pageToRequest);
-        Assert.assertEquals(1L, errorJobInfo.getTotalElements());
-        Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus());
-
-        // Check request in ERROR
-        List<AIPSaveMetadataRequest> errorRequests = metadataRequestRepository.findAll();
-        Assert.assertEquals(1, errorRequests.size());
-        Assert.assertEquals(InternalRequestState.ERROR, errorRequests.get(0).getState());
-
-        // Check folder target/workspace/<microservice>/ does not contain dump
-        Assert.assertEquals("Dump folder should be empty", 0, this.dumpLocation.toFile().listFiles().length);
-    }
-
     private JobInfo runSaveMetadataJob() throws ExecutionException, InterruptedException {
         // Run Job and wait for end
         JobInfo saveMetadataJobInfo = saveMetadataService.scheduleJobs();
