@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
-import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.slf4j.Logger;
@@ -32,14 +32,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static fr.cnes.regards.modules.storage.service.file.download.QuotaManagerConfiguration.RATE_EXPIRATION_TICKING_SCHEDULER;
-import static fr.cnes.regards.modules.storage.service.file.download.QuotaManagerConfiguration.SYNC_TICKING_SCHEDULER;
+import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.RATE_EXPIRATION_TICKING_SCHEDULER;
+import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.SYNC_TICKING_SCHEDULER;
 
 @Component
 @MultitenantTransactional
@@ -291,7 +289,7 @@ public class QuotaManagerImpl implements IQuotaManager {
             .computeIfPresent(email, (q, u) -> {
                 if (u.getTotalRate() >= quota.getRateLimit() && quota.getRateLimit() >= 0) {
                     // nice try little thread, but no, you're too late
-                    throw DownloadQuotaLimitExceededException.buildDownloadRateExceededException(email, quota.getRateLimit(), u.getTotalRate());
+                    throw DownloadLimitExceededException.buildDownloadRateExceededException(email, quota.getRateLimit(), u.getTotalRate());
                 }
                 return UserDiffs.incrementQuotaAndRateDiffs(u);
                 }

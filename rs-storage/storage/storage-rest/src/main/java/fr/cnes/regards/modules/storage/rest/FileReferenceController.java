@@ -32,8 +32,9 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
-import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import fr.cnes.regards.modules.storage.service.file.flow.StorageFlowItemHandler;
 import io.vavr.control.Try;
 import org.apache.commons.csv.CSVFormat;
@@ -86,6 +87,9 @@ public class FileReferenceController {
 
     @Autowired
     private IQuotaService<ResponseEntity<StreamingResponseBody>> downloadQuotaService;
+
+    @Autowired
+    private IQuotaExceededReporter<DownloadableFile> quotaExceededReporter;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -163,16 +167,16 @@ public class FileReferenceController {
                             .map(d -> wrap(d, quotaHandler))
                             .flatMap(d -> downloadFile(d, response))
                     ) // idempotent close of stream (and quotaHandler) if anything failed, just in case
-                        .onFailure(ignored -> Try.run(dlFile::close));
+                    .onFailure(ignored -> Try.run(dlFile::close))
+                    .recover(DownloadLimitExceededException.class, t -> {
+                        quotaExceededReporter.report(t, dlFile, authResolver.getUser(), tenantResolver.getTenant());
+                        return new ResponseEntity<>(
+                            outputStream -> outputStream.write(t.getMessage().getBytes()),
+                            HttpStatus.TOO_MANY_REQUESTS);
+                    });
                 }
                 // no quota handling, just download
                 return downloadFile(dlFile, response);
-            })
-            .recover(DownloadQuotaLimitExceededException.class, t -> {
-                LOGGER.debug(t.getMessage(), t);
-                return new ResponseEntity<>(
-                    outputStream -> outputStream.write(t.getMessage().getBytes()),
-                    HttpStatus.TOO_MANY_REQUESTS);
             });
     }
 

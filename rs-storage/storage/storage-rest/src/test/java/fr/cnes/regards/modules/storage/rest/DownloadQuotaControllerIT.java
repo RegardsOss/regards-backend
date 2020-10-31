@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.storage.rest;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.storage.dao.IDefaultDownloadQuotaLimitsEntityRepository;
@@ -32,7 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimit
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.storage.service.file.download.DownloadQuotaServiceImpl;
+import fr.cnes.regards.modules.storage.service.file.download.DownloadQuotaService;
 import fr.cnes.regards.modules.storage.service.file.download.QuotaKey;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Stream;
@@ -41,18 +39,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,7 +70,7 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
     @SuppressWarnings("rawtypes")
     @Autowired
-    private DownloadQuotaServiceImpl quotaService;
+    private DownloadQuotaService quotaService;
 
     @Autowired
     private IDefaultDownloadQuotaLimitsEntityRepository defaultQuotaLimitsRepository;

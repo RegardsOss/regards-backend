@@ -41,12 +41,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static fr.cnes.regards.modules.storage.dao.entity.download.DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL;
-import static fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException.buildDownloadQuotaExceededException;
-import static fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException.buildDownloadRateExceededException;
+import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadQuotaExceededException;
+import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadRateExceededException;
 
 @Service
 @MultitenantTransactional
-public class DownloadQuotaServiceImpl<T>
+public class DownloadQuotaService<T>
     implements IQuotaService<T>,ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ProjectUserEvent> {
 
     private IDownloadQuotaRepository quotaRepository;
@@ -61,7 +61,7 @@ public class DownloadQuotaServiceImpl<T>
 
     private ApplicationContext applicationContext;
 
-    private DownloadQuotaServiceImpl<T> self;
+    private DownloadQuotaService<T> self;
 
     private AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits;
 
@@ -70,10 +70,10 @@ public class DownloadQuotaServiceImpl<T>
         .maximumSize(10_000)
         .build();
 
-    public DownloadQuotaServiceImpl() {}
+    public DownloadQuotaService() {}
 
     @Autowired
-    public DownloadQuotaServiceImpl(
+    public DownloadQuotaService(
         IDownloadQuotaRepository quotaRepository,
         IQuotaManager quotaManager,
         ITenantResolver tenantResolver,
@@ -91,9 +91,8 @@ public class DownloadQuotaServiceImpl<T>
 
     @PostConstruct
     public void init() {
-        self = applicationContext.getBean(DownloadQuotaServiceImpl.class);
+        self = applicationContext.getBean(DownloadQuotaService.class);
 
-//        self.initDefaultLimits();
         defaultLimits = new AtomicReference<>(
             tenantResolver.getAllActiveTenants()
                 .stream()
@@ -109,21 +108,12 @@ public class DownloadQuotaServiceImpl<T>
         );
     }
 
-    //@Transactional(propagation = Propagation.NOT_SUPPORTED)
     public DefaultDownloadQuotaLimits initDefaultLimits() {
         return quotaRepository.getDefaultDownloadQuotaLimits();
-//        java.util.Map<String, DefaultDownloadQuotaLimits> m = new java.util.HashMap<>();
-//        tenantResolver.getAllActiveTenants()
-//            .forEach(tenant -> {
-//                runtimeTenantResolver.forceTenant(tenant);
-//                m.put(tenant, quotaRepository.getDefaultDownloadQuotaLimits());
-//                runtimeTenantResolver.clearTenant();
-//            });
-//        defaultLimits = new AtomicReference<>(HashMap.ofAll(m));
     }
 
     @VisibleForTesting
-    protected void setSelf(DownloadQuotaServiceImpl<T> self) {
+    protected void setSelf(DownloadQuotaService<T> self) {
         this.self = self;
     }
 

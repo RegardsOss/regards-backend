@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import fr.cnes.regards.modules.storage.service.file.exception.DownloadQuotaLimitExceededException;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
@@ -32,7 +32,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
@@ -45,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class DownloadQuotaServiceImplTest {
+public class DownloadQuotaServiceTest {
 
     private static final String TENANT = "default";
     private static final long DEFAULT_QUOTA = 20;
@@ -63,7 +62,7 @@ public class DownloadQuotaServiceImplTest {
 
     @Mock private ApplicationContext applicationContext;
 
-    private DownloadQuotaServiceImpl<Unit> quotaService;
+    private DownloadQuotaService<Unit> quotaService;
 
     private final Random random = new Random();
 
@@ -79,7 +78,7 @@ public class DownloadQuotaServiceImplTest {
             .getTenant();
 
         quotaService = spy(
-            new DownloadQuotaServiceImpl<>(
+            new DownloadQuotaService<>(
                 quotaRepository,
                 quotaManager,
                 tenantResolver,
@@ -340,7 +339,7 @@ public class DownloadQuotaServiceImplTest {
                 } else {
                     assertTrue(result.isFailure());
                     assertThat(result.getCause())
-                        .isInstanceOf(DownloadQuotaLimitExceededException.class);
+                        .isInstanceOf(DownloadLimitExceededException.class);
                 }
             });
     }

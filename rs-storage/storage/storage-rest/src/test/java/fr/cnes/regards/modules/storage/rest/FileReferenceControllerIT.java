@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -43,7 +46,9 @@ import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestSe
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import io.vavr.collection.List;
+import io.vavr.control.Try;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,21 +86,25 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.LongStream;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Sébastien Binda
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-        "regards.storage.cache.path=target/cache" })
-@ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
-public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
+    "regards.storage.cache.path=target/cache",
+    "regards.admin.quota.report.tick=1",
+    "regards.amqp.enabled=true"
+})
+@ActiveProfiles(value = { "testAmqp", "default", "test" }, inheritProfiles = false)
+public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT implements IHandler<NotificationEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceControllerIT.class);
 
@@ -125,9 +134,14 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
     private IDownloadQuotaRepository quotaRepository;
 
     @Autowired
+    private ISubscriber subscriber;
+
+    @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     private String storedFileChecksum;
+
+    private final AtomicInteger notificationEvents = new AtomicInteger(0);
 
     private void clear() throws IOException {
         quotaRepository.deleteAll();
@@ -182,6 +196,13 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             LOGGER.error("Timeout for file reference");
         }
         storedFileChecksum = checksum;
+        subscriber.subscribeTo(NotificationEvent.class, this);
+    }
+
+    @After
+    public void teardown() {
+        notificationEvents.set(0);
+        subscriber.unsubscribeFrom(NotificationEvent.class);
     }
 
     @Test
@@ -239,10 +260,14 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
                             .expectStatusOk();
                     performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
                 } else {
+                    assertEquals("No notification should be present at this point", 0, notificationEvents.get());
                     RequestBuilderCustomizer requestBuilderCustomizer =
                         customizer()
                             .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
                     performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
+                    // there's been a notification send for that
+                    Try.run(() -> Thread.sleep(5_000)); // wait for batch reporting, at most 1 sec as per this test properties
+                    assertEquals("A notification should have been sent on quota exceeded", 1, notificationEvents.get());
                 }
             });
     }
@@ -270,6 +295,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             customizer()
                 .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
         performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
+        // there's been a notification send for that
+        Try.run(() -> Thread.sleep(5_000)); // wait for batch reporting, at most 1 sec as per this test properties
+        assertEquals("A notification should have been sent on rate exceeded", 1, notificationEvents.get());
     }
 
     @Test
@@ -400,6 +428,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
             "Each time the rate went up above 0 it should eventually have gone back to zero.",
             currentRatesHistory.get()
                 .foldLeft(false, (aboveZero, next) -> next > 0));
+        // there's been many notifications send for that
+        assertTrue("Several notification should have been sent on quota exceeded", notificationEvents.get() > 1);
     }
 
     private void initDataStoragePluginConfiguration() throws ModuleException {
@@ -422,4 +452,8 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT {
         }
     }
 
+    @Override
+    public void handle(String tenant, NotificationEvent notificationEvent) {
+        notificationEvents.incrementAndGet();
+    }
 }

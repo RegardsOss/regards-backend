@@ -24,7 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -39,7 +38,7 @@ import static org.mockito.Mockito.*;
     }
 )
 @RunWith(SpringRunner.class)
-public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
+public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
 
     public static final long MAX_QUOTA = 10L;
     public static final long RATE_LIMIT = 600L;
@@ -53,7 +52,7 @@ public class DownloadQuotaServiceImplIT extends AbstractRegardsTransactionalIT {
 
     @Mock private ISubscriber subscriber;
 
-    @Autowired @InjectMocks private DownloadQuotaServiceImpl<Unit> quotaService;
+    @Autowired @InjectMocks private DownloadQuotaService<Unit> quotaService;
 
     @Before
     public void setUp() {
