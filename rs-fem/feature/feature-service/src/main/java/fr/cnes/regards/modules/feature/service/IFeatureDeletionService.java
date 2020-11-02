@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
@@ -35,7 +36,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureDeletionService extends IFeatureDeniedService {
+public interface IFeatureDeletionService extends IAbstractFeatureService {
 
     /**
      * Register delete requests in database for further processing from incoming request events

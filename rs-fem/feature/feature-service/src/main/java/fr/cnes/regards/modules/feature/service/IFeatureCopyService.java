@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
 
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -11,7 +12,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Kevin Marchois
  *
  */
-public interface IFeatureCopyService extends IFeatureDeniedService {
+public interface IFeatureCopyService extends IAbstractFeatureService {
 
     /**
      * Register copy requests in database for further processing from incoming request events

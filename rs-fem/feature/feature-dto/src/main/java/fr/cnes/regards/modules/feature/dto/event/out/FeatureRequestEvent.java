@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
@@ -53,7 +54,7 @@ public class FeatureRequestEvent implements ISubscribable {
     private String requestOwner;
 
     /**
-     * The feature id
+     * The {@link Feature#getId()}
      */
     private String id;
 

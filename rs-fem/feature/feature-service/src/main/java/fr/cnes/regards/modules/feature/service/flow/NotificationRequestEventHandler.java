@@ -31,21 +31,20 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
-import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 
 /**
- * This handler handle {@link NotificationRequestEvent}
+ * This handler handle {@link FeatureNotificationRequestEvent}
  * @author Kevin Marchois
  *
  */
 @Component
 @Profile("!nohandler")
-public class NotificationRequestEventHandler extends AbstractFeatureRequestEventHandler<NotificationRequestEvent>
-        implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+public class NotificationRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureNotificationRequestEvent>
+        implements IBatchHandler<FeatureNotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationRequestEventHandler.class);
 
@@ -62,22 +61,22 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     private IFeatureNotificationService notificationService;
 
     public NotificationRequestEventHandler() {
-        super(NotificationRequestEvent.class);
+        super(FeatureNotificationRequestEvent.class);
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(NotificationRequestEvent.class, this);
+        subscriber.subscribeTo(FeatureNotificationRequestEvent.class, this);
     }
 
     @Override
-    public boolean validate(String tenant, NotificationRequestEvent message) {
+    public boolean validate(String tenant, FeatureNotificationRequestEvent message) {
         // FIXME
         return true;
     }
 
     @Override
-    public void handleBatch(String tenant, List<NotificationRequestEvent> messages) {
+    public void handleBatch(String tenant, List<FeatureNotificationRequestEvent> messages) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
             long start = System.currentTimeMillis();
@@ -99,12 +98,9 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
     }
 
     @Override
-    public IFeatureDeniedService getFeatureService() {
+    public IRequestDeniedService getFeatureService() {
         return notificationService;
     }
 
-    @Override
-    public FeatureRequestType getFeatureRequestType() {
-        return FeatureRequestType.NOTIFICATION;
-    }
+
 }

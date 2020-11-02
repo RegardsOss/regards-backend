@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,25 +33,19 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.annotations.Type;
+
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * @author Kevin Marchois
  *
  */
 @Entity
-@Table(name = "t_feature_deletion_request",
-        indexes = { @Index(name = "idx_feature_deletion_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
-                @Index(name = "idx_feature_deletion_request_state", columnList = AbstractFeatureRequest.COLUMN_STATE),
-                @Index(name = "idx_feature_deletion_step_registration_priority",
-                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
-                                + AbstractRequest.COLUMN_PRIORITY),
-                @Index(name = "idx_feature_deletion_request_urn", columnList = AbstractRequest.COLUMN_URN) },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_deletion_request_id",
-                columnNames = { AbstractRequest.COLUMN_REQUEST_ID }) })
+@DiscriminatorValue(AbstractFeatureRequest.DELETION)
 public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     @Id
@@ -59,9 +54,18 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @GeneratedValue(generator = "featureDeleteRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
-    @Convert(converter = FeatureUrnConverter.class)
-    private FeatureUniformResourceName urn;
+    /**
+     * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
+     */
+    @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
+    @Type(type = "jsonb")
+    private Feature toNotify;
+
+    /**
+     * This is used to notify user. Should only be setted by deletion process
+     */
+    @Column(name = "already_deleted")
+    private boolean alreadyDeleted;
 
     public static FeatureDeletionRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
             RequestState state, Set<String> errors, FeatureRequestStep step, PriorityLevel priority,
@@ -74,14 +78,7 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         return request;
     }
 
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
-    }
-
+    @Override
     public Long getId() {
         return id;
     }
@@ -90,4 +87,24 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         this.id = id;
     }
 
+    @Override
+    public <U> U accept(IAbstractFeatureRequestVisitor<U> visitor) {
+        return visitor.visitDeletionRequest(this);
+    }
+
+    public Feature getToNotify() {
+        return toNotify;
+    }
+
+    public void setToNotify(Feature toNotify) {
+        this.toNotify = toNotify;
+    }
+
+    public boolean isAlreadyDeleted() {
+        return alreadyDeleted;
+    }
+
+    public void setAlreadyDeleted(boolean alreadyDeleted) {
+        this.alreadyDeleted = alreadyDeleted;
+    }
 }

@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import static org.junit.Assert.assertNotEquals;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +31,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -62,19 +69,28 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IPublisher publisher;
 
+    @Autowired
+    private IFeatureNotificationService featureNotificationService;
+
+    @Autowired
+    private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
+
+    private boolean isToNotify;
+
+    @Override
+    public void doInit() {
+        this.isToNotify = initDefaultNotificationSettings();
+    }
     @Test
     public void testDuplicatedFeatureCreationWithOverride() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-
-        // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getFeature().setId("id");
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
         this.featureCreationService.scheduleRequests();
         waitRequest(this.featureRepo, 1, 30000);
 
-        // mock storage response to indicate creation succed
+        // mock storage response to indicate creation success
         FeatureEntity featureInDatabase = this.featureRepo.findAll().get(0);
         FeatureCreationRequest fcr = this.featureCreationRequestRepo.findAll().get(0);
         RequestInfo info = RequestInfo.build();
@@ -82,27 +98,42 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         fcr = this.featureCreationRequestRepo.save(fcr);
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
+        //end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // publish a duplicated feature creation
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
         this.featureCreationService.scheduleRequests();
         waitRequest(this.featureRepo, 2, 30000);
 
-        // mock storage response to indicate creation succed
+        // mock storage response to indicate creation success
         fcr = this.featureCreationRequestRepo.findAll().get(0);
         fcr.setGroupId(info.getGroupId());
         fcr = this.featureCreationRequestRepo.save(fcr);
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
+        //end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // that must publish a FeatureDeletionRequestEvent
-        waitRequest(this.featureDeletionRepo, 1, 30000);
+        waitRequest(this.featureDeletionRequestRepo, 1, 30000);
         this.featureDeletionService.scheduleRequests();
 
-        // mock the deletion succed for storage
-        FeatureDeletionRequest fdr = this.featureDeletionRepo.findAll().get(0);
+        // mock the deletion success for storage
+        FeatureDeletionRequest fdr = this.featureDeletionRequestRepo.findAll().get(0);
         fdr.setGroupId(info.getGroupId());
-        fdr = this.featureDeletionRepo.save(fdr);
+        fdr = this.featureDeletionRequestRepo.save(fdr);
         this.listener.onDeletionSuccess(Sets.newHashSet(info));
+
+        //end deletion process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // it must remain only 1 FeatureEntity in database
         waitRequest(this.featureRepo, 1, 30000);
@@ -113,10 +144,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithOverrideCaseNoFiles() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-
-        // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getFeature().setId("id");
         events.get(0).getFeature().setFiles(new ArrayList<>());
         publisher.publish(events);
@@ -129,6 +157,11 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         // mock storage response to indicate creation succed
         FeatureEntity featureInDatabase = this.featureRepo.findAll().get(0);
 
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // publish a duplicated feature creation
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
@@ -136,8 +169,13 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         waitRequest(this.featureRepo, 2, 30000);
 
         // that must publish a FeatureDeletionRequestEvent
-        waitRequest(this.featureDeletionRepo, 1, 30000);
+        waitRequest(this.featureDeletionRequestRepo, 1, 30000);
         this.featureDeletionService.scheduleRequests();
+
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         waitRequest(this.featureRepo, 1, 30000);
         // it mustn't be the created one of the fist feature creation
@@ -147,10 +185,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverride() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-
-        // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -165,6 +200,11 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         fcr.setGroupId(info.getGroupId());
         fcr = this.featureCreationRequestRepo.save(fcr);
         this.listener.onStoreSuccess(Sets.newHashSet(info));
+
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
 
         // publish a duplicated feature creation
         publisher.publish(events);
@@ -178,6 +218,11 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         fcr = this.featureCreationRequestRepo.save(fcr);
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // it must remain the 2 FeatureEntity in database
         waitRequest(this.featureRepo, 2, 30000);
 
@@ -185,10 +230,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverrideCaseNoFiles() throws InterruptedException {
-        List<FeatureCreationRequestEvent> events = new ArrayList<>();
-
-        // publish a feature in creation
-        super.initFeatureCreationRequestEvent(events, 1, true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -204,6 +246,11 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         fcr = this.featureCreationRequestRepo.save(fcr);
         this.listener.onStoreSuccess(Sets.newHashSet(info));
 
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
+
         // publish a duplicated feature creation
         publisher.publish(events);
         waitRequest(this.featureCreationRequestRepo, 1, 30000);
@@ -212,5 +259,9 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceTest {
         // it must remain the 2 FeatureEntity in database
         waitRequest(this.featureRepo, 2, 30000);
 
+        // end creation process
+        if(this.isToNotify) {
+            mockNotificationSuccess();
+        }
     }
 }

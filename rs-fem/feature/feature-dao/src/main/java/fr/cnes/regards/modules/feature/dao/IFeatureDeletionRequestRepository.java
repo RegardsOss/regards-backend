@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,29 +36,15 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
  *
  */
 @Repository
-public interface IFeatureDeletionRequestRepository extends JpaRepository<FeatureDeletionRequest, Long> {
+public interface IFeatureDeletionRequestRepository extends IAbstractFeatureRequestRepository<FeatureDeletionRequest> {
 
-    public Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
+    Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    public Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
+    Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime offsetDateTime);
 
     @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
-    public Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
+    Page<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime now, Pageable page);
-
-    public void deleteByIdIn(Set<Long> ids);
-
-    /**
-     * Update {@link FeatureDeletionRequest} step
-     * @param step new {@link FeatureDeletionRequest}
-     * @param ids id of {@link FeatureDeletionRequest} to update
-     */
-    @Modifying
-    @Query("update FeatureDeletionRequest fcr set fcr.step = :newStep where fcr.id in :ids ")
-    public void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
-
-    @Query("select distinct fcr.requestId from FeatureDeletionRequest fcr")
-    public Set<String> findRequestId();
 }

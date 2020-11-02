@@ -68,7 +68,7 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceTest {
     private IPublisher publisher;
 
     @Before
-    public void prepareContext() throws InterruptedException {
+    public void prepareContext() throws Exception {
         super.before();
 
         // Manage model

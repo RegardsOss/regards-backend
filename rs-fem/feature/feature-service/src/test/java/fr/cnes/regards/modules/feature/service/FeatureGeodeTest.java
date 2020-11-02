@@ -48,7 +48,7 @@ public class FeatureGeodeTest extends AbstractFeatureMultitenantServiceTest {
 
     @Override
     @Before
-    public void before() throws InterruptedException {
+    public void before() throws Exception {
         super.before();
         mockModelClient("model_geode_V1.0.0.xml");
     }

@@ -19,31 +19,27 @@
 package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
+import java.util.Set;
 
-import fr.cnes.regards.modules.feature.domain.request.NotificationRequest;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.event.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 
 /**
  * Service for notify {@link Feature}
  * @author Kevin Marchois
  *
  */
-public interface IFeatureNotificationService extends IFeatureDeniedService {
+public interface IFeatureNotificationService extends IAbstractFeatureService {
 
     /**
      * Register notification requests in database for further processing from incoming request events
      */
-    int registerRequests(List<NotificationRequestEvent> events);
+    int registerRequests(List<FeatureNotificationRequestEvent> events);
 
-    /**
-     * Schedule a job to process a batch of requests<br/>
-     * @return number of {@link NotificationRequest} scheduled
-     */
-    int scheduleRequests();
+    int sendToNotifier();
 
-    /**
-     * Process batch of requests during job
-     */
-    void processRequests(List<NotificationRequest> requests);
+    void handleNotificationSuccess(Set<AbstractFeatureRequest> success);
+
+    void handleNotificationError(Set<AbstractFeatureRequest> errorRequest);
 }

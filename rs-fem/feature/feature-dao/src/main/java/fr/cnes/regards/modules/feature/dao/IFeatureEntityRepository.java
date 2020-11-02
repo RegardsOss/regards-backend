@@ -37,18 +37,18 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 @Repository
 public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long> {
 
-    public FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
+    FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
-    public FeatureEntity findByUrn(FeatureUniformResourceName urn);
+    FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
-    public void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
+    void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
 
-    public List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
+    List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
 
-    public void deleteByIdIn(Set<Long> ids);
+    void deleteByIdIn(Set<Long> ids);
 
     // FIXME remove just for test
-    public long countByLastUpdateGreaterThan(OffsetDateTime from);
+    long countByLastUpdateGreaterThan(OffsetDateTime from);
 
     /**
      * List existing provider identifiers in specified list
@@ -62,4 +62,12 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     @Modifying
     @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
     void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
+
+    /**
+     * For dump purposes
+     */
+    Page<FeatureEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
+            Pageable pageable);
+
+    Page<FeatureEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
 }

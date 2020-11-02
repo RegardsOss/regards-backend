@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -32,7 +33,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * This service handles feature update workflow.
  * @author Marc SORDI
  */
-public interface IFeatureUpdateService extends IFeatureDeniedService {
+public interface IFeatureUpdateService extends IAbstractFeatureService {
 
     /**
      * Register update requests in database for further processing from incoming request events

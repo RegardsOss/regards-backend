@@ -69,17 +69,13 @@ public class FeatureLogger {
 
     private static final String DELETION_SUCCESS_FORMAT = PREFIX + "Feature DELETED" + PX3;
 
-    private static final String REFERENCE_DENIED_FORMAT = PREFIX + "Feature EXTRACTION DENIED" + PX3;
-
-    private static final String REFERENCE_GRANTED_FORMAT = PREFIX + "Feature EXTRACTION GRANTED" + PX2;
-
-    private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
-
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
     private static final String NOTIFICATION_GRANTED_FORMAT = PREFIX + "Feature NOTIFICATION GRANTED" + PX3;
 
     private static final String NOTIFICATION_SUCCESS_FORMAT = PREFIX + "Feature NOTIFIED" + PX3;
+
+    private static final String NOTIFICATION_ERROR_FORMAT = PREFIX + "Feature Notification ERROR" + PX3;
 
     public static void creationDenied(String requestOwner, String requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, requestId, providerId, errors));
@@ -127,18 +123,6 @@ public class FeatureLogger {
         LOGGER.info(String.format(DELETION_SUCCESS_FORMAT, requestOwner, requestId, urn));
     }
 
-    public static void referenceDenied(String requestOwner, String requestId, Set<String> errors) {
-        LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errors));
-    }
-
-    public static void referenceGranted(String requestOwner, String requestId) {
-        LOGGER.trace(String.format(REFERENCE_GRANTED_FORMAT, requestOwner, requestId));
-    }
-
-    public static void referenceError(String requestOwner, String requestId, Set<String> errors) {
-        LOGGER.error(String.format(REFERENCE_ERROR_FORMAT, requestOwner, requestId, errors));
-    }
-
     public static void notificationDenied(String requestOwner, String requestId, FeatureUniformResourceName urn,
             Set<String> errors) {
         LOGGER.error(String.format(NOTIFICATION_DENIED_FORMAT, requestOwner, requestId, urn, errors));
@@ -150,5 +134,9 @@ public class FeatureLogger {
 
     public static void notificationSuccess(String requestOwner, String requestId, FeatureUniformResourceName urn) {
         LOGGER.trace(String.format(NOTIFICATION_SUCCESS_FORMAT, requestOwner, requestId, urn));
+    }
+
+    public static void notificationError(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.trace(String.format(NOTIFICATION_ERROR_FORMAT, requestOwner, requestId, urn));
     }
 }

@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertEquals;
-
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,12 +26,14 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true",
-                "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+                "regards.feature.metrics.enabled=true"
+//                        , "spring.jpa.show-sql=true"
+        }, locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
+        "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "nohandler" })
 public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServiceTest {
 
@@ -42,7 +42,7 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
     private static final Integer NB_FEATURES = 5_000;
 
     // Expected performance : 10_000 features/min
-    private static final long DURATION = NB_FEATURES * 10;
+    private static final long DURATION = NB_FEATURES * 15;
 
     private static final String PROVIDER_ID_FORMAT = "F%05d";
 
@@ -61,8 +61,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
     public void createFeatures() throws InterruptedException {
 
         // Register creation requests
-        FeatureSessionMetadata metadata = FeatureSessionMetadata.build("sessionOwner", "session", PriorityLevel.NORMAL,
-                                                                       Lists.emptyList());
+        FeatureSessionMetadata metadata = FeatureSessionMetadata
+                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList());
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);
@@ -78,8 +78,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature.build(id, "owner", refs.get(id), IGeometry.unlocated(), EntityType.DATA,
-                                            modelName);
+            Feature feature = Feature
+                    .build(id, "owner", refs.get(id), IGeometry.unlocated(), EntityType.DATA, modelName);
             GeodeProperties.addGeodeUpdateProperties(feature);
             events.add(FeatureUpdateRequestEvent.build("test", metadata, feature, requestDate));
 
@@ -94,7 +94,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
             saveEvents(events);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - start);
 
         assertEquals(NB_FEATURES.longValue(), this.featureUpdateRequestRepo.count());
@@ -131,8 +132,11 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
             String id = String.format(PROVIDER_ID_FORMAT, i);
             Feature feature = Feature.build(id, "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
             UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
-            feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, feature.getEntityType(),
-                                                            runtimeTenantResolver.getTenant(), uuid, 1));
+            feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                            feature.getEntityType(),
+                                                            runtimeTenantResolver.getTenant(),
+                                                            uuid,
+                                                            1));
             GeodeProperties.addGeodeProperties(feature);
             // Keep track of urn for further update
             urns.put(feature.getId(), feature.getUrn());
@@ -149,7 +153,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
             featureRepo.saveAll(refEntities);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} features registered in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} features registered in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - start);
         return urns;
     }
@@ -158,7 +163,8 @@ public class FeatureUpdatePerformanceTest extends AbstractFeatureMultitenantServ
         long start = System.currentTimeMillis();
         LOGGER.info(">>>>>>>>>>>>>>>>> Registering {} requests", events.size());
         featureService.registerRequests(events);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", events.size(),
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
+                    events.size(),
                     System.currentTimeMillis() - start);
     }
 

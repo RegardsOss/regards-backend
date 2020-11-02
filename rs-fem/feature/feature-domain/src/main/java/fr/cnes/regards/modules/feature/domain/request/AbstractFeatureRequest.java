@@ -18,12 +18,22 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -32,6 +42,8 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * Common request properties
@@ -39,17 +51,54 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  * @author Marc SORDI
  *
  */
-@MappedSuperclass
+@Entity
+@Table(name = "t_feature_request",
+        indexes = { @Index(name = "idx_feature_request_id", columnList = AbstractRequest.COLUMN_REQUEST_ID),
+                @Index(name = "idx_feature_request_urn", columnList = "urn"),
+                @Index(name = "idx_feature_request_type", columnList = AbstractFeatureRequest.REQUEST_TYPE_COLUMN),
+                @Index(name = "idx_feature_request_state", columnList = AbstractRequest.COLUMN_STATE),
+                @Index(name = "idx_feature_step_registration_priority",
+                        columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
+                                + AbstractRequest.COLUMN_PRIORITY),
+                @Index(name = "idx_feature_request_group_id", columnList = AbstractFeatureRequest.GROUP_ID) })
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = AbstractFeatureRequest.REQUEST_TYPE_COLUMN)
 public abstract class AbstractFeatureRequest extends AbstractRequest {
+
+    protected static final String REQUEST_TYPE_COLUMN = "request_type";
 
     protected static final String GROUP_ID = "group_id";
 
+    protected static final String COPY = "COPY";
+
+    protected static final String UPDATE = "UPDATE";
+
+    protected static final String NOTIFICATION = "NOTIFICATION";
+
+    protected static final String CREATION = "CREATION";
+
+    protected static final String DELETION = "DELETION";
+    
+    protected static final String FEATURE_SAVE_METADATA = "SAVE_METADATA";
+
+    @Id
+    @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request")
+    @GeneratedValue(generator = "featureRequestSequence", strategy = GenerationType.SEQUENCE)
+    private Long id;
+
     @Column(columnDefinition = "jsonb", name = "errors")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> errors;
+    protected Set<String> errors;
 
     @Column(name = GROUP_ID)
-    private String groupId;
+    protected String groupId;
+
+    /**
+     * Information Package ID for REST request
+     */
+    @Column(name = "urn", nullable = false, length = FeatureUniformResourceName.MAX_SIZE)
+    @Convert(converter = FeatureUrnConverter.class)
+    protected FeatureUniformResourceName urn;
 
     @SuppressWarnings("unchecked")
     protected <T extends AbstractFeatureRequest> T with(String requestId, String requestOwner,
@@ -64,9 +113,13 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         this.errors = errors;
         return (T) this;
     }
-
+    
     public Set<String> getErrors() {
         return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
     }
 
     public void addError(String error) {
@@ -74,10 +127,6 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
             errors = new HashSet<>();
         }
         errors.add(error);
-    }
-
-    public void setErrors(Set<String> errors) {
-        this.errors = errors;
     }
 
     public String getGroupId() {
@@ -88,4 +137,21 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         this.groupId = groupId;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setUrn(FeatureUniformResourceName urn) {
+        this.urn = urn;
+    }
+
+    public FeatureUniformResourceName getUrn() {
+        return urn;
+    }
+
+    public abstract <U> U accept(IAbstractFeatureRequestVisitor<U> visitor);
 }

@@ -23,8 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
-import fr.cnes.regards.modules.feature.service.IFeatureDeniedService;
+import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 
 /**
  * @author Marc SORDI
@@ -49,13 +48,11 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
     public boolean handleConversionError(String tenant, Message message, String errorMessage) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
-            return getFeatureService().denyMessage(getFeatureRequestType(), message, errorMessage);
+            return getFeatureService().denyMessage(message, errorMessage);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
-    public abstract IFeatureDeniedService getFeatureService();
-
-    public abstract FeatureRequestType getFeatureRequestType();
+    public abstract IRequestDeniedService getFeatureService();
 }

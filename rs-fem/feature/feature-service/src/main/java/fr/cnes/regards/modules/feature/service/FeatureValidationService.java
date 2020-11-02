@@ -72,7 +72,7 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         // Validate feature
         validator.validate(feature, errors);
 
-        if (feature.getId() == null) {
+        if (feature.getId() == null && mode != ValidationMode.PATCH) {
             errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id mustn't be null");
         } else {
             if (feature.getId().length() > ID_LENGTH) {

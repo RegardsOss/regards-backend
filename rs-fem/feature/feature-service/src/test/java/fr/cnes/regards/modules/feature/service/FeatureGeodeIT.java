@@ -80,7 +80,7 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceTest {
     private AutowireCapableBeanFactory beanFactory;
 
     @Before
-    public void prepareContext() throws InterruptedException {
+    public void prepareContext() throws Exception {
         super.before();
 
         // Manage model

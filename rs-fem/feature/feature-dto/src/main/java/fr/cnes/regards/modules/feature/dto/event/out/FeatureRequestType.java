@@ -18,16 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.out;
 
+import fr.cnes.regards.framework.amqp.event.IRequestType;
+
 /**
  * All available feature requests.
  * @author Marc SORDI
  *
  */
-public enum FeatureRequestType {
+public enum FeatureRequestType implements IRequestType {
     CREATION,
     PATCH,
-    REFERENCE,
     DELETION,
     NOTIFICATION,
-    FILE_COPY;
+    FILE_COPY,
+    SAVE_METADATA;
 }
