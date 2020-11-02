@@ -43,9 +43,9 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);
 
-    @Value("${regards.admin.rate.expiration.tick}") private long rateExpirationTick;
+    @Value("${regards.storage.rate.expiration.tick}") private long rateExpirationTick;
 
-    @Value("${regards.admin.quota.sync.tick}") private long syncTick;
+    @Value("${regards.storage.quota.sync.tick}") private long syncTick;
 
     @Autowired private IDownloadQuotaRepository quotaRepository;
 

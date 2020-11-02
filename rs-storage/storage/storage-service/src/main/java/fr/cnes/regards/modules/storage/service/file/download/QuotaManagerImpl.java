@@ -88,8 +88,8 @@ public class QuotaManagerImpl implements IQuotaManager {
 
     @Autowired
     public QuotaManagerImpl(
-        @Value("${regards.admin.rate.expiration.tick:120}") long rateExpirationTick,
-        @Value("${regards.admin.quota.sync.tick:30}") long syncTick,
+        @Value("${regards.storage.rate.expiration.tick:120}") long rateExpirationTick,
+        @Value("${regards.storage.quota.sync.tick:30}") long syncTick,
         @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
         @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler,
         IDownloadQuotaRepository quotaRepository,

@@ -64,7 +64,7 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
 
     @Autowired
     public DownloadQuotaExceededReporter(
-        @Value("${regards.admin.quota.report.tick:30}") long reportTick,
+        @Value("${regards.storage.quota.report.tick:30}") long reportTick,
         @Qualifier(REPORT_TICKING_SCHEDULER) ThreadPoolTaskScheduler reportTickingScheduler,
         INotificationClient notificationClient,
         ITenantResolver tenantResolver,

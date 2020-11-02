@@ -100,7 +100,7 @@ import static org.junit.Assert.*;
 @TestPropertySource(properties = {
     "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
     "regards.storage.cache.path=target/cache",
-    "regards.admin.quota.report.tick=1",
+    "regards.storage.quota.report.tick=1",
     "regards.amqp.enabled=true"
 })
 @ActiveProfiles(value = { "testAmqp", "default", "test" }, inheritProfiles = false)
