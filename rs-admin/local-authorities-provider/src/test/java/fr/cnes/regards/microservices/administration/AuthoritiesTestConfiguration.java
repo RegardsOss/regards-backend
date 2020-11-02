@@ -20,6 +20,7 @@ package fr.cnes.regards.microservices.administration;
 
 import javax.mail.internet.MimeMessage;
 
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -96,6 +97,11 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IAccountsClient mockAccountsClient() {
         return Mockito.mock(IAccountsClient.class);
+    }
+
+    @Bean
+    public IStorageRestClient mockStorageRestClient() {
+        return Mockito.mock(IStorageRestClient.class);
     }
 
     @Bean

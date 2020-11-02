@@ -70,6 +70,10 @@
 			<artifactId>project-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.templates</groupId>
 			<artifactId>templates-service</artifactId>
 		</dependency>

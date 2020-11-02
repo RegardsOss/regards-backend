@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import javax.mail.internet.MimeMessage;
 
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -59,6 +60,11 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         @Bean
         public IAccountsClient accountClient() {
             return Mockito.mock(IAccountsClient.class);
+        }
+
+        @Bean
+        public IStorageRestClient storageRestClient() {
+            return Mockito.mock(IStorageRestClient.class);
         }
 
         @Bean

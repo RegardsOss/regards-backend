@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import javax.mail.internet.MimeMessage;
 
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +47,11 @@ public class FeignClientConfiguration {
     @Bean
     public IAccountsClient accountsClient() {
         return Mockito.mock(IAccountsClient.class);
+    }
+
+    @Bean
+    public IStorageRestClient storageRestClient() {
+        return Mockito.mock(IStorageRestClient.class);
     }
 
     @Bean

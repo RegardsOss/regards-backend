@@ -18,10 +18,21 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
+import feign.FeignException;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
+import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -31,18 +42,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
-import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
-import fr.cnes.regards.modules.emails.service.IEmailService;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
-import freemarker.template.TemplateException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
@@ -60,17 +63,25 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final IAccountsClient accountsClient;
 
+    private final IStorageRestClient storageClient;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * Service to manage email verification tokens for project users.
      */
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
-            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService) {
+            IAccountsClient accountsClient, IStorageRestClient storageClient,
+            IRuntimeTenantResolver runtimeTenantResolver,
+            IEmailVerificationTokenService emailVerificationTokenService) {
         super();
         this.templateService = templateService;
         this.emailService = emailService;
         this.accountsClient = accountsClient;
+        this.storageClient = storageClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
         this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
@@ -107,6 +118,29 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         } catch (FeignException e) {
             LOGGER.error("Could not find the associated Account for templating the email content.", e);
             data.put("name", "");
+        } finally {
+            FeignSecurityManager.reset();
+        }
+
+        data.put("project", runtimeTenantResolver.getTenant());
+
+        data.put("quotaParagraph", "");
+        try {
+            FeignSecurityManager.asSystem();
+            ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
+            if (storageResponse.getStatusCode().is2xxSuccessful()) {
+                DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
+                Map<String, Long> quotaData = new HashMap<String, Long>() {{
+                    put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-2L));
+                    put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-2L));
+                }};
+                String quotaParagraph = templateService.render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME, quotaData);
+                data.put("quotaParagraph", quotaParagraph);
+            } else {
+                LOGGER.error("Could not find the associated quota limits for templating the email content.");
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Could not add quota paragraph to the email content.", e);
         } finally {
             FeignSecurityManager.reset();
         }
