@@ -48,7 +48,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
 
     private final FileStorageRequestService storageRequestService;
 
-    private final Set<FileStorageRequestResultDTO> handledRequest = Sets.newHashSet();
+    private final Set<FileStorageRequestResultDTO> handledRequests = Sets.newHashSet();
 
     public FileStorageJobProgressManager(FileStorageRequestService storageRequestService, IJob<?> job) {
         this.job = job;
@@ -67,7 +67,7 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
             LOG.debug("[STORE SUCCESS] - File {} ({}octets) checksum={} stored on {} at {}.",
                       request.getMetaInfo().getFileName(), fileSize, request.getMetaInfo().getChecksum(),
                       request.getStorage(), storedUrl);
-            handledRequest.add(FileStorageRequestResultDTO.build(request, storedUrl.toString(), fileSize));
+            handledRequests.add(FileStorageRequestResultDTO.build(request, storedUrl.toString(), fileSize));
             job.advanceCompletion();
         }
     }
@@ -79,15 +79,15 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
         LOG.error("[STORE ERROR {}] - Store error for file {} (id={})in {}. Cause : {}",
                   request.getMetaInfo().getChecksum(), request.getMetaInfo().getFileName(), request.getId(),
                   request.getStorage(), cause);
-        handledRequest.add(FileStorageRequestResultDTO.build(request, null, null).error(cause));
+        handledRequests.add(FileStorageRequestResultDTO.build(request, null, null).error(cause));
         job.advanceCompletion();
     }
 
     public void bulkSave() {
         long start = System.currentTimeMillis();
-        Set<FileStorageRequestResultDTO> successes = handledRequest.stream().filter(r -> !r.isError())
+        Set<FileStorageRequestResultDTO> successes = handledRequests.stream().filter(r -> !r.isError())
                 .collect(Collectors.toSet());
-        Set<FileStorageRequestResultDTO> errors = handledRequest.stream().filter(r -> r.isError())
+        Set<FileStorageRequestResultDTO> errors = handledRequests.stream().filter(r -> r.isError())
                 .collect(Collectors.toSet());
         storageRequestService.handleSuccess(successes);
         storageRequestService.handleError(errors);
@@ -100,6 +100,6 @@ public class FileStorageJobProgressManager implements IStorageProgressManager {
      * @param req {@link FileStorageRequest} to check for
      */
     public boolean isHandled(FileStorageRequest req) {
-        return this.handledRequest.stream().filter(f -> f.getRequest().equals(req)).findFirst().isPresent();
+        return this.handledRequests.stream().filter(f -> f.getRequest().equals(req)).findFirst().isPresent();
     }
 }

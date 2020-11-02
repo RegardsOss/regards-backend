@@ -145,7 +145,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
                         }
                     } catch (MalformedURLException | ModuleException e) {
                         logger.error(String
-                                .format("Unable to handle file reference %s for copy from %s to %s. Cause %s",
+                                .format("Unable to handle file reference %s for copy from %s to %s. Cause:",
                                         fileRef.getLocation().getUrl(), storageLocationSourceId,
                                         storageLocationDestinationId),
                                      e);
