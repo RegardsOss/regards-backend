@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
@@ -145,7 +146,7 @@ public class OAISDeletionService implements IOAISDeletionService {
     }
 
     @Override
-    public void runDeletion(Collection<OAISDeletionRequest> requests) {
+    public void runDeletion(Collection<OAISDeletionRequest> requests, OAISDeletionJob oaisDeletionJob) {
         Iterator<OAISDeletionRequest> requestIter = requests.iterator();
         boolean interrupted = Thread.currentThread().isInterrupted();
         Set<OAISDeletionRequest> errors = new HashSet<>();
@@ -198,6 +199,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                 request.addError(errorMsg);
                 errors.add(request);
             }
+            oaisDeletionJob.advanceCompletion();
             interrupted = Thread.currentThread().isInterrupted();
         }
         // abort requests that could not be handled
@@ -206,6 +208,7 @@ public class OAISDeletionService implements IOAISDeletionService {
             OAISDeletionRequest request = requestIter.next();
             request.setState(InternalRequestState.ABORTED);
             aborted.add(request);
+            oaisDeletionJob.advanceCompletion();
         }
         interrupted = Thread.interrupted();
         deletionRequestRepository.saveAll(errors);

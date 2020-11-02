@@ -144,6 +144,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                 }
                 putReqError(errors);
             }
+            advanceCompletion();
         }
 
         // Update BDD (update error requests)
@@ -268,4 +269,8 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
         logger.debug("AIPs in success deleted from database");
     }
 
+    @Override
+    public int getCompletionCount() {
+        return mapPluginAip.keySet().size();
+    }
 }

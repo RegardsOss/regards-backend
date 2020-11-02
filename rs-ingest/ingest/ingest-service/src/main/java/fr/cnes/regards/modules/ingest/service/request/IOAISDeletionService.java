@@ -26,6 +26,7 @@ import java.util.Set;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
 /**
@@ -76,5 +77,5 @@ public interface IOAISDeletionService {
     /**
      * Delete all OAIS entities related to these criteria
      */
-    void runDeletion(Collection<OAISDeletionRequest> requests);
+    void runDeletion(Collection<OAISDeletionRequest> requests, OAISDeletionJob oaisDeletionJob);
 }

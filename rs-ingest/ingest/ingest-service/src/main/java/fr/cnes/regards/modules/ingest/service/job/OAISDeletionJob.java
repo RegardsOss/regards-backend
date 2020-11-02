@@ -94,7 +94,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
         // DELETION
         if (!this.requests.isEmpty()) {
             // run process of deletion
-            oaisDeletionRequestService.runDeletion(requests);
+            oaisDeletionRequestService.runDeletion(requests, this);
         }
 
         logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms", nbRequestsToHandle,
