@@ -104,10 +104,15 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
             } else {
                 logger.debug("No product associated to SIP id\"{}\"", info.getSipId());
             }
+            advanceCompletion();
         } catch (ModuleException pse) {
             logger.error("Business error", pse);
             throw new JobRuntimeException(pse);
         }
     }
 
+    @Override
+    public int getCompletionCount() {
+        return 1;
+    }
 }

@@ -139,6 +139,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                     errors.add(product);
                 }
             }
+            advanceCompletion();
         }
 
         productService.handleGeneratedProducts(processingChain, success, errors);
@@ -148,5 +149,10 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
                     System.currentTimeMillis() - startTime, debugInterruption);
         products.clear();
+    }
+
+    @Override
+    public int getCompletionCount() {
+        return products.size();
     }
 }
