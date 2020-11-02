@@ -1,0 +1,1 @@
+ALTER TABLE t_job_info ADD COLUMN last_heartbeat_date timestamp;

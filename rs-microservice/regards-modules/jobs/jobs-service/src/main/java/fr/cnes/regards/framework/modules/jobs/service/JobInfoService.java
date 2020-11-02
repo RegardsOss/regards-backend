@@ -19,12 +19,18 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +53,12 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import jdk.nashorn.internal.runtime.regexp.joni.WarnCallback;
 
 /**
  * @author oroussel
@@ -59,6 +68,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class JobInfoService implements IJobInfoService, ApplicationContextAware {
 
     public static final String SOME_FUNNY_MESSAGE = "Please use create method for creating, you dumb...";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobInfoService.class);
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -71,6 +82,10 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
 
     @Value("${regards.jobs.failed.retention.days:30}")
     private int failedJobsRetentionDays;
+
+    // number of time slots after that we consider a job is dead
+    @Value("${regards.jobs.slot.number:3}")
+    private int timeSlotNumber;
 
     @Autowired
     private IPublisher publisher;
@@ -183,6 +198,11 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public void updateJobInfosHeartbeat(Collection<UUID> ids) {
+        jobInfoRepository.updateHeartbeatDateForIdsIn(OffsetDateTime.now(), ids);
+    }
+
+    @Override
     @Scheduled(fixedDelayString = "${regards.jobs.out.of.date.cleaning.rate.ms:3600000}", initialDelay = 0)
     @Transactional(propagation = Propagation.SUPPORTS)
     public void cleanOutOfDateJobs() {
@@ -207,6 +227,27 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public void cleanDeadJobs() {
+        List<JobInfo> jobs = retrieveJobs(JobStatus.RUNNING);
+        List<JobEvent> failEvents = new ArrayList<>();
+        long deadAfter = JobService.HEARTBEAT_DELAY * timeSlotNumber;
+        OffsetDateTime deadLimitDate = OffsetDateTime.now().minus(deadAfter, ChronoUnit.MILLIS);
+        for (JobInfo job : jobs) {
+            if (job.getLastHeartbeatDate()
+                    .isBefore(deadLimitDate)) {
+                job.updateStatus(JobStatus.FAILED);
+                LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
+                            job.getId(),
+                            job.getClassName(),
+                            deadAfter);
+                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
+            }
+        }
+        publisher.publish(failEvents);
+        saveAll(jobs);
+    }
+
+    @Override
     public Long retrieveJobsCount(String className, JobStatus... statuses) {
         return jobInfoRepository.countByClassNameAndStatusStatusIn(className, statuses);
     }
@@ -217,7 +258,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 }

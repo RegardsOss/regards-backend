@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -130,4 +131,11 @@ public interface IJobInfoService {
      * @param jobInfo list of {@link JobInfo} to save
      */
     void saveAll(List<JobInfo> jobInfo);
+
+    void updateJobInfosHeartbeat(Collection<UUID> ids);
+
+    /**
+     * Update dead jobs status in database with change their status from RUNNING to FAILED
+     */
+    void cleanDeadJobs();
 }

@@ -51,6 +51,11 @@ public class WaiterJob extends AbstractJob<Void> {
     }
 
     @Override
+    public int getCompletionCount() {
+        return waitPeriod.intValue();
+    }
+
+    @Override
     public void run() {
         try {
             for (int i = 0; i < waitPeriodCount; i++) {
@@ -60,6 +65,7 @@ public class WaiterJob extends AbstractJob<Void> {
                 }
                 System.out.println("START WAITING...");
                 Thread.sleep(waitPeriod);
+                advanceCompletion();
                 System.out.println("... END WAITING");
             }
         } catch (InterruptedException e) {

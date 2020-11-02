@@ -1,5 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -17,9 +19,6 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -63,6 +61,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class JobService implements IJobService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+
+    public static final long HEARTBEAT_DELAY = 60_000L;
 
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
@@ -94,13 +94,6 @@ public class JobService implements IJobService {
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
-
-    // number of time slots after that we consider a job is dead
-    @Value("${regards.jobs.slot.number:2}")
-    private int timeSlotNumber;
-
-    @Value("${regards.jobs.completion.update.rate.ms:10000}")
-    private int updateCompletionPeriod;
 
     @Autowired
     private ISubscriber subscriber;
@@ -173,7 +166,7 @@ public class JobService implements IJobService {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                + "of the end, pray for your soul", e);
+                                             + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -194,7 +187,7 @@ public class JobService implements IJobService {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                            + "of the end, pray for your soul", e);
+                                         + "of the end, pray for your soul", e);
                 }
             }
         }
@@ -222,6 +215,26 @@ public class JobService implements IJobService {
             }
             // Clear completion status
             toUpdateJobInfos.forEach(j -> j.getStatus().clearCompletionChanged());
+        }
+    }
+
+    @Scheduled(fixedDelay = HEARTBEAT_DELAY)
+    @Override
+    public void jobsHeartbeat() {
+        // Retrieve all jobInfos of which completion has changed
+        Set<JobInfo> stillAliveJobInfos = jobsMap.keySet();
+        if (!stillAliveJobInfos.isEmpty()) {
+            // Create a multimap { tenant, (jobInfosIds) } // NOSONAR
+            HashMultimap<String, UUID> tenantJobInfoMultimap = HashMultimap.create();
+            for (JobInfo jobInfo : stillAliveJobInfos) {
+                tenantJobInfoMultimap.put(jobInfo.getTenant(), jobInfo.getId());
+            }
+            // For each tenant -> (jobInfoIds) update them
+            for (Map.Entry<String, Collection<UUID>> entry : tenantJobInfoMultimap.asMap().entrySet()) {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                // Direct Update concerned properties into Database whithout changing anything else
+                jobInfoService.updateJobInfosHeartbeat(entry.getValue());
+            }
         }
     }
 
@@ -256,8 +269,7 @@ public class JobService implements IJobService {
                 return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes")
-            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
@@ -354,21 +366,6 @@ public class JobService implements IJobService {
                 JobService.this.abort(wrapper.getContent().getJobId());
             }
         }
-    }
-
-    @Override
-    public void cleanDeadJobs() {
-        List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
-        List<JobEvent> failEvents = new ArrayList<>();
-        for (JobInfo job : jobs) {
-            if (job.getLastCompletionUpdate().plus(updateCompletionPeriod * timeSlotNumber, ChronoUnit.MILLIS)
-                    .isAfter(OffsetDateTime.now())) {
-                job.updateStatus(JobStatus.FAILED);
-                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
-            }
-        }
-        publisher.publish(failEvents);
-        this.jobInfoService.saveAll(jobs);
     }
 
 }
