@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -318,6 +319,11 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                            .type(JSON_ARRAY_TYPE).optional());
 
         return fields;
+    }
+
+    @After
+    public void doAfter() {
+        ingestServiceTest.init();
     }
 
 }

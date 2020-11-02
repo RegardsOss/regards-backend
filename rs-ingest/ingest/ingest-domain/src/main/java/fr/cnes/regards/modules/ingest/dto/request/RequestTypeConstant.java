@@ -30,8 +30,6 @@ public class RequestTypeConstant {
 
     private RequestTypeConstant() {}
 
-    public static final String STORE_METADATA_VALUE = "STORE_METADATA";
-
     public static final String UPDATE_VALUE = "UPDATE";
 
     public static final String AIP_UPDATES_CREATOR_VALUE = "AIP_UPDATES_CREATOR";
@@ -43,4 +41,6 @@ public class RequestTypeConstant {
     public static final String OAIS_DELETION_VALUE = "OAIS_DELETION";
 
     public static final String AIP_POST_PROCESS_VALUE = "AIP_POST_PROCESS";
+
+    public static final String AIP_SAVE_METADATA_VALUE = "AIP_SAVE_METADATA";
 }

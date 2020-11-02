@@ -34,16 +34,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
@@ -56,18 +54,9 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
         properties = { "spring.jpa.properties.hibernate.default_schema=post_process_test", "regards.amqp.enabled=true" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
-public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
+public class IngestPostProcessingJobIT extends IngestMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
-
-    @Autowired
-    private AIPUpdateService aipUpdateService;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
-
-    @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
     private IAIPPostProcessRequestRepository aipPostProcessRepo;
@@ -75,8 +64,6 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
     @Autowired
     private StorageClientMock storageClient;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
 
@@ -106,24 +93,31 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
 
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
+    private boolean isToNotify;
+
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
+        this.isToNotify = initDefaultNotificationSettings();
     }
 
-    public long initData(String chain) throws ModuleException {
+    public void initData(String chain) throws ModuleException {
         long nbSIP = 6;
+        storageClient.setBehavior(true, true);
         publishSIPEvent(create("1", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
         publishSIPEvent(create("2", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
         publishSIPEvent(create("3", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
         publishSIPEvent(create("4", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_1, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
         publishSIPEvent(create("5", TAG_1), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_1, CATEGORIES_0, Optional.of(chain));
         publishSIPEvent(create("6", TAG_0), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
-        return nbSIP;
+
+        // Wait
+        ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
+        if(!isToNotify) {
+            ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP);
+        } else {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+            ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        }
     }
 
     @Test
@@ -131,11 +125,9 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
     public void checkPostProcess() throws ModuleException {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
-        storageClient.setBehavior(true, true);
-        long nbSIP = initData(CHAIN_PP_LABEL);
-        // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS * 3);
+        initData(CHAIN_PP_LABEL);
+        Assert.assertEquals(0, aipPostProcessRepo.count());
+
     }
 
     @Test
@@ -144,14 +136,9 @@ public class IngestPostProcessingJobTest extends IngestMultitenantServiceTest {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_WITH_ERRORS_LABEL, AIPPostProcessFailTestPlugin.class);
         storageClient.setBehavior(true, true);
-        long nbSIP = initData(CHAIN_PP_WITH_ERRORS_LABEL);
-        // Wait
-        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS * 3);
-
+        initData(CHAIN_PP_WITH_ERRORS_LABEL);
         Assert.assertEquals(3, aipPostProcessRepo.findAllByState(InternalRequestState.ERROR, PageRequest.of(0,100)).getTotalElements());
     }
-
 }
 
 

@@ -81,10 +81,10 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_it",
-        "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true", "eureka.client.enabled=false",
+        "regards.amqp.enabled=true", "eureka.client.enabled=false",
         "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "spring.jpa.show-sql=true" },
         locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock","noschedule" })
 public class RequestServiceIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -150,12 +150,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
     private StorageClientMock storageClient;
 
     @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
-    @Override
     protected void doAfter() throws Exception {
         // WARNING : clean context manually because Spring doesn't do it between tests
         subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
@@ -180,7 +174,6 @@ public class RequestServiceIT extends IngestMultitenantServiceTest {
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);
 
         List<AIPEntity> aips = aipRepository.findAll();
-
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest

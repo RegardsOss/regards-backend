@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +29,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -157,7 +152,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Ingest request {} found associated to group request {}",
                                      request.getId(), ri.getGroupId());
                         toHandleRemote.add((IngestRequest) request);
-                    } else {
+                    }  else {
                         LOGGER.trace("[STORAGE RESPONSE HANDLER] Request type undefined {} for group {}",
                                      request.getId(), ri.getGroupId());
                         requestService.handleRemoteStoreSuccess(request);
@@ -181,7 +176,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
                     if (request instanceof IngestRequest) {
                         ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                    } else {
+                    }  else {
                         requestService.handleRemoteStoreError(request);
                     }
                 }

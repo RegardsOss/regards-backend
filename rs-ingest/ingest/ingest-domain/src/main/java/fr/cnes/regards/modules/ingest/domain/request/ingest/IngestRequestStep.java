@@ -60,6 +60,11 @@ public enum IngestRequestStep {
     LOCAL_FINAL,
 
     /**
+     * Notification
+     */
+    LOCAL_TO_BE_NOTIFIED, REMOTE_NOTIFICATION_ERROR,
+
+    /**
      * Remote and asynchronous storage steps
      *
      *   |
@@ -75,6 +80,8 @@ public enum IngestRequestStep {
     REMOTE_STORAGE_REQUESTED(true, true),
     REMOTE_STORAGE_DENIED(true),
     REMOTE_STORAGE_ERROR(true);
+
+
 
     private boolean remote = false;
 

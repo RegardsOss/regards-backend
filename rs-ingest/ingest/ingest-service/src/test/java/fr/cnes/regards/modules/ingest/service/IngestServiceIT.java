@@ -34,10 +34,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -68,8 +68,9 @@ import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
-                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" },
+                "regards.ingest.aip.delete.bulk.delay=100" },
         locations = { "classpath:application-test.properties" })
+@ActiveProfiles(value = {"noschedule"})
 public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -96,13 +97,8 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() throws ModuleException {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_LABEL, AIPPostProcessTestPlugin.class);
-
         Mockito.clearInvocations(ingestRequestService);
     }
 
@@ -121,7 +117,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
 
     @Test
     @Purpose("Test postprocess requests creation")
-    public void ingestWithPostProcess() throws EntityInvalidException {
+    public void ingestWithPostProcess() throws EntityInvalidException, InterruptedException {
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
         SIPCollection sips = SIPCollection.build(IngestMetadataDto
@@ -138,7 +134,7 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         Assert.assertTrue(SIPState.STORED.equals(entity.getState()));
 
         // A post process request should be created
-        Assert.assertEquals("There should be one store metadata request created", 1L, postProcessRepo.count());
+        Assert.assertEquals("There should be one post process request created", 1L, postProcessRepo.count());
 
         // No job scheduled yet
         Assert.assertEquals(0L, jobInfoService
@@ -147,8 +143,10 @@ public class IngestServiceIT extends IngestMultitenantServiceTest {
         // Check that post process job is scheduled
         aipPostProcessService.scheduleJob();
 
-        Assert.assertEquals(1L, jobInfoService
-                .retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.values()).longValue());
+        Assert.assertEquals(1L, jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING).longValue());
+
+        // Wait for job to finish
+        Thread.sleep(1000);
     }
 
     @Test

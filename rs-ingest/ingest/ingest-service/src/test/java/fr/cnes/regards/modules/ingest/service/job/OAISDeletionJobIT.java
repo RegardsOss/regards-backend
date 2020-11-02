@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -48,6 +50,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
@@ -57,8 +60,8 @@ import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job",
-        "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.aips.save-metadata.bulk.delay=100",
-        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
+        "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
+        locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
 
@@ -76,11 +79,6 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
     @Autowired
     private IAIPRepository aipRepository;
 
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
-
-    @Autowired
-    private IAbstractRequestRepository abstractRequestRepository;
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -102,18 +100,12 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
 
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
+    private boolean isToNotify;
+
+
     @Override
     public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        abstractRequestRepository.deleteAll();
-        jobInfoRepository.deleteAll();
-    }
-
-    public void waitUntilNbSIPStoredReach(long nbSIPRemaining) {
-        ingestServiceTest.waitForIngestion(nbSIPRemaining, TEN_SECONDS * nbSIPRemaining * 3, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3);
+        this.isToNotify = initDefaultNotificationSettings();
     }
 
     public void waitUntilNbDeletionRequestInErrorReach(long timeout, long nbError) {
@@ -161,33 +153,53 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         publishSIPEvent(create("6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS * 3);
+        long wait = FIVE_SECONDS * 3;
+        if(!isToNotify) {
+            ingestServiceTest.waitAllRequestsFinished(wait);
+        } else {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
     }
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_310"), @Requirement("REGARDS_DSL_STO_AIP_115") })
     @Purpose("check deletion process for a list of SIPS. Check two deletion modes. Commplet deletion or matk as deleted")
-    public void testDeletionJobSucceed() throws ModuleException {
+    public void testDeletionJobSucceed() throws InterruptedException {
         ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * 3);
         storageClient.setBehavior(true, true);
         initData();
         // delete 2 SIPs linked to SESSION_OWNER_0, SESSION_0
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
                 .withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0));
-        waitUntilNbSIPStoredReach(4);
+        ingestServiceTest.waitDuring(TEN_SECONDS * 2);
         assertDeletedAIPs(2);
+        // check if requests are deleted in case of notification
+        if(isToNotify) {
+            mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
+        }
 
         // delete 1 SIP linked to SESSION_OWNER_0, SESSION_1
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
                 .withSession(SESSION_1).withSessionOwner(SESSION_OWNER_0));
-        waitUntilNbSIPStoredReach(3);
+        ingestServiceTest.waitDuring(TEN_SECONDS * 3);
         assertDeletedAIPs(3);
+
+        // check if requests are deleted in case of notification
+        if(isToNotify) {
+            mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
+        }
 
         // delete 2 SIPs linked to SESSION_OWNER_1, SESSION_1
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
                 .withSession(SESSION_1).withSessionOwner(SESSION_OWNER_1));
-        waitUntilNbSIPStoredReach(1);
+        ingestServiceTest.waitDuring(TEN_SECONDS * 3);
         assertDeletedAIPs(3); // AIPs are deleted and not just marked deleted
+
+        // check if requests are deleted in case of notification
+        if(isToNotify) {
+            mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
+        }
+
     }
 
     /**
@@ -196,7 +208,7 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
      * @throws ModuleException
      */
     @Test
-    public void testDeletionJobFailed() throws ModuleException {
+    public void testDeletionJobFailed() throws ModuleException, InterruptedException {
         storageClient.setBehavior(true, true);
         initData();
         storageClient.setBehavior(true, false);
@@ -209,7 +221,13 @@ public class OAISDeletionJobIT extends IngestMultitenantServiceTest {
         oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
                 .withSessionOwner(SESSION_OWNER_0).withSession(SESSION_0));
         // waitUntilNbDeletionRequestInErrorReach(FIVE_SECONDS, 2);
-        ingestServiceTest.waitAllRequestsFinished(FIVE_SECONDS * 10);
+        long wait = FIVE_SECONDS * 10;
+        if(!isToNotify) {
+            ingestServiceTest.waitAllRequestsFinished(wait);
+        } else {
+            ingestServiceTest.waitDuring(wait);
+            mockNotificationSuccess(RequestTypeConstant.OAIS_DELETION_VALUE);
+        }
         aips = aipRepository.findAll(AIPEntitySpecification
                 .searchAll(SearchAIPsParameters.build().withSessionOwner(SESSION_OWNER_0).withSession(SESSION_0),
                            PageRequest.of(0, 10)), PageRequest.of(0, 10));

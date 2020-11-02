@@ -70,14 +70,11 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  * @author Léo Mieulet
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test",
-                "regards.aips.save-metadata.bulk.delay=20000000", "regards.amqp.enabled=true",
+        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_test", "regards.amqp.enabled=true",
                 "eureka.client.enabled=false", "regards.scheduler.pool.size=0", "regards.ingest.maxBulkSize=100" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noschedule" })
 public class RequestServiceTest extends AbstractIngestRequestTest {
-
-    protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private IAIPRepository aipRepository;
@@ -179,12 +176,13 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         return (AIPUpdatesCreatorRequest) requestService.scheduleRequest(updateCreatorRequest);
     }
 
-    private AIPPostProcessRequest createPostProcessRequest(AIPEntity aip) {
-        AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip, "sampleId");
+    private AIPPostProcessRequest createPostProcessRequest(AIPEntity aip){
+        AIPPostProcessRequest postProcessRequest = AIPPostProcessRequest.build(aip,"sampleId");
         return (AIPPostProcessRequest) requestService.scheduleRequest(postProcessRequest);
     }
 
     public void clearRequest() {
+        ingestServiceTest.waitDuring(1000);
         abstractRequestRepository.deleteAll();
         LOGGER.info("Entities still existing count : {} ", abstractRequestRepository.count());
 
@@ -289,6 +287,15 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         clearRequest();
         prepareOAISEntities();
 
+        // BEGIN ------- Test AIPUpdatesCreatorRequest
+        createOAISDeletionCreatorRequest();
+        AIPUpdatesCreatorRequest aipUpdatesCreatorRequest = createAIPUpdatesCreatorRequest();
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            aipUpdatesCreatorRequest.getState());
+        clearRequest();
+        // END ------- Test AIPUpdatesCreatorRequest
+
+        // BEGIN ------- Test AIPUpdateRequest
         createOAISDeletionRequest(aips);
         List<AIPUpdateRequest> updateRequest = createUpdateRequest(aips);
         for (AIPUpdateRequest request : updateRequest) {
@@ -312,13 +319,32 @@ public class RequestServiceTest extends AbstractIngestRequestTest {
         // END ------- Test AIPUpdateRequest
 
         // BEGIN ------- Test OAISDeletionCreatorRequest
-
         createUpdateRequest(aips);
         OAISDeletionCreatorRequest oaisDeletionRequest = createOAISDeletionCreatorRequest();
         Assert.assertEquals("The request should not be blocked", InternalRequestState.BLOCKED,
                             oaisDeletionRequest.getState());
         clearRequest();
         // END ------- Test OAISDeletionCreatorRequest
+
+        // BEGIN ------- Test StorageDeletionRequest
+        createUpdateRequest(aips);
+        OAISDeletionRequest storageDeletionRequest = createOAISDeletionRequest(aips);
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        clearRequest();
+
+        createAIPUpdatesCreatorRequest();
+        storageDeletionRequest = createOAISDeletionRequest(aips);
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        clearRequest();
+
+        createPostProcessRequest(aips.get(0));
+        storageDeletionRequest = createOAISDeletionRequest(aips);
+        Assert.assertEquals("The request should be blocked", InternalRequestState.BLOCKED,
+                            storageDeletionRequest.getState());
+        clearRequest();
+        // END ------- Test StorageDeletionRequest
 
         // BEGIN ------- Test AIPPostProcessRequest
         createOAISDeletionRequest(aips);

@@ -89,6 +89,17 @@
 				spring-cloud-starter-netflix-eureka-client
 			</artifactId>
 		</dependency>
+		<!-- notifier dependency -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.notifier</groupId>
+			<artifactId>notifier-client</artifactId>
+		</dependency>
+		<!-- dump dependency -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.dump</groupId>
+			<artifactId>dump-service</artifactId>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

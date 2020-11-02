@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
 import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
@@ -43,10 +44,13 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorPayload;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
+import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
@@ -83,6 +87,12 @@ public class OAISDeletionService implements IOAISDeletionService {
 
     @Autowired
     private IOAISDeletionRequestRepository deletionRequestRepository;
+
+    @Autowired
+    private IAIPNotificationService aipNotificationService;
+
+    @Autowired
+    private IAIPNotificationSettingsService aipNotificationSettingsService;
 
     @Override
     public Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId) {
@@ -139,6 +149,13 @@ public class OAISDeletionService implements IOAISDeletionService {
         Iterator<OAISDeletionRequest> requestIter = requests.iterator();
         boolean interrupted = Thread.currentThread().isInterrupted();
         Set<OAISDeletionRequest> errors = new HashSet<>();
+        Set<OAISDeletionRequest> success = new HashSet<>();
+
+        // See if notifications are required
+        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
+        boolean isToNotify = notificationSettings.isActiveNotification();
+
+        // Handle deletion requests
         while (requestIter.hasNext() && !interrupted) {
             OAISDeletionRequest request = requestIter.next();
             if (!requestService.shouldDelayRequest(request)) {
@@ -148,12 +165,21 @@ public class OAISDeletionService implements IOAISDeletionService {
                     if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
                         aipService.scheduleLinkedFilesDeletion(request);
                     } else {
-                        // Start by deleting the request itself
                         requestService.deleteRequest(request);
                         aipService.processDeletion(sipToDelete.getSipId(),
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                         sipService.processDeletion(sipToDelete.getSipId(),
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
+                        // if notifications are required
+                        if(isToNotify) {
+                            // break the link between request and aip (because the deleted aip is a foreign key in the request)
+                            request.setAip(null);
+                            // add aip content to payload (in case of notification error, the aip does not exist anymore
+                            // but its content is required to notify, so it is added in the request payload)
+                            request.setAipToNotify(aipToDelete.getAip());
+                            // add request to list of requests successfully processed
+                            success.add(request);
+                        }
                     }
                 } catch (Exception e) {
                     String errorMsg = String.format("Deletion request %s of AIP %s could not be executed",
@@ -184,6 +210,11 @@ public class OAISDeletionService implements IOAISDeletionService {
         interrupted = Thread.interrupted();
         deletionRequestRepository.saveAll(errors);
         deletionRequestRepository.saveAll(aborted);
+
+        // If notifications are active, send them to notifier
+        if(isToNotify && !success.isEmpty()) {
+            aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(success));
+        }
         if (interrupted) {
             Thread.currentThread().interrupt();
         }

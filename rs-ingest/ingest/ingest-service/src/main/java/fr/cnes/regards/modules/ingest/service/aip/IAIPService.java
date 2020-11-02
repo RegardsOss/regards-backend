@@ -101,12 +101,6 @@ public interface IAIPService {
     Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
 
     /**
-     * Compute the checksum of the AIP and save it
-     * @param aipEntity
-     */
-    void computeAndSaveChecksum(AIPEntity aipEntity) throws ModuleException;
-
-    /**
      * Retrieve all tags used by a set of AIPS matching provided filters
      * @param filters
      * @return list of tags

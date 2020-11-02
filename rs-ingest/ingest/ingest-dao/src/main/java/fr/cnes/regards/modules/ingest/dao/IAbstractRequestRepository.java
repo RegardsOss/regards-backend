@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.dao;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -75,4 +76,10 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
     @Query(value = "UPDATE AbstractRequest SET state = :state WHERE id IN (:ids)")
     int updateStates(@Param("ids") List<Long> ids, @Param("state") InternalRequestState state);
 
+    /**
+     * Find all requests by id (used only in case of notification)
+     * @param requestIds ids of the requests
+     * @return requests
+     */
+    Set<AbstractRequest> findAllByIdIn(List<Long> requestIds);
 }

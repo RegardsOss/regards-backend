@@ -38,7 +38,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -60,6 +59,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -67,11 +67,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
 import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.AIPTaggingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.PostProcessingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.PreprocessingTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.*;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -87,7 +83,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
-                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+                       "regards.ingest.aip.delete.bulk.delay=100" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -135,13 +131,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
 
     @Override
     public void doInit() throws ModuleException {
-
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
         initFullProcessingChain();
-
         Mockito.clearInvocations(ingestRequestService);
         Mockito.clearInvocations(storageClient);
     }
@@ -240,9 +230,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceTest {
         storageResponseHandler.onStoreSuccess(requestInfos);
 
         // Check status of IngestRequest
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
         reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
-        Assert.assertEquals("Request sould be deleted as requests is done success", 0, reqs.size());
-
+        Assert.assertEquals("Request should be deleted as requests is done success", 0, reqs.size());
     }
 
     @Requirements({ @Requirement("REGARDS_DSL_ING_PRO_160"), @Requirement("REGARDS_DSL_STO_AIP_010") })

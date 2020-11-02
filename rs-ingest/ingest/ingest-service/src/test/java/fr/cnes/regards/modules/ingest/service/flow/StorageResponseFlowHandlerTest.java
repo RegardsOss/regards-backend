@@ -20,10 +20,7 @@ package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +33,6 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -55,6 +51,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -70,11 +67,10 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  * @author sbinda
  *
  */
-@ActiveProfiles({ "noschedule" })
-@TestPropertySource(
-        properties = { "spring.jpa.show-sql=true",
-                "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
+@TestPropertySource(properties = { "spring.jpa.show-sql=true",
+        "spring.jpa.properties.hibernate.default_schema=ingest_request_tests" },
         locations = { "classpath:application-test.properties" })
+@ActiveProfiles({ "noschedule" })
 public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest {
 
     @Autowired
@@ -108,10 +104,9 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         String storePath = null;
         MimeType mimeType = MediaType.APPLICATION_JSON;
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
-                                              IngestMetadata.build(sessionOwner, session, "ingestChain",
-                                                                   Sets.newHashSet(), StorageMetadata.build(storage)),
-                                              sip, 1, SIPState.INGESTED);
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata
+                                                      .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)), sip, 1,
+                                              SIPState.INGESTED);
         sipEntity.setChecksum(UUID.randomUUID().toString());
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
@@ -131,19 +126,15 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         // Generated associated storage response
         String groupId = UUID.randomUUID().toString();
         Collection<RequestResultInfoDTO> results = Sets.newHashSet();
-        results.add(RequestResultInfoDTO
-                .build(groupId, fileToStoreChecksum, storage, storePath, owners,
-                       FileReferenceDTO
-                               .build(OffsetDateTime.now(),
-                                      FileReferenceMetaInfoDTO.build(fileToStoreChecksum, "MD5", fileName, 10L, null,
-                                                                     null, MediaType.APPLICATION_JSON, null),
-                                      FileLocationDTO.build(storage, storedUrl), owners),
-                       null));
-        IngestRequest request = IngestRequest
-                .build(null,
-                       IngestMetadata.build(sessionOwner, session, "ingestChain", Sets.newHashSet(),
-                                            StorageMetadata.build(storage)),
-                       InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+        results.add(RequestResultInfoDTO.build(groupId, fileToStoreChecksum, storage, storePath, owners,
+                                               FileReferenceDTO.build(OffsetDateTime.now(), FileReferenceMetaInfoDTO
+                                                                              .build(fileToStoreChecksum, "MD5", fileName, 10L, null, null,
+                                                                                     MediaType.APPLICATION_JSON, null),
+                                                                      FileLocationDTO.build(storage, storedUrl),
+                                                                      owners), null));
+        IngestRequest request = IngestRequest.build(null, IngestMetadata
+                                                            .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
+                                                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
         // Create associated IngestRequest
         request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
@@ -160,11 +151,13 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         storageResponseFlowHandler.onStoreSuccess(responses);
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
-        Assert.assertEquals(0,
-                            requestService
-                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
-                                    .getTotalElements());
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
+        Assert.assertEquals(0, requestService.findRequestDtos(
+                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });
@@ -177,11 +170,13 @@ public class StorageResponseFlowHandlerTest extends IngestMultitenantServiceTest
         storageResponseFlowHandler.onReferenceSuccess(responses);
         System.out.printf("Duration : %d ms\n", System.currentTimeMillis() - start);
         // Check results
-        Assert.assertEquals(0,
-                            requestService
-                                    .findRequestDtos(SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                                            .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10))
-                                    .getTotalElements());
+        // delete ingest requests if notification are active
+        if(initDefaultNotificationSettings()) {
+            mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
+        }
+        Assert.assertEquals(0, requestService.findRequestDtos(
+                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
+                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });

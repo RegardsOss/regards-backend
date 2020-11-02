@@ -29,6 +29,12 @@ public enum DeletionRequestStep {
 
     STORAGE_DELETION_REQUESTED,
 
-    STORAGE_DELETION_ERROR;
+    STORAGE_DELETION_ERROR,
+
+    /** For notification */
+
+    LOCAL_TO_BE_NOTIFIED,
+
+    REMOTE_NOTIFICATION_ERROR;
 
 }

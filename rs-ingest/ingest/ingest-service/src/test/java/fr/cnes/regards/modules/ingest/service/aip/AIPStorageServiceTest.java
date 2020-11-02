@@ -131,19 +131,6 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                                                                          getDefaultTenant(), 1),
                                  Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
-        aipEntity1.setChecksum("some checksum");
-    }
-
-    @Test
-    public void testAddAipManifesstLocation() {
-        init();
-        Assert.assertEquals("3 storage in ingest metadata at the beginning", 3, aipEntity1.getStorages().size());
-        Assert.assertEquals("No event before", 0, aipEntity1.getAip().getHistory().size());
-        Collection<RequestResultInfoDTO> storeRequestsInfos = getManifestStorageQueryResult(sipEntity.getChecksum(),
-                                                                                            "somewhere");
-        AIPUpdateResult isUpdated = storageService.addAIPLocations(aipEntity1, storeRequestsInfos);
-        Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
-        Assert.assertFalse("Should detect some change", isUpdated.isAipUpdated());
     }
 
     @Test
@@ -255,16 +242,6 @@ public class AIPStorageServiceTest extends AbstractMultitenantServiceTest {
                        FileReferenceDTO.build(OffsetDateTime.now(),
                                               FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
                                                                              null, null, null),
-                                              FileLocationDTO.build(location, "http://someurl.com"), Sets.newHashSet()),
-                       null));
-    }
-
-    private ArrayList<RequestResultInfoDTO> getManifestStorageQueryResult(String fakeChecksum3, String location) {
-        return Lists.newArrayList(RequestResultInfoDTO
-                .build("groupId", fakeChecksum3, location, null, Sets.newHashSet("someone"),
-                       FileReferenceDTO.build(OffsetDateTime.now(),
-                                              FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
-                                                                             null, null, DataType.AIP.toString()),
                                               FileLocationDTO.build(location, "http://someurl.com"), Sets.newHashSet()),
                        null));
     }

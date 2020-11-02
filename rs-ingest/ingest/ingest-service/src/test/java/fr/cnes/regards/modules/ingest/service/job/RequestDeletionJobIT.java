@@ -73,9 +73,9 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
         "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=false", "regards.aips.save-metadata.bulk.delay=100",
+        "spring.jpa.show-sql=false",
         "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp" })
+@ActiveProfiles(value = { "testAmqp" , "noschedule"})
 public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -120,13 +120,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
 
     private IngestMetadataDto mtd;
 
-    @Override
-    public void doInit() {
-        simulateApplicationReadyEvent();
-        // Re-set tenant because above simulation clear it!
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
-
     public void initData() {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         SIPEntity sip4 = new SIPEntity();
@@ -166,7 +159,6 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceTest {
                                       Sets.newHashSet(CATEGORIES_0), StorageMetadata.build(STORAGE_0));
 
         aips = aipRepository.findAll();
-
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
         AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto

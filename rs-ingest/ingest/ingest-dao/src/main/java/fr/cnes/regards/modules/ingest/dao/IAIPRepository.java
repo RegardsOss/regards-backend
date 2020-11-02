@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -81,4 +82,12 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Modifying
     @Query(value = "UPDATE AIPEntity SET last = :last WHERE id = :id")
     int updateLast(@Param("id") Long id, @Param("last") boolean last);
+
+    /**
+     * For dump purposes
+     */
+    Page<AIPEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
+            Pageable pageable);
+
+    Page<AIPEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
 }

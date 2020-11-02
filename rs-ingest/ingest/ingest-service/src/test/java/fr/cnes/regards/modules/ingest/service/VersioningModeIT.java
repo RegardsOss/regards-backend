@@ -265,8 +265,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
-        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
-        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        // there is the request from 2 IngestRequest, OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
@@ -274,12 +274,12 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
     @Test
     public void testIncWithTwoVersionAtSameTime() {
         // this allows to have a first version than a second version replacing the first(which is now in state DELETED)
-        testReplace();
+        testIncVersion();
         // lets submit the third and forth SIP with different TAGS so it is accepted by system
         publishSIPEvent(Lists.newArrayList(create(PROVIDER_ID, TAG_2), create(PROVIDER_ID, TAG_3)),
                         Lists.newArrayList(STORAGE_0), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.empty(),
                         VersioningMode.INC_VERSION);
-        ingestServiceTest.waitForAIP(3, 20_000, AIPState.STORED);
+        ingestServiceTest.waitForAIP(4, 20_000, AIPState.STORED);
     }
 
     @Test
@@ -338,8 +338,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(4))
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 6 - for old version removal
-        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
-        Mockito.verify(sessionNotifier, Mockito.times(6)).requestDeleted(Mockito.any(AbstractRequest.class));
+        // there is the request from IngestRequests, OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(10)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(3))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }
@@ -629,8 +629,8 @@ public class VersioningModeIT extends IngestMultitenantServiceTest {
         Mockito.verify(sessionNotifier, Mockito.times(2))
                 .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
         // 2 - for old version removal
-        // there is the request from OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
-        Mockito.verify(sessionNotifier, Mockito.times(2)).requestDeleted(Mockito.any(AbstractRequest.class));
+        // there is the request from 2 IngestRequest, OAISDeletionCreatorRequest and OAISDeletionRequest that are deleted
+        Mockito.verify(sessionNotifier, Mockito.times(4)).requestDeleted(Mockito.any(AbstractRequest.class));
         Mockito.verify(sessionNotifier, Mockito.times(1))
                 .productDeleted(Mockito.eq(SESSION_OWNER_0), Mockito.eq(SESSION_0), Mockito.anyCollection());
     }

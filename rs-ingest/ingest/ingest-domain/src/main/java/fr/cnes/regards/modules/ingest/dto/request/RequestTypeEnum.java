@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.ingest.dto.request;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 
 /**
- * Type of requests available threw the REST endpoint
+ * Type of requests available through the REST endpoint
  */
 public enum RequestTypeEnum {
 
@@ -37,6 +37,17 @@ public enum RequestTypeEnum {
      * A list of AIP modification + a list of criteria to find AIP
      */
     AIP_UPDATES_CREATOR(RequestTypeConstant.AIP_UPDATES_CREATOR_VALUE),
+
+    /**
+     * Dump AIP metadata
+     */
+    AIP_SAVE_METADATA(RequestTypeConstant.AIP_SAVE_METADATA_VALUE),
+
+    /**
+     * Postprocess AIPs
+     */
+    AIP_POST_PROCESS(RequestTypeConstant.AIP_POST_PROCESS_VALUE),
+
     /**
      * 1 OAIS (SIP and AIP) Remove request
      */

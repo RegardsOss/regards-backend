@@ -16,28 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 package fr.cnes.regards.modules.ingest.dao;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.manifest.AIPStoreMetaDataRequest;
-import java.util.List;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
 /**
- * {@link AIPStoreMetaDataRequest} repository
- * @author Léo Mieulet
+ * JPA Repository to access {@link AIPNotificationSettings}
+ * @author Iliana Ghazali
  */
-@Repository
-public interface IAIPStoreMetaDataRepository extends JpaRepository<AIPStoreMetaDataRequest, Long> {
 
-    default Page<AIPStoreMetaDataRequest> findWaitingRequest(Pageable pageRequest) {
-        return findAllByState(InternalRequestState.CREATED, pageRequest);
-    }
+public interface IAIPNotificationSettingsRepository extends JpaRepository<AIPNotificationSettings, Long> {
 
-    Page<AIPStoreMetaDataRequest> findAllByState(InternalRequestState step, Pageable page);
+    Optional<AIPNotificationSettings> findFirstBy();
 
-    List<AIPStoreMetaDataRequest> findAllByAipIdIn(List<Long> aips);
 }

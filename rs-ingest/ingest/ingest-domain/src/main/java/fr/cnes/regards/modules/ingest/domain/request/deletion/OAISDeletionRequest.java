@@ -23,14 +23,12 @@ import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import java.time.OffsetDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -85,6 +83,18 @@ public class OAISDeletionRequest extends AbstractRequest {
 
     public AIPEntity getAip() {
         return aip;
+    }
+
+    public void setAip(AIPEntity aip) {
+        this.aip = aip;
+    }
+
+    public void setAipToNotify(AIP toNotify) {
+        config.setAipToNotify(toNotify);
+    }
+
+    public AIP getAipToNotify() {
+        return config.getAipToNotify();
     }
 
     public boolean isDeleteFiles() {
