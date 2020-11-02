@@ -122,4 +122,24 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
         return ModuleConfiguration.build(info, configuration);
     }
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = new HashSet<>();
+        try {
+            dumpSettingsService.resetSettings();
+        } catch (Exception e) {
+            String error = "Error occurred while resetting dump settings.";
+            LOGGER.error(error, e);
+            errors.add(error);
+        }
+        try {
+            notificationSettingsService.resetSettings();
+        } catch (Exception e) {
+            String error = "Error occurred while resetting notification settings.";
+            LOGGER.error(error, e);
+            errors.add(error);
+        }
+        return errors;
+    }
 }

@@ -44,4 +44,6 @@ public interface IAIPNotificationSettingsService {
      * Update {@link AIPNotificationSettings}
      */
     AIPNotificationSettings update(AIPNotificationSettings pAipNotificationSettings) throws EntityNotFoundException;
+
+    void resetSettings();
 }

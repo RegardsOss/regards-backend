@@ -63,7 +63,7 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
         //for each tenant try to create notification settings, if it do not exists then create with default value
-        for(String tenant: tenantsResolver.getAllActiveTenants()) {
+        for (String tenant : tenantsResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 self.initNotificationSettings();
@@ -107,5 +107,11 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
                                               AIPNotificationSettings.class);
         }
         return notificationSettingsRepository.save(aipNotificationSettings);
+    }
+
+    @Override
+    public void resetSettings() {
+        notificationSettingsRepository.deleteAll();
+        initNotificationSettings();
     }
 }
