@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -99,7 +100,7 @@ public interface IIngestRequestService {
     /**
      * Handle remote storage success
      */
-    void handleRemoteStoreSuccess(Collection<IngestRequest> request, RequestInfo requestInfo);
+    void handleRemoteStoreSuccess(Map<RequestInfo, Set<IngestRequest>> requests);
 
     /**
      * Handle remote storage error

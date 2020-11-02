@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.flow;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,6 +62,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseFlowHandler.class);
+
+    private static final String HANDLER_NAME = "[STORAGE RESPONSE HANDLER] ";
 
     @Autowired
     private IIngestRequestService ingestRequestService;
@@ -143,38 +146,51 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requestInfos) {
-        LOGGER.debug("[STORAGE RESPONSE HANDLER] Handling {} storage group requests", requestInfos.size());
+
+        long globalstart = System.currentTimeMillis();
+        LOGGER.debug(HANDLER_NAME + "Handling {} storage group requests", requestInfos.size());
+
+        // Detect INGEST requests to handle
+        Map<RequestInfo, Set<IngestRequest>> toHandle = new HashMap<>();
+
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
-            LOGGER.debug("[STORAGE RESPONSE HANDLER] handling success storage request {} with {} success / {} errors",
+            LOGGER.debug(HANDLER_NAME + "handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
             Set<IngestRequest> toHandleRemote = Sets.newHashSet();
+
             for (AbstractRequest request : requests) {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
                     found = true;
                     if (request instanceof IngestRequest) {
-                        LOGGER.trace("[STORAGE RESPONSE HANDLER] Ingest request {} found associated to group request {}",
+                        LOGGER.trace(HANDLER_NAME + "Ingest request {} found associated to group request {}",
                                      request.getId(), ri.getGroupId());
                         toHandleRemote.add((IngestRequest) request);
                     } else {
-                        LOGGER.trace("[STORAGE RESPONSE HANDLER] Request type undefined {} for group {}",
-                                     request.getId(), ri.getGroupId());
+                        LOGGER.trace(HANDLER_NAME + "Request type undefined {} for group {}", request.getId(),
+                                     ri.getGroupId());
                         requestService.handleRemoteStoreSuccess(request);
                     }
                 }
             }
-            ingestRequestService.handleRemoteStoreSuccess(toHandleRemote, ri);
+
+            toHandle.put(ri, toHandleRemote);
             if (!found) {
-                LOGGER.warn("[STORAGE RESPONSE HANDLER] No request found associated to group request {}",
-                            ri.getGroupId());
+                LOGGER.warn(HANDLER_NAME + "No request found associated to group request {}", ri.getGroupId());
             }
         }
+
+        // Handle all detected INGEST requests
+        ingestRequestService.handleRemoteStoreSuccess(toHandle);
+
+        LOGGER.info(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
+                    System.currentTimeMillis() - globalstart);
     }
 
     @Override
     public void onStoreError(Set<RequestInfo> requestInfos) {
-        LOGGER.debug("[STORAGE RESPONSE HANDLER] Handling {} storage error group requests", requestInfos.size());
+        LOGGER.debug(HANDLER_NAME + "Handling {} storage error group requests", requestInfos.size());
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             for (AbstractRequest request : requests) {
