@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import java.util.concurrent.RunnableFuture;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 
@@ -27,11 +28,8 @@ public interface IJobService {
      */
     void updateCurrentJobsCompletions();
 
-    RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant);
+    void jobsHeartbeat();
 
-    /**
-     * Update dead jobs status in database with change their status from RUNNIG to FAILED
-     */
-    void cleanDeadJobs();
+    RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant);
 
 }

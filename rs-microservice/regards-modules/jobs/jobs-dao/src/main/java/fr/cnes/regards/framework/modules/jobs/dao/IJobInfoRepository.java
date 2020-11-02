@@ -20,7 +20,9 @@ package fr.cnes.regards.framework.modules.jobs.dao;
 
 import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -58,6 +60,10 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     @EntityGraph(attributePaths = { "parameters" })
     JobInfo findCompleteById(UUID id);
+
+    @Modifying
+    @Query("update JobInfo j set j.lastHeartbeatDate = :heartbeatDate where j.id in :ids")
+    void updateHeartbeatDateForIdsIn(@Param("heartbeatDate") OffsetDateTime now, @Param("ids") Collection<UUID> collect);
 
     @Modifying
     @Query("update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "

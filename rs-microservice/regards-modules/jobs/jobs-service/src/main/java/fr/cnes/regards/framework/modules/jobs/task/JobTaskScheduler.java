@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -67,14 +68,14 @@ public class JobTaskScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IJobService jobService;
+    private IJobInfoService jobInfoService;
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
     private final Task clean_task = () -> {
         LockAssert.assertLocked();
-        jobService.cleanDeadJobs();
+        jobInfoService.cleanDeadJobs();
     };
 
     @Override

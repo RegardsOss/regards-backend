@@ -62,6 +62,8 @@ public class JobService implements IJobService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
+    public static final long HEARTBEAT_DELAY = 60_000L;
+
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
      */
@@ -92,13 +94,6 @@ public class JobService implements IJobService {
 
     @Value("${regards.jobs.pool.size:10}")
     private int poolSize;
-
-    // number of time slots after that we consider a job is dead
-    @Value("${regards.jobs.slot.number:2}")
-    private int timeSlotNumber;
-
-    @Value("${regards.jobs.completion.update.rate.ms:10000}")
-    private int updateCompletionPeriod;
 
     @Autowired
     private ISubscriber subscriber;
@@ -223,6 +218,26 @@ public class JobService implements IJobService {
         }
     }
 
+    @Scheduled(fixedDelay = HEARTBEAT_DELAY)
+    @Override
+    public void jobsHeartbeat() {
+        // Retrieve all jobInfos of which completion has changed
+        Set<JobInfo> stillAliveJobInfos = jobsMap.keySet();
+        if (!stillAliveJobInfos.isEmpty()) {
+            // Create a multimap { tenant, (jobInfosIds) } // NOSONAR
+            HashMultimap<String, UUID> tenantJobInfoMultimap = HashMultimap.create();
+            for (JobInfo jobInfo : stillAliveJobInfos) {
+                tenantJobInfoMultimap.put(jobInfo.getTenant(), jobInfo.getId());
+            }
+            // For each tenant -> (jobInfoIds) update them
+            for (Map.Entry<String, Collection<UUID>> entry : tenantJobInfoMultimap.asMap().entrySet()) {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                // Direct Update concerned properties into Database whithout changing anything else
+                jobInfoService.updateJobInfosHeartbeat(entry.getValue());
+            }
+        }
+    }
+
     @Override
     public RunnableFuture<Void> runJob(JobInfo jobInfo, String tenant) {
         jobInfo.setTenant(tenant);
@@ -340,26 +355,6 @@ public class JobService implements IJobService {
                     break;
             }
         }
-    }
-
-    @Override
-    public void cleanDeadJobs() {
-        List<JobInfo> jobs = this.jobInfoService.retrieveJobs(JobStatus.RUNNING);
-        List<JobEvent> failEvents = new ArrayList<>();
-        int deadAfter = updateCompletionPeriod * timeSlotNumber;
-        OffsetDateTime deadLimitDate = OffsetDateTime.now();
-        for (JobInfo job : jobs) {
-            if (job.getLastCompletionUpdate().plus(deadAfter, ChronoUnit.MILLIS).isBefore(deadLimitDate)) {
-                job.updateStatus(JobStatus.FAILED);
-                LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
-                            job.getId(),
-                            job.getClassName(),
-                            deadAfter);
-                failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
-            }
-        }
-        publisher.publish(failEvents);
-        this.jobInfoService.saveAll(jobs);
     }
 
     private class StopJobHandler implements IHandler<StopJobEvent> {

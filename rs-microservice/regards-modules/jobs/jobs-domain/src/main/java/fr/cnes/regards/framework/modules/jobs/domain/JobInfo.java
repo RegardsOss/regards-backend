@@ -125,6 +125,9 @@ public class JobInfo {
     @Column(name = "last_completion_update")
     private OffsetDateTime lastCompletionUpdate;
 
+    @Column(name = "last_heartbeat_date")
+    private OffsetDateTime lastHeartbeatDate;
+
     /**
      * Field characteristics of this job. Saved on cascade
      */
@@ -321,6 +324,14 @@ public class JobInfo {
 
     public void setLastCompletionUpdate(OffsetDateTime lastCompletionUpdate) {
         this.lastCompletionUpdate = lastCompletionUpdate;
+    }
+
+    public OffsetDateTime getLastHeartbeatDate() {
+        return lastHeartbeatDate;
+    }
+
+    public void setLastHeartbeatDate(OffsetDateTime lastHeartbeatDate) {
+        this.lastHeartbeatDate = lastHeartbeatDate;
     }
 
     /**
