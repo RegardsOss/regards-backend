@@ -18,15 +18,19 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import org.springframework.data.util.Pair;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.modules.notifier.domain.NotificationAction;
-import fr.cnes.regards.modules.notifier.domain.RecipientError;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Notification service interface
@@ -36,31 +40,59 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
 public interface INotificationRuleService {
 
     /**
-     * Handle a list of {@link NotificationAction} it can be CREATE/UPDATE/DELETE event
-     * Check if this event is compliant with a {@link Rule} and in that case notify all {@link Recipient} associated
-     * with this {@link Rule}
-     * If some {@link Recipient} failed we will save them
-     * If {@link RecipientError} exist for the jobInfoId we will only send notification to contained {@link Recipient}
-     * @param toHandles event to handle
-     * @param jobInfoId job id will be saved in case of failed {@link Recipient}
-     * @return pair of nbSended/nbErrors notifications
+     * Handle a list of {@link NotificationRequest}
+     * @param notificationRequests requests to handle
+     * @param recipient recipient to process
+     * @return pair of nbSent/nbErrors notifications
      */
-    Pair<Integer, Integer> processRequest(List<NotificationAction> toHandles, UUID jobInfoId);
+    Pair<Integer, Integer> processRequest(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient);
+
+    Pair<Integer, Integer> handleRecipientResults(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Pair<Integer, Integer> handleRecipientResultsConcurrent(List<NotificationRequest> notificationRequests,
+            PluginConfiguration recipient, Collection<NotificationRequest> notificationsInError);
 
     /**
-     * Register {@link NotificationActionEvent} to schedule notifications
+     * Register {@link NotificationRequestEvent} to schedule notifications
      */
-    void registerNotifications(List<NotificationActionEvent> events);
+    void registerNotificationRequests(List<NotificationRequestEvent> events);
 
-    /**
-     * Schedule a job to process a batch of {@link NotificationAction}<br/>
-     * @return number of scheduled notification (0 if no request was scheduled)
-     */
-    int scheduleRequests();
+    Set<NotificationRequestEvent> handleRetryRequests(List<NotificationRequestEvent> events);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<NotificationRequestEvent> events);
 
     /**
      * Clean cache of rules. Need to be called after each configuration modification.
      */
     void cleanCache();
 
+    /**
+     * Match one page of {@link NotificationRequest} to multiple recipient({@link PluginConfiguration}) using all {@link Rule}s
+     * @return Pair representing how many notification have been matched to how many recipient (nbNotificationHandled, nbRecipient)
+     */
+    Pair<Integer, Integer> matchRequestNRecipient();
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Pair<Integer, Integer> matchRequestNRecipientConcurrent(List<NotificationRequest> toBeMatched);
+
+    /**
+     * @param recipient recipient for which we want to schedule a {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob}
+     * @return 1 if there is {@link NotificationRequest} to schedule for this recipient, 0 otherwise
+     */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    Set<Long> scheduleJobForOneRecipient(PluginConfiguration recipient);
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Set<Long> scheduleJobForOneRecipientConcurrent(PluginConfiguration recipient,
+            List<NotificationRequest> requestsToSchedule);
+
+    /**
+     * Check whether a {@link NotificationRequest} is in success or not and notify its success
+     * @return number of request in success detected this time.
+     */
+    int checkSuccess();
 }

@@ -18,18 +18,26 @@
  */
 package fr.cnes.regards.modules.notifier.service.plugin;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationEvent;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
  * Default plugin notification sender
@@ -57,9 +65,40 @@ public class RabbitMQSender implements IRecipientNotifier {
     private String queueName;
 
     @Override
-    public boolean send(JsonElement element, String action) {
-        this.publisher.broadcast(exchange, Optional.ofNullable(queueName), 0, NotificationEvent.build(element, action),
-                                 new HashMap<>());
-        return true;
+    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
+        List<NotificationEvent> toSend = requestsToSend.stream().map(NotificationEvent::new)
+                .collect(Collectors.toList());
+        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), 0, toSend, new HashMap<>());
+        // if there is an issue with amqp then none of the message will be sent
+        return Collections.emptySet();
+    }
+
+    @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+    public static class NotificationEvent implements ISubscribable {
+
+        private JsonElement payload;
+
+        private JsonElement metadata;
+
+        public NotificationEvent(NotificationRequest request) {
+            this.payload = request.getPayload();
+            this.metadata = request.getMetadata();
+        }
+
+        public JsonElement getPayload() {
+            return payload;
+        }
+
+        public void setPayload(JsonElement payload) {
+            this.payload = payload;
+        }
+
+        public JsonElement getMetadata() {
+            return metadata;
+        }
+
+        public void setMetadata(JsonElement metadata) {
+            this.metadata = metadata;
+        }
     }
 }

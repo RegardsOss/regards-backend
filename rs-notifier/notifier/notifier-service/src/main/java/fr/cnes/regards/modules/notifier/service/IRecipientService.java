@@ -18,45 +18,47 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.validation.Valid;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
- * Service for {@link Recipient} manipulation
+ * Service for recipient({@link PluginConfiguration}) manipulation
  * @author Kevin Marchois
  *
  */
 public interface IRecipientService {
 
-    public Set<PluginConfiguration> getRecipients(Collection<String> businessId);
+    Set<PluginConfiguration> getRecipients(Collection<String> businessId);
 
-    public Set<PluginConfiguration> getRecipients();
+    Set<PluginConfiguration> getRecipients();
 
     /**
-     * Create or update a {@link Recipient} from a {@link RecipientDto}
-     * @param toCreate
-     * @return {@link RecipientDto} from the created {@link Recipient}
+     * Create or update a recipient({@link PluginConfiguration}) from a recipient({@link PluginConfiguration})
+     * @return recipient({@link PluginConfiguration}) from the created recipient({@link PluginConfiguration})
      * @throws ModuleException if during an update id is unknow
      */
-    public PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration toCreate) throws ModuleException;
+    PluginConfiguration createOrUpdateRecipient(@Valid PluginConfiguration toCreate) throws ModuleException;
 
     /**
-     * Delete a {@link Recipient} by its id
-     * @param id
-     * @throws ModuleException
+     * Delete a recipient({@link PluginConfiguration}) by its id
      */
-    public void deleteRecipient(String id) throws ModuleException;
+    void deleteRecipient(String id) throws ModuleException;
 
     /**
      * Delete all plugin configurations for {@link IRecipientNotifier} plugin type
-     * @param deletionErrors
      * @return plugin businessIds to delete
      */
-    public Set<String> deleteAll(Collection<String> deletionErrors);
+    Set<String> deleteAll(Collection<String> deletionErrors);
+
+    /**
+     * schedule {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob} for each recipient
+     * @return number of {@link fr.cnes.regards.modules.notifier.service.job.NotificationJob} scheduled
+     */
+    int scheduleNotificationJobs();
 }

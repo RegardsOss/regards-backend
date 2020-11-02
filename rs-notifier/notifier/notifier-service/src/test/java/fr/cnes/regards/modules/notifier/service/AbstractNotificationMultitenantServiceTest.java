@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.google.common.collect.Sets;
@@ -54,22 +55,22 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notifier.dao.INotificationActionRepository;
+import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationActionEvent;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender10;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender2;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender3;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender4;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender5;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender6;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender7;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender8;
-import fr.cnes.regards.modules.notifier.plugin.RecipientSender9;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender10;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender2;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender4;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender5;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender6;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender7;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender8;
+import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender9;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
-import fr.cnes.regards.modules.notifier.service.flow.NotificationActionEventHandler;
+import fr.cnes.regards.modules.notifier.service.flow.NotificationRequestEventHandler;
 import fr.cnes.regards.modules.notifier.service.plugin.RabbitMQSender;
 
 public abstract class AbstractNotificationMultitenantServiceTest extends AbstractMultitenantServiceTest {
@@ -85,6 +86,8 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     // used to param if the test Recipient will fail
     public static boolean RECIPIENT_FAIL = true;
 
+    protected final String REQUEST_OWNER = this.getClass().getSimpleName();
+
     @Autowired
     protected IRuleRepository ruleRepo;
 
@@ -95,7 +98,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IPluginConfigurationRepository pluginConfRepo;
 
     @Autowired
-    protected INotificationActionRepository notificationRepo;
+    protected INotificationRequestRepository notificationRepo;
 
     @Autowired
     protected IRecipientErrorRepository recipientErrorRepo;
@@ -103,7 +106,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     @Autowired
     protected IJobInfoRepository jobInforepo;
 
-    @Autowired
+    @SpyBean
     protected NotificationRuleService notificationService;
 
     @Autowired
@@ -113,10 +116,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired(required = false)
-    private IAmqpAdmin amqpAdmin;
+    protected IAmqpAdmin amqpAdmin;
 
     @Autowired(required = false)
-    private IRabbitVirtualHostAdmin vhostAdmin;
+    protected IRabbitVirtualHostAdmin vhostAdmin;
 
     @Autowired
     protected NotificationConfigurationProperties configuration;
@@ -125,19 +128,19 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
     protected IPublisher publisher;
 
     @Autowired
-    private Gson gson;
+    protected Gson gson;
 
     @Autowired
-    private ISubscriber subscriber;
+    protected ISubscriber subscriber;
 
     @Before
-    public void before() throws InterruptedException {
+    public void before() throws Exception {
         RECIPIENT_FAIL = true;
         this.notificationService.cleanTenantCache(runtimeTenantResolver.getTenant());
         this.recipientErrorRepo.deleteAll();
+        this.notificationRepo.deleteAll();
         this.ruleRepo.deleteAll();
         this.pluginConfRepo.deleteAll();
-        this.notificationRepo.deleteAll();
         this.jobInforepo.deleteAll();
         simulateApplicationReadyEvent();
     }
@@ -165,7 +168,7 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
      * Wait data creation on a {@link JpaRepository}
      * @param repo {@link JpaRepository} where we wait data
      * @param expectedNumber number of data waited
-     * @param timeout to throw exception
+     * @param timeout in seconds to throw exception
      * @throws InterruptedException
      */
     public void waitDatabaseCreation(JpaRepository<?, ?> repo, int expectedNumber, int timeout)
@@ -247,10 +250,10 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
         }
     }
 
-    protected NotificationActionEvent getEvent(String name) {
+    protected NotificationRequestEvent getEvent(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
                 Reader reader = new InputStreamReader(input)) {
-            return gson.fromJson(CharStreams.toString(reader), NotificationActionEvent.class);
+            return gson.fromJson(CharStreams.toString(reader), NotificationRequestEvent.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import event";
             LOGGER.debug(errorMessage);
@@ -260,8 +263,8 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
 
     @After
     public void after() {
-        subscriber.unsubscribeFrom(NotificationActionEvent.class);
-        cleanAMQPQueues(NotificationActionEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        subscriber.unsubscribeFrom(NotificationRequestEvent.class);
+        cleanAMQPQueues(NotificationRequestEventHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender2.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender3.class, Target.ONE_PER_MICROSERVICE_TYPE);
         cleanAMQPQueues(RecipientSender4.class, Target.ONE_PER_MICROSERVICE_TYPE);

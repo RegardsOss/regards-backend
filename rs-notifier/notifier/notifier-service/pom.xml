@@ -42,6 +42,10 @@
 			<artifactId>notifier-dao</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.notifier</groupId>
+			<artifactId>notifier-domain</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>geojson-starter</artifactId>
 		</dependency>

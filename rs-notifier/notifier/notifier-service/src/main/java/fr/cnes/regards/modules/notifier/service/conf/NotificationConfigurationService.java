@@ -36,8 +36,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
 import fr.cnes.regards.modules.notifier.dto.conf.RuleRecipientsAssociation;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
-import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
 import fr.cnes.regards.modules.notifier.service.IRuleService;
 
 @Service

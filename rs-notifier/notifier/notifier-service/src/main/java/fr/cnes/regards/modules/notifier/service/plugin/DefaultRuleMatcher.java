@@ -24,7 +24,7 @@ import com.google.gson.JsonElement;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.plugin.IRuleMatcher;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
 
 /**
  * Default plugin rule matcher

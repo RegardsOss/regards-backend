@@ -34,7 +34,7 @@ public class NotificationEvent3 implements ISubscribable {
 
     private JsonElement element;
 
-    private String action;
+    private JsonElement action;
 
     public JsonElement getElement() {
         return element;
@@ -44,15 +44,15 @@ public class NotificationEvent3 implements ISubscribable {
         this.element = element;
     }
 
-    public String getAction() {
+    public JsonElement getAction() {
         return action;
     }
 
-    public void setAction(String action) {
+    public void setAction(JsonElement action) {
         this.action = action;
     }
 
-    public static NotificationEvent3 build(JsonElement element, String action) {
+    public static NotificationEvent3 build(JsonElement element, JsonElement action) {
         NotificationEvent3 toCreate = new NotificationEvent3();
         toCreate.setAction(action);
         toCreate.setElement(element);

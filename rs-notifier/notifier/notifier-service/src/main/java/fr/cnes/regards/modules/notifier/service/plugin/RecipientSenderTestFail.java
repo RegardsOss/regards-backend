@@ -18,18 +18,12 @@
  */
 package fr.cnes.regards.modules.notifier.service.plugin;
 
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonElement;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationEvent;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 
 /**
  * Fail sender to test notification resending after an error occured during the first tie
@@ -39,29 +33,20 @@ import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
 @Plugin(author = "REGARDS Team", description = "Fail recipient sender for test purporse", id = "TestSendFail",
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class RecipientSenderTestFail implements IRecipientNotifier {
+public class RecipientSenderTestFail extends RabbitMQSender implements IRecipientNotifier {
+
+    public static final String FAIL_PARAM_NAME = "fail";
 
     // if if fail = true the send will deliberaly fail
-    @PluginParameter(label = "If the plugin must fail", name = "fail")
+    @PluginParameter(label = "If the plugin must fail", name = FAIL_PARAM_NAME)
     private boolean fail;
 
-    @PluginParameter(label = "RabbitMQ exchange name", name = "exchange")
-    private String exchange;
-
-    @PluginParameter(label = "RabbitMQ queue name", name = "queueName", optional = true)
-    private String queueName;
-
-    @Autowired
-    private IPublisher publisher;
-
     @Override
-    public boolean send(JsonElement element, String action) {
+    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
         if (fail) {
-            return false;
+            return requestsToSend;
         }
-        this.publisher.broadcast(exchange, Optional.ofNullable(queueName), 0, NotificationEvent.build(element, action),
-                                 new HashMap<>());
-        return true;
+        return super.send(requestsToSend);
     }
 
 }

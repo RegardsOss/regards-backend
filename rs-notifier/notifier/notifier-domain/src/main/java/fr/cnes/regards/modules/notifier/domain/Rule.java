@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notifier.domain;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Entity;
@@ -41,6 +42,7 @@ import javax.validation.constraints.NotNull;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
+ * {@link IRuleMatcher}/{@link PluginConfiguration} and  association with {@link IRecipientNotifier}/{@link PluginConfiguration}
  * @author kevin
  *
  */
@@ -95,5 +97,22 @@ public class Rule {
         rule.setRulePlugin(pluginConf);
         rule.recipients.addAll(recipients);
         return rule;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Rule rule = (Rule) o;
+        return Objects.equals(rulePlugin, rule.rulePlugin);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rulePlugin);
     }
 }

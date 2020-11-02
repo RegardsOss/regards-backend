@@ -18,29 +18,32 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
-import fr.cnes.regards.modules.notifier.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Implementation of recipient service
@@ -76,14 +79,14 @@ public class RecipientService implements IRecipientService {
         if ((businessIds == null) || businessIds.isEmpty()) {
             recipients.addAll(pluginService.getPluginConfigurationsByType(IRecipientNotifier.class));
         } else {
-            recipients = businessIds.stream().map((id) -> {
+            recipients = businessIds.stream().map(id -> {
                 try {
                     return pluginService.getPluginConfiguration(id);
                 } catch (EntityNotFoundException e) {
                     LOGGER.debug("Configuration does not exist!", e);
                     return null;
                 }
-            }).filter(conf -> conf != null).collect(Collectors.toSet());
+            }).filter(Objects::nonNull).collect(Collectors.toSet());
         }
         return recipients;
     }
@@ -110,7 +113,7 @@ public class RecipientService implements IRecipientService {
         for (Rule rule : ruleRepo.findByRecipientsBusinessId(id)) {
             // Remove  recipient to delete
             rule.setRecipients(rule.getRecipients().stream().filter(c -> !c.getBusinessId().equals(id))
-                    .collect(Collectors.toSet()));
+                                       .collect(Collectors.toSet()));
         }
         // Delete associated errors
         recipientErrorRepo.deleteByRecipientBusinessId(id);
@@ -131,5 +134,18 @@ public class RecipientService implements IRecipientService {
         // Clean cache
         notifService.cleanCache();
         return pluginToDelete;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public int scheduleNotificationJobs() {
+        // lets schedule a notification job per recipient. This ensure us that each recipient will have to process an
+        // optimum batch of requests at once. Moreover, it also ensures that there will be no influence between each recipient errors
+        Set<PluginConfiguration> recipients = getRecipients();
+        Set<Long> requestScheduledIds = new HashSet<>();
+        for (PluginConfiguration recipient : recipients) {
+            requestScheduledIds.addAll(notifService.scheduleJobForOneRecipient(recipient));
+        }
+        return requestScheduledIds.size();
     }
 }

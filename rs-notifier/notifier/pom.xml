@@ -52,6 +52,7 @@
 		<module>notifier-dao</module>
 		<module>notifier-dto</module>
 		<module>notifier-rest</module>
+		<module>notifier-client</module>
 	</modules>
 
 	<dependencyManagement>
@@ -82,10 +83,10 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-                <groupId>fr.cnes.regards.modules.feature</groupId>
-                <artifactId>feature-dto</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+				<groupId>fr.cnes.regards.modules.notifier</groupId>
+				<artifactId>notifier-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
