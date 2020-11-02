@@ -109,4 +109,10 @@ public class FeatureNotificationSettingsService implements IFeatureNotificationS
         }
         return notificationSettingsRepository.save(featureNotificationSettings);
     }
+
+    @Override
+    public void resetSettings() {
+        notificationSettingsRepository.deleteAll();
+        initNotificationSettings();
+    }
 }

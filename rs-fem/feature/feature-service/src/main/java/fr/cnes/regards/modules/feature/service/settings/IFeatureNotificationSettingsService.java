@@ -43,4 +43,6 @@ public interface IFeatureNotificationSettingsService {
      * Update {@link FeatureNotificationSettings}
      */
     FeatureNotificationSettings update(FeatureNotificationSettings pFeatureNotificationSettings) throws EntityNotFoundException;
+
+    void resetSettings();
 }

@@ -33,43 +33,20 @@ public class FeatureProviderConfigurationProperties {
     /**
      * Max number of requests to process at a time
      */
-    @Value("${regards.feature.max.bulk.size:1000}")
+    @Value("${regards.feature.provider.max.bulk.size:1000}")
     private Integer maxBulkSize;
 
     /**
      * Batch message size
      */
-    @Value("${regards.feature.batch.size:1000}")
+    @Value("${regards.feature.provider.batch.size:1000}")
     private Integer batchSize;
 
     /**
      * Batch message reception in millisecond
      */
-    @Value("${regards.feature.batch.receive.timeout:1000}")
+    @Value("${regards.feature.provider.batch.receive.timeout:1000}")
     private Long batchReceiveTimeout;
-
-    /**
-     * In second.
-     */
-    @Value("${regards.feature.delay.before.processing:5}")
-    private Integer delayBeforeProcessing;
-
-    /*
-     * In minute.
-     */
-    @Value("${regards.feature.remote.request.timeout:5}")
-    private Long remoteRequestTimeout;
-
-    @Value("${regards.feature.metrics.enabled:false}")
-    private Boolean metricsEnabled;
-
-    public Boolean isMetricsEnabled() {
-        return metricsEnabled;
-    }
-
-    public void setMetricsEnabled(Boolean metricsEnabled) {
-        this.metricsEnabled = metricsEnabled;
-    }
 
     public Integer getMaxBulkSize() {
         return maxBulkSize;
@@ -85,22 +62,6 @@ public class FeatureProviderConfigurationProperties {
 
     public void setBatchSize(Integer batchSize) {
         this.batchSize = batchSize;
-    }
-
-    public Long getRemoteRequestTimeout() {
-        return remoteRequestTimeout;
-    }
-
-    public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
-        this.remoteRequestTimeout = remoteRequestTimeout;
-    }
-
-    public Integer getDelayBeforeProcessing() {
-        return delayBeforeProcessing;
-    }
-
-    public void setDelayBeforeProcessing(Integer delayBeforeProcessing) {
-        this.delayBeforeProcessing = delayBeforeProcessing;
     }
 
     public Long getBatchReceiveTimeout() {

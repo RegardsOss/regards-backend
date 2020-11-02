@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 
 /**
  * Configuration manager for current module
@@ -55,7 +56,7 @@ public class FeatureProviderConfigurationManager extends AbstractModuleManager<V
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = Sets.newHashSet();
-        for (PluginConfiguration p : pluginService.getAllPluginConfigurations()) {
+        for (PluginConfiguration p : pluginService.getPluginConfigurationsByType(IFeatureFactoryPlugin.class)) {
             try {
                 pluginService.deletePluginConfiguration(p.getBusinessId());
             } catch (ModuleException e) {
@@ -70,10 +71,9 @@ public class FeatureProviderConfigurationManager extends AbstractModuleManager<V
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
-        Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
+        Set<PluginConfiguration> pluginConfs = getPluginConfs(configuration.getConfiguration());
 
-        // First create connections
-        for (PluginConfiguration plgConf : configurations) {
+        for (PluginConfiguration plgConf : pluginConfs) {
             try {
                 Optional<PluginConfiguration> existingOne = loadPluginConfiguration(plgConf.getBusinessId());
                 if (existingOne.isPresent()) {
@@ -106,7 +106,7 @@ public class FeatureProviderConfigurationManager extends AbstractModuleManager<V
     public ModuleConfiguration exportConfiguration() throws ModuleException {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
         // export connections
-        for (PluginConfiguration factory : pluginService.getAllPluginConfigurations()) {
+        for (PluginConfiguration factory : pluginService.getPluginConfigurationsByType(IFeatureFactoryPlugin.class)) {
             // All connection should be active
             PluginConfiguration exportedConf = pluginService.prepareForExport(factory);
             exportedConf.setIsActive(true);
