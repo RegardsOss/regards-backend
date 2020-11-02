@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 
 /**
  * Notification service interface
