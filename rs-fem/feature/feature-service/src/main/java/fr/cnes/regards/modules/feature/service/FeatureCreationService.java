@@ -298,7 +298,8 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests) {
+    public Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests,
+            FeatureCreationJob featureCreationJob) {
 
         long processStart = System.currentTimeMillis();
         long subProcessStart;
@@ -322,7 +323,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                                                          versionByProviders
                                                                                                  .get(request.getProviderId()),
                                                                                          urnByProviders
-                                                                                                 .get(request.getProviderId())))
+                                                                                                 .get(request.getProviderId()), featureCreationJob))
                 .collect(Collectors.toSet());
         this.featureRepo.saveAll(entities);
         LOGGER.trace("------------->>> {} feature saved in {} ms",
@@ -468,10 +469,11 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
      * as feature entity
      * @param fcr from we will create the {@link FeatureEntity}
      * @param previousVersion previous urn for the last version
+     * @param featureCreationJob
      * @return initialized feature entity
      */
     private FeatureEntity initFeatureEntity(FeatureCreationRequest fcr, @Nullable Integer previousVersion,
-            FeatureUniformResourceName previousUrn) {
+            FeatureUniformResourceName previousUrn, FeatureCreationJob featureCreationJob) {
 
         Feature feature = fcr.getFeature();
         feature.withHistory(fcr.getRequestOwner());
@@ -489,7 +491,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         created.setVersion(feature.getUrn().getVersion());
         fcr.setFeatureEntity(created);
         fcr.setUrn(created.getUrn());
-
+        if(featureCreationJob != null) {
+            featureCreationJob.advanceCompletion();
+        }
         metrics.count(fcr.getProviderId(), created.getUrn(), FeatureCreationState.FEATURE_INITIALIZED);
 
         return created;

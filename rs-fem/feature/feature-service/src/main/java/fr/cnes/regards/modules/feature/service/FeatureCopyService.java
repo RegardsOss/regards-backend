@@ -195,7 +195,7 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     }
 
     @Override
-    public void processRequests(List<FeatureCopyRequest> requests) {
+    public void processRequests(List<FeatureCopyRequest> requests, FeatureCopyJob featureCopyJob) {
 
         long processStart = System.currentTimeMillis();
 
@@ -211,6 +211,7 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
                 LOGGER.error(String.format("No FeatureEntity found for URN %s", request.getUrn().toString()));
                 request.setState(RequestState.ERROR);
             }
+            featureCopyJob.advanceCompletion();
         }
 
         // update those with a error status

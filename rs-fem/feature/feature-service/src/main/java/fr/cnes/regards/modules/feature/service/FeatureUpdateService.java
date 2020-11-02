@@ -288,7 +288,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     }
 
     @Override
-    public Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests) {
+    public Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests, FeatureUpdateJob featureUpdateJob) {
 
         long processStart = System.currentTimeMillis();
         Set<FeatureEntity> entities = new HashSet<>();
@@ -371,6 +371,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 entities.add(entity);
                 successfulRequest.add(request);
             }
+            featureUpdateJob.advanceCompletion();
         }
 
         featureRepo.saveAll(entities);

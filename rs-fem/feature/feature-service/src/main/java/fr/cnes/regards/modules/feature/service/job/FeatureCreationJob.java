@@ -80,11 +80,15 @@ public class FeatureCreationJob extends AbstractJob<Void> {
         logger.info("[{}] Feature creation job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
-        Set<FeatureEntity> created = featureService.processRequests(featureCreationRequests);
+        Set<FeatureEntity> created = featureService.processRequests(featureCreationRequests, this);
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         created.forEach(e -> metrics.count(e.getProviderId(), e.getUrn(), FeatureCreationState.FEATURE_CREATED));
         logger.info("[{}]{}{} creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     featureCreationRequests.size(), System.currentTimeMillis() - start);
     }
 
+    @Override
+    public int getCompletionCount() {
+        return featureCreationRequests.size();
+    }
 }

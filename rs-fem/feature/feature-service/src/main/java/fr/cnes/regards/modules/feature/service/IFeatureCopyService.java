@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
 
 /**
  * Service to register/schedule/treat {@link FeatureCopyRequest}
@@ -28,6 +29,6 @@ public interface IFeatureCopyService extends IAbstractFeatureService {
     /**
      * Process batch of requests during job
      */
-    void processRequests(List<FeatureCopyRequest> requests);
+    void processRequests(List<FeatureCopyRequest> requests, FeatureCopyJob featureCopyJob);
 
 }

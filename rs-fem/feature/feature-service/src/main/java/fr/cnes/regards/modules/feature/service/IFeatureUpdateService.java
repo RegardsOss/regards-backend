@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 
 /**
  * This service handles feature update workflow.
@@ -56,6 +57,6 @@ public interface IFeatureUpdateService extends IAbstractFeatureService {
      * Process batch of requests during job
      * @return updated features
      */
-    Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests);
+    Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests, FeatureUpdateJob featureUpdateJob);
 
 }

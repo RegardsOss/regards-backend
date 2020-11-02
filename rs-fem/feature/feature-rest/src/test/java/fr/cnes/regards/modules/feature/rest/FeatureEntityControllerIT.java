@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
+import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 
 /**
  * @author Sébastien Binda
@@ -65,14 +66,14 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                 .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
                        featureToAdd, meta, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
 
-        featureService.processRequests(Lists.newArrayList(request));
+        featureService.processRequests(Lists.newArrayList(request), null);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.addParameter("model", "FEATURE01");
 
         performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
-                          "Error retrieving feautres");
+                          "Error retrieving features");
 
     }
 

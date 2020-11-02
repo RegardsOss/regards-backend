@@ -71,8 +71,13 @@ public class FeatureDeletionJob extends AbstractJob<Void> {
         Timer timer = Timer.builder(this.getClass().getName()).tag("job", "run").register(registry);
         logger.info("[{}] Feature deletion job starts", jobInfoId);
         long start = System.currentTimeMillis();
-        timer.record(() -> featureService.processRequests(featureDeletionRequests));
+        timer.record(() -> featureService.processRequests(featureDeletionRequests, this));
         logger.info("[{}]{}{} deletion request(s) processed in {} ms", jobInfoId, INFO_TAB,
                     featureDeletionRequests.size(), System.currentTimeMillis() - start);
+    }
+
+    @Override
+    public int getCompletionCount() {
+        return featureDeletionRequests.size();
     }
 }

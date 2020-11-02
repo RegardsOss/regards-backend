@@ -43,7 +43,6 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -59,7 +58,6 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
@@ -114,10 +112,6 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
     @Autowired
     private IFeatureNotificationSettingsService notificationSettingsService;
-
-    @Autowired
-    private Gson gson;
-
 
     @Override
     public RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureDeletionRequestEvent> events) {
@@ -242,7 +236,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public void processRequests(List<FeatureDeletionRequest> requests) {
+    public void processRequests(List<FeatureDeletionRequest> requests, FeatureDeletionJob featureDeletionJob) {
 
         // Retrieve features
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
@@ -270,15 +264,16 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
         // Manage dispatched requests
         boolean isToNotify = notificationSettingsService.retrieve().isActiveNotification();
-        manageRequestsAlreadyDeleted(requestsAlreadyDeleted, isToNotify);
-        manageRequestsWithFiles(requestsWithFiles);
-        manageRequestsWithoutFile(requestsWithoutFiles, isToNotify);
+        manageRequestsAlreadyDeleted(requestsAlreadyDeleted, isToNotify, featureDeletionJob);
+        manageRequestsWithFiles(requestsWithFiles, featureDeletionJob);
+        manageRequestsWithoutFile(requestsWithoutFiles, isToNotify, featureDeletionJob);
     }
 
-    private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted, boolean isToNotify) {
+    private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted, boolean isToNotify,
+            FeatureDeletionJob featureDeletionJob) {
         if (!requestsAlreadyDeleted.isEmpty()) {
             // PROPAGATE to NOTIFIER if required
-            if(isToNotify) {
+            if (isToNotify) {
                 String unknown = "unknown";
                 for (FeatureDeletionRequest fdr : requestsAlreadyDeleted) {
                     // Build fake incomplete feature
@@ -287,6 +282,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
                     fdr.setToNotify(fakeFeature);
                     fdr.setAlreadyDeleted(true);
                     fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                    featureDeletionJob.advanceCompletion();
                 }
                 deletionRepo.saveAll(requestsAlreadyDeleted);
             } else {
@@ -314,23 +310,27 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
         }
     }
 
-    private void manageRequestsWithFiles(Map<FeatureDeletionRequest, FeatureEntity> requestsWithFiles) {
+    private void manageRequestsWithFiles(Map<FeatureDeletionRequest, FeatureEntity> requestsWithFiles,
+            FeatureDeletionJob featureDeletionJob) {
         // Request file deletion
         for (Entry<FeatureDeletionRequest, FeatureEntity> entry : requestsWithFiles.entrySet()) {
             publishFiles(entry.getKey(), entry.getValue());
+            featureDeletionJob.advanceCompletion();
         }
         // Save all request with files waiting for file deletion
         this.deletionRepo.saveAll(requestsWithFiles.keySet());
         // No feedback at the moment
     }
 
-    private void manageRequestsWithoutFile(Map<FeatureDeletionRequest, FeatureEntity> requestsWithoutFiles, boolean isToNotify) {
-        sendFeedbacksAndClean(requestsWithoutFiles, isToNotify);
+    private void manageRequestsWithoutFile(Map<FeatureDeletionRequest, FeatureEntity> requestsWithoutFiles,
+            boolean isToNotify, FeatureDeletionJob featureDeletionJob) {
+        sendFeedbacksAndClean(requestsWithoutFiles, isToNotify, featureDeletionJob);
     }
 
-    private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests, boolean isToNotify) {
+    private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests,
+            boolean isToNotify, FeatureDeletionJob featureDeletionJob) {
         // PREPARE PROPAGATION to NOTIFIER if required
-        if(isToNotify) {
+        if (isToNotify) {
             for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
                 entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
                 entry.getKey().setAlreadyDeleted(false);
@@ -352,6 +352,10 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
             FeatureDeletionRequest fdr = requestByUrn.get(entity.getUrn());
             // Monitoring log
             FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+            if (featureDeletionJob != null) {
+                // featureDeletionJob can be null in case this method is called outside the context of a job
+                featureDeletionJob.advanceCompletion();
+            }
             // Publish successful request
             publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
                                                         fdr.getRequestId(),
@@ -377,8 +381,6 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
      * Publish command to delete all contained files inside the {@link FeatureDeletionRequest} to
      * storage
      *
-     * @param fdr
-     * @return
      */
     private FeatureDeletionRequest publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
@@ -399,14 +401,14 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
         // Retrieve features
         Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo
-                .findByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList())).stream()
-                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+                .findByUrnIn(requests.stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toList()))
+                .stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
 
         Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests = new HashMap<>();
         for (FeatureDeletionRequest fdr : requests) {
             sucessfullRequests.put(fdr, featureByUrn.get(fdr.getUrn()));
         }
-        sendFeedbacksAndClean(sucessfullRequests, notificationSettingsService.retrieve().isActiveNotification());
+        sendFeedbacksAndClean(sucessfullRequests, notificationSettingsService.retrieve().isActiveNotification(), null);
     }
 
     @Override

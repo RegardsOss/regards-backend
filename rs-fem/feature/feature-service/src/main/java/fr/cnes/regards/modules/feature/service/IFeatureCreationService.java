@@ -11,6 +11,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
 
 public interface IFeatureCreationService extends IAbstractFeatureService {
 
@@ -38,7 +39,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
      * Process batch of requests during job
      * @return new feature created
      */
-    Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests);
+    Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests, FeatureCreationJob featureCreationJob);
 
     /**
      * Handle successful creation process

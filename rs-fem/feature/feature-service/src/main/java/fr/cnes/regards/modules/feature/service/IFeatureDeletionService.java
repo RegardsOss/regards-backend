@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
 
 /**
  * Service for deleting Features
@@ -53,7 +54,7 @@ public interface IFeatureDeletionService extends IAbstractFeatureService {
     /**
      * Process batch of requests during job
      */
-    void processRequests(List<FeatureDeletionRequest> requests);
+    void processRequests(List<FeatureDeletionRequest> requests, FeatureDeletionJob featureDeletionJob);
 
     /**
      * Process batch of successful storage request
