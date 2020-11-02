@@ -47,4 +47,6 @@ public interface IDumpSettingsService {
      * Reset the last dump request date by putting a null value. It is useful to recreate a complete dump.
      */
     void resetLastDumpDate();
+
+    void resetSettings();
 }

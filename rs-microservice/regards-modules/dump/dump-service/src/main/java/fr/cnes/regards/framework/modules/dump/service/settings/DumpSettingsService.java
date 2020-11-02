@@ -76,4 +76,9 @@ public class DumpSettingsService implements IDumpSettingsService {
         }
         // if there is no dump setting it means the last dump date is already null, there is nothing to do
     }
+
+    @Override
+    public void resetSettings() {
+        dumpSettingsRepository.deleteById(DumpSettings.DUMP_CONF_ID);
+    }
 }
