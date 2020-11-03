@@ -58,10 +58,6 @@ public interface IModelAttrAssocClient {
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
     ResponseEntity<List<EntityModel<ModelAttrAssoc>>> getModelAttrAssocs(@PathVariable("modelName") String modelName);
 
-    @RequestMapping(path = "{datasetUrn}" + ASSOCS_MAPPING, method = RequestMethod.GET)
-    ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
-            @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn);
-
     /**
      * Retrieve model attribute associations for a given entity type (optional)
      * @return the model attribute associations
