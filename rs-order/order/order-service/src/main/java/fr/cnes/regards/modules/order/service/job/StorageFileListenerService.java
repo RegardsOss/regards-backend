@@ -21,14 +21,14 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
     @Override
     public void onFileAvailable(List<FileReferenceEventDTO> available) {
         for (FileReferenceEventDTO event : available) {
-            subscribers.forEach(subscriber -> subscriber.handle(event.getChecksum(), true));
+            subscribers.forEach(subscriber -> subscriber.handleFileEvent(event.getChecksum(), true));
         }
     }
 
     @Override
     public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
         for (FileReferenceEventDTO event : availabilityError) {
-            subscribers.forEach(subscriber -> subscriber.handle(event.getChecksum(), false));
+            subscribers.forEach(subscriber -> subscriber.handleFileEvent(event.getChecksum(), false));
         }
     }
 

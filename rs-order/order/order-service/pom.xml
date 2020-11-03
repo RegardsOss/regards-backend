@@ -126,6 +126,13 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>geojson-starter</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+			<version>0.10.3</version>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
@@ -138,5 +145,6 @@
 			<scope>test</scope>
 		</dependency>
 
-	</dependencies>
+
+    </dependencies>
 </project>

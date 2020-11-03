@@ -131,7 +131,7 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     private IExecutionEventNotifier notifierFor(PExecution execution) {
-        return new ExecutionEventNotifierImpl(execRepo, outputFilesRepo, execResultSender, execution);
+        return new ExecutionEventNotifierImpl(execRepo, outputFilesRepo, execResultSender, processRepo, execution);
     }
 
 }

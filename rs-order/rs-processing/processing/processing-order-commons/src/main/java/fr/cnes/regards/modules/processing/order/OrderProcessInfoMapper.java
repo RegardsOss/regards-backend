@@ -19,7 +19,9 @@ public class OrderProcessInfoMapper {
             DATATYPES, params.getRequiredDatatypes()
                 .map(DataType::toString)
                 .reduceOption((a,b) -> String.format("%s,%s", a, b))
-                .getOrElse("")
+                .getOrElse(""),
+            SIZE_LIMIT_TYPE, params.getSizeLimit().getType().name(),
+            SIZE_LIMIT_VALUE, params.getSizeLimit().getLimit().toString()
         );
     }
 
@@ -27,7 +29,8 @@ public class OrderProcessInfoMapper {
         return parse(map, SCOPE, Scope.class)
             .flatMap(scope -> parse(map, CARDINALITY, Cardinality.class)
                 .flatMap(card -> parseDatatypes(map)
-                    .map(datatypes -> new OrderProcessInfo(scope, card, datatypes))));
+                    .flatMap(datatypes -> parseSizeLimit(map)
+                        .map(sizeLimit -> new OrderProcessInfo(scope, card, datatypes, sizeLimit)))));
     }
 
     private static Option<List<DataType>> parseDatatypes(Map<String, String> map) {
@@ -36,6 +39,14 @@ public class OrderProcessInfoMapper {
             .map(List::of)
             .map(strs -> strs.filter(StringUtils::isNotBlank).map(String::trim))
             .map(strs -> strs.flatMap(str -> parse(DataType.class, str).toList()));
+    }
+
+    private static Option<SizeLimit> parseSizeLimit(Map<String, String> map) {
+        return map.get(SIZE_LIMIT_VALUE)
+                .flatMap(str -> Try.of(() -> Long.parseLong(str)).toOption())
+                .flatMap(value -> map.get(SIZE_LIMIT_TYPE)
+                    .flatMap(str -> parse(SizeLimit.Type.class, str))
+                    .map(type -> new SizeLimit(type, value)));
     }
 
     private static <T extends Enum<T>> Option<T> parse(Map<String, String> map, String name, Class<T> type) {

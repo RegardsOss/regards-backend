@@ -64,7 +64,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     @Column(name = "process_dataset_desc")
     @Type(type = "jsonb")
-    private ProcessDatasetDescription processDatasetDesc;
+    private ProcessDatasetDescription processDatasetDescription;
 
     @Override
     public Long getId() {
@@ -127,12 +127,12 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.itemsSelections.remove(itemsSelection);
     }
 
-    public ProcessDatasetDescription getProcessDatasetDesc() {
-        return processDatasetDesc;
+    public ProcessDatasetDescription getProcessDatasetDescription() {
+        return processDatasetDescription;
     }
 
-    public void setProcessDatasetDesc(ProcessDatasetDescription processDatasetDesc) {
-        this.processDatasetDesc = processDatasetDesc;
+    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+        this.processDatasetDescription = processDatasetDescription;
     }
 
     @Override
@@ -160,6 +160,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     }
 
     public boolean hasProcessing() {
-        return this.processDatasetDesc != null;
+        return this.processDatasetDescription != null;
     }
 }

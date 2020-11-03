@@ -12,5 +12,6 @@ public class OrderProcessInfo {
     Scope scope;
     Cardinality cardinality;
     List<DataType> requiredDatatypes;
+    SizeLimit sizeLimit;
 
 }

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.order.service.job;
+package fr.cnes.regards.modules.order.service.job.parameters;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;

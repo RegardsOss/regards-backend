@@ -35,6 +35,8 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
         return findByOrderIdAndStateIn(orderId, FileState.AVAILABLE);
     }
 
+    List<OrderDataFile> findAllByUrlStartingWith(String repr);
+
     List<OrderDataFile> findByOrderIdAndStateIn(Long orderId, FileState... states);
 
     List<OrderDataFile> findAllByOrderId(Long orderId);
@@ -96,4 +98,6 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     @Modifying
     void deleteByOrderId(Long orderId);
+
+
 }

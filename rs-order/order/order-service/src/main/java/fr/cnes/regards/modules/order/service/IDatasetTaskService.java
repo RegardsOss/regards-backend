@@ -36,5 +36,4 @@ public interface IDatasetTaskService {
 
     Page<OrderDataFile> loadDataFiles(Long datasetId, Pageable pageable);
 
-    boolean hasProcessing(DatasetTask dst);
 }

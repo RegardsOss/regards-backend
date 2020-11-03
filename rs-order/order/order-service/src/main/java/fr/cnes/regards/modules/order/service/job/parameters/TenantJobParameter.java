@@ -16,38 +16,38 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.order.service.job;
+package fr.cnes.regards.modules.order.service.job.parameters;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
- * Expiration date specific job parameter, it contains the pair "expirationDate" : date
+ * User email specific job parameter, it contains the pair "user" : user email
  * @author oroussel
  */
-public class SubOrderAvailabilityPeriodJobParameter extends JobParameter {
+public class TenantJobParameter extends JobParameter {
 
-    public static final String NAME = "subOrderAvailabilityPeriod";
+    public static final String NAME = "tenant";
 
-    public SubOrderAvailabilityPeriodJobParameter(Integer value) {
+    public TenantJobParameter(String value) {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public String getValue() {
+        return super.getValue();
+    }
+
+    public void setValue(String value) {
+        super.setValue(value);
+    }
+
     /**
-     * Check if given JobParameter is compatible with ExpirationDateJobParameter ie same name
+     * Check if given JobParameter is compatible with UserJobParameter ie same name
      * @param param
      * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Integer getValue() {
-        return super.getValue();
-    }
-
-    public void setValue(Integer value) {
-        super.setValue(value);
     }
 }

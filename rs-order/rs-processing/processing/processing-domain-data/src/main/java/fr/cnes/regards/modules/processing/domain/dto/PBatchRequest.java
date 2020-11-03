@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 
+import java.util.UUID;
+
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
@@ -14,7 +16,7 @@ import lombok.With;
 public class PBatchRequest {
 
     private final String correlationId;
-    private final String processName;
+    private final UUID processBusinessId;
     private final String tenant;
     private final String user;
     private final String userRole;

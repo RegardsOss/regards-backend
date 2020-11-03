@@ -16,10 +16,7 @@ import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
-import fr.cnes.regards.modules.processing.order.Cardinality;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.*;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function2;
 import io.vavr.Tuple;
@@ -129,7 +126,8 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         OrderProcessInfo pi = new OrderProcessInfo(
             Scope.ITEM,
             Cardinality.ONE_PER_INPUT_FILE,
-            io.vavr.collection.List.of(DataType.RAWDATA)
+            io.vavr.collection.List.of(DataType.RAWDATA),
+            new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L)
         );
         return new OrderProcessInfoMapper().toMap(pi);
     }

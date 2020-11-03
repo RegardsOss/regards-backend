@@ -57,6 +57,8 @@ public interface IOrderDataFileService {
      */
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
+    void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles);
+
     OrderDataFile load(Long dataFileId) throws NoSuchElementException;
 
     OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException;

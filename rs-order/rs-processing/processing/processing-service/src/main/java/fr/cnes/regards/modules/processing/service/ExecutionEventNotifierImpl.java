@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
@@ -11,6 +12,7 @@ import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
+import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
@@ -33,6 +35,7 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
     private final IPExecutionRepository execRepo;
     private final IPOutputFilesRepository outputFilesRepo;
     private final IExecutionResultEventSender execResultSender;
+    private final IPProcessRepository processRepo;
 
     private final PExecution execution;
 
@@ -40,11 +43,13 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
             IPExecutionRepository execRepo,
             IPOutputFilesRepository outputFilesRepo,
             IExecutionResultEventSender execResultSender,
+            IPProcessRepository processRepo,
             PExecution execution
     ) {
         this.execRepo = execRepo;
         this.outputFilesRepo = outputFilesRepo;
         this.execResultSender = execResultSender;
+        this.processRepo = processRepo;
         this.execution = execution;
     }
 
@@ -66,17 +71,23 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
 
     private Mono<PExecution> sendFinalResult(ExecutionEvent.FinalEvent event, PExecution exec) {
         if (event.isFinal()) {
-            PExecutionResultEvent resultEvent = new PExecutionResultEvent(
-                exec.getId(),
-                exec.getExecutionCorrelationId(),
-                exec.getBatchId(),
-                exec.getBatchCorrelationId(),
-                event.getStep().getStatus(),
-                event.getOutputFiles().map(POutputFileDTO::toDto),
-                List.of(event.getStep().getMessage())
-            );
-            return execResultSender.send(exec.getTenant(), resultEvent)
-                .map(x -> exec);
+            UUID processBusinessId = exec.getProcessBusinessId();
+            return processRepo.findByTenantAndProcessBusinessID(exec.getTenant(), processBusinessId)
+                .flatMap(process -> {
+                    PExecutionResultEvent resultEvent = new PExecutionResultEvent(
+                            exec.getId(),
+                            exec.getExecutionCorrelationId(),
+                            exec.getBatchId(),
+                            exec.getBatchCorrelationId(),
+                            processBusinessId,
+                            process.getProcessInfo(),
+                            event.getStep().getStatus(),
+                            event.getOutputFiles().map(POutputFileDTO::toDto),
+                            List.of(event.getStep().getMessage())
+                    );
+                    return execResultSender.send(exec.getTenant(), resultEvent)
+                            .map(x -> exec);
+                });
         }
         else {
             return Mono.just(exec);

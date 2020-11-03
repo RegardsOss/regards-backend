@@ -113,7 +113,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.TRUE, aipId, dataFileId, token, response);
+        return manageFile(Boolean.TRUE, dataFileId, token, response);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
@@ -122,14 +122,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.FALSE, aipId, dataFileId, token, response);
+        return manageFile(Boolean.FALSE, dataFileId, token, response);
     }
 
     /**
      * Above controller endpoints are duplicated to fit security single endpoint policy.
      * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
      */
-    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, String aipId, Long dataFileId,
+    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId,
             String token, HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;

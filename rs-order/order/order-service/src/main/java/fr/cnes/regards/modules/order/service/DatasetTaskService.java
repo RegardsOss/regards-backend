@@ -77,8 +77,4 @@ public class DatasetTaskService implements IDatasetTaskService {
         return new PageImpl<>(dataFiles, pageable, cpt);
     }
 
-    @Override
-    public boolean hasProcessing(DatasetTask dst) {
-        return StringUtils.isNotBlank(dst.getProcessingUuid());
-    }
 }

@@ -37,6 +37,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
 
 /**
  * A sub-order task is a job that manage a set of data files.
+ *
+ * This task specifically monitors the life cycle of instances of OrderDataFiles,
+ * that is: files meant to be downloaded by the end user in the context of an order.
+ *
+ * This task has an internal state allowing to prevent the rest of the order
+ * to be processed. The "waitingForUser" flag means that no more StorageFilesJob
+ * will be run until the user has downloaded the available files.
+ *
  * Associated job calls
  * @author oroussel
  */
@@ -102,10 +110,6 @@ public class FilesTask extends LeafTask {
 
     public boolean isWaitingForUser() {
         return waitingForUser;
-    }
-
-    public void setWaitingForUser(boolean waitingForUser) {
-        this.waitingForUser = waitingForUser;
     }
 
     public String getOwner() {

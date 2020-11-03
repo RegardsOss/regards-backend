@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import io.vavr.collection.List;
 import lombok.Value;
 
 import java.net.URL;
@@ -22,6 +23,8 @@ public class POutputFileDTO {
     String checksumMethod;
     String checksumValue;
 
+    List<String> inputCorrelationIds;
+
     public static POutputFileDTO toDto(POutputFile outFile) {
         return new POutputFileDTO(
             outFile.getId(),
@@ -30,7 +33,8 @@ public class POutputFileDTO {
             outFile.getName(),
             outFile.getSize(),
             outFile.getChecksum().getMethod(),
-            outFile.getChecksum().getValue()
+            outFile.getChecksum().getValue(),
+            outFile.getInputCorrelationIds()
         );
     }
 

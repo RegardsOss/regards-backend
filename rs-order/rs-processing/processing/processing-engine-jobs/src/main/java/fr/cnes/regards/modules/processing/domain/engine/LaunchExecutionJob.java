@@ -28,12 +28,10 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
 
     @Override public void run() {
         LOGGER.info("exec={} - LaunchExecutionJob start", execId);
-        execService. runExecutable(execId)
+        execService.runExecutable(execId)
             .subscribe(
                 exec -> LOGGER.info("exec={} - LaunchExecutionJob success", execId),
                 err -> LOGGER.error("exec={} - LaunchExecutionJob failure: {}", execId, err.getMessage())
             );
     }
-
-
 }

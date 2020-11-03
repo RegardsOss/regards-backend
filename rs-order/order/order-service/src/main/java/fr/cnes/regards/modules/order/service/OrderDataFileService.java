@@ -27,12 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -145,13 +140,24 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public Iterable<OrderDataFile> save(Iterable<OrderDataFile> inDataFiles) {
         List<OrderDataFile> dataFiles = repos.saveAll(inDataFiles);
+        launchNextFilesTasks(dataFiles);
+        return dataFiles;
+    }
+
+    // TODO: this causes problems when called from StorageFilesJob when a process is in place
+    // because in that case, the OrderDataFile represent input files and will never be downloaded.
+    @Override
+    public void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles) {
         // Look at FilesTasks if they are ended (no more file to download)...
-        List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(dataFiles);
+        List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(io.vavr.collection.List.ofAll(dataFiles).toJavaList());
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f ->
+                    (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR)
+                    || (f.getState() == FileState.DOWNLOAD_ERROR)
+                    || (f.getState() == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -167,7 +173,6 @@ public class OrderDataFileService implements IOrderDataFileService {
             order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
             orderRepository.save(order);
         }
-        return dataFiles;
     }
 
     @Override

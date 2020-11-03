@@ -33,7 +33,7 @@ public class BatchServiceImpl implements IBatchService {
     }
 
     @Override public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
-        return processRepo.findByTenantAndProcessName(auth.getTenant(), data.getProcessName())
+        return processRepo.findByTenantAndProcessBusinessID(auth.getTenant(), data.getProcessBusinessId())
             .flatMap(p -> createBatch(p, data)
                 .flatMap(b -> checkBatch(p, b)));
     }
