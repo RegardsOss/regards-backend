@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
@@ -76,16 +75,6 @@ public class RegistrationClientMock implements IRegistrationClient {
     @Override
     public ResponseEntity<Void> removeAccessRequest(Long pAccessId) {
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<EntityModel<AccessSettings>> getAccessSettings() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> updateAccessSettings(@Valid AccessSettings pAccessSettings) {
-        return null;
     }
 
     @Override

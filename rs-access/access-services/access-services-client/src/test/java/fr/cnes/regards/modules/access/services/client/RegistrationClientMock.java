@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.access.services.client;
 
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
@@ -60,16 +59,6 @@ public class RegistrationClientMock implements IRegistrationClient {
 
     @Override
     public ResponseEntity<Void> removeAccessRequest(Long pAccessId) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<EntityModel<AccessSettings>> getAccessSettings() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Void> updateAccessSettings(@Valid AccessSettings pAccessSettings) {
         return null;
     }
 }
