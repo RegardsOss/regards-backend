@@ -146,5 +146,8 @@ public interface IAIPService {
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 
-    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode, Map<String, AIPEntity> currentLatestPerProviderId);
+    Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds);
+
+    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
+            Map<String, AIPEntity> currentLatestPerProviderId);
 }

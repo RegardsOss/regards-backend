@@ -145,7 +145,7 @@ public class AIPService implements IAIPService {
     @Override
     public AIPEntity save(AIPEntity entity) {
         entity.setLastUpdate(OffsetDateTime.now());
-        return aipRepository.saveAndFlush(entity);
+        return aipRepository.save(entity);
     }
 
     @Override
@@ -167,38 +167,31 @@ public class AIPService implements IAIPService {
     }
 
     @Override
+    public Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds) {
+        return aipRepository.findByProviderIdInAndLast(providerIds, true);
+    }
+
+    @Override
     public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
-            Map<String, AIPEntity> currentLatestPerProviderId) {
+            Map<String, AIPEntity> lastVersions) {
+
         // lets get the old last version
-        AIPEntityLight dbLatest = aipLigthRepository.findLast(aipEntity.getProviderId());
+        AIPEntity dbLatest = lastVersions.get(aipEntity.getProviderId());
+
         if (dbLatest == null) {
             //then this is the first version (according to our code, not necessarily V1) ingested
             aipEntity.setLast(true);
-            currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
+            lastVersions.put(aipEntity.getProviderId(), aipEntity);
         } else {
             if (dbLatest.getVersion() < aipEntity.getVersion()) {
+                // Switch last entity
                 dbLatest.setLast(false);
-                // only update latest here, new aip is going to be handled later
-                aipRepository.updateLast(dbLatest.getId(), dbLatest.isLast());
-                // in this case we need to check if this aipEntity is really the latest between the ones we have already handled
-                AIPEntity currentLatest = currentLatestPerProviderId.get(aipEntity.getProviderId());
-                if (currentLatest != null) {
-                    if (currentLatest.getVersion() < aipEntity.getVersion()) {
-                        currentLatest.setLast(false);
-                        aipEntity.setLast(true);
-                        currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
-                        aipRepository.updateLast(currentLatest.getId(), currentLatest.isLast());
-                    } else {
-                        aipEntity.setLast(false);
-                    }
-                } else {
-                    // there is no particular check to be done so this is the current latest aipEntity
-                    aipEntity.setLast(true);
-                    currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
-                }
+                aipEntity.setLast(true);
+                lastVersions.put(aipEntity.getProviderId(), aipEntity);
             } else {
                 aipEntity.setLast(false);
             }
+
             sessionNotifier.incrementNewProductVersion(aipEntity);
             // In case versioning mode is IGNORE or MANUAL, we do not even reach this point in code
             // In case versioning mode is INC_VERSION, then we have nothing particular to do
@@ -333,6 +326,7 @@ public class AIPService implements IAIPService {
         return events;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerUpdatesCreator(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);

@@ -65,6 +65,8 @@ public interface ISIPService {
      * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
      */
+    SIPEntity saveAndFlush(SIPEntity sip);
+
     SIPEntity save(SIPEntity sip);
 
     /**

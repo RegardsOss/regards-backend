@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service.request;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,8 +96,6 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
-
-    private static final String FINALIZE = "[FINALIZE ON STORE SUCCESS] ";
 
     @Autowired
     private IngestConfigurationProperties confProperties;
@@ -252,7 +251,7 @@ public class IngestRequestService implements IIngestRequestService {
             if (latestSip.getVersion() < sipEntity.getVersion()) {
                 LOGGER.debug("Previous version of sip {} found", sipEntity.getProviderId());
                 latestSip.setLast(false);
-                sipService.save(latestSip);
+                sipService.saveAndFlush(latestSip);
                 sipEntity.setLast(true);
             } else {
                 LOGGER.debug("No previous version of sip {}", sipEntity.getProviderId());
@@ -260,7 +259,7 @@ public class IngestRequestService implements IIngestRequestService {
             }
         }
         // Save SIP entity
-        sipEntity = sipService.save(sipEntity);
+        sipEntity = sipService.saveAndFlush(sipEntity);
 
         // Build AIP entities and save them
         // decision whether one aip is the latest for its providerId is handled once we know an AIP is stored
@@ -275,6 +274,9 @@ public class IngestRequestService implements IIngestRequestService {
         return aipEntities;
     }
 
+    /**
+     * Optimization method for loading {@link IngestProcessingChain}
+     */
     private Map<String, Optional<IngestProcessingChain>> preloadChains(Set<IngestRequest> requests,
             Map<String, Optional<IngestProcessingChain>> chains) {
         if (requests != null) {
@@ -286,6 +288,16 @@ public class IngestRequestService implements IIngestRequestService {
             }
         }
         return chains;
+    }
+
+    /**
+     * Optimization method for loading last versions of {@link AIPEntity}
+     */
+    private Map<String, AIPEntity> preloadLastVersions(Set<IngestRequest> requests,
+            Map<String, AIPEntity> aipEntities) {
+        Set<AIPEntity> lastVersions = aipService
+                .findLastByProviderIds(requests.stream().map(r -> r.getProviderId()).collect(Collectors.toSet()));
+        return lastVersions.stream().collect(Collectors.toMap(AIPEntity::getProviderId, aip -> aip));
     }
 
     @Override
@@ -312,7 +324,8 @@ public class IngestRequestService implements IIngestRequestService {
                 Set<IngestRequest> requests = Sets.newHashSet(request);
                 finalizeSuccessfulRequest(requests, false,
                                           preloadChains(requests,
-                                                        new HashMap<String, Optional<IngestProcessingChain>>()));
+                                                        new HashMap<String, Optional<IngestProcessingChain>>()),
+                                          preloadLastVersions(requests, new HashMap<String, AIPEntity>()));
             }
         } catch (ModuleException e) {
             // Keep track of the error
@@ -358,18 +371,23 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public void handleRemoteStoreSuccess(Map<RequestInfo, Set<IngestRequest>> requests) {
 
+        // Preload last versions
+        Set<IngestRequest> merged = new HashSet<>();
+        requests.forEach((k, v) -> merged.addAll(v));
+        Map<String, AIPEntity> lastVersions = preloadLastVersions(merged, new HashMap<>());
+
         Map<String, Optional<IngestProcessingChain>> chains = new HashMap<>();
         for (Entry<RequestInfo, Set<IngestRequest>> entry : requests.entrySet()) {
-            handleRemoteStoreSuccess(entry.getKey(), entry.getValue(), preloadChains(entry.getValue(), chains));
+            handleRemoteStoreSuccess(entry.getKey(), entry.getValue(), preloadChains(entry.getValue(), chains),
+                                     lastVersions);
         }
     }
 
     private void handleRemoteStoreSuccess(RequestInfo requestInfo, Set<IngestRequest> requests,
-            Map<String, Optional<IngestProcessingChain>> chains) {
+            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
 
         Set<IngestRequest> toFinalize = Sets.newHashSet();
 
-        long start = System.currentTimeMillis();
         for (IngestRequest request : requests) {
             if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 // Update AIPs with meta returned by storage
@@ -388,11 +406,7 @@ public class IngestRequestService implements IIngestRequestService {
                 saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
             }
         }
-        LOGGER.info(">>>>>>>>>>>>>>>> UPDATE AIP in {} ms", System.currentTimeMillis() - start);
-
-        finalizeSuccessfulRequest(toFinalize, true, chains);
-
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>> STORE SUCCESS HANDLED in {} ms", System.currentTimeMillis() - start);
+        finalizeSuccessfulRequest(toFinalize, true, chains, lastVersions);
     }
 
     private List<String> updateRemoteStepGroupId(IngestRequest request, RequestInfo requestInfo) {
@@ -402,8 +416,10 @@ public class IngestRequestService implements IIngestRequestService {
         return remoteStepGroupIds;
     }
 
+    // NOTE : potential error if 2 instances work on the same provider aip at the same time then ...
+    // ... 2 "last" aip may occurs and db exception will be thrown.
     private void finalizeSuccessfulRequest(Collection<IngestRequest> requests, boolean afterStorage,
-            Map<String, Optional<IngestProcessingChain>> chains) {
+            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
 
         long start = System.currentTimeMillis();
 
@@ -414,14 +430,8 @@ public class IngestRequestService implements IIngestRequestService {
         // Clean
         deleteRequest(requests);
 
-        LOGGER.info(">>>>>>>>>>>>>>>> DELETE REQUEST in {} ms", System.currentTimeMillis() - start);
-
         List<AbstractRequest> toSchedule = Lists.newArrayList();
         Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
-
-        //keep track of aip already handled during this execution for versioning process
-        Map<String, AIPEntity> currentLatestPerProviderId = new HashMap<>();
-        LOGGER.trace("{} Since start {} ms", FINALIZE, System.currentTimeMillis() - start);
 
         for (IngestRequest request : requests) {
 
@@ -431,10 +441,7 @@ public class IngestRequestService implements IIngestRequestService {
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 // Find if this is the last version and set last flag accordingly
-                LOGGER.info(">>>>>>>>>>>>>>>> BEFORE VERSIONNING in {} ms", System.currentTimeMillis() - start);
-                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(),
-                                            currentLatestPerProviderId);
-                LOGGER.info(">>>>>>>>>>>>>>>> VERSIONNING in {} ms", System.currentTimeMillis() - start);
+                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), lastVersions);
                 aipService.save(aipEntity);
 
                 // Manage post processing
@@ -448,20 +455,15 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             }
 
-            LOGGER.trace("{} after managing AIP {} ms", FINALIZE, System.currentTimeMillis() - start);
-
             // Monitoring
             // Decrement from #requestRemoteStorage
-            LOGGER.info(">>>>>>>>>>>>>>>> BEFORE SESSION MANAGEMENT in {} ms", System.currentTimeMillis() - start);
             if (afterStorage) {
                 sessionNotifier.decrementProductStorePending(request);
             }
             // Even if no file is present in AIP, we consider the product as stored
             sessionNotifier.incrementProductStoreSuccess(request);
-            LOGGER.info(">>>>>>>>>>>>>>>> SESSION MANAGEMENT in {} ms", System.currentTimeMillis() - start);
 
             // Update SIP state
-            LOGGER.info(">>>>>>>>>>>>>>>> BEFORE SIP MANAGEMENT in {} ms", System.currentTimeMillis() - start);
             SIPEntity sipEntity = aips.get(0).getSip();
             sipEntity.setState(SIPState.STORED);
             sipService.save(sipEntity);
@@ -469,8 +471,6 @@ public class IngestRequestService implements IIngestRequestService {
             publisher
                     .publish(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
                                                       sipEntity.getSipId(), RequestState.SUCCESS, request.getErrors()));
-
-            LOGGER.info(">>>>>>>>>>>>>>>> SIP MANAGEMENT in {} ms", System.currentTimeMillis() - start);
         }
 
         // Create post process
@@ -483,6 +483,7 @@ public class IngestRequestService implements IIngestRequestService {
         }
 
         requestService.scheduleRequests(toSchedule);
+        LOGGER.trace("Successful request handled in {} ms", System.currentTimeMillis() - start);
     }
 
     @Override
@@ -531,7 +532,8 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             }
         }
-        finalizeSuccessfulRequest(requestsToFinilized, true, preloadChains(requestsToFinilized, chains));
+        finalizeSuccessfulRequest(requestsToFinilized, true, preloadChains(requestsToFinilized, chains),
+                                  preloadLastVersions(requestsToFinilized, new HashMap<String, AIPEntity>()));
     }
 
     @Override

@@ -83,7 +83,7 @@ public class SIPService implements ISIPService {
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);
-                save(sipEntity);
+                saveAndFlush(sipEntity);
             } else {
                 sipRepository.delete(sipEntity);
             }
@@ -96,11 +96,18 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public SIPEntity save(SIPEntity sip) {
+    public SIPEntity saveAndFlush(SIPEntity sip) {
         // update last update
         sip.setLastUpdate(OffsetDateTime.now());
         // Flush is needed for last version flag as only one sip can have last flag set to true !
         return sipRepository.saveAndFlush(sip);
+    }
+
+    @Override
+    public SIPEntity save(SIPEntity sip) {
+        // update last update
+        sip.setLastUpdate(OffsetDateTime.now());
+        return sipRepository.save(sip);
     }
 
     @Override

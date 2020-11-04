@@ -17,7 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +35,10 @@ import fr.cnes.regards.modules.ingest.service.aip.AIPPostProcessService;
  *
  * @author Iliana Ghazali
  */
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @Component
 public class AIPPostProcessScheduler {
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -47,7 +47,6 @@ public class AIPPostProcessScheduler {
 
     @Autowired
     private IAIPPostProcessRequestRepository repo;
-
 
     @Autowired
     private AIPPostProcessService aipPostProcessService;
@@ -70,5 +69,3 @@ public class AIPPostProcessScheduler {
         }
     }
 }
-
-

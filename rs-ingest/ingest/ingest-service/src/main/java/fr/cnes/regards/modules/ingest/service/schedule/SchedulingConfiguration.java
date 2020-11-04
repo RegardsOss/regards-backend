@@ -30,6 +30,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @Configuration
 @EnableScheduling
-@Profile("!noschedule")
+@Profile("!noscheduler")
 public class SchedulingConfiguration {
 }

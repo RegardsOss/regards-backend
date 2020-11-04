@@ -63,7 +63,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      */
     Page<AIPEntity> findAll(Specification<AIPEntity> aipEntitySpecification, Pageable pageable);
 
-    AIPEntity findByProviderIdAndLast(String providerId, boolean last);
+    Set<AIPEntity> findByProviderIdInAndLast(Collection<String> providerIds, boolean last);
 
     Collection<AIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
 
