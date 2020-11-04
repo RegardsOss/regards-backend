@@ -108,6 +108,10 @@ public class CatalogDownloadController {
                     isr = new InputStreamResource(response.body().asInputStream());
                 } else {
                     LOGGER.error("Error downloading file {} from storage", checksum);
+                    // if body is not null, forward the error content too
+                    if (response.body() != null) {
+                        isr = new InputStreamResource(response.body().asInputStream());
+                    }
                 }
                 HttpHeaders headers = new HttpHeaders();
                 for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
