@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -117,6 +118,9 @@ public class DescriptionBuilder {
      */
     @Autowired
     private IModelAttrAssocClient modelAttrAssocClient;
+
+    @Autowired
+    private IDatasetClient datasetClient;
 
     @Autowired
     private IAttributeFinder finder;
@@ -378,7 +382,7 @@ public class DescriptionBuilder {
             // Retrieve all AttributeModel for the given searchType and dataset if any
             ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse;
             if (context.getDatasetUrn().isPresent()) {
-                assocsResponse = modelAttrAssocClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
+                assocsResponse = datasetClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
             } else {
                 assocsResponse = modelAttrAssocClient.getModelAttrAssocsFor(getEntityType(context.getSearchType()));
             }

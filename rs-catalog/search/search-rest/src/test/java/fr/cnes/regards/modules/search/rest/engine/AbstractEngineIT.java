@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
@@ -183,6 +184,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     @Autowired
     protected ISearchEngineConfigurationService searchEngineService;
 
+    @Autowired
+    protected IDatasetClient datasetClientMock;
+
     // Keep reference to astronomical object
 
     protected Map<String, AbstractEntity<?>> astroObjects = new HashedMap<>();
@@ -272,7 +276,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
-        Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
+        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
                 .thenAnswer(invocation -> {
                     // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
                     return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));

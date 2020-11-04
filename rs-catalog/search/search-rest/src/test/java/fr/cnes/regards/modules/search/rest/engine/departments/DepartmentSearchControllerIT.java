@@ -146,7 +146,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
             EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
-        Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
+        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
                 .thenAnswer(invocation -> {
                     // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
                     return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
