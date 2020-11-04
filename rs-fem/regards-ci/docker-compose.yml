@@ -49,6 +49,7 @@ services:
     links:
       - rs-rabbitmq
       - rs-postgres
+      - rs-elasticsearch
     networks:
       - regards_IT_network
 
