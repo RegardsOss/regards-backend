@@ -107,6 +107,14 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.objectsCount = objectsCount;
     }
 
+    public long getFilesCount() {
+        return filesCount;
+    }
+
+    public long getFilesSize() {
+        return filesSize;
+    }
+
     public Long getFileTypeSize(String fileType) {
         return Optional.ofNullable(fileTypesSizes)
             .map(m -> m.getOrDefault(fileType, 0L))

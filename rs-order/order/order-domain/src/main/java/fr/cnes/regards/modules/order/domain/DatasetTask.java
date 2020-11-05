@@ -91,7 +91,7 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
 
     public DatasetTask() {}
 
-    public DatasetTask(String datasetIpid, String datasetLabel, int filesCount, long filesSize, int objectsCount, List<BasketSelectionRequest> selectionRequests) {
+    public DatasetTask(String datasetIpid, String datasetLabel, long filesCount, long filesSize, int objectsCount, List<BasketSelectionRequest> selectionRequests) {
         this.datasetIpid = datasetIpid;
         this.datasetLabel = datasetLabel;
         this.filesCount = filesCount;
