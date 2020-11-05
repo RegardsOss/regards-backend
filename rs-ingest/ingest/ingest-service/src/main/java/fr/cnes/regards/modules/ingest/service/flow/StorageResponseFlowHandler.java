@@ -181,11 +181,14 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             }
         }
 
+        LOGGER.debug(HANDLER_NAME + "Before handling success of {} request infos take {} ms", requestInfos.size(),
+                     System.currentTimeMillis() - globalstart);
+
         // Handle all detected INGEST requests
         ingestRequestService.handleRemoteStoreSuccess(toHandle);
 
-        LOGGER.info(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
-                    System.currentTimeMillis() - globalstart);
+        LOGGER.debug(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
+                     System.currentTimeMillis() - globalstart);
     }
 
     @Override

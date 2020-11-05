@@ -38,6 +38,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -125,9 +126,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     protected SIP create(String providerId, List<String> tags) {
         String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "test", "resources", "data", fileName),
-                           "MD5",
+        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
                            UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
@@ -141,7 +140,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         return sip;
     }
 
-    protected IngestProcessingChain createChainWithPostProcess(String label, Class postProcessPluginClass)
+    protected IngestProcessingChain createChainWithPostProcess(String label, Class<?> postProcessPluginClass)
             throws ModuleException {
         IngestProcessingChain newChain = new IngestProcessingChain();
         newChain.setDescription(label);
@@ -152,8 +151,8 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration
-                .build(AIPGenerationTestPlugin.class, null, Sets.newHashSet());
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);
@@ -186,15 +185,10 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
             List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
-                                                        session,
-                                                        chainLabel
-                                                                .orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                        Sets.newHashSet(categories),
-                                                        versioningMode,
-                                                        storagesMeta);
+        IngestMetadataDto mtd = IngestMetadataDto
+                .build(sessionOwner, session, chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                       Sets.newHashSet(categories), versioningMode, storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
-
 
 }

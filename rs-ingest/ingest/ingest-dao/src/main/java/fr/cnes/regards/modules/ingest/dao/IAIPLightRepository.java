@@ -44,10 +44,4 @@ public interface IAIPLightRepository extends JpaRepository<AIPEntityLight, Long>
     Page<AIPEntityLight> findAll(Specification<AIPEntityLight> aipEntitySpecification, Pageable pageable);
 
     Set<AIPEntityLight> findAllByProviderId(String providerId);
-
-    default AIPEntityLight findLast(String providerId) {
-        return findByProviderIdAndLast(providerId, true);
-    }
-
-    AIPEntityLight findByProviderIdAndLast(String providerId, boolean last);
 }
