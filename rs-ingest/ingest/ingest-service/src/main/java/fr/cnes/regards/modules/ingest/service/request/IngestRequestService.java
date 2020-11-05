@@ -246,20 +246,20 @@ public class IngestRequestService implements IIngestRequestService {
         SIPEntity latestSip = sipService.getLatestSip(sipEntity.getProviderId());
         if (latestSip == null) {
             LOGGER.debug("No previous sip {}", sipEntity.getProviderId());
-            sipEntity.setLast(true);
+            sipService.updateLastFlag(sipEntity, true);
         } else {
             if (latestSip.getVersion() < sipEntity.getVersion()) {
+                // Switch last entity
                 LOGGER.debug("Previous version of sip {} found", sipEntity.getProviderId());
-                latestSip.setLast(false);
-                sipService.saveAndFlush(latestSip);
-                sipEntity.setLast(true);
+                sipService.updateLastFlag(latestSip, false);
+                sipService.updateLastFlag(sipEntity, true);
             } else {
                 LOGGER.debug("No previous version of sip {}", sipEntity.getProviderId());
-                sipEntity.setLast(false);
+                sipService.updateLastFlag(sipEntity, false);
             }
         }
         // Save SIP entity
-        sipEntity = sipService.saveAndFlush(sipEntity);
+        sipEntity = sipService.save(sipEntity);
 
         // Build AIP entities and save them
         // decision whether one aip is the latest for its providerId is handled once we know an AIP is stored

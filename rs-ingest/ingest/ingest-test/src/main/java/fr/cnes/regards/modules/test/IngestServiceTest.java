@@ -45,6 +45,8 @@ import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -68,7 +70,13 @@ public class IngestServiceTest {
     protected ISIPRepository sipRepository;
 
     @Autowired
+    protected ILastSIPRepository lastSipRepository;
+
+    @Autowired
     protected IAIPRepository aipRepository;
+
+    @Autowired
+    protected ILastAIPRepository lastAipRepository;
 
     @Autowired
     protected IAbstractRequestRepository requestRepository;
@@ -108,7 +116,9 @@ public class IngestServiceTest {
                 ingestProcessingChainRepository.deleteAllInBatch();
                 ingestRequestRepository.deleteAllInBatch();
                 requestRepository.deleteAllInBatch();
+                lastAipRepository.deleteAllInBatch();
                 aipRepository.deleteAllInBatch();
+                lastSipRepository.deleteAllInBatch();
                 sipRepository.deleteAllInBatch();
                 jobInfoRepo.deleteAll();
                 pluginConfRepo.deleteAllInBatch();

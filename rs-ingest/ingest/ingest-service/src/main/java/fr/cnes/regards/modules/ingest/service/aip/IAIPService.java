@@ -76,6 +76,11 @@ public interface IAIPService {
     void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
+     * Update last flag for specified entity
+     */
+    AIPEntity updateLastFlag(AIPEntity sip, boolean last);
+
+    /**
      * Save AIP
      */
     AIPEntity save(AIPEntity entity);

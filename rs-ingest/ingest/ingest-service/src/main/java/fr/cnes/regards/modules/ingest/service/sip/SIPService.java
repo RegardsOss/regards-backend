@@ -36,8 +36,10 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
+import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -62,6 +64,9 @@ public class SIPService implements ISIPService {
     @Autowired
     private ISIPRepository sipRepository;
 
+    @Autowired
+    private ILastSIPRepository lastSipRepository;
+
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
         return sipRepository.loadAll(SIPEntitySpecifications
@@ -83,7 +88,7 @@ public class SIPService implements ISIPService {
             if (!deleteIrrevocably) {
                 // Mark the SIP correctly deleted
                 sipEntity.setState(SIPState.DELETED);
-                saveAndFlush(sipEntity);
+                save(sipEntity);
             } else {
                 sipRepository.delete(sipEntity);
             }
@@ -96,11 +101,15 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public SIPEntity saveAndFlush(SIPEntity sip) {
-        // update last update
-        sip.setLastUpdate(OffsetDateTime.now());
-        // Flush is needed for last version flag as only one sip can have last flag set to true !
-        return sipRepository.saveAndFlush(sip);
+    public SIPEntity updateLastFlag(SIPEntity sip, boolean last) {
+        sip.setLast(last);
+        save(sip); // Set id if not already set
+        if (sip.isLast()) {
+            lastSipRepository.save(new LastSIPEntity(sip.getId(), sip.getProviderId()));
+        } else {
+            lastSipRepository.deleteBySipId(sip.getId());
+        }
+        return sip;
     }
 
     @Override

@@ -61,12 +61,15 @@ public interface ISIPService {
     void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
+     * Update last flag for specified entity
+     */
+    SIPEntity updateLastFlag(SIPEntity sip, boolean last);
+
+    /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,
      * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
      */
-    SIPEntity saveAndFlush(SIPEntity sip);
-
     SIPEntity save(SIPEntity sip);
 
     /**

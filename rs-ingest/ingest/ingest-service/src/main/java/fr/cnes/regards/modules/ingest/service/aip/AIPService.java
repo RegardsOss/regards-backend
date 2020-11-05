@@ -66,9 +66,11 @@ import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
@@ -113,6 +115,9 @@ public class AIPService implements IAIPService {
     private IAIPRepository aipRepository;
 
     @Autowired
+    private ILastAIPRepository lastAipRepository;
+
+    @Autowired
     private IAIPLightRepository aipLigthRepository;
 
     @Autowired
@@ -140,6 +145,18 @@ public class AIPService implements IAIPService {
             entities.add(aipRepository.save(AIPEntity.build(sip, AIPState.GENERATED, aip)));
         }
         return entities;
+    }
+
+    @Override
+    public AIPEntity updateLastFlag(AIPEntity aip, boolean last) {
+        aip.setLast(last);
+        save(aip); // Set id if not already set
+        if (aip.isLast()) {
+            lastAipRepository.save(new LastAIPEntity(aip.getId(), aip.getProviderId()));
+        } else {
+            lastAipRepository.deleteByAipId(aip.getId());
+        }
+        return aip;
     }
 
     @Override
@@ -180,16 +197,16 @@ public class AIPService implements IAIPService {
 
         if (dbLatest == null) {
             //then this is the first version (according to our code, not necessarily V1) ingested
-            aipEntity.setLast(true);
+            updateLastFlag(aipEntity, true);
             lastVersions.put(aipEntity.getProviderId(), aipEntity);
         } else {
             if (dbLatest.getVersion() < aipEntity.getVersion()) {
                 // Switch last entity
-                dbLatest.setLast(false);
-                aipEntity.setLast(true);
+                updateLastFlag(dbLatest, false);
+                updateLastFlag(aipEntity, true);
                 lastVersions.put(aipEntity.getProviderId(), aipEntity);
             } else {
-                aipEntity.setLast(false);
+                updateLastFlag(aipEntity, false);
             }
 
             sessionNotifier.incrementNewProductVersion(aipEntity);
