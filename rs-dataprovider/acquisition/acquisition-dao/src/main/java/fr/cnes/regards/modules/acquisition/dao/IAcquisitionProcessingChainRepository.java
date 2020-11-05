@@ -86,4 +86,8 @@ public interface IAcquisitionProcessingChainRepository
     int setLocked(Boolean isLocked, Long chainId);
 
     List<AcquisitionProcessingChain> findByLabel(String label);
+
+    @EntityGraph("graph.acquisition.file.info.complete")
+    @Override
+    List<AcquisitionProcessingChain> findAll();
 }
