@@ -18,44 +18,6 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-
-import org.hamcrest.text.MatchesPattern;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.restdocs.snippet.Snippet;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.LinkedMultiValueMap;
-import org.xml.sax.SAXException;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -89,11 +51,55 @@ import fr.cnes.regards.modules.order.metalink.schema.FileType;
 import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
 import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
 import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
+import fr.cnes.regards.modules.order.rest.mock.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.text.MatchesPattern;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.restdocs.snippet.Snippet;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.LinkedMultiValueMap;
+import org.xml.sax.SAXException;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * @author oroussel
@@ -287,16 +293,24 @@ public class OrderControllerIT extends AbstractRegardsIT {
         BasketDatedItemsSelection bDIS = new BasketDatedItemsSelection();
         bDIS.setDate(OffsetDateTime.now());
         bDIS.setObjectsCount(2);
-        bDIS.setFilesCount(2);
-        bDIS.setFilesSize(45050);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 2L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 45050L);
+        bDIS.setFileTypeCount(DataType.RAWDATA.name(), 2L);
+        bDIS.setFileTypeSize(DataType.RAWDATA.name(), 45050L);
         bDIS.setSelectionRequest(selectionRequest);
 
         BasketDatasetSelection bDS = new BasketDatasetSelection();
         bDS.setDatasetIpid("URN:DATASET:EXAMPLE-DATASET:V1");
         bDS.setDatasetLabel("example dataset");
         bDS.setObjectsCount(2);
-        bDS.setFilesCount(2);
-        bDS.setFilesSize(45050);
+        bDS.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
+        bDS.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 2L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 45050L);
+        bDS.setFileTypeCount(DataType.RAWDATA.name(), 2L);
+        bDS.setFileTypeSize(DataType.RAWDATA.name(), 45050L);
         bDS.addItemsSelection(bDIS);
 
         Basket b = new Basket();
@@ -560,16 +574,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_STO_ARC_420")
     @Test
     public void testDownloadZipFile()
-            throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
-            ParserConfigurationException {
+        throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+        ParserConfigurationException {
         Order order = createOrderAsRunning();
 
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
         ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
-                                                        customizer().expectStatusOk(), "Should return result",
-                                                        order.getId());
+            customizer().expectStatusOk(), "Should return result",
+            order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         //resultFile.deleteOnExit();
@@ -581,6 +595,51 @@ public class OrderControllerIT extends AbstractRegardsIT {
             is.close();
         }
         Assert.assertEquals(1816l, resultFile.length());
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderControllerIT.class);
+
+    @Test
+    public void testDownloadZipFile_contains_notice_when_inner_downloads_fail()
+        throws URISyntaxException, IOException, InterruptedException, JAXBException, SAXException,
+        ParserConfigurationException {
+        Order order = createOrderAsRunning();
+
+        //////////////////////////////////
+        // Then download order Zip file //
+        //////////////////////////////////
+        ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
+            customizer().expectStatusOk(), "Should return result",
+            order.getId());
+        assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
+
+        Set<String> failures = new HashSet<>();
+        Object o = resultActions.andReturn().getAsyncResult();
+        System.out.println(o);
+        try (InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
+             ZipInputStream zis = new ZipInputStream(is)
+        ) {
+            ZipEntry entry;
+            byte[] buffer = new byte[2048];
+
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.getName().equals("NOTICE.txt")) {
+                    StringBuilder sb = new StringBuilder();
+                    int len = 0;
+                    while ((len = zis.read(buffer)) > 0)
+                    {
+                        String s = new String(buffer, 0, len, StandardCharsets.UTF_8);
+                        sb.append(s);
+                    }
+                    failures.addAll(Arrays.asList(sb.toString().split("\n")));
+                    break;
+                }
+            }
+        }
+        Assert.assertTrue(failures.size() > 0);
+        Assert.assertTrue(
+            failures.stream().findFirst().get()
+                .matches(String.format("Failed to download file \\(.*\\): %s.", StorageClientMock.NO_QUOTA_MSG_STUB)));
     }
 
     @Test

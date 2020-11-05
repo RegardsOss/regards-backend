@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import java.util.*;
+import javax.persistence.*;
+
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 
 /**
  * A grouped items by dataset selection from a basket
@@ -51,10 +51,18 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private int filesCount = 0;
+    private long filesCount = 0;
 
     @Column(name = "files_size")
     private long filesSize = 0;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_types_sizes")
+    private StringToLongMap fileTypesSizes;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_types_count")
+    private StringToLongMap fileTypesCount;
 
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
@@ -99,20 +107,30 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.objectsCount = objectsCount;
     }
 
-    public long getFilesSize() {
-        return filesSize;
+    public Long getFileTypeSize(String fileType) {
+        return Optional.ofNullable(fileTypesSizes)
+            .map(m -> m.getOrDefault(fileType, 0L))
+            .orElse(0L);
     }
 
-    public void setFilesSize(long filesSize) {
-        this.filesSize = filesSize;
+    public void setFileTypeSize(String fileType, Long filesSize) {
+        if (fileTypesSizes==null) {
+            fileTypesSizes = new StringToLongMap();
+        }
+        this.fileTypesSizes.put(fileType, filesSize);
     }
 
-    public int getFilesCount() {
-        return filesCount;
+    public Long getFileTypeCount(String fileType) {
+        return Optional.ofNullable(fileTypesCount)
+            .map(m -> m.getOrDefault(fileType, 0L))
+            .orElse(0L);
     }
 
-    public void setFilesCount(int filesCount) {
-        this.filesCount = filesCount;
+    public void setFileTypeCount(String fileType, Long filesCount) {
+        if (fileTypesCount==null) {
+            fileTypesCount = new StringToLongMap();
+        }
+        this.fileTypesCount.put(fileType, filesCount);
     }
 
     public SortedSet<BasketDatedItemsSelection> getItemsSelections() {

@@ -18,19 +18,20 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 import javax.validation.Valid;
-
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Dated items selection
@@ -57,10 +58,22 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private int filesCount = 0;
+    private long filesCount = 0;
 
     @Column(name = "files_size")
     private long filesSize = 0;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_types_sizes")
+    private StringToLongMap fileTypesSizes;
+
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "file_types_count")
+    private StringToLongMap fileTypesCount;
+
+    public OffsetDateTime getDate() {
+        return date;
+    }
 
     public void setDate(OffsetDateTime date) {
         this.date = date;
@@ -82,20 +95,30 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
         this.objectsCount = objectsCount;
     }
 
-    public long getFilesSize() {
-        return filesSize;
+    public Long getFileTypeSize(String fileType) {
+        return Optional.ofNullable(fileTypesSizes)
+            .map(m -> m.getOrDefault(fileType, 0L))
+            .orElse(0L);
     }
 
-    public void setFilesSize(long filesSize) {
-        this.filesSize = filesSize;
+    public void setFileTypeSize(String fileType, Long filesSize) {
+        if (fileTypesSizes==null) {
+            fileTypesSizes = new StringToLongMap();
+        }
+        this.fileTypesSizes.put(fileType, filesSize);
     }
 
-    public int getFilesCount() {
-        return filesCount;
+    public Long getFileTypeCount(String fileType) {
+        return Optional.ofNullable(fileTypesCount)
+            .map(m -> m.getOrDefault(fileType, 0L))
+            .orElse(0L);
     }
 
-    public void setFilesCount(int filesCount) {
-        this.filesCount = filesCount;
+    public void setFileTypeCount(String fileType, Long filesCount) {
+        if (fileTypesCount==null) {
+            fileTypesCount = new StringToLongMap();
+        }
+        this.fileTypesCount.put(fileType, filesCount);
     }
 
     @Override

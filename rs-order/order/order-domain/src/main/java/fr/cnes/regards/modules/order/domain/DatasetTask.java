@@ -79,7 +79,7 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private int filesCount = 0;
+    private long filesCount = 0;
 
     @Column(name = "files_size")
     private long filesSize = 0;
@@ -135,11 +135,11 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         this.objectsCount = objectsCount;
     }
 
-    public int getFilesCount() {
+    public long getFilesCount() {
         return filesCount;
     }
 
-    public void setFilesCount(int filesCount) {
+    public void setFilesCount(long filesCount) {
         this.filesCount = filesCount;
     }
 

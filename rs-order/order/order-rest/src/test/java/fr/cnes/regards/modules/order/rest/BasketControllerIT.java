@@ -18,14 +18,27 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -41,26 +54,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author oroussel
@@ -210,7 +210,16 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testGetBasket() {
         createBasket();
-        performDefaultGet(BasketController.ORDER_BASKET, customizer().expectStatusOk(), "error");
+        RequestBuilderCustomizer customizer = customizer()
+            .expectStatusOk()
+            .expectValue("$.content.quota", 8L)
+            .expectValue("$.content.datasetSelections[0].filesCount", 10L)
+            .expectValue("$.content.datasetSelections[0].filesSize", 124452L)
+            .expectValue("$.content.datasetSelections[0].quota", 8L)
+            .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesCount", 10L)
+            .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesSize", 124452L)
+            .expectValue("$.content.datasetSelections[0].itemsSelections[0].quota", 8L);
+        performDefaultGet(BasketController.ORDER_BASKET, customizer, "error");
     }
 
     private Basket createBasket() {
@@ -219,15 +228,23 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Basket basket = new Basket(getDefaultUserEmail());
         BasketDatasetSelection dsSel = new BasketDatasetSelection();
         dsSel.setDatasetIpid("URN:AIP:DATASET:Olivier:4af7fa7f-110e-42c8-b434-7c863c280548:V1");
-        dsSel.setFilesCount(10);
-        dsSel.setFilesSize(124452);
+        dsSel.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 2L);
+        dsSel.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 2L);
+        dsSel.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 8L);
+        dsSel.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 124450L);
+        dsSel.setFileTypeCount(DataType.RAWDATA.name(), 10L);
+        dsSel.setFileTypeSize(DataType.RAWDATA.name(), 124452L);
         dsSel.setDatasetLabel("DATASET1");
         dsSel.setObjectsCount(5);
 
         BasketDatedItemsSelection itemSel = new BasketDatedItemsSelection();
         itemSel.setDate(date);
-        itemSel.setFilesCount(10);
-        itemSel.setFilesSize(124452);
+        itemSel.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 2L);
+        itemSel.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 2L);
+        itemSel.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 8L);
+        itemSel.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 124450L);
+        itemSel.setFileTypeCount(DataType.RAWDATA.name(), 10L);
+        itemSel.setFileTypeSize(DataType.RAWDATA.name(), 124452L);
         itemSel.setObjectsCount(5);
         itemSel.setSelectionRequest(createBasketSelectionRequest(null, ""));
 
@@ -241,8 +258,15 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testRemoveDatasetSelection() throws UnsupportedEncodingException {
         Basket basket = createBasket();
-        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID,
-                             customizer().expectStatusOk(), "error", basket.getDatasetSelections().first().getId());
+        RequestBuilderCustomizer customizer = customizer()
+            .expectStatusOk()
+            .expectIsEmpty("$.content.datasetSelections")
+            .expectValue("$.content.quota", 0L);
+        performDefaultDelete(
+            BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID,
+            customizer,
+            "error",
+            basket.getDatasetSelections().first().getId());
     }
 
     @Test
