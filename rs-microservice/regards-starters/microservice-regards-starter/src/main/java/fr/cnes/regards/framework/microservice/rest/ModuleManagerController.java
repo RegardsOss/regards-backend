@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -26,13 +28,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,7 +51,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
@@ -74,21 +75,21 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 @RequestMapping(ModuleManagerController.TYPE_MAPPING)
 public class ModuleManagerController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ModuleManagerController.class);
-
     public static final String TYPE_MAPPING = "/microservice";
-
-    private static final String ENABLED_MAPPING = "/enabled";
 
     public static final String CONFIGURATION_MAPPING = "/configuration";
 
-    public static final String CONFIGURATION_ENABLED_MAPPING = CONFIGURATION_MAPPING + ENABLED_MAPPING;
-
     public static final String READY_MAPPING = "/ready";
 
-    public static final String READY_ENABLED_MAPPING = READY_MAPPING + ENABLED_MAPPING;
-
     public static final String RESTART_MAPPING = "/restart";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModuleManagerController.class);
+
+    private static final String ENABLED_MAPPING = "/enabled";
+
+    public static final String CONFIGURATION_ENABLED_MAPPING = CONFIGURATION_MAPPING + ENABLED_MAPPING;
+
+    public static final String READY_ENABLED_MAPPING = READY_MAPPING + ENABLED_MAPPING;
 
     public static final String RESTART_ENABLED_MAPPING = RESTART_MAPPING + ENABLED_MAPPING;
 
@@ -109,8 +110,6 @@ public class ModuleManagerController {
     private GsonBuilderFactory gsonBuilderFactory;
 
     private Gson configGson;
-
-    private Gson configItemGson;
 
     @Autowired(required = false)
     private List<IModuleManager<?>> managers;
@@ -146,7 +145,7 @@ public class ModuleManagerController {
         // Stream data
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
             writer.setIndent("  ");
-            getConfigGson().toJson(microConfig, MicroserviceConfiguration.class, writer);
+            configGson.toJson(microConfig, MicroserviceConfiguration.class, writer);
             writer.flush();
         } catch (IOException e) {
             String message = String.format("Error exporting configuration for microservice %s", microserviceName);
@@ -161,7 +160,7 @@ public class ModuleManagerController {
             throws ModuleException {
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
-            MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
+            MicroserviceConfiguration microConfig = configGson.fromJson(reader, MicroserviceConfiguration.class);
             // Propagate configuration to modules
             if ((managers != null) && !managers.isEmpty()) {
                 Set<ModuleImportReport> importReports = new HashSet<>();
@@ -211,23 +210,21 @@ public class ModuleManagerController {
         }
     }
 
-    private Gson getConfigGson() {
-        if (configGson == null) {
-            // Create GSON for generic module configuration item adapter without itself! (avoid stackOverflow)
-            GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
-            customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
-            customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
-            configItemGson = customBuilder.create();
+    @EventListener
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
+        // Create GSON for generic module configuration item adapter without itself! (avoid stackOverflow)
+        GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
+        customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
+        customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
+        Gson configItemGson = customBuilder.create();
 
-            // Create GSON with specific adapter to dynamically analyze parameterized type
-            customBuilder = gsonBuilderFactory.newBuilder();
-            customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
-            customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
-            customBuilder.registerTypeHierarchyAdapter(ModuleConfigurationItem.class,
-                                                       new ModuleConfigurationItemAdapter(configItemGson));
-            configGson = customBuilder.create();
-        }
-        return configGson;
+        // Create GSON with specific adapter to dynamically analyze parameterized type
+        customBuilder = gsonBuilderFactory.newBuilder();
+        customBuilder.addSerializationExclusionStrategy(new SerializationExclusionStrategy<>(ConfigIgnore.class));
+        customBuilder.registerTypeHierarchyAdapter(Class.class, new ClassAdapter());
+        customBuilder.registerTypeHierarchyAdapter(ModuleConfigurationItem.class,
+                                                   new ModuleConfigurationItemAdapter(configItemGson));
+        configGson = customBuilder.create();
     }
 
     /**
@@ -238,7 +235,8 @@ public class ModuleManagerController {
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
         ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE,
-                Lists.newArrayList(), null);
+                                                                                          Lists.newArrayList(),
+                                                                                          null);
         if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isReadyImplemented()) {
