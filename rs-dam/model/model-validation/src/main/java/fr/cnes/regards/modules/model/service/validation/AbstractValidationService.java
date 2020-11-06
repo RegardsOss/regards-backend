@@ -124,33 +124,31 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
             // Null property check
             if (att == null) {
                 checkNullProperty(attModel, errors, mode);
-                return errors;
-            }
+            } else {
 
-            // Null property value check
-            if (att.getValue() == null) {
-                checkNullPropertyValue(attModel, errors, mode);
-                return errors;
-            }
-
-            // Check if value is expected or not according to the validation context
-            checkAuthorizedPropertyValue(attModel, errors, mode);
-
-            if (errors.hasErrors()) {
-                // Ok, attribute has been checked
-                toCheckProperties.remove(attPath);
-                return errors;
-            }
-
-            // Do validation
-            for (Validator validator : getValidators(modelAttrAssoc, attPath, mode, feature)) {
-                if (validator.supports(att.getClass())) {
-                    validator.validate(att, errors);
+                // Null property value check
+                if (att.getValue() == null) {
+                    checkNullPropertyValue(attModel, errors, mode);
                 } else {
-                    String defaultMessage = String.format("Unsupported validator \"%s\" for property \"%s\"",
-                                                          validator.getClass().getName(),
-                                                          attPath);
-                    errors.reject("error.unsupported.validator.message", defaultMessage);
+
+                    // Check if value is expected or not according to the validation context
+                    checkAuthorizedPropertyValue(attModel, errors, mode);
+
+                    if (!errors.hasErrors()) {
+
+                        // Do validation
+                        for (Validator validator : getValidators(modelAttrAssoc, attPath, mode, feature)) {
+                            if (validator.supports(att.getClass())) {
+                                validator.validate(att, errors);
+                            } else {
+                                String defaultMessage = String
+                                        .format("Unsupported validator \"%s\" for property \"%s\"",
+                                                validator.getClass().getName(),
+                                                attPath);
+                                errors.reject("error.unsupported.validator.message", defaultMessage);
+                            }
+                        }
+                    }
                 }
             }
         }
