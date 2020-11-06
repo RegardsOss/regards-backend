@@ -47,7 +47,8 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ActiveProfiles("disableDataProviderTask")
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_module_manager_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_module_manager_it",
+        "regards.jobs.completion.update.rate.ms=3600000" })
 public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -71,6 +72,14 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
     @Before
     public void beforeEachTest() throws ModuleException {
         afterEachTest();
+        long startCreation = System.currentTimeMillis();
+        getLogger().info("STARTING TO CREATE ACQUISITION CHAINS");
+        // lets create multiple AcquisitionChains
+        for (int i = 0; i < 500; i++) {
+            createFullAcquisitionChain(i);
+            getLogger().info("ACQUISITION CHAINS N°{} CREATED", i);
+        }
+        getLogger().info("ENDED ACQUISITION CHAINS CREATION IN {}ms", System.currentTimeMillis() - startCreation);
     }
 
     @After
@@ -87,19 +96,13 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
     @Test
     @Purpose("This tests should help to diagnostic issues with too slow exports")
     public void testExport() throws ModuleException {
-        getLogger().info("STARTING TO CREATE ACQUISITION CHAINS");
-        // lets create multiple AcquisitionChains
-        for (int i = 0; i < 500; i++) {
-            createFullAcquisitionChain(i);
-            getLogger().info("ACQUISITION CHAINS N°{} CREATED", i);
-        }
-        getLogger().info("ENDED ACQUISITION CHAINS CREATION");
         // now lets export them
         RequestBuilderCustomizer requestCustomizerBuilder = customizer().expectStatus(HttpStatus.OK);
+        long startExport = System.currentTimeMillis();
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                           requestCustomizerBuilder,
                           "There has been some error while dataprovider configuration export");
-        getLogger().info("EXPORT DONE");
+        getLogger().info("EXPORT DONE in  {} ms", System.currentTimeMillis() - startExport);
     }
 
     private void createFullAcquisitionChain(int i) throws ModuleException {
