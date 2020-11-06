@@ -155,7 +155,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
 
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
-            LOGGER.debug(HANDLER_NAME + "handling success storage request {} with {} success / {} errors",
+            LOGGER.trace(HANDLER_NAME + "handling success storage request {} with {} success / {} errors",
                          ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
             boolean found = false;
             Set<IngestRequest> toHandleRemote = Sets.newHashSet();
@@ -187,8 +187,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
         // Handle all detected INGEST requests
         ingestRequestService.handleRemoteStoreSuccess(toHandle);
 
-        LOGGER.debug(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
-                     System.currentTimeMillis() - globalstart);
+        LOGGER.info(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
+                    System.currentTimeMillis() - globalstart);
     }
 
     @Override

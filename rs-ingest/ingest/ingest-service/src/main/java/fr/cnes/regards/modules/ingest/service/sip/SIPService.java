@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SIPEntitySpecifications;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -104,12 +106,22 @@ public class SIPService implements ISIPService {
     public SIPEntity updateLastFlag(SIPEntity sip, boolean last) {
         sip.setLast(last);
         save(sip); // Set id if not already set
-        if (sip.isLast()) {
+        if (last) {
             lastSipRepository.save(new LastSIPEntity(sip.getId(), sip.getProviderId()));
         } else {
             lastSipRepository.deleteBySipId(sip.getId());
         }
         return sip;
+    }
+
+    @Override
+    public void updateLastFlag(ISipIdAndVersion partialSip, boolean last) {
+        sipRepository.updateLast(partialSip.getId(), last);
+        if (last) {
+            lastSipRepository.save(new LastSIPEntity(partialSip.getId(), partialSip.getProviderId()));
+        } else {
+            lastSipRepository.deleteBySipId(partialSip.getId());
+        }
     }
 
     @Override
@@ -137,7 +149,20 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public SIPEntity getLatestSip(String providerId) {
-        return sipRepository.findByProviderIdAndLast(providerId, true);
+    public ISipIdAndVersion getLatestSip(String providerId) {
+        List<ISipIdAndVersion> versions = sipRepository.findByProviderIdAndLast(providerId, true);
+        if (versions.isEmpty()) {
+            return null;
+        } else if (versions.size() == 1) {
+            return versions.get(0);
+        } else {
+            ISipIdAndVersion lastversion = null;
+            for (ISipIdAndVersion projection : versions) {
+                if ((lastversion == null) || (projection.getVersion() > lastversion.getVersion())) {
+                    lastversion = projection;
+                }
+            }
+            return lastversion;
+        }
     }
 }

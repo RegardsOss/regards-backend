@@ -32,7 +32,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
@@ -116,5 +120,14 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
 
-    SIPEntity findByProviderIdAndLast(String providerId, boolean last);
+    /**
+     * Retrieve partial SIP avoiding mutating SIP state that may be mutated on other thread.
+     * <br/>
+     * Note that due to deferred constraint, we can have two versions of a SIP with last flag at a moment.
+     */
+    List<ISipIdAndVersion> findByProviderIdAndLast(String providerId, boolean last);
+
+    @Modifying
+    @Query(value = "UPDATE SIPEntity SET last = :last WHERE id = :id")
+    int updateLast(@Param("id") Long id, @Param("last") boolean last);
 }

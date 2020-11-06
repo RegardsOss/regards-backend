@@ -67,6 +67,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
@@ -243,7 +244,7 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
         // first lets find out which SIP is the last
-        SIPEntity latestSip = sipService.getLatestSip(sipEntity.getProviderId());
+        ISipIdAndVersion latestSip = sipService.getLatestSip(sipEntity.getProviderId());
         if (latestSip == null) {
             LOGGER.debug("No previous sip {}", sipEntity.getProviderId());
             sipService.updateLastFlag(sipEntity, true);
