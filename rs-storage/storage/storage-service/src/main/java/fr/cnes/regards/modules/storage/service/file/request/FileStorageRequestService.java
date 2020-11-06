@@ -264,8 +264,7 @@ public class FileStorageRequestService {
             return handleFileToStoreAlreadyExists(fileRef.get(), request, oDeletionReq, groupId);
         } else if (oReq.isPresent()) {
             FileStorageRequest existingReq = oReq.get();
-            existingReq.getOwners().add(request.getOwner());
-            existingReq.getGroupIds().add(groupId);
+            existingReq.update(request, groupId);
             if (existingReq.getStatus() == FileRequestStatus.ERROR) {
                 // Allow retry of error requests when the same request is sent
                 existingReq.setStatus(FileRequestStatus.TO_DO);

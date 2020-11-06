@@ -48,6 +48,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 
 /**
  * Database definition of the table containing the requests to store files.
@@ -157,6 +158,26 @@ public class FileStorageRequest {
         this.metaInfo = metaInfos;
         this.groupIds.add(groupId);
         this.creationDate = OffsetDateTime.now();
+    }
+
+    /**
+     * Update an existing request from a new received request.
+     * @param request
+     * @param groupId
+     */
+    public void update(FileStorageRequestDTO request, String groupId) {
+        if (!this.owners.contains(request.getOwner())) {
+            this.owners.add(request.getOwner());
+        }
+        if (!this.groupIds.contains(groupId)) {
+            this.groupIds.add(groupId);
+        }
+        this.storageSubDirectory = request.getSubDirectory();
+        this.originUrl = request.getOriginUrl();
+        if (this.metaInfo != null) {
+            this.metaInfo.setFileName(request.getFileName());
+            this.metaInfo.setType(request.getType());
+        }
     }
 
     public Long getId() {

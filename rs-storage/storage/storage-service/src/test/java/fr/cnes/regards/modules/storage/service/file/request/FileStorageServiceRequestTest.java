@@ -176,6 +176,50 @@ public class FileStorageServiceRequestTest extends AbstractStorageTest {
     }
 
     @Test
+    public void relaunchStoreErrorRequest() throws InterruptedException, ExecutionException, ModuleException {
+        String checksum = UUID.randomUUID().toString();
+        String storageDestination = "somewhere";
+        String owner = "owner";
+        String fileName = "error.file.test";
+        String errorUrl = "file://somewhere/plop.test";
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
+                MediaType.APPLICATION_OCTET_STREAM);
+        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
+        // Run file reference creation.
+        stoReqService.handleRequest(owner, fileMetaInfo, errorUrl, storageDestination,
+                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
+        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+        Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(),
+                                                                          fileMetaInfo.getChecksum());
+        Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
+        Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.ERROR,
+                            fileRefReqs.stream().findFirst().get().getStatus());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", fileName,
+                            fileRefReqs.stream().findFirst().get().getMetaInfo().getFileName());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", errorUrl,
+                            fileRefReqs.stream().findFirst().get().getOriginUrl());
+
+        String newFileName = "ok.file.test";
+        fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "ok.file.test", 132L,
+                MediaType.APPLICATION_OCTET_STREAM);
+        // Run file reference creation.
+        stoReqService.handleRequest(owner, fileMetaInfo, originUrl, storageDestination,
+                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+
+        fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+        Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
+        Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.TO_DO,
+                            fileRefReqs.stream().findFirst().get().getStatus());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", newFileName,
+                            fileRefReqs.stream().findFirst().get().getMetaInfo().getFileName());
+        Assert.assertEquals("File reference request should be in STORE_ERROR status", originUrl,
+                            fileRefReqs.stream().findFirst().get().getOriginUrl());
+    }
+
+    @Test
     public void storeImageWithOnlinePlugin()
             throws InterruptedException, ExecutionException, IOException, NoSuchAlgorithmException {
         File inputImage = Paths.get("src/test/resources/input/cnes.png").toFile();
