@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -50,6 +44,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -66,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 
 /**
@@ -78,12 +76,17 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
-        attributeNodes = { @NamedAttributeNode(value = "fileInfos"),
-                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
-                        subgraph = "graph.acquisition.chain.jobs") },
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete", attributeNodes = {
+        @NamedAttributeNode(value = "fileInfos", subgraph = "graph.acquisition.chain.file.infos.scan"),
+        @NamedAttributeNode(value = "validationPluginConf"),
+        @NamedAttributeNode(value = "productPluginConf"),
+        @NamedAttributeNode(value = "generateSipPluginConf"),
+        @NamedAttributeNode(value = "postProcessSipPluginConf"),
+        @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
         subgraphs = { @NamedSubgraph(name = "graph.acquisition.chain.jobs",
-                attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
+                attributeNodes = { @NamedAttributeNode(value = "parameters") }),
+                @NamedSubgraph(name = "graph.acquisition.chain.file.infos.scan",
+                        attributeNodes = { @NamedAttributeNode(value = "scanPlugin") }) }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 

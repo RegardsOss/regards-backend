@@ -68,7 +68,7 @@ public interface IAcquisitionProcessingService {
      * Retrieve all processing chains
      * @return all chains fully loaded
      */
-    List<AcquisitionProcessingChain> getFullChains() throws ModuleException;
+    List<AcquisitionProcessingChain> getFullChains();
 
     /**
      * Retrieve all processing chains by page
