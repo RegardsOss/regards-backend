@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.jpa.autoconfigure;
 
 import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -31,11 +32,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureBefore(FlywayAutoConfiguration.class)
 public class NeverUseFlywayAutoConfiguration {
+
+    @Value("${spring.jpa.properties.hibernate.default_schema:null}")
+    private String defaultSchema;
+
     /**
      * Prevent flyway auto configuration (Flyway is created by this configuration not by the FlywayAutoConfiguration)
      */
     @Bean
     public Flyway flyway() {
-        return Flyway.configure().load();
+        return Flyway.configure().defaultSchema(defaultSchema).load();
     }
 }
