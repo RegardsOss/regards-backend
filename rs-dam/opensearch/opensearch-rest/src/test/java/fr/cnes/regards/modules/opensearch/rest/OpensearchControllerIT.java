@@ -43,7 +43,7 @@ public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(OpensearchController.TYPE_MAPPING + "/descriptor",
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
                                   .addParameter("url",
-                                                "https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xml"),
+                                                "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
                           "error");
     }
 

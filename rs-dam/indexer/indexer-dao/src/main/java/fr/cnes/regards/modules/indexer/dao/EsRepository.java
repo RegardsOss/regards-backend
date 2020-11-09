@@ -70,6 +70,10 @@ import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -97,6 +101,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
@@ -131,8 +137,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RequestOptions.Builder;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -149,9 +157,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -159,7 +165,11 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filter.Filter;
+import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.Range.Bucket;
+import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
@@ -172,6 +182,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.hipparchus.util.FastMath;
+import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,9 +196,56 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Repository;
 
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
+import com.carrotsearch.hppc.cursors.ObjectObjectCursor;
+import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
+
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
+import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
+import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.IDocFiles;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.IMapping;
+import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.BooleanFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.DateFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
+import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 
 /**
  * Elasticsearch repository implementation
@@ -317,6 +375,8 @@ public class EsRepository implements IEsRepository {
      */
     private final Gson gson;
 
+    private RequestOptions options = RequestOptions.DEFAULT;
+
     /**
      * SearchAll cache used by {@link EsRepository#searchAll} to avoid redo same ES request while changing page.
      * SortedSet is necessary to be sure several consecutive calls return same ordered set
@@ -329,13 +389,9 @@ public class EsRepository implements IEsRepository {
                 public Tuple<SortedSet<Object>, Set<IFacet<?>>> load(CacheKey key) throws Exception {
                     // Using method Objects.hashCode(Object) to compare to be sure that the set will always be returned
                     // with same order
-                    //                    Tuple<SortedSet<Object>, Set<IFacet<?>>> results = new TreeSet<>(Comparator.comparing(Objects::hashCode));
-                    //                    results.addAll(searchJoined(key.getSearchKey(),
-                    //                                                key.getCriterion(),
-                    //                                                key.getSourceAttribute(),
-                    //                                                key.getFacetsMap()));
-                    //                    return results;
-                    return searchJoined(key.getSearchKey(), key.getCriterion(), key.getSourceAttribute(),
+                    return searchJoined(key.getSearchKey(),
+                                        key.getCriterion(),
+                                        key.getSourceAttribute(),
                                         key.getFacetsMap());
                 }
             });
@@ -347,24 +403,30 @@ public class EsRepository implements IEsRepository {
     public EsRepository(@Autowired Gson gson, @Value("${regards.elasticsearch.host:}") String inEsHost,
             @Value("${regards.elasticsearch.address:}") String inEsAddress,
             @Value("${regards.elasticsearch.http.port}") int esPort,
+            @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
             AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor) {
 
         this.gson = gson;
         String esHost = Strings.isEmpty(inEsHost) ? inEsAddress : inEsHost;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
 
-        String connectionInfoMessage = String.format("Elastic search connection properties : host \"%s\", port \"%d\"",
-                                                     esHost, esPort);
+        String connectionInfoMessage = String
+                .format("Elastic search connection properties : host \"%s\", port \"%d\"", esHost, esPort);
         LOGGER.info(connectionInfoMessage);
 
         // Timeouts are set to 20 minutes particularly for bulk save containing geo_shape
         RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(esHost, esPort))
                 .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setSocketTimeout(1_200_000))
-                .setMaxRetryTimeoutMillis(1_200_000)
-                .setHttpClientConfigCallback(httpClientConfig -> httpClientConfig.setKeepAliveStrategy((resp, ctx) -> HTTP_KEEP_ALIVE_MAX_IDLE_DURATION_MS))
-                ;
+                .setMaxRetryTimeoutMillis(1_200_000).setHttpClientConfigCallback(httpClientConfig -> httpClientConfig
+                        .setKeepAliveStrategy((resp, ctx) -> HTTP_KEEP_ALIVE_MAX_IDLE_DURATION_MS));
 
-        this.client = new RestHighLevelClient(restClientBuilder);
+        if (elasticClientBufferLimit > 0) {
+            Builder builder = RequestOptions.DEFAULT.toBuilder();
+            builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(
+                    elasticClientBufferLimit));
+            options = builder.build();
+        }
+        client = new RestHighLevelClient(restClientBuilder);
 
         try {
             // Testing availability of ES
@@ -410,8 +472,9 @@ public class EsRepository implements IEsRepository {
      * @return true is first type mapping found fro given attribute is of type "text"
      */
     private static boolean isTextMapping(Map<String, Object> map, String attribute) {
-        String lastPathAttName = attribute.contains(".") ? attribute.substring(attribute.lastIndexOf('.') + 1)
-                : attribute;
+        String lastPathAttName = attribute.contains(".") ?
+                attribute.substring(attribute.lastIndexOf('.') + 1) :
+                attribute;
         try {
             // Mapping map contain only one value, the concerned index mapping BUT in case index is an alias, map key
             // is true index name, not alias one so DON'T retrieve mapping from its name !!!
@@ -602,7 +665,7 @@ public class EsRepository implements IEsRepository {
     public long deleteByQuery(String index, ICriterion criterion) {
         try {
             HttpEntity entity = new NStringEntity("{ \"query\":" + criterion.accept(CRITERION_VISITOR).toString() + "}",
-                    ContentType.APPLICATION_JSON);
+                                                  ContentType.APPLICATION_JSON);
             try {
                 Request request = new Request("POST", "/" + index.toLowerCase() + "/_delete_by_query");
                 request.setEntity(entity);
@@ -683,9 +746,9 @@ public class EsRepository implements IEsRepository {
         if (this.createIndex(newIndex)) {
             // Reindex
             String requestStr = String.format("{  \"source\": {    \"index\": \"%s\"  },  \"dest\": {"
-                    + "    \"index\": \"%s\"  },  \"script\": {"
-                    + "    \"source\": \"      ctx._source.type = ctx._type;" + "      ctx._type = '_doc';    \"  }}",
-                                              index, newIndex);
+                                                      + "    \"index\": \"%s\"  },  \"script\": {"
+                                                      + "    \"source\": \"      ctx._source.type = ctx._type;"
+                                                      + "      ctx._type = '_doc';    \"  }}", index, newIndex);
             HttpEntity entity = new NStringEntity(requestStr, ContentType.APPLICATION_JSON);
             try {
                 Request request = new Request("POST", "_reindex");
@@ -731,6 +794,16 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
+    public <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId,
+            Class<? extends IIndexable> clazz) {
+        // use search0
+        SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
+        searchKey.setSearchIndex(tenant);
+        ICriterion virtualIdCrit = ICriterion.eq("feature.virtualId", virtualId);
+        return (T) search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
+    }
+
+    @Override
     public boolean delete(String index, String type, String id) {
         DeleteRequest request = new DeleteRequest(index.toLowerCase(), TYPE, id);
         try {
@@ -752,8 +825,7 @@ public class EsRepository implements IEsRepository {
     public boolean save(String index, IIndexable doc) {
         checkDocument(doc);
         try {
-            IndexResponse response = client.index(
-                                                  new IndexRequest(index.toLowerCase(), TYPE, doc.getDocId())
+            IndexResponse response = client.index(new IndexRequest(index.toLowerCase(), TYPE, doc.getDocId())
                                                           .source(gson.toJson(doc), XContentType.JSON),
                                                   RequestOptions.DEFAULT);
             return response.getResult() == Result.CREATED; // Else UPDATED
@@ -794,7 +866,8 @@ public class EsRepository implements IEsRepository {
                     // Add item it and its associated exception
                     if (document instanceof DataObject) {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
-                        result.addInErrorDoc(itemResponse.getId(), itemResponse.getFailure().getCause(),
+                        result.addInErrorDoc(itemResponse.getId(),
+                                             itemResponse.getFailure().getCause(),
                                              Optional.ofNullable(docFeature.getSession()),
                                              Optional.ofNullable(docFeature.getSessionOwner()));
                         if (itemResponse.getFailure().getMessage().contains(IMapping.GEO_SHAPE_ATTRIBUTE)) {
@@ -805,30 +878,34 @@ public class EsRepository implements IEsRepository {
                                 if (errorBuffer.length() > 0) {
                                     errorBuffer.append('\n').append('\n');
                                 }
-                                String msg = "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
-                                        + polygonWGS84.getCoordinates().getExteriorRing().toString() + "]]}}]}";
+                                String msg =
+                                        "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                                                + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
+                                                + polygonWGS84.getCoordinates().getExteriorRing().toString() + "]]}}]}";
                                 errorBuffer.append(msg);
                             } else if (wgs84 instanceof MultiPolygon) {
                                 MultiPolygon multiPolygonWGS84 = (MultiPolygon) wgs84;
                                 if (errorBuffer.length() > 0) {
                                     errorBuffer.append('\n').append('\n');
                                 }
-                                String msg = "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
-                                        + multiPolygonWGS84.getCoordinates().stream()
+                                String msg =
+                                        "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                                                + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
+                                                + multiPolygonWGS84.getCoordinates().stream()
                                                 .map(p -> p.getExteriorRing().toString())
-                                                .collect(Collectors.joining("], [", "[", "]"))
-                                        + "]]}}]}";
+                                                .collect(Collectors.joining("], [", "[", "]")) + "]]}}]}";
                                 errorBuffer.append(msg);
                             }
                         }
                     } else {
-                        result.addInErrorDoc(itemResponse.getId(), itemResponse.getFailure().getCause(),
-                                             Optional.empty(), Optional.empty());
+                        result.addInErrorDoc(itemResponse.getId(),
+                                             itemResponse.getFailure().getCause(),
+                                             Optional.empty(),
+                                             Optional.empty());
                     }
                     String msg = String.format("Document of type %s and id %s with label %s cannot be saved",
-                                               documents[0].getClass(), itemResponse.getId(),
+                                               documents[0].getClass(),
+                                               itemResponse.getId(),
                                                map.get(itemResponse.getId()));
 
                     // Log error
@@ -846,12 +923,15 @@ public class EsRepository implements IEsRepository {
                 } else {
                     if (document instanceof DataObject) {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
-                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(),
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
                                            Optional.ofNullable(docFeature.getSession()),
                                            Optional.ofNullable(docFeature.getSessionOwner()));
                     } else {
-                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(),
-                                           Optional.empty(), Optional.empty());
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
+                                           Optional.empty(),
+                                           Optional.empty());
                     }
                 }
             }
@@ -897,7 +977,7 @@ public class EsRepository implements IEsRepository {
 
     private SearchResponse getSearchResponse(SearchRequest request) throws IOException {
         try {
-            return client.search(request, RequestOptions.DEFAULT);
+            return client.search(request, options);
         } catch (ElasticsearchException ee) {
             LOGGER.error(ee.getMessage(), ee);
             if (ee.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
@@ -920,12 +1000,16 @@ public class EsRepository implements IEsRepository {
             String attributeSource, Map<String, FacetType> facetsMap) {
         try {
             // Add ".keyword" if attribute mapping type is of type text
-            String attribute = isTextMapping(searchKey.getSearchIndex(), attributeSource)
-                    ? attributeSource + KEYWORD_SUFFIX
-                    : attributeSource;
+            String attribute = isTextMapping(searchKey.getSearchIndex(), attributeSource) ?
+                    attributeSource + KEYWORD_SUFFIX :
+                    attributeSource;
             SortedSet<Object> uniqueValues = new TreeSet<>(Comparator.comparing(Objects::hashCode));
-            Set<IFacet<?>> facets = unique(searchKey, addTypes(criterion, searchKey.getSearchTypes()), attribute,
-                                           Integer.MAX_VALUE, uniqueValues, facetsMap);
+            Set<IFacet<?>> facets = unique(searchKey,
+                                           addTypes(criterion, searchKey.getSearchTypes()),
+                                           attribute,
+                                           Integer.MAX_VALUE,
+                                           uniqueValues,
+                                           facetsMap);
             return new Tuple<>(uniqueValues, facets);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -944,7 +1028,7 @@ public class EsRepository implements IEsRepository {
                     .size(pageRequest.getPageSize());
             request.source(builder);
 
-            SearchResponse response = client.search(request);
+            SearchResponse response = client.search(request, options);
             SearchHits hits = response.getHits();
             for (SearchHit hit : hits) {
                 results.add(gson.fromJson(hit.getSourceAsString(), clazz));
@@ -963,8 +1047,8 @@ public class EsRepository implements IEsRepository {
         if (searchKey.getCrs() != Crs.WGS_84) {
             // Does criterion tree contain a BoundaryBox or Polygon criterion, if so => make a projection on WGS84
             if (GeoHelper.containsPolygonOrBboxCriterion(criterion)) {
-                GeoCriterionWithPolygonOrBboxVisitor visitor = new GeoCriterionWithPolygonOrBboxVisitor(
-                        searchKey.getCrs());
+                GeoCriterionWithPolygonOrBboxVisitor visitor = new GeoCriterionWithPolygonOrBboxVisitor(searchKey
+                                                                                                                .getCrs());
                 criterion = criterion.accept(visitor);
                 PolygonCriterion polygonCrit = GeoHelper.findPolygonCriterion(criterion);
                 if (polygonCrit != null) {
@@ -980,6 +1064,7 @@ public class EsRepository implements IEsRepository {
                     // Radius MUST NOT HAVE A UNIT
                     initialCircleCriterion
                             .setRadius(FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
+
                                     * AUTHALIC_SPHERE_RADIUS);
                 }
                 return searchWithCircleCriterionInProjectedCrs(searchKey, pageRequest, facetsMap, criterion);
@@ -1019,24 +1104,30 @@ public class EsRepository implements IEsRepository {
         FacetPage<T> intoInnerCirclePage = search0(searchKey, pageRequest, innerCircleOnWgs84Criterion, facetsMap);
         // If more than MAX_PAGE_SIZE => TooManyResultException (too complicated case)
         if (!intoInnerCirclePage.isLast()) {
-            throw new RsRuntimeException(
-                    new TooManyResultsException("Please refine criteria to avoid exceeding page size limit"));
+            throw new RsRuntimeException(new TooManyResultsException(
+                    "Please refine criteria to avoid exceeding page size limit"));
         }
         CircleCriterion innerCircleCrit = GeoHelper.findCircleCriterion(innerCircleOnWgs84Criterion);
-        LOGGER.debug("Found {} points into inner circle with radius {} and center {} projected on WGS84 (search duration: {} ms)",
-                     intoInnerCirclePage.getNumberOfElements(), innerCircleCrit.getRadius(),
-                     Arrays.toString(innerCircleCrit.getCoordinates()), System.currentTimeMillis() - start);
+        LOGGER.debug(
+                "Found {} points into inner circle with radius {} and center {} projected on WGS84 (search duration: {} ms)",
+                intoInnerCirclePage.getNumberOfElements(),
+                innerCircleCrit.getRadius(),
+                Arrays.toString(innerCircleCrit.getCoordinates()),
+                System.currentTimeMillis() - start);
         // SECOND: retrieve all data between inner and outer circles
         start = System.currentTimeMillis();
-        FacetPage<T> betweenInnerAndOuterCirclesPage = search0(searchKey, pageRequest,
-                                                               betweenInnerAndOuterCirclesCriterionOnWgs84, facetsMap);
+        FacetPage<T> betweenInnerAndOuterCirclesPage = search0(searchKey,
+                                                               pageRequest,
+                                                               betweenInnerAndOuterCirclesCriterionOnWgs84,
+                                                               facetsMap);
         // If more than MAX_PAGE_SIZE => TooManyResultException (too complicated case)
         if (!intoInnerCirclePage.isLast()) {
-            throw new RsRuntimeException(
-                    new TooManyResultsException("Please refine criteria to avoid exceeding page size limit"));
+            throw new RsRuntimeException(new TooManyResultsException(
+                    "Please refine criteria to avoid exceeding page size limit"));
         }
         LOGGER.debug("Found {} points between inner and outer circles (search duration: {} ms)",
-                     betweenInnerAndOuterCirclesPage.getNumberOfElements(), System.currentTimeMillis() - start);
+                     betweenInnerAndOuterCirclesPage.getNumberOfElements(),
+                     System.currentTimeMillis() - start);
 
         // THIRD: keep only entities with a shape nearer than specified radius from specified center
         // Retrieve radius of specified circle on given Crs
@@ -1075,6 +1166,7 @@ public class EsRepository implements IEsRepository {
     @SuppressWarnings("unchecked")
     private <T extends IIndexable> FacetPage<T> search0(SearchKey<T, T> searchKey, Pageable pageRequest,
             ICriterion criterion, Map<String, FacetType> facetsMap) {
+        ICriterion finalCriterion = criterion.accept(new VersioningSearchVisitor(this));
         String index = searchKey.getSearchIndex();
         try {
             final List<T> results = new ArrayList<>();
@@ -1092,7 +1184,7 @@ public class EsRepository implements IEsRepository {
             Object[] lastSearchAfterSortValues = null;
             // If page starts over index 10 000, advance with searchAfter just before last request
             if (pageRequest.getOffset() >= MAX_RESULT_WINDOW) {
-                lastSearchAfterSortValues = advanceWithSearchAfter(criterion, searchKey, pageRequest, index, sort);
+                lastSearchAfterSortValues = advanceWithSearchAfter(finalCriterion, searchKey, pageRequest, index, sort);
             }
 
             final Object[] finalLastSearchAfterSortValues = lastSearchAfterSortValues;
@@ -1112,8 +1204,11 @@ public class EsRepository implements IEsRepository {
                 }
             };
 
-            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, criterion, pageRequest,
-                                                                                     lastSearchAfterCustomizer, sort,
+            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey,
+                                                                                     finalCriterion,
+                                                                                     pageRequest,
+                                                                                     lastSearchAfterCustomizer,
+                                                                                     sort,
                                                                                      facetsMap);
             SearchResponse response = responseNFacets.v1();
             long start = System.currentTimeMillis();
@@ -1122,7 +1217,8 @@ public class EsRepository implements IEsRepository {
                 try {
                     results.add(gson.fromJson(hit.getSourceAsString(), (Class<T>) IIndexable.class));
                 } catch (JsonParseException e) {
-                    LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"", hit.getId(),
+                    LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"",
+                                 hit.getId(),
                                  hit.getSourceAsString());
                     throw new RsRuntimeException(e);
                 }
@@ -1140,7 +1236,8 @@ public class EsRepository implements IEsRepository {
             Map<String, FacetType> facetsMap) throws IOException {
         String index = searchKey.getSearchIndex();
         SearchRequest request = new SearchRequest(index).types(TYPE);
-        SearchSourceBuilder builder = createSourceBuilder4Agg(criterion, (int) pageRequest.getOffset(),
+        SearchSourceBuilder builder = createSourceBuilder4Agg(criterion,
+                                                              (int) pageRequest.getOffset(),
                                                               pageRequest.getPageSize());
 
         if (searchSourceBuilderCustomizer != null) {
@@ -1174,7 +1271,7 @@ public class EsRepository implements IEsRepository {
                 // Relaunch the request with replaced facets
                 request.source(builder);
                 LOGGER.trace("ElasticsearchRequest (2nd pass): {}", request.toString());
-                response = client.search(request, RequestOptions.DEFAULT);
+                response = client.search(request, options);
             }
 
             // If offset >= MAX_RESULT_WINDOW or page size = MAX_RESULT_WINDOW, this means a next page should exist
@@ -1224,7 +1321,8 @@ public class EsRepository implements IEsRepository {
             // No need to add reminder type criterion because reminder type is useless since ES6
             reminderCleanExecutor
                     .schedule(() -> deleteByQuery(REMINDER_IDX, ICriterion.le("expirationDate", OffsetDateTime.now())),
-                              KEEP_ALIVE_SCROLLING_TIME_MN, TimeUnit.MINUTES);
+                              KEEP_ALIVE_SCROLLING_TIME_MN,
+                              TimeUnit.MINUTES);
         }
     }
 
@@ -1292,11 +1390,14 @@ public class EsRepository implements IEsRepository {
                 SearchResponse response = getSearchResponse(request);
                 sortValues = response.getHits().getAt(response.getHits().getHits().length - 1).getSortValues();
                 // Create a AbstractReminder and save it into ES for next page
-                SearchAfterReminder reminder = new SearchAfterReminder(crit, searchKey, sort,
-                        PageRequest.of(offset / MAX_RESULT_WINDOW, MAX_RESULT_WINDOW).next());
+                SearchAfterReminder reminder = new SearchAfterReminder(crit,
+                                                                       searchKey,
+                                                                       sort,
+                                                                       PageRequest.of(offset / MAX_RESULT_WINDOW,
+                                                                                      MAX_RESULT_WINDOW).next());
                 reminder.setExpirationDate(expirationDate);
                 reminder.setSearchAfterSortValues(response.getHits().getAt(response.getHits().getHits().length - 1)
-                        .getSortValues());
+                                                          .getSortValues());
 
                 save(REMINDER_IDX, reminder);
                 offset += MAX_RESULT_WINDOW;
@@ -1315,7 +1416,8 @@ public class EsRepository implements IEsRepository {
             // No need to add type restriction, reminder is useless since ES6
             reminderCleanExecutor
                     .schedule(() -> deleteByQuery(REMINDER_IDX, ICriterion.le("expirationDate", OffsetDateTime.now())),
-                              KEEP_ALIVE_SCROLLING_TIME_MN, TimeUnit.MINUTES);
+                              KEEP_ALIVE_SCROLLING_TIME_MN,
+                              TimeUnit.MINUTES);
             return sortValues;
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -1413,7 +1515,8 @@ public class EsRepository implements IEsRepository {
             for (QueryableAttribute qa : attributes) {
                 if (qa.isTextAttribute() && (qa.getTermsLimit() > 0)) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName())
-                            .field(qa.getAttributeName() + KEYWORD_SUFFIX).size(qa.getTermsLimit()));
+                                                .field(qa.getAttributeName() + KEYWORD_SUFFIX)
+                                                .size(qa.getTermsLimit()));
                 } else if (qa.isBooleanAttribute()) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName()).field(qa.getAttributeName()))
                             .size(2);
@@ -1466,7 +1569,11 @@ public class EsRepository implements IEsRepository {
      */
     public <T, R> Set<R> unique(SearchKey<?, T> searchKey, ICriterion crit, String attName) {
         Set<R> result = new HashSet<>();
-        unique(searchKey, addTypes(crit, searchKey.getSearchTypes()), attName, Integer.MAX_VALUE, result,
+        unique(searchKey,
+               addTypes(crit, searchKey.getSearchTypes()),
+               attName,
+               Integer.MAX_VALUE,
+               result,
                new HashMap<>());
         return result;
     }
@@ -1488,14 +1595,18 @@ public class EsRepository implements IEsRepository {
             int maxCount, S set, Map<String, FacetType> facetsMap) {
         try {
 
-            String attName = isTextMapping(searchKey.getSearchIndex(), inAttName) ? inAttName + KEYWORD_SUFFIX
-                    : inAttName;
+            String attName = isTextMapping(searchKey.getSearchIndex(), inAttName) ?
+                    inAttName + KEYWORD_SUFFIX :
+                    inAttName;
             Consumer<SearchSourceBuilder> addUniqueTermAgg = (builder) -> builder
                     .aggregation(AggregationBuilders.terms(attName).field(attName).size(maxCount));
 
-            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey, crit,
+            Tuple<SearchResponse, Set<IFacet<?>>> responseNFacets = searchWithFacets(searchKey,
+                                                                                     crit,
                                                                                      PageRequest.of(0, 1),
-                                                                                     addUniqueTermAgg, null, facetsMap);
+                                                                                     addUniqueTermAgg,
+                                                                                     null,
+                                                                                     facetsMap);
             Terms terms = responseNFacets.v1().getAggregations().get(attName);
             for (Terms.Bucket bucket : terms.getBuckets()) {
                 set.add((R) bucket.getKey());
@@ -1511,7 +1622,9 @@ public class EsRepository implements IEsRepository {
     public <R> List<R> search(SearchKey<?, R> searchKey, ICriterion criterion, String sourceAttribute) {
         try {
             SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute)).v1();
+                                                                                 addTypes(criterion,
+                                                                                          searchKey.getSearchTypes()),
+                                                                                 sourceAttribute)).v1();
             return objects.stream().map(o -> (R) o).collect(Collectors.toList());
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1524,7 +1637,9 @@ public class EsRepository implements IEsRepository {
             Function<R, U> transformFct) {
         try {
             SortedSet<Object> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute)).v1();
+                                                                                 addTypes(criterion,
+                                                                                          searchKey.getSearchTypes()),
+                                                                                 sourceAttribute)).v1();
             return objects.stream().map(o -> (R) o).map(transformFct).collect(Collectors.toList());
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1538,9 +1653,14 @@ public class EsRepository implements IEsRepository {
             Map<String, FacetType> facetsMap) {
         try {
             Tuple<SortedSet<Object>, Set<IFacet<?>>> objects = searchAllCache.getUnchecked(new CacheKey(searchKey,
-                    addTypes(criterion, searchKey.getSearchTypes()), sourceAttribute, facetsMap));
+                                                                                                        addTypes(
+                                                                                                                criterion,
+                                                                                                                searchKey
+                                                                                                                        .getSearchTypes()),
+                                                                                                        sourceAttribute,
+                                                                                                        facetsMap));
             return new Tuple<>(objects.v1().stream().map(o -> (R) o).distinct().filter(filterPredicate)
-                    .map(transformFct).collect(Collectors.toList()), objects.v2());
+                                       .map(transformFct).collect(Collectors.toList()), objects.v2());
 
         } catch (final JsonSyntaxException e) {
             throw new RsRuntimeException(e);
@@ -1564,14 +1684,16 @@ public class EsRepository implements IEsRepository {
                 // <index>."mappings".<type>.<attribute>."mapping".<attribute_last_path>."type"
                 if ((map != null) && !map.isEmpty()) {
                     // In case attribute is toto.titi.tutu, we will need "tutu" further
-                    String lastPathAtt = attribute.contains(".") ? attribute.substring(attribute.lastIndexOf('.') + 1)
-                            : attribute;
+                    String lastPathAtt = attribute.contains(".") ?
+                            attribute.substring(attribute.lastIndexOf('.') + 1) :
+                            attribute;
                     // BEWARE : instead of map.get(index) on the innermost map value retrieval, we use directly
                     // map.values().iterator().next() to get value associated to singleton element whatever the key is
                     // Indeed, because of Elasticsearch version 6 single type update, some indices are retrieved through
                     // an alias. Asking an alias mapping returned a block with index name, not alias name
                     return toMap(toMap(toMap(toMap(toMap(toMap(map.values().iterator().next()).get("mappings"))
-                            .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt)).get("type").equals("text");
+                                                           .get(TYPE)).get(attribute)).get("mapping")).get(lastPathAtt))
+                            .get("type").equals("text");
 
                 }
             }
@@ -1599,7 +1721,8 @@ public class EsRepository implements IEsRepository {
         Response response;
         try {
             response = client.getLowLevelClient().performRequest(new Request("GET",
-                    index + "/_mapping/field/" + Joiner.on(",").join(ascSortMap.keySet())));
+                                                                             index + "/_mapping/field/" + Joiner.on(",")
+                                                                                     .join(ascSortMap.keySet())));
         } catch (ResponseException e) {
             LOGGER.error(e.getMessage(), e);
             if (e.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
@@ -1623,8 +1746,9 @@ public class EsRepository implements IEsRepository {
                 }
 
                 // Add sort to request
-                updatedAscSortMap.forEach((key, value) -> builder.sort(SortBuilders.fieldSort(key)
-                        .order(value ? SortOrder.ASC : SortOrder.DESC).unmappedType("double")));
+                updatedAscSortMap.forEach((key, value) -> builder
+                        .sort(SortBuilders.fieldSort(key).order(value ? SortOrder.ASC : SortOrder.DESC)
+                                      .unmappedType("double")));
                 // "double" because a type is necessary. This has only an impact when seaching on several indices if
                 // property is mapped on one and no on the other(s). Will see this when it happens (if it happens a day)
                 // entry -> builder.sort(entry.getKey(), entry.getValue() ? SortOrder.ASC : SortOrder.DESC));
@@ -1677,16 +1801,17 @@ public class EsRepository implements IEsRepository {
             String attName;
             // Replace percentiles aggregations by range aggregations
             if ((facetType == FacetType.NUMERIC) || (facetType == FacetType.DATE)) {
-                attName = facetType == FacetType.NUMERIC ? attributeName + NUMERIC_FACET_SUFFIX
-                        : attributeName + DATE_FACET_SUFFIX;
+                attName = facetType == FacetType.NUMERIC ?
+                        attributeName + NUMERIC_FACET_SUFFIX :
+                        attributeName + DATE_FACET_SUFFIX;
                 Percentiles percentiles = (Percentiles) aggsMap.get(attName);
                 // No percentile values for this property => skip aggregation
                 if (Iterables.all(percentiles, p -> Double.isNaN(p.getValue()))) {
                     continue;
                 }
-                AggregationBuilder aggBuilder = facetType == FacetType.NUMERIC
-                        ? FacetType.RANGE_DOUBLE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles)
-                        : FacetType.RANGE_DATE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles);
+                AggregationBuilder aggBuilder = facetType == FacetType.NUMERIC ?
+                        FacetType.RANGE_DOUBLE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles) :
+                        FacetType.RANGE_DATE.accept(aggBuilderFacetTypeVisitor, attributeName, percentiles);
                 // In case range contains only one value, better remove facet
                 if (aggBuilder != null) {
                     // And add max and min aggregations
@@ -1794,8 +1919,8 @@ public class EsRepository implements IEsRepository {
                         // Better not return a facet
                         return;
                     } // (-∞ -> value [
-                      // range is then [min -> value [, because min value is scaled it is necessary to choose a little
-                      // less
+                    // range is then [min -> value [, because min value is scaled it is necessary to choose a little
+                    // less
                     valueRange = Range.closedOpen(EsHelper.scaledDown(min.getValue()), (Double) bucket.getTo());
                 } else if (Objects.equals(bucket.getTo(), Double.POSITIVE_INFINITY)) { // [value -> +∞)
                     // range is then [value, max], because max value is scaled it is necessary to choose a little more
@@ -1843,8 +1968,9 @@ public class EsRepository implements IEsRepository {
         try {
             final List<T> results = new ArrayList<>();
             // OffsetDateTime must be formatted to be correctly used following Gson mapping
-            Object value = inValue instanceof OffsetDateTime ? OffsetDateTimeAdapter.format((OffsetDateTime) inValue)
-                    : inValue;
+            Object value = inValue instanceof OffsetDateTime ?
+                    OffsetDateTimeAdapter.format((OffsetDateTime) inValue) :
+                    inValue;
             // Create filter query with all asked types and multi match query
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             for (String type : searchKey.getSearchTypes()) {
@@ -1871,15 +1997,18 @@ public class EsRepository implements IEsRepository {
 
     @Override
     public <T extends IIndexable & IDocFiles> void computeInternalDataFilesSummary(SearchKey<T, T> searchKey,
-            ICriterion crit, String discriminantProperty, DocFilesSummary summary, String... fileTypes) {
+            ICriterion crit, String discriminantProperty, Optional<String> discriminentPropertyInclude,
+            DocFilesSummary summary, String... fileTypes) {
         try {
             if ((fileTypes == null) || (fileTypes.length == 0)) {
                 throw new IllegalArgumentException("At least one file type must be provided");
             }
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(crit, searchKey.getSearchTypes()));
             // Add files count and files sum size aggregations
-            addFilesCountAndSumAggs(searchKey, discriminantProperty, builder, fileTypes);
+            addFilesCountAndSumAggs(searchKey, discriminantProperty, discriminentPropertyInclude, builder, fileTypes);
 
+            // We only need aggregation so set hits size to 0
+            builder.size(0);
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
             SearchResponse response = getSearchResponse(request);
@@ -1887,40 +2016,114 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
-            long totalFileSize = 0;
             for (String fileType : fileTypes) {
-                ValueCount valueCount = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += valueCount.getValue();
-                Sum sum = aggs.get("total_" + fileType + "_files_size");
-                totalFileSize += sum.getValue();
+
+                // ref
+                // ref:count
+                String refCountName = "total_" + fileType + "_ref_files_count";
+                ValueCount refValueCount = ((Filter) aggs.get(refCountName)).getAggregations().get(refCountName);
+                // ref:size
+                String refSumName = "total_" + fileType + "_ref_files_size";
+                Sum refSum = ((Filter) aggs.get(refSumName)).getAggregations().get(refSumName);
+                // ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + refValueCount.getValue(),
+                            (long) (fs.getFilesSize()+refSum.getValue())
+                        );
+                    });
+
+                // !ref
+                // !ref:count
+                String notRefCountName = "total_" + fileType + "_!ref_files_count";
+                ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations().get(notRefCountName);
+                // !ref:size
+                String notRefSumName = "total_" + fileType + "_!ref_files_size";
+                Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations()
+                    .get(notRefSumName);
+                // !ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + notRefValueCount.getValue(),
+                            (long) (fs.getFilesSize()+notRefSum.getValue())
+                        );
+                    });
+
+                // total
+                // total:count
+                long totalFileCount = refValueCount.getValue() + notRefValueCount.getValue();
+                // total:size
+                long totalFileSize = (long) (refSum.getValue() + notRefSum.getValue());
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType,
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(totalFileCount, totalFileSize);
+                        }
+                        return new FilesSummary(
+                            fs.getFilesCount() + totalFileCount,
+                            fs.getFilesSize() + totalFileSize
+                        );
+                    });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
+                summary.addFilesSize(totalFileSize);
             }
-            summary.addFilesCount(totalFileCount);
-            summary.addFilesSize(totalFileSize);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
-                // Usualy discriminant = tag name
+                // Usually discriminant = tag name
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap()
+                        .put(discriminant, new DocFilesSubSummary(
+                            Arrays.stream(fileTypes)
+                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
+                                .toArray(String[]::new))
+                        );
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
-                long filesSize = 0;
                 for (String fileType : fileTypes) {
-                    ValueCount valueCount = discAggs.get(fileType + "_files_count");
-                    filesCount += valueCount.getValue();
-                    Sum sum = discAggs.get(fileType + "_files_size");
-                    filesSize += sum.getValue();
+                    ValueCount refValueCount = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
+                        .get(fileType + "_ref_files_count");
+                    Sum refSum = ((Filter) discAggs.get(fileType + "_ref_files_size")).getAggregations()
+                        .get(fileType + "_ref_files_size");
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    refFilesSummary.addFilesCount(refValueCount.getValue());
+                    refFilesSummary.addFilesSize((long) refSum.getValue());
+
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
+                        .get(fileType + "_!ref_files_count");
+                    Sum notRefSum = ((Filter) discAggs.get(fileType + "_!ref_files_size")).getAggregations()
+                        .get(fileType + "_!ref_files_size");
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    notRefFilesSummary.addFilesCount(notRefValueCount.getValue());
+                    notRefFilesSummary.addFilesSize((long) notRefSum.getValue());
+
                     FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
-                    filesSummary.addFilesCount(valueCount.getValue());
-                    filesSummary.addFilesSize((long) sum.getValue());
+                    long filesCount = refValueCount.getValue() + notRefValueCount.getValue();
+                    long filesSize = (long) (refSum.getValue() + notRefSum.getValue());
+                    filesSummary.addFilesCount(filesCount);
+                    filesSummary.addFilesSize(filesSize);
+
+                    discSummary.addFilesCount(filesCount);
+                    discSummary.addFilesSize(filesSize);
                 }
-                discSummary.addFilesCount(filesCount);
-                discSummary.addFilesSize(filesSize);
 
             }
         } catch (IOException e) {
@@ -1929,40 +2132,129 @@ public class EsRepository implements IEsRepository {
     }
 
     private <T extends IIndexable & IDocFiles> void addFilesCountAndSumAggs(SearchKey<T, T> searchKey,
-            String discriminantProperty, SearchSourceBuilder builder, String[] fileTypes) throws IOException {
+            String discriminantProperty, Optional<String> discriminantPropertyInclude, SearchSourceBuilder builder,
+            String[] fileTypes) throws IOException {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileSizeField = "feature.files." + fileType + ".filesize";
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
             // file count
-            builder.aggregation(AggregationBuilders.count("total_" + fileType + "_files_count")
-                    .field("feature.files." + fileType + ".filesize")); // Only count files with a size
+            String refCount = "total_" + fileType + "_ref_files_count";
+            String notRefCount = "total_" + fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg =
+                AggregationBuilders
+                    .filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(refCount)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg =
+                AggregationBuilders
+                    .filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(notRefCount)
+                        .field(fileSizeField));
+
             // file size sum
-            builder.aggregation(AggregationBuilders.sum("total_" + fileType + "_files_size")
-                    .field("feature.files." + fileType + ".filesize"));
+            String refSum = "total_" + fileType + "_ref_files_size";
+            String notRefSum = "total_" + fileType + "_!ref_files_size";
+
+            FilterAggregationBuilder refSumAgg =
+                AggregationBuilders
+                    .filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(refSum)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg =
+                AggregationBuilders
+                    .filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(notRefSum)
+                        .field(fileSizeField));
+
+            // add aggs to builder
+            builder.aggregation(refCountAgg);
+            builder.aggregation(notRefCountAgg);
+            builder.aggregation(refSumAgg);
+            builder.aggregation(notRefSumAgg);
         }
-        // Then bucket aggregation by discriminants
-        String termsFieldProperty = discriminantProperty;
-        if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
-            termsFieldProperty += KEYWORD_SUFFIX;
-        }
+
         // Discriminant distribution aggregator
         TermsAggregationBuilder termsAggBuilder = AggregationBuilders.terms(discriminantProperty)
-                .field(termsFieldProperty).size(Integer.MAX_VALUE);
+                .size(Integer.MAX_VALUE);
+
+        if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
+            termsAggBuilder.field(discriminantProperty + KEYWORD_SUFFIX);
+            if (discriminantPropertyInclude.isPresent()) {
+                termsAggBuilder.includeExclude(new IncludeExclude(discriminantPropertyInclude.get(), null));
+            }
+        } else {
+            termsAggBuilder.field(discriminantProperty);
+        }
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files count
-            termsAggBuilder.subAggregation(AggregationBuilders.count(fileType + "_files_count")
-                    .field("feature.files." + fileType + ".filesize"));
+            String fileSizeField = "feature.files." + fileType + ".filesize";
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
+            // file count
+            String refCount = fileType + "_ref_files_count";
+            String notRefCount = fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg =
+                AggregationBuilders
+                    .filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(refCount)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg =
+                AggregationBuilders
+                    .filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .count(notRefCount)
+                        .field(fileSizeField));
+
             // file size sum
-            termsAggBuilder.subAggregation(AggregationBuilders.sum(fileType + "_files_size")
-                    .field("feature.files." + fileType + ".filesize"));
+            String refSum = fileType + "_ref_files_size";
+            String notRefSum = fileType + "_!ref_files_size";
+
+            FilterAggregationBuilder refSumAgg =
+                AggregationBuilders
+                    .filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(refSum)
+                        .field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg =
+                AggregationBuilders
+                    .filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .sum(notRefSum)
+                        .field(fileSizeField));
+
+            // add aggs to builder
+            termsAggBuilder.subAggregation(refCountAgg);
+            termsAggBuilder.subAggregation(notRefCountAgg);
+            termsAggBuilder.subAggregation(refSumAgg);
+            termsAggBuilder.subAggregation(notRefSumAgg);
         }
         builder.aggregation(termsAggBuilder);
     }
 
     @Override
     public <T extends IIndexable & IDocFiles> void computeExternalDataFilesSummary(SearchKey<T, T> searchKey,
-            ICriterion crit, String discriminantProperty, DocFilesSummary summary, String... fileTypes) {
+            ICriterion crit, String discriminantProperty, Optional<String> discriminentPropertyInclude,
+            DocFilesSummary summary, String... fileTypes) {
         try {
             if ((fileTypes == null) || (fileTypes.length == 0)) {
                 throw new IllegalArgumentException("At least one file type must be provided");
@@ -1970,7 +2262,7 @@ public class EsRepository implements IEsRepository {
 
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(crit, searchKey.getSearchTypes()));
             // Add files cardinality aggregation
-            addFilesCardinalityAgg(searchKey, discriminantProperty, builder, fileTypes);
+            addFilesCardinalityAgg(searchKey, discriminantProperty, discriminentPropertyInclude, builder, fileTypes);
 
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
 
@@ -1979,29 +2271,77 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
             for (String fileType : fileTypes) {
-                Cardinality cardinality = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += cardinality.getValue();
+                // ref
+                Cardinality refCardinality = ((Filter) aggs.get("total_" + fileType + "_ref_files_count")).getAggregations()
+                    .get("total_" + fileType + "_ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(refCardinality.getValue(), 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + refCardinality.getValue(), 0);
+                    });
+
+                // !ref
+                Cardinality notRefCardinality = ((Filter) aggs.get("total_" + fileType + "_!ref_files_count")).getAggregations()
+                    .get("total_" + fileType + "_!ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(notRefCardinality.getValue(), 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + notRefCardinality.getValue(), 0);
+                    });
+
+                // total
+                long totalFileCount = refCardinality.getValue() + notRefCardinality.getValue();
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType,
+                    (k, fs) -> {
+                        if (fs==null) {
+                            return new FilesSummary(totalFileCount, 0);
+                        }
+                        return new FilesSummary(fs.getFilesCount() + totalFileCount, 0);
+                    });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
             }
-            summary.addFilesCount(totalFileCount);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap()
+                        .put(discriminant, new DocFilesSubSummary(
+                            Arrays.stream(fileTypes)
+                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
+                                .toArray(String[]::new)
+                        ));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
                 for (String fileType : fileTypes) {
-                    Cardinality cardinality = discAggs.get(fileType + "_files_count");
-                    filesCount += cardinality.getValue();
-                    discSummary.getFileTypesSummaryMap().get(fileType).addFilesCount(cardinality.getValue());
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
+                        .get(fileType + "_ref_files_count");
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
+                        .get(fileType + "_!ref_files_count");
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    refFilesSummary.addFilesCount(refCardinality.getValue());
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    notRefFilesSummary.addFilesCount(notRefCardinality.getValue());
+
+                    FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
+                    long cardinality = refCardinality.getValue() + notRefCardinality.getValue();
+                    filesSummary.addFilesCount(cardinality);
+                    discSummary.addFilesCount(cardinality);
                 }
-                discSummary.addFilesCount(filesCount);
             }
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -2016,27 +2356,79 @@ public class EsRepository implements IEsRepository {
      * nothing prevents from use same uri on several data objects)
      */
     private <T extends IIndexable & IDocFiles> void addFilesCardinalityAgg(SearchKey<T, T> searchKey,
-            String discriminantProperty, SearchSourceBuilder builder, String[] fileTypes) throws IOException {
+            String discriminantProperty, Optional<String> discriminentPropertyInclude, SearchSourceBuilder builder,
+            String[] fileTypes) throws IOException {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
             // file cardinality
-            builder.aggregation(AggregationBuilders.cardinality("total_" + fileType + "_files_count")
-                    .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX)); // Only count files with a size
+            String refCardinality = "total_" + fileType + "_ref_files_count";
+            String notRefCardinality = "total_" + fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg =
+                AggregationBuilders
+                    .filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(refCardinality)
+                        .field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg =
+                AggregationBuilders
+                    .filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(notRefCardinality)
+                        .field(fileUriField));
+
+            builder.aggregation(refCardinalityAgg);
+            builder.aggregation(notRefCardinalityAgg);
         }
-        // Then bucket aggregation by discriminants
-        String termsFieldProperty = discriminantProperty;
-        if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
-            termsFieldProperty += KEYWORD_SUFFIX;
-        }
+
         // Discriminant distribution aggregator
         TermsAggregationBuilder termsAggBuilder = AggregationBuilders.terms(discriminantProperty)
-                .field(termsFieldProperty).size(Integer.MAX_VALUE);
+                .size(Integer.MAX_VALUE);
+        if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
+            termsAggBuilder.field(discriminantProperty + KEYWORD_SUFFIX);
+            if (discriminentPropertyInclude.isPresent()) {
+                termsAggBuilder.includeExclude(new IncludeExclude(discriminentPropertyInclude.get(), null));
+            }
+        } else {
+            termsAggBuilder.field(discriminantProperty);
+        }
+
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files cardinality
-            termsAggBuilder.subAggregation(AggregationBuilders.cardinality(fileType + "_files_count")
-                    .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX));
+            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = "feature.files." + fileType + ".reference";
+
+            // file cardinality
+            String refCardinality = fileType + "_ref_files_count";
+            String notRefCardinality = fileType + "_!ref_files_count";
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg =
+                AggregationBuilders
+                    .filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(refCardinality)
+                        .field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg =
+                AggregationBuilders
+                    .filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders
+                        .cardinality(notRefCardinality)
+                        .field(fileUriField));
+
+            termsAggBuilder.subAggregation(refCardinalityAgg);
+            termsAggBuilder.subAggregation(notRefCardinalityAgg);
         }
         builder.aggregation(termsAggBuilder);
     }

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -74,21 +75,14 @@ public class EsAggsTest {
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.address"),
-                                          Integer.parseInt(propMap.get("regards.elasticsearch.http.port")),
-                                          new AggregationBuilderFacetTypeVisitor(10, 1));
+                    Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), 0,
+                    new AggregationBuilderFacetTypeVisitor(10, 1));
         } catch (NoNodeAvailableException e) {
             LOGGER.error("NO NODE AVAILABLE");
             repositoryOK = false;
         }
         // Do not launch tests is Elasticsearch is not available
         Assume.assumeTrue(repositoryOK);
-
-        final Consumer<String> cleanFct = (pIndex) -> {
-            try {
-                repository.deleteIndex(pIndex);
-            } catch (final IndexNotFoundException infe) {
-            }
-        };
     }
 
     private static final String[] TAGS = new String[] { "RIRI", "FIFI", "LOULOU", "MICHOU", "JOJO" };
@@ -135,7 +129,8 @@ public class EsAggsTest {
         DocFilesSummary summary = new DocFilesSummary();
         SimpleSearchKey<Data> searchKey = new SimpleSearchKey<>(TYPE, Data.class);
         searchKey.setSearchIndex(INDEX);
-        repository.computeInternalDataFilesSummary(searchKey, null, "tags", summary, "RAWDATA", "QUICKLOOK_HD");
+        repository.computeInternalDataFilesSummary(searchKey, null, "tags", Optional.empty(), summary, "RAWDATA",
+                                                   "QUICKLOOK_HD");
         System.out.println(summary);
         Assert.assertEquals(12, summary.getDocumentsCount());
         // 24 because 12 RAWDATA and 12 QUICKLOOKS
@@ -145,6 +140,11 @@ public class EsAggsTest {
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("RIRI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("LOULOU"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("FIFI"));
+        // assert aggregates details
+        Assert.assertEquals(12, summary.getFileTypesSummaryMap().get("RAWDATA_ref").getFilesCount());
+        Assert.assertEquals(0, summary.getFileTypesSummaryMap().get("RAWDATA_!ref").getFilesCount());
+        Assert.assertEquals(0, summary.getFileTypesSummaryMap().get("QUICKLOOK_HD_ref").getFilesCount());
+        Assert.assertEquals(12, summary.getFileTypesSummaryMap().get("QUICKLOOK_HD_!ref").getFilesCount());
     }
 
     private static class Feature {
@@ -161,7 +161,7 @@ public class EsAggsTest {
 
         private String docId;
 
-        private String type = TYPE;
+        private final String type = TYPE;
 
         private Set<String> tags = new HashSet<>();
 
@@ -221,9 +221,11 @@ public class EsAggsTest {
             switch (type) {
                 case RAWDATA:
                     super.setUri(file.toURI());
+                    super.setReference(true);
                     break;
                 case QUICKLOOK_HD:
                     super.setUri(new File(file.getParentFile(), file.getName() + "_QL_HD").toURI());
+                    super.setReference(false);
                     break;
                 case QUICKLOOK_MD:
                     super.setUri(new File(file.getParentFile(), file.getName() + "_QL_MD").toURI());

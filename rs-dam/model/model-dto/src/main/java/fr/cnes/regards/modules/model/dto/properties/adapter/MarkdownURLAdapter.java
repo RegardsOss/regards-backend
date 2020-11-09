@@ -38,6 +38,8 @@ public class MarkdownURLAdapter extends TypeAdapter<MarkdownURL> {
     public void write(JsonWriter out, MarkdownURL value) throws IOException {
         if (value != null) {
             out.value(value.toString());
+        } else {
+            out.nullValue();
         }
     }
 

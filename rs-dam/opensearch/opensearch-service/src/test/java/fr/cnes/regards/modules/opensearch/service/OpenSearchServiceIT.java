@@ -64,7 +64,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     public void test() throws Exception {
         OpenSearchDescription desc = opensearchService
-                .readDescriptor(new URL("https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xml"));
+                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
         LOG.info(desc.getDescription());
         UrlType url = opensearchService.getSearchRequestURL(desc, MediaType.APPLICATION_JSON);
         Assert.assertNotNull("JSON Opensearch request should not be null from THEIA descriptor", url);
@@ -77,7 +77,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     @Test(expected = ModuleException.class)
     public void testInvalidUrl() throws MalformedURLException, ModuleException {
         opensearchService
-                .readDescriptor(new URL("https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xmlx"));
+                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xmlx"));
     }
 
     @Test(expected = ModuleException.class)

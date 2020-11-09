@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -85,7 +86,11 @@ public class SearchService implements ISearchService {
             default:
                 throw new IllegalArgumentException();
         }
-        return (T) repository.get(urn.getTenant(), urn.getEntityType().toString(), urn.toString(), clazz);
+        if(urn.isLast()) {
+            return (T) repository.getByVirtualId(urn.getTenant(), urn.getEntityType().toString(), urn.toString(), clazz);
+        } else {
+            return (T) repository.get(urn.getTenant(), urn.getEntityType().toString(), urn.toString(), clazz);
+        }
     }
 
     /**
@@ -141,7 +146,8 @@ public class SearchService implements ISearchService {
 
     @Override
     public <T extends IIndexable & IDocFiles> DocFilesSummary computeDataFilesSummary(SearchKey<T, T> searchKey,
-            ICriterion criterion, String discriminantProperty, List<DataType> dataTypes) {
+            ICriterion criterion, String discriminantProperty, Optional<String> discriminentPropertyInclude,
+            List<DataType> dataTypes) {
 
         String[] fileTypes = new String[dataTypes.size()];
         for (int i = 0; i < dataTypes.size(); i++) {
@@ -152,7 +158,8 @@ public class SearchService implements ISearchService {
         DocFilesSummary summary = new DocFilesSummary();
         // Adjust criterion to search for internal data
         ICriterion internalCrit = ICriterion.and(criterion.copy(), ICriterion.eq("internal", true));
-        repository.computeInternalDataFilesSummary(searchKey, internalCrit, discriminantProperty, summary, fileTypes);
+        repository.computeInternalDataFilesSummary(searchKey, internalCrit, discriminantProperty,
+                                                   discriminentPropertyInclude, summary, fileTypes);
         // Adjust criterion to search for external data (=> internal is false and all at least one searched file type
         // has an uri starting with http or https
         ICriterion filterUriCrit = ICriterion.or(Arrays
@@ -160,7 +167,8 @@ public class SearchService implements ISearchService {
                         .regexp(StaticProperties.FEATURE_FILES_PATH + "." + fileType + ".uri", "https?://.*"))
                 .collect(Collectors.toList()));
         ICriterion externalCrit = ICriterion.and(criterion.copy(), ICriterion.eq("internal", false), filterUriCrit);
-        repository.computeExternalDataFilesSummary(searchKey, externalCrit, discriminantProperty, summary, fileTypes);
+        repository.computeExternalDataFilesSummary(searchKey, externalCrit, discriminantProperty,
+                                                   discriminentPropertyInclude, summary, fileTypes);
         return summary;
     }
 

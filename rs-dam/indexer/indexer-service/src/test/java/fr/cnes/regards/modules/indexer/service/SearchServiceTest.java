@@ -93,7 +93,7 @@ public class SearchServiceTest {
                 String label = "POINT_" + format.format(lon) + "_" + format.format(lat);
                 DataObject object = new DataObject(model, tenant, label, label);
                 object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, tenant,
-                        UUID.randomUUID(), 1));
+                        UUID.randomUUID(), 1, null, null));
                 Point point = IGeometry.point(EsHelper.scaled(lon), EsHelper.scaled(lat))
                         .withCrs(Crs.MARS_49900.toString());
                 object.setNormalizedGeometry(point);
@@ -120,7 +120,7 @@ public class SearchServiceTest {
                 String label = "POLYGON_" + format.format(lon) + "_" + format.format(lat);
                 DataObject object = new DataObject(model, tenant, label, label);
                 object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, tenant,
-                        UUID.randomUUID(), 1));
+                        UUID.randomUUID(), 1, null, null));
                 Polygon polygon = IGeometry.simplePolygon(lon, lat, lon + 1, lat, lon + 1, lat + 1, lon, lat + 1)
                         .withCrs(Crs.MARS_49900.toString());
                 object.setNormalizedGeometry(polygon);

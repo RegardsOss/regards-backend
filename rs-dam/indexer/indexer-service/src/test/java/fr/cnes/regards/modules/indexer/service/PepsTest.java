@@ -161,7 +161,7 @@ public class PepsTest {
                             feature.get("properties").getAsJsonObject().get("title").getAsString(),
                             feature.get("properties").getAsJsonObject().get("title").getAsString());
                     object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT,
-                            UUID.randomUUID(), 1));
+                            UUID.randomUUID(), 1, null, null));
                     object.setNormalizedGeometry(geometry);
                     object.setWgs84(geometry);
                     objects.add(object);

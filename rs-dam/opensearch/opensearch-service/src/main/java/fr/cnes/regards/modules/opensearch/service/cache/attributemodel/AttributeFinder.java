@@ -169,6 +169,18 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         tenantMap.put(StaticProperties.FEATURE_ID, AttributeModelBuilder
                 .build(StaticProperties.FEATURE_ID, PropertyType.STRING, null).isStatic().get());
 
+        // Virtual identifier
+        tenantMap.put(StaticProperties.FEATURE_VIRTUAL_ID, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_VIRTUAL_ID, PropertyType.STRING, null).isStatic().isOptional().get());
+
+        // Version
+        tenantMap.put(StaticProperties.FEATURE_VERSION, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_VERSION, PropertyType.INTEGER, null).isStatic().get());
+
+        // Is last version
+        tenantMap.put(StaticProperties.FEATURE_IS_LAST_VERSION, AttributeModelBuilder
+                .build(StaticProperties.FEATURE_IS_LAST_VERSION, PropertyType.BOOLEAN, null).isStatic().get());
+
         // SIP identifier alias provider identifier
         tenantMap.put(StaticProperties.FEATURE_PROVIDER_ID, AttributeModelBuilder
                 .build(StaticProperties.FEATURE_PROVIDER_ID, PropertyType.STRING, null).isStatic().get());
@@ -270,6 +282,10 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         subscriber.subscribeTo(AttributeModelDeleted.class, new DeletedHandler());
     }
 
+    protected Map<String, Map<String, AttributeModel>> getPropertyMap() {
+        return propertyMap;
+    }
+
     /**
      * Handle {@link AttributeModel} creation
      * @author Xavier-Alexandre Brochard
@@ -306,10 +322,6 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
                 runtimeTenantResolver.clearTenant();
             }
         }
-    }
-
-    protected Map<String, Map<String, AttributeModel>> getPropertyMap() {
-        return propertyMap;
     }
 
 }
