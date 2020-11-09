@@ -159,6 +159,10 @@ public class AIPService implements IAIPService {
         return aip;
     }
 
+    private void removeLastFlag(AIPEntity aip) {
+        lastAipRepository.deleteByAipId(aip.getId());
+    }
+
     @Override
     public AIPEntity save(AIPEntity entity) {
         entity.setLastUpdate(OffsetDateTime.now());
@@ -371,6 +375,8 @@ public class AIPService implements IAIPService {
                 // Mark the AIP as deleted
                 aipRepository.saveAll(aipsRelatedToSip);
             }
+            // Remove last flag entry
+            aipsRelatedToSip.forEach(aip -> removeLastFlag(aip));
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }

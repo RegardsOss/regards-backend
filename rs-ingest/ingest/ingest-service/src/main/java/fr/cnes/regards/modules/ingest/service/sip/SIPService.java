@@ -94,6 +94,8 @@ public class SIPService implements ISIPService {
             } else {
                 sipRepository.delete(sipEntity);
             }
+            // Remove last flag entry
+            removeLastFlag(sipEntity);
         }
     }
 
@@ -122,6 +124,10 @@ public class SIPService implements ISIPService {
         } else {
             lastSipRepository.deleteBySipId(partialSip.getId());
         }
+    }
+
+    private void removeLastFlag(SIPEntity sip) {
+        lastSipRepository.deleteBySipId(sip.getId());
     }
 
     @Override
