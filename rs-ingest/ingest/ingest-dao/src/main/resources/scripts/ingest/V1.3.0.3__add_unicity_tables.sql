@@ -31,3 +31,6 @@ CREATE TABLE t_last_aip (
 );
 create sequence seq_last_aip start 1 increment 50;
 
+-- Remove old indexes
+DROP INDEX IF EXISTS idx_one_sip_last;
+DROP INDEX IF EXISTS idx_one_aip_last;
