@@ -36,6 +36,7 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
 		</dependency>
+
 		<!-- Module -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.order</groupId>
@@ -46,11 +47,21 @@
 			<artifactId>jobs-dao</artifactId>
 			<!-- Don't set test scope even if it theorically is sufficient. SqlGenerator needs it as is -->
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.templates</groupId>
+			<artifactId>templates-dao</artifactId>
+			<!-- Don't set test scope even if it theorically is sufficient. SqlGenerator needs it as is -->
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -29,6 +29,7 @@ public enum ExecutionStatus {
     REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),
     ;
 
+    public static final ExecutionStatus[] VALUES = values();
     private final Seq<ExecutionStatus> nextStates;
 
     ExecutionStatus(Seq<ExecutionStatus> nextStates) {
@@ -36,6 +37,10 @@ public enum ExecutionStatus {
     }
     ExecutionStatus() {
         this.nextStates = List.empty();
+    }
+
+    public static Seq<ExecutionStatus> nonFinalStatusList() {
+        return List.of(VALUES).filter(s -> !s.isFinalStep());
     }
 
     public Seq<ExecutionStatus> getNextStates() {

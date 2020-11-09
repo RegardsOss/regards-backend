@@ -35,7 +35,7 @@
 	<properties>
 		<lombok.version>1.18.12</lombok.version>
 	</properties>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- Module layers -->

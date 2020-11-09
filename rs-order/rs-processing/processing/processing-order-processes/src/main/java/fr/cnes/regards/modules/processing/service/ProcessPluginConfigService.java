@@ -1,14 +1,18 @@
 package fr.cnes.regards.modules.processing.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.processing.controller.ProcessPluginConfigController;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
+import fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import io.vavr.collection.HashMap;
@@ -33,31 +37,31 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private final IPluginConfigurationRepository pluginConfigRepo;
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
+    private final IPExecutionRepository executionRepository;
+    private final IPublisher publisher;
 
     public ProcessPluginConfigService(
             IPluginConfigurationRepository pluginConfigRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+            IPExecutionRepository executionRepository,
+            IPublisher publisher
     ) {
         this.pluginConfigRepo = pluginConfigRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
+        this.executionRepository = executionRepository;
+        this.publisher = publisher;
     }
 
     @Override
     public Flux<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs() {
         return Flux.fromIterable(rightsPluginConfigRepo.findAll())
-                .flatMap(rights -> {
-                    ProcessPluginConfigurationRightsDTO rightsDto = ProcessPluginConfigurationRightsDTO
-                            .fromRightsPluginConfiguration(rights);
-                    return Mono.just(rightsDto);
-                });
+                .map(RightsPluginConfiguration::toDto);
     }
 
     @Override public Mono<ProcessPluginConfigurationRightsDTO> findByBusinessId(UUID processBusinessId) {
         return Mono.fromCallable(() -> {
             RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
-            ProcessPluginConfigurationRightsDTO rightsDto = ProcessPluginConfigurationRightsDTO
-                    .fromRightsPluginConfiguration(rights);
-            return rightsDto;
+            return RightsPluginConfiguration.toDto(rights);
         });
     }
 
@@ -75,8 +79,9 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             rights.setRole(rightsDto.getRights().getRole());
 
             RightsPluginConfiguration persistedRights = rightsPluginConfigRepo.save(rights);
-            return ProcessPluginConfigurationRightsDTO.fromRightsPluginConfiguration(persistedRights);
-        });
+            return RightsPluginConfiguration.toDto(persistedRights);
+        })
+        .doOnNext(dto -> publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.UPDATE, rightsDto, dto)));
     }
 
     @Override public Mono<ProcessPluginConfigurationRightsDTO> create(
@@ -87,17 +92,20 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             UUID processBusinessId = UUID.randomUUID();
             // Beware, mutation
             rightsDto.getPluginConfiguration().setBusinessId(processBusinessId.toString());
-            return ProcessPluginConfigurationRightsDTO
-                    .fromRightsPluginConfiguration(rightsPluginConfigRepo.save(rightsDto.toRightsPluginConfiguration(tenant)));
-        });
+            RightsPluginConfiguration rights = RightsPluginConfiguration.fromDto(tenant, rightsDto);
+            return RightsPluginConfiguration.toDto(rightsPluginConfigRepo.save(rights));
+        })
+        .doOnNext(dto -> publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.CREATE, null, dto)));
     }
 
     @Override public Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId) {
         return Mono.fromCallable(() -> {
             RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
+            executionRepository.findByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList());
             rightsPluginConfigRepo.delete(rights);
-            return ProcessPluginConfigurationRightsDTO.fromRightsPluginConfiguration(rights);
-         });
+            return RightsPluginConfiguration.toDto(rights);
+         })
+        .doOnNext(dto -> publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.DELETE, dto, null)));
     }
 
     @Override public Flux<ProcessLabelDTO> getDatasetLinkedProcesses(String dataset) {

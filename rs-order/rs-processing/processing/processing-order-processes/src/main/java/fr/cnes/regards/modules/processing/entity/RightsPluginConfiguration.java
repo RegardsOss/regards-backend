@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.entity;
 
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,5 +55,27 @@ public class RightsPluginConfiguration {
 
     public List<String> getDatasets() {
         return Arrays.asList(datasets);
+    }
+
+
+    public static ProcessPluginConfigurationRightsDTO toDto(RightsPluginConfiguration rights) {
+        return new ProcessPluginConfigurationRightsDTO(
+                rights.getPluginConfiguration(),
+                new ProcessPluginConfigurationRightsDTO.Rights(
+                        rights.getRole(),
+                        io.vavr.collection.List.ofAll(rights.getDatasets())
+                )
+        );
+    }
+
+    public static RightsPluginConfiguration fromDto(String tenant, ProcessPluginConfigurationRightsDTO dto) {
+        return new RightsPluginConfiguration(
+                null,
+                dto.getPluginConfiguration(),
+                UUID.fromString(dto.getPluginConfiguration().getBusinessId()),
+                tenant,
+                dto.getRights().getRole(),
+                dto.getRights().getDatasets().toJavaArray(String[]::new)
+        );
     }
 }

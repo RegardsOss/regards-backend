@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,10 @@ public interface IExecutionEntityRepository
             OffsetDateTime from,
             OffsetDateTime to,
             Pageable page
+    );
+
+    Flux<PExecution> findByProcessBusinessIdAndCurrentStatusIn(
+            UUID processBusinessId,
+            List<ExecutionStatus> nonFinalStatusList
     );
 }

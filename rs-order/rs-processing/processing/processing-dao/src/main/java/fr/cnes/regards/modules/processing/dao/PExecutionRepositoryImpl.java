@@ -9,6 +9,7 @@ import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
+import io.vavr.collection.Seq;
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,12 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             .doOnNext(e -> cache.put(e.getId(), e));
     }
 
+    @Override public Flux<PExecution> findByProcessBusinessIdAndStatusIn(
+            UUID processBusinessId,
+            Seq<ExecutionStatus> nonFinalStatusList
+    ) {
+        return entityExecRepo.findByProcessBusinessIdAndCurrentStatusIn(processBusinessId, nonFinalStatusList.toJavaList());
+    }
 
     @Override public Mono<PExecution> update(PExecution exec) {
         return entityExecRepo
@@ -75,8 +82,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         return entityExecRepo.getTimedOutExecutions().map(mapper::toDomain);
     }
 
-    @Override
-    public Flux<PExecution> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    @Override public Flux<PExecution> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
             List<ExecutionStatus> status,
             OffsetDateTime from,
