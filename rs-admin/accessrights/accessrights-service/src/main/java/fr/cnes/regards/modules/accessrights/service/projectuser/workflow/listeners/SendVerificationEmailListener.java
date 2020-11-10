@@ -18,6 +18,21 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriUtils;
+
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -33,19 +48,6 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
@@ -67,6 +69,8 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final String noreply;
+
     /**
      * Service to manage email verification tokens for project users.
      */
@@ -74,8 +78,8 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
             IAccountsClient accountsClient, IStorageRestClient storageClient,
-            IRuntimeTenantResolver runtimeTenantResolver,
-            IEmailVerificationTokenService emailVerificationTokenService) {
+            IRuntimeTenantResolver runtimeTenantResolver, IEmailVerificationTokenService emailVerificationTokenService,
+            @Value("${regards.mails.noreply.address:regards@noreply.fr}") String noreply) {
         super();
         this.templateService = templateService;
         this.emailService = emailService;
@@ -83,6 +87,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         this.storageClient = storageClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.emailVerificationTokenService = emailVerificationTokenService;
+        this.noreply = noreply;
     }
 
     @Override
@@ -130,11 +135,16 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
             if (storageResponse.getStatusCode().is2xxSuccessful()) {
                 DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
-                Map<String, Long> quotaData = new HashMap<String, Long>() {{
-                    put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-2L));
-                    put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-2L));
-                }};
-                String quotaParagraph = templateService.render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME, quotaData);
+                Map<String, Long> quotaData = new HashMap<String, Long>() {
+
+                    {
+                        put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-2L));
+                        put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-2L));
+                    }
+                };
+                String quotaParagraph = templateService
+                        .render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME,
+                                quotaData);
                 data.put("quotaParagraph", quotaParagraph);
             } else {
                 LOGGER.error("Could not find the associated quota limits for templating the email content.");
@@ -164,6 +174,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
                         e);
             message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
         }
-        emailService.sendEmail(message, "[REGARDS] Account Confirmation", null, userEmail);
+        emailService.sendEmail(message, "[REGARDS] Account Confirmation", noreply, userEmail);
     }
 }
