@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.EntityModel;
@@ -60,18 +61,22 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final IAccountsClient accountsClient;
 
+    private final String noreply;
+
     /**
      * Service to manage email verification tokens for project users.
      */
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
-            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService) {
+            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService,
+            @Value("${regards.mails.noreply.address:regards@noreply.fr}") String noreply) {
         super();
         this.templateService = templateService;
         this.emailService = emailService;
         this.accountsClient = accountsClient;
         this.emailVerificationTokenService = emailVerificationTokenService;
+        this.noreply = noreply;
     }
 
     @Override
@@ -130,6 +135,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
                         e);
             message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
         }
-        emailService.sendEmail(message, "[REGARDS] Account Confirmation", null, userEmail);
+        emailService.sendEmail(message, "[REGARDS] Account Confirmation", noreply, userEmail);
     }
 }
