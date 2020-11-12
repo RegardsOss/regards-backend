@@ -18,39 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.support.CronSequenceGenerator;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.util.MimeTypeUtils;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -96,6 +63,34 @@ import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * Acquisition processing service
@@ -206,8 +201,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         Pageable page = PageRequest.of(0, 100);
         Page<JobInfo> results = null;
         do {
-            results = jobInfoService.retrieveJobs(DeleteProductsJob.class.getName(), page, JobStatus.PENDING,
-                                                  JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN);
+            results = jobInfoService
+                    .retrieveJobs(DeleteProductsJob.class.getName(), page, JobStatus.PENDING, JobStatus.QUEUED,
+                                  JobStatus.RUNNING, JobStatus.TO_BE_RUN);
             for (JobInfo info : results) {
                 Long chainId = info.getParametersAsMap().get(DeleteProductsJob.CHAIN_ID_PARAM).getValue();
                 if ((chainId != null) && (chainId.equals(chain.getId()))) {
@@ -257,7 +253,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
 
             // Prevent bad value
-            fileInfo.setLastModificationDate(null);
+            //fileInfo.setLastModificationDate(null); FIXME
             // Manage scan plugin conf
             createPluginConfiguration(fileInfo.getScanPlugin());
             // Save file info
@@ -306,7 +302,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             if (fileInfo.getId() == null) {
                 // New file info to create
                 // Prevent bad value
-                fileInfo.setLastModificationDate(null);
+                //fileInfo.setLastModificationDate(null); FIXME
                 // Manage scan plugin conf
                 createPluginConfiguration(fileInfo.getScanPlugin());
             } else {
@@ -319,7 +315,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     for (IPluginParam param : fileInfo.getScanPlugin().getParameters()) {
                         if (!param.getValue().equals(exConf.getParameterValue(param.getName()))) {
                             // Conf has changed, so reset the last scanning date
-                            fileInfo.setLastModificationDate(null);
+                            //fileInfo.setLastModificationDate(null); FIXME
                         }
                     }
                 }
@@ -437,13 +433,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      */
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
-        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && (processingChain.getPeriodicity() == null)) {
+        if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode()) && (processingChain.getPeriodicity()
+                == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
 
-        if ((processingChain.getPeriodicity() != null)
-                && !CronSequenceGenerator.isValidExpression(processingChain.getPeriodicity())) {
+        if ((processingChain.getPeriodicity() != null) && !CronSequenceGenerator
+                .isValidExpression(processingChain.getPeriodicity())) {
             throw new EntityInvalidException("Cron expression is not valid for processing chain automatic trigger");
         }
     }
@@ -505,8 +501,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
 
         if (!processingChain.isLocked()) {
-            String message = String.format("Jobs cannot be stopped on unlocked processing chain \"%s\"",
-                                           processingChain.getLabel());
+            String message = String
+                    .format("Jobs cannot be stopped on unlocked processing chain \"%s\"", processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
         }
@@ -586,8 +582,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
 
         if (!processingChain.isActive()) {
-            String message = String.format("Inactive processing chain \"%s\" cannot be started",
-                                           processingChain.getLabel());
+            String message = String
+                    .format("Inactive processing chain \"%s\" cannot be started", processingChain.getLabel());
             LOGGER.error(message);
             throw new EntityInvalidException(message);
         }
@@ -675,84 +671,50 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 LOGGER.error("Unable to run files scan as plugin is disabled");
                 throw new ModuleException(e1.getMessage(), e1);
             }
-
-            // Clone scanning date for duplicate prevention
-            Optional<OffsetDateTime> scanningDate = Optional.empty();
-            if (fileInfo.getLastModificationDate() != null) {
-                scanningDate = Optional
-                        .of(OffsetDateTime.ofInstant(fileInfo.getLastModificationDate().toInstant(), ZoneOffset.UTC));
-            }
-
+            // Get files scanned
+            Map<Path, Optional<OffsetDateTime>> scannedFiles;
             if (scanPlugin instanceof IFluxScanPlugin) {
-                streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, scanningDate, session,
-                                       processingChain.getLabel());
+                IFluxScanPlugin fluxPlugin = (IFluxScanPlugin) scanPlugin;
+                scannedFiles = fluxPlugin.stream(fileInfo.getScanDirInfo());
             } else {
-                scanAndRegisterFiles(fileInfo, scanPlugin, scanningDate, session, processingChain.getLabel());
+                scannedFiles = scanPlugin.scan(fileInfo.getScanDirInfo());
+            }
+            // Register files if they were found
+            if (!scannedFiles.isEmpty()) {
+                registerFiles(scannedFiles.entrySet().iterator(), fileInfo, session, processingChain.getLabel());
             }
         }
 
-    }
-
-    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
-        // Do scan
-        List<Path> scannedFiles = scanPlugin.scan(scanningDate);
-
-        // Sort list according to last modification date
-        Collections.sort(scannedFiles, (file1, file2) -> {
-            try {
-                return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
-            } catch (IOException e) {
-                LOGGER.warn("Cannot read last modification date", e);
-                return 0;
-            }
-        });
-        if (!scannedFiles.isEmpty()) {
-            registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
-        }
-        if (scanningDate.isPresent()) {
-            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with last update date > {} ", sessionOwner,
-                        session, fileInfo.getComment(), scannedFiles.size(), scanningDate.get().toString());
-        } else {
-            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with no date filter.", sessionOwner, session,
-                        fileInfo.getComment(), scannedFiles.size());
-        }
-    }
-
-    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
-        List<Stream<Path>> streams = scanPlugin.stream(scanningDate);
-        Iterator<Stream<Path>> streamsIt = streams.iterator();
-        while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
-            try (Stream<Path> stream = streamsIt.next()) {
-                registerFiles(stream.iterator(), fileInfo, scanningDate, session, sessionOwner);
-            }
-        }
     }
 
     @Override
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
+    public long registerFiles(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
+            AcquisitionFileInfo fileInfo, String session, String sessionOwner) throws ModuleException {
         RegisterFilesResponse response;
         long totalCount = 0;
         OffsetDateTime lmd = null;
         do {
             long startTime = System.currentTimeMillis();
-            response = self.registerFilesBatch(filePathsIt, fileInfo, scanningDate, BATCH_SIZE, session, sessionOwner);
+            response = self.registerFilesBatch(filePathsIt, fileInfo, BATCH_SIZE, session, sessionOwner);
             totalCount += response.getNumberOfRegisteredFiles();
             // Calculate most recent file registered.
-            if ((lmd == null)
-                    || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread().isInterrupted())) {
+            if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread()
+                    .isInterrupted())) {
                 lmd = response.getLastUpdateDate();
             }
             sessionNotifier.notifyFileAcquired(session, sessionOwner, response.getNumberOfRegisteredFiles());
-            LOGGER.info("{} new file(s) registered in {} milliseconds", response.getNumberOfRegisteredFiles(),
-                        System.currentTimeMillis() - startTime);
+            LOGGER.info("[{} - {}] {} new file(s) registered in {} milliseconds", sessionOwner,
+                        session, response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
         } while (response.hasNext());
         // Update file info last update date with the most recent file registered.
-        if ((lmd != null)
-                && ((fileInfo.getLastModificationDate() == null) || lmd.isAfter(fileInfo.getLastModificationDate()))) {
-            fileInfo.setLastModificationDate(lmd);
+        if (lmd != null) {
+            OffsetDateTime finalLmd = lmd;
+            fileInfo.getScanDirInfo().forEach((dirInfo) -> {
+                if ((dirInfo.getLastModificationDatePerDir() == null) || finalLmd
+                        .isAfter(dirInfo.getLastModificationDatePerDir())) {
+                    dirInfo.setLastModificationDatePerDir(finalLmd);
+                }
+            });
             fileInfoRepository.save(fileInfo);
         }
         return totalCount;
@@ -760,9 +722,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner)
-            throws ModuleException {
+    public RegisterFilesResponse registerFilesBatch(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
+            AcquisitionFileInfo info, int limit, String session, String sessionOwner) throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
         // We catch general exception to avoid AccessDeniedException thrown by FileTreeIterator provided to this method.
@@ -770,8 +731,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // First calculate
         while (nextPath && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
             try {
-                Path filePath = filePaths.next();
-                if (registerFile(filePath, info, scanningDate)) {
+                Map.Entry<Path, Optional<OffsetDateTime>> file = filePathsIt.next();
+                Path filePath = file.getKey();
+                if (registerFile(filePath, info, file.getValue())) {
                     countRegistered++;
                     OffsetDateTime lmd;
                     try {
@@ -787,10 +749,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             } catch (Exception e) { // NOSONAR
                 LOGGER.error("Error parsing file. {}", e.getMessage());
             } finally {
-                nextPath = filePaths.hasNext();
+                nextPath = filePathsIt.hasNext();
             }
         }
-        return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
+        return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePathsIt.hasNext());
     }
 
     @Override
@@ -799,8 +761,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         try {
             // If new file to register date is exactly the same as the last scanning date, check if file is not already acquired.
             lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
-            if (scanningDate.isPresent() && lmd.equals(scanningDate.get())
-                    && acqFileRepository.findOneByFilePathIn(filePath).isPresent()) {
+            if (scanningDate.isPresent() && lmd.equals(scanningDate.get()) && acqFileRepository
+                    .findOneByFilePathIn(filePath).isPresent()) {
                 return false;
             } else {
                 // Initialize new file
@@ -878,8 +840,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             dataMap.put("invalidFiles", invalidFiles);
             String message;
             try {
-                message = templateService.render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE,
-                                                 dataMap);
+                message = templateService
+                        .render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE, dataMap);
                 notificationClient.notify(message, "Acquisition invalid files report", NotificationLevel.WARNING,
                                           MimeTypeUtils.TEXT_HTML, DefaultRole.PROJECT_ADMIN);
             } catch (TemplateException e) {
@@ -913,8 +875,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.currentThread().isInterrupted()
-                && productService.restartInterruptedJobsByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted() && productService
+                .restartInterruptedJobsByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
     }
@@ -922,8 +884,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void retrySIPGeneration(AcquisitionProcessingChain processingChain, Optional<String> sessionToRetry) {
-        while (!Thread.currentThread().isInterrupted()
-                && productService.retrySIPGenerationByPage(processingChain, sessionToRetry)) {
+        while (!Thread.currentThread().isInterrupted() && productService
+                .retrySIPGenerationByPage(processingChain, sessionToRetry)) {
             // Works as long as there is at least one page left
         }
     }
@@ -978,14 +940,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain,
-                isDeletionPending(chain));
+                                                                                          isDeletionPending(chain));
 
         // Handle job summary
-        summary.setActive((chain.getLastProductAcquisitionJobInfo() != null)
-                && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished(),
-                          productService
-                                  .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain,
-                                                                                           ProductSIPState.SCHEDULED));
+        summary.setActive(
+                (chain.getLastProductAcquisitionJobInfo() != null) && !chain.getLastProductAcquisitionJobInfo()
+                        .getStatus().getStatus().isFinished(), productService
+                        .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED));
 
         return summary;
     }

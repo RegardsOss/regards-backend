@@ -18,6 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.framework.geojson.FeatureCollection;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,31 +43,15 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-
-import org.apache.commons.compress.utils.Lists;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
-
-import fr.cnes.regards.framework.geojson.Feature;
-import fr.cnes.regards.framework.geojson.FeatureCollection;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * This plugin allows to scan a directory to find geojson files and generate a new file to acquire for each feature found in it.
@@ -68,18 +65,12 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
 
-    public static final String FIELD_DIR = "directoryToScan";
-
     public static final String FIELD_FEATURE_ID = "featureId";
 
     public static final String ALLOW_EMPTY_FEATURES = "allowEmptyFeatures";
 
     @Autowired
     private Gson gson;
-
-    @PluginParameter(name = FIELD_DIR,
-            label = "Directories to scan to find *.json files containing geojson feature collections")
-    private String directoryToScan;
 
     @PluginParameter(name = FIELD_FEATURE_ID,
             label = "Json path to access the identifier of each feature in the geojson file", optional = false)
@@ -91,32 +82,40 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     private boolean allowEmptyFeature;
 
     @Override
-    public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
-        List<Path> scannedFiles = new ArrayList<>();
-        Path dirPath = Paths.get(directoryToScan);
-        if (Files.isDirectory(dirPath)) {
-            scannedFiles.addAll(scanDirectory(dirPath, lastModificationDate));
-        } else {
-            throw new PluginUtilsRuntimeException(String.format("Invalid directory path : %s", dirPath.toString()));
+    public Map<Path, Optional<OffsetDateTime>> scan(Set<ScanDirectoriesInfo> scanDirectoriesInfo) {
+        Map<Path, Optional<OffsetDateTime>> scannedFiles = new HashMap<>();
+        for (ScanDirectoriesInfo scanDirInfo : scanDirectoriesInfo) {
+            Path dirPath = scanDirInfo.getScannedDirectory();
+            if (Files.isDirectory(dirPath)) {
+                scannedFiles.putAll(scanDirectory(dirPath, scanDirInfo.getLastModificationDatePerDir()));
+            } else {
+                throw new PluginUtilsRuntimeException(String.format("Invalid directory path : %s", dirPath.toString()));
+            }
         }
         return scannedFiles;
 
     }
 
-    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
-        List<Path> genetateFeatureFiles = new ArrayList<>();
+    private Map<Path, Optional<OffsetDateTime>> scanDirectory(Path dirPath, OffsetDateTime lastModificationDate) {
+        Map<Path, Optional<OffsetDateTime>> genetateFeatureFiles = new HashMap<>();
+
+        // handle lastModification with utc zone
+        Optional<OffsetDateTime> scanningDate = Optional.empty();
+        if (lastModificationDate != null) {
+            scanningDate = Optional.of(OffsetDateTime.ofInstant(lastModificationDate.toInstant(), ZoneOffset.UTC));
+        }
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, "*.geojson")) {
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
-                    if (lastModificationDate.isPresent()) {
+                    if (scanningDate.isPresent()) {
                         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
                                                                       ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
-                            genetateFeatureFiles.addAll(generateFeatureFiles(entry));
+                        if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
+                            genetateFeatureFiles.putAll(generateFeatureFiles(entry, scanningDate));
                         }
                     } else {
-                        genetateFeatureFiles.addAll(generateFeatureFiles(entry));
+                        genetateFeatureFiles.putAll(generateFeatureFiles(entry, scanningDate));
                     }
                 }
             }
@@ -127,9 +126,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
         return genetateFeatureFiles;
     }
 
-    private List<Path> generateFeatureFiles(Path entry) {
-
-        List<Path> generatedFiles = Lists.newArrayList();
+    private Map<Path, Optional<OffsetDateTime>> generateFeatureFiles(Path entry, Optional<OffsetDateTime> scanningDate) {
+        Map<Path, Optional<OffsetDateTime>> generatedFiles = new HashMap<>();
 
         try {
 
@@ -212,7 +210,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
                 if (!sip.getProperties().getContentInformations().isEmpty() || allowEmptyFeature) {
                     Path file = Paths.get(entry.getParent().toString(), name + ".json");
-                    generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
+                    generatedFiles.put(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")), scanningDate);
                 }
             }
 
@@ -220,10 +218,6 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
             LOGGER.error(e.getMessage(), e);
         }
         return generatedFiles;
-    }
-
-    public void setDirectoryToScan(String dir) {
-        this.directoryToScan = dir;
     }
 
     public void setGson(Gson gson) {

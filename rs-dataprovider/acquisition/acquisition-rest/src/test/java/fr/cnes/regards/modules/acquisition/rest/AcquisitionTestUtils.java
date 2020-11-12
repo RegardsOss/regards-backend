@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.assertj.core.util.Sets;
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.urn.DataType;
@@ -37,6 +29,11 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import org.assertj.core.util.Sets;
+import org.springframework.http.MediaType;
 
 /**
  * Utils for product acquisition testing
@@ -64,8 +61,7 @@ public class AcquisitionTestUtils {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()));
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, param);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
