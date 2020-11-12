@@ -104,7 +104,7 @@ public class IndexController {
      * @throws ModuleException
      */
     @ResourceAccess(description = "Update all collections indexed.", role = DefaultRole.PROJECT_ADMIN)
-    @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
+    @RequestMapping(path = TYPE_MAPPING + UPDATE_COLLECTIONS, method = RequestMethod.POST)
     public ResponseEntity<Void> updateCollections() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         entityIndexerService.updateAllCollections(tenant, OffsetDateTime.now());
