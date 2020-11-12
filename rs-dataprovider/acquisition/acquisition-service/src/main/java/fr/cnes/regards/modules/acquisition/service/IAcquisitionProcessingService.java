@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -39,6 +29,15 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Acquisition processing service interface
@@ -211,30 +210,27 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Register multiple files in one transaction
-     * @param filePaths paths of the files to register
+     * @param filePaths map - paths of the files to register / reference date used to launch scan plugin
      * @param info related file info
-     * @param scanningDate reference date used to launch scan plugin
      * @param updateFileInfo does the fileInfo last modification date should be updated
      *                       with the file last modification date
      * @param limit maximum number of files to register
      * @return number of registered files
      */
-    RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
-            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner)
-            throws ModuleException;
+    RegisterFilesResponse registerFilesBatch(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
+            AcquisitionFileInfo info, int limit, String session, String sessionOwner) throws ModuleException;
 
     /**
      * Register multiple files by creating multiple transactions by batch
      * @param filePathsIt
      * @param fileInfo
-     * @param scanningDate
      * @param session
      * @param sessionOwner
      * @return
      * @throws ModuleException
      */
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException;
+    long registerFiles(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt, AcquisitionFileInfo fileInfo,
+            String session, String sessionOwner) throws ModuleException;
 
     /**
      * Register a new file in one transaction
