@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.proxy;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,14 +31,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -57,6 +55,7 @@ import fr.cnes.httpclient.HttpClientFactory.Type;
  *
  */
 @Configuration
+@ConditionalOnProperty("http.proxy.enabled")
 public class ProxyConfiguration {
 
     /**
@@ -95,11 +94,12 @@ public class ProxyConfiguration {
                                              new UsernamePasswordCredentials(proxyLogin, proxyPassword));
                 builder.setDefaultCredentialsProvider(credsProvider);
             }
-            if(noProxy!=null) {
+            if (noProxy != null) {
                 HttpRoutePlanner routePlannerHandlingNoProxy = new DefaultProxyRoutePlanner(proxy) {
 
                     @Override
-                    public HttpRoute determineRoute(final HttpHost host, final HttpRequest request, final HttpContext context) throws HttpException {
+                    public HttpRoute determineRoute(final HttpHost host, final HttpRequest request,
+                            final HttpContext context) throws HttpException {
                         String hostname = host.getHostName();
                         if (noProxy.contains(hostname)) {
                             // Return direct route
@@ -132,8 +132,8 @@ public class ProxyConfiguration {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
             }
             if ((noProxy != null) && !noProxy.isEmpty()) {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy.stream().collect(
-                        Collectors.joining(",")));
+                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY
+                        .setValue(noProxy.stream().collect(Collectors.joining(",")));
             }
             if ((proxyLogin != null) && (proxyPassword != null)) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
