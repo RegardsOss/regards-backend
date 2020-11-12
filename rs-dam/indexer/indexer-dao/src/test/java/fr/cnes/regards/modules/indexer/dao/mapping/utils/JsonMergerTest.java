@@ -1,23 +1,25 @@
 package fr.cnes.regards.modules.indexer.dao.mapping.utils;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonMergerTest {
 
     public static final String MERGE1_JSON_PATH = "json/merge-one.json";
+
     public static final String MERGE2_JSON_PATH = "json/merge-two.json";
+
     public static final String MERGED_JSON_PATH = "json/merged.json";
 
-    @Test public void test_merge() throws IOException {
+    @Test
+    public void test_merge() throws IOException {
         // GIVEN
         String merge1 = IOUtils.toString(getSystemResourceAsStream(MERGE1_JSON_PATH), "UTF-8").trim();
         String merge2 = IOUtils.toString(getSystemResourceAsStream(MERGE2_JSON_PATH), "UTF-8").trim();

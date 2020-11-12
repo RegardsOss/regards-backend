@@ -31,7 +31,7 @@ public class AttrDescToJsonMapping {
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {
         return Option.of(attrDescOrNull)
-            .flatMap(attrDesc -> attemptConversion(attrDesc))
+            .flatMap(this::attemptConversion)
             .getOrElse(JsonObject::new);
     }
 
@@ -145,7 +145,7 @@ public class AttrDescToJsonMapping {
     private JsonObject toDateJsonMapping(AttributeDescription attrDesc) {
         return nestedPropertiesStructure(attrDesc.getPath(), object(
                 kv("type", "date"),
-                kv("format", "date_time")
+                kv("format", "date_optional_time")
         ));
     }
 

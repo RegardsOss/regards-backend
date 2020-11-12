@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.indexer.dao.mapping;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
@@ -14,7 +15,8 @@ import java.util.stream.Stream;
 
 import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.*;
 
-@Service
+//TODO REMOVE
+@Deprecated
 public class EsMappingService implements IEsMappingCreationService, IEsMappingUpdateService {
 
     @Autowired private IEsRepository esRepo;
@@ -73,12 +75,11 @@ public class EsMappingService implements IEsMappingCreationService, IEsMappingUp
     }
 
     @Override public void addAttributeToIndexMapping(String tenant, AttributeDescription attr) throws ModuleException {
-        JsonObject mapping = toMapping.toJsonMapping(attr);
-        esRepo.putMapping(tenant, mapping);
+        esRepo.putMappings(tenant, attr);
     }
 
     private <U> U neverCalled(U one, U two) {
-        throw new RuntimeException("Should never be called");
+        throw new RsRuntimeException("Should never be called");
     }
 
 }

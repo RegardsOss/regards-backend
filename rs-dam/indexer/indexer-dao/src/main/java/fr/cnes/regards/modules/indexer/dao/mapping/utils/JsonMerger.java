@@ -10,7 +10,7 @@ public class JsonMerger {
 
     public JsonObject merge(JsonObject one, JsonObject two) {
         JsonObject merged = new JsonObject();
-        one.entrySet().stream().forEach(entry -> {
+        one.entrySet().forEach(entry -> {
             String key = entry.getKey();
             JsonElement oneValue = entry.getValue();
             if (two.has(key)) {
@@ -38,7 +38,7 @@ public class JsonMerger {
             return one;
         }
         JsonArray merged = new JsonArray();
-        one.iterator().forEachRemaining(el -> merged.add(el));
+        one.iterator().forEachRemaining(merged::add);
         two.iterator().forEachRemaining(el -> {
             if (!merged.contains(el)) {
                 merged.add(el);
