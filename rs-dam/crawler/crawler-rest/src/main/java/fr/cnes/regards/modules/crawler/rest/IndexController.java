@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.IDatasourceIngesterService;
 import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
@@ -40,6 +41,10 @@ import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
 public class IndexController {
 
     public static final String TYPE_MAPPING = "/index";
+
+    public static final String UPDATE_DATASETS = "/update/datasets";
+
+    public static final String UPDATE_COLLECTIONS = "/update/collections";
 
     @Autowired
     protected IEntityIndexerService entityIndexerService;
@@ -58,7 +63,7 @@ public class IndexController {
      * @return void
      * @throws ModuleException
      */
-    @ResourceAccess(description = "Delete and recreate curent index.")
+    @ResourceAccess(description = "Delete and recreate curent index.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> recreateIndex() throws ModuleException {
 
@@ -77,6 +82,32 @@ public class IndexController {
             datasources.forEach(ds -> dataSourceIngesterService.deleteDatasourceIngestion(ds.getId()));
         }
 
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Delete a DatasourceIngestion.
+     * @return void
+     * @throws ModuleException
+     */
+    @ResourceAccess(description = "Update all datasets indexed.", role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
+    public ResponseEntity<Void> updateDatasets() throws ModuleException {
+        String tenant = runtimeTenantResolver.getTenant();
+        entityIndexerService.updateAllDatasets(tenant, OffsetDateTime.now());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Delete a DatasourceIngestion.
+     * @return void
+     * @throws ModuleException
+     */
+    @ResourceAccess(description = "Update all collections indexed.", role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
+    public ResponseEntity<Void> updateCollections() throws ModuleException {
+        String tenant = runtimeTenantResolver.getTenant();
+        entityIndexerService.updateAllCollections(tenant, OffsetDateTime.now());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
