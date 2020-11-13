@@ -23,8 +23,6 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Convert;
 
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
@@ -60,8 +58,8 @@ public class FeatureUniformResourceName extends UniformResourceName {
         return urn;
     }
 
-    public FeatureUniformResourceName(FeatureIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
-            int version, Long order, String revision) {
+    public FeatureUniformResourceName(FeatureIdentifier oaisIdentifier, EntityType entityType, String tenant,
+            UUID entityId, int version, Long order, String revision) {
         super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, revision);
     }
 
@@ -69,8 +67,14 @@ public class FeatureUniformResourceName extends UniformResourceName {
         // for testing purpose
     }
 
-    public FeatureUniformResourceName(FeatureIdentifier identifier, EntityType entityType, String tenant, UUID entityId, Long order, String revision) {
+    public FeatureUniformResourceName(FeatureIdentifier identifier, EntityType entityType, String tenant, UUID entityId,
+            Long order, String revision) {
         super(identifier.name(), entityType, tenant, entityId, order, revision);
+    }
+
+    public static boolean isValidUrn(String urn) {
+        return UniformResourceName.isValidUrn(urn)
+                && (FeatureIdentifier.FEATURE.toString() == (urn.split(DELIMITER)[1]));
     }
 
     /**
@@ -97,7 +101,7 @@ public class FeatureUniformResourceName extends UniformResourceName {
         String[] versionWithOrder = stringFragment[5].split(",");
         boolean last = versionWithOrder[0].contains(LAST_VALUE);
         Integer version = null;
-        if(!last) {
+        if (!last) {
             // if this is not a last URN then lets compute version
             version = Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length()));
         }
@@ -110,7 +114,7 @@ public class FeatureUniformResourceName extends UniformResourceName {
             // Revision is precised
             revision = stringFragment[6].substring(REVISION_PREFIX.length());
         }
-        if(last) {
+        if (last) {
             return new FeatureUniformResourceName(identifier, entityType, tenant, entityId, order, revision);
         } else {
             return new FeatureUniformResourceName(identifier, entityType, tenant, entityId, version, order, revision);

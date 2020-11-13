@@ -70,6 +70,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
         for (RequestInfo info : requests) {
             for (RequestResultInfoDTO result : info.getSuccessRequests()) {
                 copies.addAll(result.getRequestOwners().stream()
+                        .filter(owner -> FeatureUniformResourceName.isValidUrn(owner))
                         .map(owner -> FeatureCopyRequest
                                 .build(UUID.randomUUID().toString(), owner, OffsetDateTime.now(),
                                        FeatureRequestStep.LOCAL_DELAYED, PriorityLevel.NORMAL,
@@ -83,7 +84,7 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
-        throw new UnsupportedOperationException("onCopyError");
+        // Nothing to do
     }
 
     @Override
