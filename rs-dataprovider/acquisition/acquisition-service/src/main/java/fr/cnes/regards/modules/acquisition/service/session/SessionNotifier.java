@@ -174,7 +174,7 @@ public class SessionNotifier {
 
     private void notifyIncrementSession(String sessionOwner, String session, SessionProductPropertyEnum property,
             long nbItems) {
-        notificationClient.increment(sessionOwner, session, property.getValue(), SessionNotificationState.OK, nbItems);
+        notificationClient.increment(sessionOwner, session, property.getValue(), property.getState(), nbItems);
     }
 
     private void notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
