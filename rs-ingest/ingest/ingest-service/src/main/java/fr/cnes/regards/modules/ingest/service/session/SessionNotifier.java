@@ -197,6 +197,11 @@ public class SessionNotifier {
                                   SessionNotificationState.OK, 1);
     }
 
+    public void decrementPostProcessError(AIPPostProcessRequest request) {
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), POST_PROCESS_ERROR,
+                                  SessionNotificationState.OK, 1);
+    }
+
     // AIP storage
 
     /**

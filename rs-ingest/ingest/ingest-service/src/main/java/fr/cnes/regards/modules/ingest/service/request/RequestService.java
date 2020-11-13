@@ -55,6 +55,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications;
+import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -65,6 +66,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
@@ -99,6 +101,9 @@ public class RequestService implements IRequestService {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
     @Autowired
     private IRequestMapper requestMapper;
@@ -308,6 +313,12 @@ public class RequestService implements IRequestService {
             if (ingReq.isPresent()) {
                 sessionNotifier.ingestRequestErrorDeleted(ingReq.get());
                 sessionNotifier.decrementProductCount(ingReq.get());
+            }
+        } else if (request instanceof AIPPostProcessRequest) {
+            Optional<AIPPostProcessRequest> req = aipPostProcessRequestRepository.findById(request.getId());
+            if (req.isPresent()) {
+                sessionNotifier.decrementPostProcessError(req.get());
+                sessionNotifier.incrementPostProcessPending(req.get());
             }
         }
         request.setState(InternalRequestState.TO_SCHEDULE);
