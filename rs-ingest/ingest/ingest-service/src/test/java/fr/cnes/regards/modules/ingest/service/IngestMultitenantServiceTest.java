@@ -186,7 +186,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         return sip;
     }
 
-    protected IngestProcessingChain createChainWithPostProcess(String label, Class postProcessPluginClass)
+    protected IngestProcessingChain createChainWithPostProcess(String label, Class<?> postProcessPluginClass)
             throws ModuleException {
         IngestProcessingChain newChain = new IngestProcessingChain();
         newChain.setDescription(label);
@@ -197,8 +197,8 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration
-                .build(AIPGenerationTestPlugin.class, null, Sets.newHashSet());
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+                                                                   Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);

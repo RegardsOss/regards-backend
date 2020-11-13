@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
+import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +28,6 @@ import java.util.Set;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,13 +36,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
-import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
@@ -73,7 +72,8 @@ public final class IngestRequestSpecifications {
         };
     }
 
-    public static Specification<IngestRequest> searchAllByFilters(ChooseVersioningRequestParameters filters, Pageable page) {
+    public static Specification<IngestRequest> searchAllByFilters(ChooseVersioningRequestParameters filters,
+            Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 

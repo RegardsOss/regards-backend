@@ -26,10 +26,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -61,6 +63,16 @@ public interface ISIPService {
     void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
+     * Update last flag for specified entity
+     */
+    SIPEntity updateLastFlag(SIPEntity sip, boolean last);
+
+    /**
+     * Update last flag for specified entity
+     */
+    void updateLastFlag(ISipIdAndVersion partialSip, boolean last);
+
+    /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,
      * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
@@ -82,5 +94,28 @@ public interface ISIPService {
      */
     Integer getNextVersion(SIP sip);
 
-    SIPEntity getLatestSip(String providerId);
+    /**
+     * Retrieve partial SIP avoiding mutating SIP state that may be mutated on other thread.<br/>
+     *
+     * With very fast processing and when 2 versions of a SIP are handled simultaneously :
+     * <ol>
+     *  <li>SIP V1 & AIP V1 send a STORAGE request to STORAGE after {@link IngestRequestService#handleIngestJobSucceed(fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest, SIPEntity, java.util.List)}</li>
+     *  <li>SIP V2 & AIP V2 is working in transaction in {@link IngestRequestService#handleIngestJobSucceed(fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest, SIPEntity, java.util.List)} to handle versioning loading last SIP V1</li>
+     *  <li>SIP V1 & AIP V1 handle STORAGE response and SIP V1 state mutates to STORED</li>
+     *  <li>SIP V2 & AIP V2 & SIPV1 are mutated on transaction commit, SIP V1 is restored unexpectedly to INGESTED before STORAGE request is sent to STORAGE</li>
+     *  <li>SIP V2 & AIP V2 handle STORAGE response and mutate to STORED</li>
+     * </ol>
+     *  <br/><br/>
+     *  As a result :
+     *  <ul>
+     *   <li>SIP V1 = INGESTED</li>
+     *   <li>SIP V2 = STORED</li>
+     *   <li>AIP V1 = STORED</li>
+     *   <li>AIP V2 = STORED</li>
+     *  </ul>
+     *  <br/>
+     *  So to avoid this behavior, we only load partial content of the SIP and we will update
+     *  only required non-concurrent properties specifically.
+     */
+    ISipIdAndVersion getLatestSip(String providerId);
 }

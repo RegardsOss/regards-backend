@@ -76,6 +76,11 @@ public interface IAIPService {
     void processDeletion(String sipId, boolean deleteIrrevocably);
 
     /**
+     * Update last flag for specified entity
+     */
+    AIPEntity updateLastFlag(AIPEntity sip, boolean last);
+
+    /**
      * Save AIP
      */
     AIPEntity save(AIPEntity entity);
@@ -140,5 +145,8 @@ public interface IAIPService {
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 
-    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode, Map<String, AIPEntity> currentLatestPerProviderId);
+    Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds);
+
+    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
+            Map<String, AIPEntity> currentLatestPerProviderId);
 }

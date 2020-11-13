@@ -17,7 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 import java.time.Instant;
@@ -45,7 +44,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  *
  * @author Iliana Ghazali
  */
-@Profile("!noschedule")
+@Profile("!noscheduler")
 @Component
 public class AIPPostProcessScheduler extends AbstractTaskScheduler {
 
@@ -97,5 +96,3 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
         return LOGGER;
     }
 }
-
-

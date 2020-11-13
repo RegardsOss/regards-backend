@@ -22,6 +22,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,7 +68,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
@@ -252,19 +253,19 @@ public class IngestRequestService implements IIngestRequestService {
     @Override
     public List<AIPEntity> handleIngestJobSucceed(IngestRequest request, SIPEntity sipEntity, List<AIP> aips) {
         // first lets find out which SIP is the last
-        SIPEntity latestSip = sipService.getLatestSip(sipEntity.getProviderId());
+        ISipIdAndVersion latestSip = sipService.getLatestSip(sipEntity.getProviderId());
         if (latestSip == null) {
             LOGGER.debug("No previous sip {}", sipEntity.getProviderId());
-            sipEntity.setLast(true);
+            sipService.updateLastFlag(sipEntity, true);
         } else {
             if (latestSip.getVersion() < sipEntity.getVersion()) {
+                // Switch last entity
                 LOGGER.debug("Previous version of sip {} found", sipEntity.getProviderId());
-                latestSip.setLast(false);
-                sipService.save(latestSip);
-                sipEntity.setLast(true);
+                sipService.updateLastFlag(latestSip, false);
+                sipService.updateLastFlag(sipEntity, true);
             } else {
                 LOGGER.debug("No previous version of sip {}", sipEntity.getProviderId());
-                sipEntity.setLast(false);
+                sipService.updateLastFlag(sipEntity, false);
             }
         }
         // Save SIP entity
@@ -281,6 +282,32 @@ public class IngestRequestService implements IIngestRequestService {
         sessionNotifier.decrementProductGenerationPending(request);
 
         return aipEntities;
+    }
+
+    /**
+     * Optimization method for loading {@link IngestProcessingChain}
+     */
+    private Map<String, Optional<IngestProcessingChain>> preloadChains(Set<IngestRequest> requests,
+            Map<String, Optional<IngestProcessingChain>> chains) {
+        if (requests != null) {
+            for (IngestRequest request : requests) {
+                String chainName = request.getMetadata().getIngestChain();
+                if (!chains.containsKey(chainName)) {
+                    chains.put(chainName, processingChainRepository.findOneByName(chainName));
+                }
+            }
+        }
+        return chains;
+    }
+
+    /**
+     * Optimization method for loading last versions of {@link AIPEntity}
+     */
+    private Map<String, AIPEntity> preloadLastVersions(Set<IngestRequest> requests,
+            Map<String, AIPEntity> aipEntities) {
+        Set<AIPEntity> lastVersions = aipService
+                .findLastByProviderIds(requests.stream().map(r -> r.getProviderId()).collect(Collectors.toSet()));
+        return lastVersions.stream().collect(Collectors.toMap(AIPEntity::getProviderId, aip -> aip));
     }
 
     @Override
@@ -303,8 +330,12 @@ public class IngestRequestService implements IIngestRequestService {
                 // Monitoring
                 sessionNotifier.incrementProductStorePending(request);
             } else {
-                // No files to store for the request AIPs.
-                finalizeSuccessfulRequest(Sets.newHashSet(request), false);
+                // No files to store for the request AIPs. We can immediately store the manifest.
+                Set<IngestRequest> requests = Sets.newHashSet(request);
+                finalizeSuccessfulRequest(requests, false,
+                                          preloadChains(requests,
+                                                        new HashMap<String, Optional<IngestProcessingChain>>()),
+                                          preloadLastVersions(requests, new HashMap<String, AIPEntity>()));
             }
         } catch (ModuleException e) {
             // Keep track of the error
@@ -348,8 +379,25 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleRemoteStoreSuccess(Collection<IngestRequest> requests, RequestInfo requestInfo) {
-        Set<IngestRequest> toFinilize = Sets.newHashSet();
+    public void handleRemoteStoreSuccess(Map<RequestInfo, Set<IngestRequest>> requests) {
+
+        // Preload last versions
+        Set<IngestRequest> merged = new HashSet<>();
+        requests.forEach((k, v) -> merged.addAll(v));
+        Map<String, AIPEntity> lastVersions = preloadLastVersions(merged, new HashMap<>());
+
+        Map<String, Optional<IngestProcessingChain>> chains = new HashMap<>();
+        for (Entry<RequestInfo, Set<IngestRequest>> entry : requests.entrySet()) {
+            handleRemoteStoreSuccess(entry.getKey(), entry.getValue(), preloadChains(entry.getValue(), chains),
+                                     lastVersions);
+        }
+    }
+
+    private void handleRemoteStoreSuccess(RequestInfo requestInfo, Set<IngestRequest> requests,
+            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
+
+        Set<IngestRequest> toFinalize = Sets.newHashSet();
+
         for (IngestRequest request : requests) {
             if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 // Update AIPs with meta returned by storage
@@ -361,14 +409,14 @@ public class IngestRequestService implements IIngestRequestService {
                     saveRequest(request);
                 } else {
                     // The current request is over
-                    toFinilize.add(request);
+                    toFinalize.add(request);
                 }
             } else {
                 // Keep track of the error
                 saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
             }
         }
-        finalizeSuccessfulRequest(toFinilize, true);
+        finalizeSuccessfulRequest(toFinalize, true, chains, lastVersions);
     }
 
     private List<String> updateRemoteStepGroupId(IngestRequest request, RequestInfo requestInfo) {
@@ -378,7 +426,12 @@ public class IngestRequestService implements IIngestRequestService {
         return remoteStepGroupIds;
     }
 
-    private void finalizeSuccessfulRequest(Collection<IngestRequest> requests, boolean afterStorage) {
+    // NOTE : potential error if 2 instances work on the same provider aip at the same time then ...
+    // ... 2 "last" aip may occurs and db exception will be thrown.
+    private void finalizeSuccessfulRequest(Collection<IngestRequest> requests, boolean afterStorage,
+            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
+
+        long start = System.currentTimeMillis();
 
         if (requests.isEmpty()) {
             return;
@@ -389,22 +442,19 @@ public class IngestRequestService implements IIngestRequestService {
         SIPEntity sipEntity;
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
-        //keep track of aip already handled during this execution for versioning process
-        Map<String, AIPEntity> currentLatestPerProviderId = new HashMap<>();
-
         for (IngestRequest request : requests) {
-            Optional<IngestProcessingChain> chain = processingChainRepository
-                    .findOneByName((request.getMetadata().getIngestChain()));
+
             List<AIPEntity> aips = request.getAips();
 
             // Change AIP state
             for (AIPEntity aipEntity : aips) {
                 aipEntity.setState(AIPState.STORED);
                 // Find if this is the last version and set last flag accordingly
-                aipService.handleVersioning(aipEntity,
-                                            request.getMetadata().getVersioningMode(),
-                                            currentLatestPerProviderId);
+                aipService.handleVersioning(aipEntity, request.getMetadata().getVersioningMode(), lastVersions);
                 aipService.save(aipEntity);
+
+                // Manage post processing
+                Optional<IngestProcessingChain> chain = chains.get(request.getMetadata().getIngestChain());
                 if (chain.isPresent() && chain.get().getPostProcessingPlugin().isPresent()) {
                     if (postProcessToSchedule.get(chain.get()) != null) {
                         postProcessToSchedule.get(chain.get()).add(aipEntity);
@@ -451,9 +501,11 @@ public class IngestRequestService implements IIngestRequestService {
                 AIPPostProcessRequest req = AIPPostProcessRequest
                         .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
                 toSchedule.add(aipPostProcessRequestRepository.save(req));
+                sessionNotifier.incrementPostProcessPending(req);
             }
         }
         requestService.scheduleRequests(toSchedule);
+        LOGGER.trace("Successful request handled in {} ms", System.currentTimeMillis() - start);
     }
 
     @Override
@@ -483,6 +535,7 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void handleRemoteReferenceSuccess(Set<RequestInfo> requests) {
+        Map<String, Optional<IngestProcessingChain>> chains = new HashMap<>();
         Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
@@ -502,7 +555,8 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             }
         }
-        finalizeSuccessfulRequest(requestsToFinilized, true);
+        finalizeSuccessfulRequest(requestsToFinilized, true, preloadChains(requestsToFinilized, chains),
+                                  preloadLastVersions(requestsToFinilized, new HashMap<String, AIPEntity>()));
     }
 
     @Override

@@ -96,6 +96,12 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
     private IRequestService requestService;
 
     @Override
+    public void doInit() {
+        simulateApplicationReadyEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    }
+
+    @Override
     protected void doAfter() throws Exception {
         // WARNING : clean context manually because Spring doesn't do it between tests
         subscriber.unsubscribeFrom(IngestRequestFlowItem.class);
@@ -116,31 +122,41 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
         long start = System.currentTimeMillis();
         long existingItems = 0;
-        long maxloops = 10;
+        long maxloops = 10000;
+        int maxSessions = 1;
         // 1. Populate catalog with products
-        String session = "session";// OffsetDateTime.now().toString();
-        for (long i = 0; i < maxloops; i++) {
-            SIP sip = create(PROVIDER_PREFIX + i, null);
-            // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+
+        for (int s = 0; s < maxSessions; s++) {
+            String session = "session" + s;// OffsetDateTime.now().toString();
+            for (long i = 0; i < maxloops; i++) {
+                SIP sip = create(PROVIDER_PREFIX + i, null);
+                // Create event
+                publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            }
+            //            try {
+            //                // FIXME remove only for specific concurrent tests
+            //                Thread.sleep(30_000);
+            //            } catch (InterruptedException e) {
+            //                LOGGER.error(e.getMessage(), e);
+            //            }
         }
 
         // 2. Wait
-        ingestServiceTest.waitForIngestion(maxloops, maxloops * 10000, SIPState.STORED);
+        ingestServiceTest.waitForIngestion(maxloops * maxSessions, maxloops * maxSessions * 10000, SIPState.STORED);
 
-        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", maxloops + existingItems,
+        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", (maxloops * maxSessions) + existingItems,
                     System.currentTimeMillis() - start);
 
         sessionNotifier.debugSession();
 
-        // 3. Delete products
-        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                .withProviderId(PROVIDER_PREFIX + "0");
-        deletionService.registerOAISDeletionCreator(dto);
-
-        // 4. Wait
-        ingestServiceTest.waitForIngestion(1, 100000, SIPState.DELETED);
-        sessionNotifier.debugSession();
+        //        // 3. Delete products
+        //        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
+        //                .withProviderId(PROVIDER_PREFIX + "0");
+        //        deletionService.registerOAISDeletionCreator(dto);
+        //
+        //        // 4. Wait
+        //        ingestServiceTest.waitForIngestion(1, 100000, SIPState.DELETED);
+        //        sessionNotifier.debugSession();
     }
 
     /**

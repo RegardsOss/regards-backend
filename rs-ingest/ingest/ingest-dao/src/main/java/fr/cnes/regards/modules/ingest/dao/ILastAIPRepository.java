@@ -18,30 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 
-/**
- * JPA Repository to access {@link AIPEntity}
- * @author Sébastien Binda
- *
- */
-public interface IAIPLightRepository extends JpaRepository<AIPEntityLight, Long> {
+@Repository
+public interface ILastAIPRepository extends JpaRepository<LastAIPEntity, Long> {
 
-    /**
-     * Retrieve a page of {@link AIPEntity} matching the provided specification
-     * @param aipEntitySpecification
-     * @param pageable
-     * @return a page of {@link AIPEntity}
-     */
-    Page<AIPEntityLight> findAll(Specification<AIPEntityLight> aipEntitySpecification, Pageable pageable);
-
-    Set<AIPEntityLight> findAllByProviderId(String providerId);
+    void deleteByAipId(Long aipId);
 }

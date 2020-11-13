@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.schedule;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.EnableScheduling;
+package fr.cnes.regards.modules.ingest.domain.sip;
 
 /**
- * Enable Scheduling
- *
+ * SIP project to only retrieve specific existing SIP information
  * @author Marc SORDI
  *
  */
-@Configuration
-@EnableScheduling
-@Profile("!noscheduler")
-public class SchedulingConfiguration {
+public interface ISipIdAndVersion {
+
+    Long getId();
+
+    String getProviderId();
+
+    Integer getVersion();
 }

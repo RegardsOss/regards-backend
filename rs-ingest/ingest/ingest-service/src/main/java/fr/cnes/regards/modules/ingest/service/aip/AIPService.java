@@ -66,9 +66,11 @@ import fr.cnes.regards.modules.ingest.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.ingest.dao.IAIPLightRepository;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ICustomAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.ILastAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
@@ -113,6 +115,9 @@ public class AIPService implements IAIPService {
     private IAIPRepository aipRepository;
 
     @Autowired
+    private ILastAIPRepository lastAipRepository;
+
+    @Autowired
     private IAIPLightRepository aipLigthRepository;
 
     @Autowired
@@ -143,9 +148,25 @@ public class AIPService implements IAIPService {
     }
 
     @Override
+    public AIPEntity updateLastFlag(AIPEntity aip, boolean last) {
+        aip.setLast(last);
+        save(aip); // Set id if not already set
+        if (aip.isLast()) {
+            lastAipRepository.save(new LastAIPEntity(aip.getId(), aip.getProviderId()));
+        } else {
+            lastAipRepository.deleteByAipId(aip.getId());
+        }
+        return aip;
+    }
+
+    private void removeLastFlag(AIPEntity aip) {
+        lastAipRepository.deleteByAipId(aip.getId());
+    }
+
+    @Override
     public AIPEntity save(AIPEntity entity) {
         entity.setLastUpdate(OffsetDateTime.now());
-        return aipRepository.saveAndFlush(entity);
+        return aipRepository.save(entity);
     }
 
     @Override
@@ -167,38 +188,31 @@ public class AIPService implements IAIPService {
     }
 
     @Override
+    public Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds) {
+        return aipRepository.findByProviderIdInAndLast(providerIds, true);
+    }
+
+    @Override
     public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
-            Map<String, AIPEntity> currentLatestPerProviderId) {
+            Map<String, AIPEntity> lastVersions) {
+
         // lets get the old last version
-        AIPEntityLight dbLatest = aipLigthRepository.findLast(aipEntity.getProviderId());
+        AIPEntity dbLatest = lastVersions.get(aipEntity.getProviderId());
+
         if (dbLatest == null) {
             //then this is the first version (according to our code, not necessarily V1) ingested
-            aipEntity.setLast(true);
-            currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
+            updateLastFlag(aipEntity, true);
+            lastVersions.put(aipEntity.getProviderId(), aipEntity);
         } else {
             if (dbLatest.getVersion() < aipEntity.getVersion()) {
-                dbLatest.setLast(false);
-                // only update latest here, new aip is going to be handled later
-                aipRepository.updateLast(dbLatest.getId(), dbLatest.isLast());
-                // in this case we need to check if this aipEntity is really the latest between the ones we have already handled
-                AIPEntity currentLatest = currentLatestPerProviderId.get(aipEntity.getProviderId());
-                if (currentLatest != null) {
-                    if (currentLatest.getVersion() < aipEntity.getVersion()) {
-                        currentLatest.setLast(false);
-                        aipEntity.setLast(true);
-                        currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
-                        aipRepository.updateLast(currentLatest.getId(), currentLatest.isLast());
-                    } else {
-                        aipEntity.setLast(false);
-                    }
-                } else {
-                    // there is no particular check to be done so this is the current latest aipEntity
-                    aipEntity.setLast(true);
-                    currentLatestPerProviderId.put(aipEntity.getProviderId(), aipEntity);
-                }
+                // Switch last entity
+                updateLastFlag(dbLatest, false);
+                updateLastFlag(aipEntity, true);
+                lastVersions.put(aipEntity.getProviderId(), aipEntity);
             } else {
-                aipEntity.setLast(false);
+                updateLastFlag(aipEntity, false);
             }
+
             sessionNotifier.incrementNewProductVersion(aipEntity);
             // In case versioning mode is IGNORE or MANUAL, we do not even reach this point in code
             // In case versioning mode is INC_VERSION, then we have nothing particular to do
@@ -329,6 +343,7 @@ public class AIPService implements IAIPService {
         return events;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void registerUpdatesCreator(AIPUpdateParametersDto params) {
         AIPUpdatesCreatorRequest request = AIPUpdatesCreatorRequest.build(params);
@@ -356,6 +371,8 @@ public class AIPService implements IAIPService {
                 // Mark the AIP as deleted
                 aipRepository.saveAll(aipsRelatedToSip);
             }
+            // Remove last flag entry
+            aipsRelatedToSip.forEach(aip -> removeLastFlag(aip));
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }
