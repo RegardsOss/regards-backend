@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 
 /**
  * @author Iliana Ghazali
@@ -57,6 +58,9 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     public static final String AIP_POST_PROCESS_REQUEST_IDS = "AIP_POST_PROCESS_REQUEST_IDS";
 
@@ -236,8 +240,10 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             aipId = error.getKey();
             reqId = mapAipReq.get(aipId);
             errorMsg = error.getValue();
-            this.requests.get(reqId).setState(InternalRequestState.ERROR);
-            this.requests.get(reqId).setErrors(errorMsg);
+            AIPPostProcessRequest request = this.requests.get(reqId);
+            request.setState(InternalRequestState.ERROR);
+            request.setErrors(errorMsg);
+            sessionNotifier.incrementPostProcessError(request);
             logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]", reqId, aipId,
                          String.join(",\n", errorMsg));
         }
@@ -260,6 +266,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
         for (Map.Entry<Long, AIPPostProcessRequest> req : this.requests.entrySet()) {
             if (reqIdsSuccess.contains(req.getKey())) {
                 succeedRequestsToDelete.add(req.getValue());
+                sessionNotifier.incrementPostProcessSuccess(req.getValue());
             }
         }
         //Delete successful requests

@@ -480,6 +480,7 @@ public class IngestRequestService implements IIngestRequestService {
                 AIPPostProcessRequest req = AIPPostProcessRequest
                         .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
                 toSchedule.add(aipPostProcessRequestRepository.save(req));
+                sessionNotifier.incrementPostProcessPending(req);
             }
         }
 

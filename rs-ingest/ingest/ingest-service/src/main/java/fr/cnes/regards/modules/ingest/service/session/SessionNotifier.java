@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.sessionmanager.client.ISessionNotificationClient;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 
@@ -32,6 +33,12 @@ public class SessionNotifier {
     public static final String PRODUCT_STORE_PENDING = "products_store_pending";
 
     public static final String PRODUCT_STORED = "products_stored";
+
+    public static final String POST_PROCESS_PENDING = "post_process_pending";
+
+    public static final String POST_PROCESS_ERROR = "post_process_error";
+
+    public static final String POST_PROCESS_SUCCESS = "post_process_success";
 
     public static final String PRODUCT_STORE_ERROR = "products_store_error";
 
@@ -169,6 +176,27 @@ public class SessionNotifier {
         }
     }
 
+    // Post Process
+
+    public void incrementPostProcessPending(AIPPostProcessRequest request) {
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), POST_PROCESS_PENDING,
+                                  SessionNotificationState.OK, 1);
+    }
+
+    public void incrementPostProcessSuccess(AIPPostProcessRequest request) {
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), POST_PROCESS_SUCCESS,
+                                  SessionNotificationState.OK, 1);
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), POST_PROCESS_PENDING,
+                                  SessionNotificationState.OK, 1);
+    }
+
+    public void incrementPostProcessError(AIPPostProcessRequest request) {
+        sessionNotifier.increment(request.getSessionOwner(), request.getSession(), POST_PROCESS_ERROR,
+                                  SessionNotificationState.ERROR, 1);
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), POST_PROCESS_PENDING,
+                                  SessionNotificationState.OK, 1);
+    }
+
     // AIP storage
 
     /**
@@ -262,4 +290,5 @@ public class SessionNotifier {
         sessionNotifier.decrement(sessionOwner, session, PRODUCT_COUNT, SessionNotificationState.OK,
                                   nbGenerated + nbStored);
     }
+
 }
