@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -60,6 +61,9 @@ public class SessionNotifier {
 
     @Autowired
     private IIngestRequestRepository ingestRequestRepository;
+
+    @Autowired
+    private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
     @PostConstruct
     public void init() {
@@ -202,6 +206,11 @@ public class SessionNotifier {
                                   SessionNotificationState.OK, 1);
     }
 
+    public void decrementPostProcessPending(AIPPostProcessRequest request) {
+        sessionNotifier.decrement(request.getSessionOwner(), request.getSession(), POST_PROCESS_PENDING,
+                                  SessionNotificationState.OK, 1);
+    }
+
     // AIP storage
 
     /**
@@ -223,8 +232,16 @@ public class SessionNotifier {
                     decrementProductWaitingVersioningMode(oReq.get());
                 }
             }
+        } else if (request instanceof AIPPostProcessRequest) {
+            Optional<AIPPostProcessRequest> oReq = aipPostProcessRequestRepository.findById(request.getId());
+            if (oReq.isPresent()) {
+                if (request.getState() == InternalRequestState.ERROR) {
+                    decrementPostProcessError(oReq.get());
+                } else if (request.getState() == InternalRequestState.WAITING_VERSIONING_MODE) {
+                    decrementPostProcessPending(oReq.get());
+                }
+            }
         }
-
     }
 
     /**
