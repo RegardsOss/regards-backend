@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.processing.testutils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.authentication.autoconfigure.Oauth2AutoConfiguration;
 import fr.cnes.regards.framework.feign.autoconfigure.FeignWebMvcConfiguration;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.GsonCustomizer;
@@ -82,7 +83,8 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
         WebSecurityAutoConfiguration.class,
         WebMvcAutoConfiguration.class,
         FeignWebMvcConfiguration.class,
-        MethodSecurityAutoConfiguration.class
+        MethodSecurityAutoConfiguration.class,
+        Oauth2AutoConfiguration.class,
 })
 @EnableWebFlux
 @EnableWebFluxSecurity

@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.processing.config;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.modules.processing.dao.*;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
@@ -15,15 +16,17 @@ import name.nkonev.r2dbc.migrate.core.R2dbcMigrateProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
-import org.springframework.transaction.ReactiveTransactionManager;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -52,9 +55,11 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingDaoR2dbcConfiguration.class);
     @Autowired private final PgSqlProperties pgSqlProperties;
+    @Autowired @Qualifier("gson") private final Gson gson;
 
-    public ProcessingDaoR2dbcConfiguration(PgSqlProperties pgSqlProperties) {
+    public ProcessingDaoR2dbcConfiguration(PgSqlProperties pgSqlProperties, Gson gson) {
         this.pgSqlProperties = pgSqlProperties;
+        this.gson = gson;
     }
 
     @Bean public ConnectionFactory connectionFactory() {
@@ -77,11 +82,13 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
     }
 
     protected java.util.List<Object> getCustomConverters() {
-        return DaoCustomConverters.getCustomConverters(ProcessingGsonUtils.gson());
+        return DaoCustomConverters.getCustomConverters(gson);
     }
 
-    @Bean(name = "reactiveTransactionManager")
-    public ReactiveTransactionManager reactiveTransactionManager(ConnectionFactory connectionFactory) {
+
+    @Bean(name = "r2dbcDaoTransactionManager")
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public R2dbcTransactionManager reactiveTransactionManager(ConnectionFactory connectionFactory) {
         return new R2dbcTransactionManager(connectionFactory);
     }
 

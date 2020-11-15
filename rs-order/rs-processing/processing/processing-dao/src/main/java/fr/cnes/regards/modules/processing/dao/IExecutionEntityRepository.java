@@ -53,7 +53,7 @@ public interface IExecutionEntityRepository
             Pageable page
     );
 
-    Flux<PExecution> findByProcessBusinessIdAndCurrentStatusIn(
+    Flux<ExecutionEntity> findByProcessBusinessIdAndCurrentStatusIn(
             UUID processBusinessId,
             List<ExecutionStatus> nonFinalStatusList
     );

@@ -29,8 +29,7 @@ public class OutputFileServiceImpl implements IOutputFileService {
     }
 
     @Scheduled(
-        fixedRate = 60L * 60L * 1000L, // Every hour TODO make configurable?
-        fixedDelay = 60L * 60L * 1000L // TODO add jitter
+        fixedRate = 60L * 60L * 1000L // Every hour TODO make configurable? // TODO add jitter?
     )
     @Override public void scheduledDeleteDownloadedFiles() {
         outFileRepo.save(outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse()

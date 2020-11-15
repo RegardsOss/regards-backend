@@ -59,8 +59,7 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     @Scheduled(
-        fixedRate = 60L * 60L * 1000L, // Every hour TODO make configurable?
-        fixedDelay = 30L * 60L * 1000L // TODO add jitter
+        fixedRate = 60L * 60L * 1000L // Every hour TODO make configurable? // TODO add jitter?
     )
     @Override public void scheduledTimeoutNotify() {
         execRepo.getTimedOutExecutions()

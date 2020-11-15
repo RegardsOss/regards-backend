@@ -59,7 +59,8 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             UUID processBusinessId,
             Seq<ExecutionStatus> nonFinalStatusList
     ) {
-        return entityExecRepo.findByProcessBusinessIdAndCurrentStatusIn(processBusinessId, nonFinalStatusList.toJavaList());
+        return entityExecRepo.findByProcessBusinessIdAndCurrentStatusIn(processBusinessId, nonFinalStatusList.toJavaList())
+                .map(mapper::toDomain);
     }
 
     @Override public Mono<PExecution> update(PExecution exec) {

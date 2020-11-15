@@ -34,7 +34,6 @@ public class ProcessingGsonConfiguration {
                     builder.registerTypeAdapter(tr.type(), tr.deserializer());
                 });
                 VavrGson.registerAll(builder);
-                VavrGson.registerAll(builder);
                 return builder;
             }
         };

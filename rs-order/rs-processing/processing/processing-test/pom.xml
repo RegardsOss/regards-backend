@@ -39,6 +39,11 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>authentication-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- Framework -->
         <dependency>
@@ -108,6 +113,12 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.playtika.reactivefeign</groupId>
+            <artifactId>feign-reactor-webclient</artifactId>
+            <version>2.0.15</version>
+            <scope>compile</scope>
         </dependency>
 
 
