@@ -65,10 +65,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final IAccountsClient accountsClient;
 
-    private final IStorageRestClient storageClient;
-
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
     private final String noreply;
 
     /**
@@ -77,8 +73,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
-            IAccountsClient accountsClient, IStorageRestClient storageClient,
-            IRuntimeTenantResolver runtimeTenantResolver, IEmailVerificationTokenService emailVerificationTokenService,
+            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService,
             @Value("${regards.mails.noreply.address:regards@noreply.fr}") String noreply) {
         super();
         this.templateService = templateService;
