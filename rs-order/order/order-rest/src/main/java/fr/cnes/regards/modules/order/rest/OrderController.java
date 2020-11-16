@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -216,9 +218,8 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ?
-                orderService.findAll(pageRequest) :
-                orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
+                : orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
@@ -239,9 +240,11 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
-        return ResponseEntity
-                .ok(toPagedResources(orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED)
-                                             .map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
+        return ResponseEntity.ok(toPagedResources(
+                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
+                                                                       OrderStatus.REMOVED)
+                                                          .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
@@ -281,7 +284,8 @@ public class OrderController implements IResourceController<OrderDto> {
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        return createMetalinkDownloadResponse(orderId, response);
+        return createMetalinkDownloadResponse(order, response);
+
     }
 
     @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
@@ -303,28 +307,55 @@ public class OrderController implements IResourceController<OrderDto> {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
 
-        return createMetalinkDownloadResponse(orderId, response);
+        return createMetalinkDownloadResponse(order, response);
     }
 
     /**
      * Fill Response headers and create streaming response
+     * @throws EntityNotFoundException
      */
-    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
-            HttpServletResponse response) {
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
-                                   + ".metalink");
-        response.setContentType("application/metalink+xml");
-
-        // Stream the response
-        return new ResponseEntity<>(os -> {
-            try {
-                orderService.downloadOrderMetalink(orderId, os);
-            } catch (RuntimeException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
-            }
-        }, HttpStatus.OK);
+    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(Order order,
+            HttpServletResponse response) throws EntityNotFoundException {
+        String error = null;
+        switch (order.getStatus()) {
+            case DELETED:
+            case REMOVED:
+                error = "Order is deleted";
+                break;
+            case EXPIRED:
+                error = "Order is expired since " + order.getExpirationDate().toString();
+                break;
+            case PENDING:
+                error = "Order is not ready yet. Files calculation pending.";
+                break;
+            case FAILED:
+                error = "Order creation failed.";
+                break;
+            case RUNNING:
+            case DONE:
+            case DONE_WITH_WARNING:
+            case PAUSED:
+            default:
+                // All those status allow metalink download
+                break;
+        }
+        if (error != null) {
+            final byte[] errorMessage = error.getBytes();
+            return new ResponseEntity<>(os -> os.write(errorMessage), HttpStatus.NOT_FOUND);
+        } else {
+            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_"
+                    + OffsetDateTime.now().toString() + ".metalink");
+            response.setContentType("application/metalink+xml");
+            // Stream the response
+            return new ResponseEntity<>(os -> {
+                try {
+                    orderService.downloadOrderMetalink(order.getId(), os);
+                } catch (RuntimeException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            }, HttpStatus.OK);
+        }
     }
 
     @Override
