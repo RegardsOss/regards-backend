@@ -37,6 +37,8 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 @Component
 public class EmailSendingStrategy implements ISendingStrategy {
 
+    private static final int MAX_MAIL_LENGTH = 5120;
+
     /**
      * Feign client from module Email
      */
@@ -66,6 +68,11 @@ public class EmailSendingStrategy implements ISendingStrategy {
         email.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
         email.setText(notification.getMessage());
         email.setTo(recipients);
+
+        String message = notification.getMessage();
+        if (message.length() > MAX_MAIL_LENGTH) {
+            message = message.substring(0, MAX_MAIL_LENGTH) + " ... [Too long message was truncated]";
+        }
 
         // Send the email
         emailService.sendEmail(email);
