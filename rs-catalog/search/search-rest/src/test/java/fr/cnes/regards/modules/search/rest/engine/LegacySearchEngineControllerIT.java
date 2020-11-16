@@ -18,11 +18,16 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.List;
+
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -46,12 +51,25 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 @MultitenantTransactional
 public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
+    @Autowired(required = false)
+    private List<HealthIndicator> indicators;
+
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(LegacySearchEngineControllerIT.class);
 
     private static final String ENGINE_TYPE = "legacy";
 
     private static final String SEARCH_TERMS_QUERY = "q";
+
+    @Test
+    public void healthTest() {
+        if (indicators != null) {
+            for (HealthIndicator indicator : indicators) {
+                Health health = indicator.health();
+                LOGGER.debug("{} : {}", indicator.getClass(), health.getStatus());
+            }
+        }
+    }
 
     private void addCommontMatchers(RequestBuilderCustomizer customizer) {
         customizer.expect(MockMvcResultMatchers.jsonPath("$.links", Matchers.not(Matchers.emptyArray())));
