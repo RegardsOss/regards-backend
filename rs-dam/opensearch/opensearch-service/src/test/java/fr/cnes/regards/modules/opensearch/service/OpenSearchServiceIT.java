@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 @TestPropertySource(locations = "classpath:test.properties")
 //@TestPropertySource(locations = "classpath:application-local.properties")
 @MultitenantTransactional
+@Ignore("TODO: add a fake controller to serve fake description")
 public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenSearchServiceIT.class);
