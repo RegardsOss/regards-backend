@@ -152,7 +152,7 @@ public class AttrDescToJsonMapping {
     private JsonObject toDateIntervalJsonMapping(AttributeDescription attrDesc) {
         return nestedSimpleRange(attrDesc, object(
             kv("type", "date"),
-            kv("format", "date_time")
+            kv("format", "date_optional_time")
         ));
     }
 

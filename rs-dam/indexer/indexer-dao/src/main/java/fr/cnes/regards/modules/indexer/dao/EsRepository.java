@@ -525,12 +525,12 @@ public class EsRepository implements IEsRepository {
                                  // then model attributes
                                  kv("model",
                                     object(kv("properties", object(
-                                            kv("description", object("type", "text")),
-                                            kv("id", object("type", "long")),
-                                            kv("name", object("type", "keyword")),
-                                            kv("type", object("type", "keyword")),
-                                            kv("version", object("type", "keyword"))
-                                            )
+                                                                   kv("description", object("type", "text")),
+                                                                   kv("id", object("type", "long")),
+                                                                   kv("name", object("type", "keyword")),
+                                                                   kv("type", object("type", "keyword")),
+                                                                   kv("version", object("type", "keyword"))
+                                                            )
                                               )
                                            )
                                     ),
@@ -552,7 +552,6 @@ public class EsRepository implements IEsRepository {
 //                                 ),
                                  // then Dataset specific attributes
                                  kv("dataModel", object("type", "keyword")),
-                                 kv("dataSourceId", object("type", "keyword")),
                                  kv("openSearchSubsettingClause", object("type", "text")),
                                  // subsettingClause cannot be mapped that easily
 //                                 kv("subsettingClause", object("type", "object")),
