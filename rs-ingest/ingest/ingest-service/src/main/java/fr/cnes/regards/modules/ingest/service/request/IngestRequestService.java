@@ -68,6 +68,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
@@ -401,8 +402,8 @@ public class IngestRequestService implements IIngestRequestService {
         for (IngestRequest request : requests) {
             if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 // Update AIPs with meta returned by storage
-                aipStorageService
-                        .updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
+                aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(),
+                                                                     requestInfo.getSuccessRequests());
                 // Check if there is another storage request we're waiting for
                 List<String> remoteStepGroupIds = updateRemoteStepGroupId(request, requestInfo);
                 if (!remoteStepGroupIds.isEmpty()) {
@@ -478,10 +479,8 @@ public class IngestRequestService implements IIngestRequestService {
             sipService.save(sipEntity);
 
             // add ingest request event to list of ingest request events to publish
-            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
-                                                                 request.getSip().getId(),
-                                                                 sipEntity.getSipId(),
-                                                                 RequestState.SUCCESS));
+            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
+                                                                 sipEntity.getSipId(), RequestState.SUCCESS));
         }
 
         // NOTIFICATIONS
@@ -539,8 +538,7 @@ public class IngestRequestService implements IIngestRequestService {
         Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
-            if (iReq.getStep()
-                    == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+            if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
                 for (RequestInfo ri : requests.stream()
                         .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
                         .collect(Collectors.toSet())) {
@@ -600,11 +598,8 @@ public class IngestRequestService implements IIngestRequestService {
         Set<JobParameter> jobParameters = Sets
                 .newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME, filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false,
-                                      IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      ChooseVersioningJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY.getPriority(),
+                jobParameters, authResolver.getUser(), ChooseVersioningJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", ChooseVersioningJob.class.getName(), jobInfo.getId());
     }
