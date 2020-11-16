@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.order.rest.mock;
 
 import feign.Request;
 import feign.Response;
-import fr.cnes.regards.modules.order.rest.OrderControllerIT;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -84,6 +83,16 @@ public class StorageClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
 }
