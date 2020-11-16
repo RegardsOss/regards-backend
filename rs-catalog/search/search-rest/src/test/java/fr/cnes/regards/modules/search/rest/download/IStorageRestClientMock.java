@@ -16,7 +16,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 import java.nio.charset.Charset;
@@ -121,6 +120,16 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     @Override
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
 }
