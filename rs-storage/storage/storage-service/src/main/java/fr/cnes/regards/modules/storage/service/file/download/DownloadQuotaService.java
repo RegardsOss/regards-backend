@@ -254,6 +254,21 @@ public class DownloadQuotaService<T>
             ).get();
     }
 
+    @Override
+    public Try<List<UserCurrentQuotas>> getCurrentQuotas(String[] userEmails) {
+        return Arrays.stream(userEmails)
+            .map(userEmail -> Try.of(() -> getCurrentQuotas(userEmail)))
+            .reduce(
+                Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<UserCurrentQuotas>>right(io.vavr.collection.List.empty()),
+                (e, t) -> t.isSuccess()
+                    ? e.map(l -> l.append(t.get()))
+                    : e.isRight() ? Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) : e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
+                (l, r) -> l
+            )
+            .map(io.vavr.collection.List::toJavaList)
+            .toTry();
+    }
+
     @VisibleForTesting
     protected Try<DownloadQuotaLimits> cacheUserQuota(String userEmail, QuotaKey key) {
         DefaultDownloadQuotaLimits defaults = getDefaultLimits();

@@ -51,7 +51,11 @@ public class DownloadQuotaController {
 
     public static final String PATH_QUOTA = "/quota";
 
+    public static final String PATH_USER_CURRENT_QUOTA = "/quota/current/{user_email}";
+
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
+
+    public static final String PATH_CURRENT_QUOTA_LIST = "/quota/currents";
 
     public static final String USER_EMAIL_PARAM = "user_email";
 
@@ -134,5 +138,26 @@ public class DownloadQuotaController {
             quotaService.getCurrentQuotas(authResolver.getUser()),
             HttpStatus.OK
         );
+    }
+
+    @GetMapping(path = PATH_USER_CURRENT_QUOTA)
+    @ResponseBody
+    @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(
+        @PathVariable(USER_EMAIL_PARAM) String userEmail
+    ) {
+        return new ResponseEntity<>(
+            quotaService.getCurrentQuotas(userEmail),
+            HttpStatus.OK
+        );
+    }
+
+    @GetMapping(path = PATH_CURRENT_QUOTA_LIST)
+    @ResponseBody
+    @ResourceAccess(description = "Get current download quota values for the specified users.", role = DefaultRole.ADMIN)
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails) {
+        return quotaService.getCurrentQuotas(userEmails)
+            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+            .get();
     }
 }

@@ -54,6 +54,8 @@ public interface IQuotaService<T> {
 
     UserCurrentQuotas getCurrentQuotas(String userEmail);
 
+    Try<List<UserCurrentQuotas>> getCurrentQuotas(String[] userEmails);
+
     interface WithQuotaOperationHandler {
         void start();
         void stop();

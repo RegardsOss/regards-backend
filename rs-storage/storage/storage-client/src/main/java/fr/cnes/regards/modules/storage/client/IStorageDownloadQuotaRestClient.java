@@ -18,12 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +39,10 @@ public interface IStorageDownloadQuotaRestClient {
     public static final String PATH_QUOTA_LIST = "/quotas";
 
     public static final String PATH_CURRENT_QUOTA = "/quota/current";
+
+    public static final String PATH_USER_CURRENT_QUOTA = "/quota/current/{user_email}";
+
+    public static final String PATH_CURRENT_QUOTA_LIST = "/quota/currents";
 
     public static final String USER_EMAIL_PARAM = "user_email";
 
@@ -88,4 +89,16 @@ public interface IStorageDownloadQuotaRestClient {
         consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas();
+
+    @GetMapping(path = PATH_USER_CURRENT_QUOTA,
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
+
+    @GetMapping(path = PATH_CURRENT_QUOTA_LIST,
+        produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
 }
