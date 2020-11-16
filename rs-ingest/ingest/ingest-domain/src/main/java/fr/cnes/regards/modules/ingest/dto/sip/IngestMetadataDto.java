@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 
 import org.springframework.util.Assert;
 
@@ -67,7 +68,7 @@ public class IngestMetadataDto {
     private Set<String> categories;
 
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
-    private VersioningMode versioningMode;
+    private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
     /**
      * Build ingest metadata

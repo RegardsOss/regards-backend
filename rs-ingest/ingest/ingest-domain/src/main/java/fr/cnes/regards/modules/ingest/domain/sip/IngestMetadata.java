@@ -18,12 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
@@ -31,11 +27,19 @@ import javax.persistence.Enumerated;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 
 /**
  * Extra information useful for SIP submission.<br/>
@@ -75,7 +79,7 @@ public class IngestMetadata {
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
     @Column(name = "versioning_mode")
     @Enumerated(EnumType.STRING)
-    private VersioningMode versioningMode;
+    private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
@@ -151,8 +155,8 @@ public class IngestMetadata {
      * @param versioningMode versioning mode
      * @param storages storage metadata
      */
-    public static IngestMetadata build(String sessionOwner, String session, String ingestChain, Set<String> categories, VersioningMode versioningMode,
-            StorageMetadata... storages) {
+    public static IngestMetadata build(String sessionOwner, String session, String ingestChain, Set<String> categories,
+            VersioningMode versioningMode, StorageMetadata... storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
