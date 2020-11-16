@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -169,7 +170,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                 .transform(handleClientFailure("accessrights-client"))
                 .map(EntityModel::getContent)
                 .flatMap(user ->
-                    Try.of(() -> storageClient.getQuotaLimits(user.getEmail()))
+                    Try.of(() -> storageClient.getCurrentQuotas(user.getEmail()))
                         .transform(ignoreStorageQuotaErrors)
                         .map(limits -> new ProjectUserDto(
                             user,
@@ -192,7 +193,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     public ResponseEntity<EntityModel<ProjectUserDto>> retrieveCurrentProjectUser() throws ModuleException {
         return combineProjectUserThenQuotaCalls(
             () -> projectUsersClient.retrieveCurrentProjectUser(),
-            () -> storageClient.getQuotaLimits(),
+            () -> storageClient.getCurrentQuotas(),
             this::toResource
         );
     }
@@ -210,7 +211,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     {
         return combineProjectUserThenQuotaCalls(
             () -> projectUsersClient.retrieveProjectUserByEmail(userEmail),
-            () -> storageClient.getQuotaLimits(userEmail),
+            () -> storageClient.getCurrentQuotas(userEmail),
             this::toResource
         );
     }
@@ -241,6 +242,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
             makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
 
         return combineQuotaThenProjectUserCalls(
+            userEmail,
             () -> storageClient.upsertQuotaLimits(userEmail, t._2),
             () -> projectUsersClient.updateProjectUser(userId, t._1),
             this::toResource
@@ -264,6 +266,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
             makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
 
         return combineQuotaThenProjectUserCalls(
+            userEmail,
             () -> storageClient.upsertQuotaLimits(userEmail, t._2),
             () -> projectUsersClient.updateCurrentProjectUser(t._1),
             this::toResourceRegisteredUser
@@ -298,6 +301,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
             new DownloadQuotaLimitsDto(userEmail, dto.getMaxQuota(), dto.getRateLimit());
 
         return combineQuotaThenProjectUserCalls(
+            userEmail,
             () -> storageClient.upsertQuotaLimits(userEmail, limits),
             () -> projectUsersClient.createUser(accessRequest),
             this::toResourceRegisteredUser
@@ -385,15 +389,15 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                     .map(ProjectUser::getEmail)
                     .toArray(String[]::new))
                 .flatMap(a ->
-                    Try.of(() -> storageClient.getQuotaLimits(a))
+                    Try.of(() -> storageClient.getCurrentQuotasList(a))
                         .map(ResponseEntity::getBody)
                         // special value for frontend if any error on storage or storage not deploy
                         .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                        .orElse(() -> Try.success(Arrays.stream(a).map(email -> new DownloadQuotaLimitsDto(email, null, null)).collect(toList())))
+                        .orElse(() -> Try.success(Arrays.stream(a).map(email -> new UserCurrentQuotas(email, null, null, null, null)).collect(toList())))
                         .toValidation(ComposableClientException::make)
                 )
-                .map(limits -> users.get()
-                    .zip(limits)
+                .map(quotas -> users.get()
+                    .zip(quotas)
                     .map(ul -> new ProjectUserDto(
                         ul._1,
                         ul._2
@@ -429,14 +433,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
 
     private ResponseEntity<EntityModel<ProjectUserDto>> combineProjectUserThenQuotaCalls(
         Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
-        Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
+        Supplier<ResponseEntity<UserCurrentQuotas>> quotaCall,
         Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
     ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(projectUsersCall)
                 .transform(handleClientFailure("accessrights-client"))
                 .map(EntityModel::getContent)
-                .combine(Try.ofSupplier(quotaLimitsCall)
+                .combine(Try.ofSupplier(quotaCall)
                     .transform(ignoreStorageQuotaErrors))
                 .ap(ProjectUserDto::new)
                 .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
@@ -446,12 +450,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     }
 
     private ResponseEntity<EntityModel<ProjectUserDto>> combineQuotaThenProjectUserCalls(
+        String userEmail,
         Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
         Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
         Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
     ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(quotaLimitsCall)
+                .map(unit -> storageClient.getCurrentQuotas(userEmail))
                 .transform(ignoreStorageQuotaErrors)
                 .combine(Try.ofSupplier(projectUsersCall)
                     .transform(handleClientFailure("accessrights-client"))
@@ -463,12 +469,12 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         );
     }
 
-    private Function<Try<ResponseEntity<DownloadQuotaLimitsDto>>, Validation<ComposableClientException, DownloadQuotaLimitsDto>> ignoreStorageQuotaErrors =
+    private Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors =
         t -> t
             .map(ResponseEntity::getBody)
             // special value for frontend if any error on storage or storage not deploy
             .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
-            .orElse(() -> Try.success(new DownloadQuotaLimitsDto(null, null, null)))
+            .orElse(() -> Try.success(new UserCurrentQuotas(null, null, null, null, null)))
             .toValidation(ComposableClientException::make);
 
     private <V> V toResponse(

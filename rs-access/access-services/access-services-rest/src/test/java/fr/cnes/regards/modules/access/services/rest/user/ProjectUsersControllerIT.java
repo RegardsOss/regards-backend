@@ -9,8 +9,7 @@ import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
 import static fr.cnes.regards.modules.access.services.rest.user.mock.ProjectUsersClientMock.*;
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.USER_QUOTA_LIMITS_STUB_MAX_QUOTA;
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.USER_QUOTA_LIMITS_STUB_RATE_LIMIT;
+import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.*;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
@@ -170,14 +169,18 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         return customizer
             .expectValue("$.content.email", PROJECT_USER_STUB_EMAIL)
             .expectValue("$.content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
-            .expectValue("$.content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
+            .expectValue("$.content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
+            .expectValue("$.content.currentQuota", CURRENT_USER_QUOTA_STUB)
+            .expectValue("$.content.currentRate", CURRENT_USER_RATE_STUB);
     }
 
     protected RequestBuilderCustomizer expectPagedUserFromClientMock(RequestBuilderCustomizer customizer) {
         return customizer
             .expectValue("$.content.[0].content.email", PROJECT_USER_STUB_EMAIL)
             .expectValue("$.content.[0].content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
-            .expectValue("$.content.[0].content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
+            .expectValue("$.content.[0].content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
+            .expectValue("$.content.[0].content.currentQuota", CURRENT_USER_QUOTA_STUB)
+            .expectValue("$.content.[0].content.currentRate", CURRENT_USER_RATE_STUB);
     }
 
     private RequestBuilderCustomizer expectPagingFromClientMock(RequestBuilderCustomizer customizer) {

@@ -6,7 +6,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -35,7 +35,11 @@ public class ProjectUserDto {
 
     private Long rateLimit;
 
-    public ProjectUserDto(ProjectUser projectUser, DownloadQuotaLimitsDto limits) {
+    private Long currentQuota;
+
+    private Long currentRate;
+
+    public ProjectUserDto(ProjectUser projectUser, Long maxQuota, Long rateLimit, Long currentQuota, Long currentRate) {
         this.id = projectUser.getId();
         this.email = projectUser.getEmail();
         this.lastConnection = projectUser.getLastConnection();
@@ -45,12 +49,24 @@ public class ProjectUserDto {
         this.role = projectUser.getRole();
         this.permissions = projectUser.getPermissions();
         this.licenseAccepted = projectUser.isLicenseAccepted();
-        this.maxQuota = limits.getMaxQuota();
-        this.rateLimit = limits.getRateLimit();
+        this.maxQuota = maxQuota;
+        this.rateLimit = rateLimit;
+        this.currentQuota = currentQuota;
+        this.currentRate = currentRate;
     }
 
-    public ProjectUserDto(DownloadQuotaLimitsDto limits, ProjectUser projectUser) {
-        this(projectUser, limits);
+    public ProjectUserDto(ProjectUser projectUser, UserCurrentQuotas currentQuotas) {
+        this(
+            projectUser,
+            currentQuotas.getMaxQuota(),
+            currentQuotas.getRateLimit(),
+            currentQuotas.getCurrentQuota(),
+            currentQuotas.getCurrentRate()
+        );
+    }
+
+    public ProjectUserDto(UserCurrentQuotas current, ProjectUser projectUser) {
+        this(projectUser, current);
     }
 
     public Long getId() {
@@ -139,5 +155,21 @@ public class ProjectUserDto {
 
     public void setRateLimit(Long rateLimit) {
         this.rateLimit = rateLimit;
+    }
+
+    public Long getCurrentQuota() {
+        return currentQuota;
+    }
+
+    public void setCurrentQuota(Long currentQuota) {
+        this.currentQuota = currentQuota;
+    }
+
+    public Long getCurrentRate() {
+        return currentRate;
+    }
+
+    public void setCurrentRate(Long currentRate) {
+        this.currentRate = currentRate;
     }
 }

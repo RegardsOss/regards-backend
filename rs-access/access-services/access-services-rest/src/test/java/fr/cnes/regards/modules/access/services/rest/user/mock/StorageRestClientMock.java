@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.database.UserDownloadQuota;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +108,38 @@ public class StorageRestClientMock implements IStorageRestClient {
                 CURRENT_USER_QUOTA_STUB,
                 CURRENT_USER_RATE_STUB
             ),
+            HttpStatus.OK
+        );
+    }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+        return new ResponseEntity<>(
+            new UserCurrentQuotas(
+                authResolver.getUser(),
+                USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                CURRENT_USER_QUOTA_STUB,
+                CURRENT_USER_RATE_STUB
+            ),
+            HttpStatus.OK
+        );
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+        return new ResponseEntity<>(
+            Arrays.stream(userEmails)
+                .map(userEmail ->
+                    new UserCurrentQuotas(
+                        userEmail,
+                        USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                        USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                        CURRENT_USER_QUOTA_STUB,
+                        CURRENT_USER_RATE_STUB
+                    )
+                )
+                .collect(Collectors.toList()),
             HttpStatus.OK
         );
     }
