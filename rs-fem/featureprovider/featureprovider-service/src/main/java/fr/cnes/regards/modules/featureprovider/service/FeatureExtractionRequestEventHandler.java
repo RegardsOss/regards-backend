@@ -59,9 +59,6 @@ public class FeatureExtractionRequestEventHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private IFeatureExtractionService featureReferenceService;
-
-    @Autowired
     private IFeatureExtractionService featureExtractionService;
 
     @Override
@@ -95,10 +92,9 @@ public class FeatureExtractionRequestEventHandler
         try {
             runtimeTenantResolver.forceTenant(tenant);
             long start = System.currentTimeMillis();
-            RequestInfo<String> requestInfo = featureReferenceService.registerRequests(messages);
+            RequestInfo<String> requestInfo = featureExtractionService.registerRequests(messages);
             LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
-                        requestInfo.getGranted().size(),
-                        requestInfo.getDenied().keySet().size(),
+                        requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
                         System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();

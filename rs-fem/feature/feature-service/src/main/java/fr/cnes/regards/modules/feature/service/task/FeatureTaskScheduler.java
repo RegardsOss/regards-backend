@@ -74,10 +74,6 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final String COPY_REQUESTS = "FEATURE COPY REQUESTS";
 
-    private static final String REFERENCE_REQUEST_LOCK = "scheduleFReference";
-
-    private static final String REFERENCE_REQUESTS = "FEATURE REFERENCE REQUESTS";
-
     private static final String NOTIFICATION_REQUEST_LOCK = "scheduleFNotification";
 
     private static final String NOTIFICATION_REQUESTS = "FEATURE NOTIFICATION REQUESTS";
@@ -169,9 +165,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CREATE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(createTask,
-                                                     new LockConfiguration(CREATE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(createTask, new LockConfiguration(CREATE_REQUEST_LOCK,
+                        Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(CREATE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -187,9 +182,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UPDATE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(updateTask,
-                                                     new LockConfiguration(UPDATE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(updateTask, new LockConfiguration(UPDATE_REQUEST_LOCK,
+                        Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(UPDATE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -205,9 +199,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DELETE_REQUESTS);
-                lockingTaskExecutors.executeWithLock(deleteTask,
-                                                     new LockConfiguration(DELETE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(deleteTask, new LockConfiguration(DELETE_REQUEST_LOCK,
+                        Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -223,9 +216,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, COPY_REQUESTS);
-                lockingTaskExecutors.executeWithLock(copyTask,
-                                                     new LockConfiguration(COPY_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(copyTask, new LockConfiguration(COPY_REQUEST_LOCK,
+                        Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(COPY_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -242,9 +234,8 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_REQUESTS);
-                lockingTaskExecutors.executeWithLock(notificationRequestHandlingTask,
-                                                     new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(notificationRequestHandlingTask, new LockConfiguration(
+                        NOTIFICATION_REQUEST_LOCK, Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {

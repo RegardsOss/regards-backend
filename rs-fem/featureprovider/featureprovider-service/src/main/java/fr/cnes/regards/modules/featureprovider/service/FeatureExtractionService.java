@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
-import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +45,9 @@ import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
-import fr.cnes.regards.framework.amqp.event.IRequestValidation;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -67,12 +67,12 @@ import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionResponseEvent;
 import fr.cnes.regards.modules.featureprovider.domain.plugin.IFeatureFactoryPlugin;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 
@@ -104,7 +104,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
 
     @Autowired
-    private IFeatureExtractionRequestRepository featureReferenceRequestRepo;
+    private IFeatureExtractionRequestRepository featureExtractionRequestRepo;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -152,11 +152,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         // Monitoring log
         LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, requestOwner, requestId, errorMessage));
         // Publish DENIED request
-        publisher.publish(new FeatureExtractionResponseEvent(
-                                                    requestId,
-                                                    requestOwner,
-                                                    RequestState.DENIED,
-                                                    Sets.newHashSet(errorMessage)));
+        publisher.publish(new FeatureExtractionResponseEvent(requestId, requestOwner, RequestState.DENIED,
+                Sets.newHashSet(errorMessage)));
         return true;
     }
 
@@ -167,17 +164,15 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
         List<FeatureExtractionRequest> grantedRequests = new ArrayList<>();
         RequestInfo<String> requestInfo = new RequestInfo<>();
-        Set<String> existingRequestIds = this.featureReferenceRequestRepo.findRequestId();
+        Set<String> existingRequestIds = this.featureExtractionRequestRepo.findRequestId();
 
         events.forEach(item -> prepareFeatureReferenceRequest(item, grantedRequests, requestInfo, existingRequestIds));
-        LOGGER.trace("------------->>> {} creation requests prepared in {} ms",
-                     grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
-        featureReferenceRequestRepo.saveAll(grantedRequests);
-        LOGGER.trace("------------->>> {} creation requests registered in {} ms",
-                     grantedRequests.size(),
+        featureExtractionRequestRepo.saveAll(grantedRequests);
+        LOGGER.trace("------------->>> {} creation requests registered in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -197,8 +192,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         validator.validate(item, errors);
         validateRequest(item, errors);
 
-        if (existingRequestIds.contains(item.getRequestId()) || grantedRequests.stream()
-                .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
@@ -207,42 +202,27 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                          ErrorTranslator.getErrors(errors));
             requestInfo.addDeniedRequest(item.getRequestId(), ErrorTranslator.getErrors(errors));
             // Monitoring log
-            LOGGER.error(String.format(REFERENCE_DENIED_FORMAT,
-                                       item.getRequestOwner(),
-                                       item.getRequestId(),
+            LOGGER.error(String.format(REFERENCE_DENIED_FORMAT, item.getRequestOwner(), item.getRequestId(),
                                        ErrorTranslator.getErrors(errors)));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(new FeatureExtractionResponseEvent(
-                                                        item.getRequestId(),
-                                                        item.getRequestOwner(),
-                                                        RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
+            publisher.publish(new FeatureExtractionResponseEvent(item.getRequestId(), item.getRequestOwner(),
+                    RequestState.DENIED, ErrorTranslator.getErrors(errors)));
             return;
         }
         // Monitoring log
         LOGGER.trace(String.format(REFERENCE_GRANTED_FORMAT, item.getRequestOwner(), item.getRequestId()));
         // Publish GRANTED request
-        publisher.publish(new FeatureExtractionResponseEvent(
-                                                    item.getRequestId(),
-                                                    item.getRequestOwner(),
-                                                    RequestState.GRANTED,
-                                                    new HashSet<>()));
+        publisher.publish(new FeatureExtractionResponseEvent(item.getRequestId(), item.getRequestOwner(),
+                RequestState.GRANTED, new HashSet<>()));
 
         // Add to granted request collection
         FeatureCreationMetadataEntity metadata = FeatureCreationMetadataEntity
-                .build(item.getMetadata().getSessionOwner(),
-                       item.getMetadata().getSession(),
-                       item.getMetadata().getStorages(),
-                       item.getMetadata().isOverride());
-        grantedRequests.add(FeatureExtractionRequest.build(item.getRequestId(),
-                                                           item.getRequestOwner(),
-                                                           item.getRequestDate(),
-                                                           RequestState.GRANTED,
-                                                           metadata,
-                                                           FeatureRequestStep.LOCAL_DELAYED,
-                                                           item.getMetadata().getPriority(),
-                                                           item.getParameters(),
-                                                           item.getFactory()));
+                .build(item.getMetadata().getSessionOwner(), item.getMetadata().getSession(),
+                       item.getMetadata().getStorages(), item.getMetadata().isOverride());
+        grantedRequests.add(FeatureExtractionRequest
+                .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(), RequestState.GRANTED,
+                       metadata, FeatureRequestStep.LOCAL_DELAYED, item.getMetadata().getPriority(),
+                       item.getParameters(), item.getFactory()));
         requestInfo.addGrantedRequest(item.getRequestId(), RequestState.GRANTED.toString());
     }
 
@@ -253,29 +233,23 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
 
-        List<FeatureExtractionRequest> requestsToSchedule = this.featureReferenceRequestRepo.findByStep(
-                FeatureRequestStep.LOCAL_DELAYED,
-                OffsetDateTime.now(),
-                PageRequest
+        List<FeatureExtractionRequest> requestsToSchedule = this.featureExtractionRequestRepo
+                .findByStep(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest
                         .of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))));
         Set<Long> requestIds = requestsToSchedule.stream().map(FeatureExtractionRequest::getId)
                 .collect(Collectors.toSet());
         if (!requestsToSchedule.isEmpty()) {
 
-            featureReferenceRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
+            featureExtractionRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
 
             jobParameters.add(new JobParameter(FeatureExtractionCreationJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                                          jobParameters,
-                                          authResolver.getUser(),
-                                          FeatureExtractionCreationJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                    jobParameters, authResolver.getUser(), FeatureExtractionCreationJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.trace("------------->>> {} reference requests scheduled in {} ms",
-                         requestsToSchedule.size(),
+            LOGGER.trace("------------->>> {} reference requests scheduled in {} ms", requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
 
             return requestIds.size();
@@ -300,28 +274,22 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             } catch (NotAvailablePluginConfigurationException | ModuleException e) {
                 Set<String> errors = Sets.newHashSet(e.getMessage());
                 // Monitoring log
-                LOGGER.error(String.format(REFERENCE_ERROR_FORMAT,
-                                           request.getRequestOwner(),
-                                           request.getRequestId(),
+                LOGGER.error(String.format(REFERENCE_ERROR_FORMAT, request.getRequestOwner(), request.getRequestId(),
                                            errors));
                 // Publish ERROR request
                 request.setState(RequestState.ERROR);
-                publisher.publish(new FeatureExtractionResponseEvent(
-                                                            request.getRequestId(),
-                                                            request.getRequestOwner(),
-                                                            RequestState.ERROR,
-                                                            errors));
+                publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
+                        RequestState.ERROR, errors));
             }
         }
 
-        this.featureReferenceRequestRepo.saveAll(requests);
-        if(!creationRequestsToRegister.isEmpty()) {
+        this.featureExtractionRequestRepo.saveAll(requests);
+        if (!creationRequestsToRegister.isEmpty()) {
             this.featureClient.createFeatures(creationRequestsToRegister);
         }
         // feature creation has been asked to feature module lets handled granted and denied with a listener
 
-        LOGGER.trace("------------->>> {} creation request published in {} ms",
-                     successCreationRequestGenerationCount,
+        LOGGER.trace("------------->>> {} creation request published in {} ms", successCreationRequestGenerationCount,
                      System.currentTimeMillis() - processStart);
     }
 
@@ -344,8 +312,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
         if (!IFeatureFactoryPlugin.class.isAssignableFrom(plugin.get().getClass())) {
             String errorMessage = String.format("Bad plugin type for configuration %s. %s must implement %s.",
-                                                request.getFactory(),
-                                                plugin.getClass().getName(),
+                                                request.getFactory(), plugin.getClass().getName(),
                                                 IFeatureFactoryPlugin.class.getName());
             LOGGER.error(errorMessage);
             throw new ModuleException(errorMessage);
@@ -361,17 +328,14 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);
-            return FeatureCreationRequestEvent.build(request.getRequestOwner(),
-                                                     request.getRequestId(),
-                                                     FeatureCreationSessionMetadata.build(metadata.getSessionOwner(),
-                                                                                          metadata.getSession(),
-                                                                                          request.getPriority(),
-                                                                                          false,
-                                                                                          array),
+            return FeatureCreationRequestEvent.build(request.getRequestOwner(), request.getRequestId(),
+                                                     FeatureCreationSessionMetadata
+                                                             .build(metadata.getSessionOwner(), metadata.getSession(),
+                                                                    request.getPriority(), false, array),
                                                      feature);
         } catch (ModuleException e) {
             throw new ModuleException(String.format("Error generating feature for request %s", request.getRequestId()),
-                                      e);
+                    e);
         }
 
     }
@@ -381,10 +345,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         // Build events to reuse event registration code
         List<FeatureExtractionRequestEvent> toTreat = new ArrayList<>();
         for (JsonObject parameters : collection.getParameters()) {
-            toTreat.add(FeatureExtractionRequestEvent.build(authResolver.getUser(),
-                                                            collection.getMetadata(),
-                                                            parameters,
-                                                            OffsetDateTime.now().minusSeconds(1),
+            toTreat.add(FeatureExtractionRequestEvent.build(authResolver.getUser(), collection.getMetadata(),
+                                                            parameters, OffsetDateTime.now().minusSeconds(1),
                                                             collection.getFactory()));
         }
         return registerRequests(toTreat);
@@ -397,14 +359,13 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             List<FeatureExtractionResponseEvent> events = new ArrayList<>();
             for (Map.Entry<String, FeatureRequestEvent> request : deniedRequestPerRequestId.entrySet()) {
-                events.add(new FeatureExtractionResponseEvent(request.getKey(),
-                                                              request.getValue().getRequestOwner(),
-                                                              RequestState.ERROR,
-                                                              request.getValue().getErrors()));
+                events.add(new FeatureExtractionResponseEvent(request.getKey(), request.getValue().getRequestOwner(),
+                        RequestState.ERROR, request.getValue().getErrors()));
             }
             publisher.publish(events);
-            featureReferenceRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR, deniedRequestPerRequestId.keySet());
-            featureReferenceRequestRepo.updateState(RequestState.ERROR, deniedRequestPerRequestId.keySet());
+            featureExtractionRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR,
+                                                                 deniedRequestPerRequestId.keySet());
+            featureExtractionRequestRepo.updateState(RequestState.ERROR, deniedRequestPerRequestId.keySet());
         }
 
     }
@@ -416,13 +377,11 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
             List<FeatureExtractionResponseEvent> events = new ArrayList<>();
             for (Map.Entry<String, FeatureRequestEvent> request : grantedRequestPerRequestId.entrySet()) {
-                events.add(new FeatureExtractionResponseEvent(request.getKey(),
-                                                              request.getValue().getRequestOwner(),
-                                                              RequestState.SUCCESS,
-                                                              new HashSet<>()));
+                events.add(new FeatureExtractionResponseEvent(request.getKey(), request.getValue().getRequestOwner(),
+                        RequestState.SUCCESS, new HashSet<>()));
             }
             publisher.publish(events);
-            featureReferenceRequestRepo.deleteAllByRequestIdIn(grantedRequestPerRequestId.keySet());
+            featureExtractionRequestRepo.deleteAllByRequestIdIn(grantedRequestPerRequestId.keySet());
         }
     }
 }
