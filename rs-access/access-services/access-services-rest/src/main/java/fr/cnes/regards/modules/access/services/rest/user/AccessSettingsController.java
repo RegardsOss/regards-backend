@@ -92,29 +92,29 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<AccessSettingsDto>> retrieveAccessSettings() throws ModuleException {
-        return Validation
-            .combine(
-                Try.of(() -> accessSettingsClient.retrieveAccessSettings())
-                    .transform(handleClientFailure("accessrights-client"))
-                    .map(EntityModel::getContent),
-                Try.of(() -> storageClient.getDefaultDownloadQuotaLimits())
-                    .map(ResponseEntity::getBody)
-                    // special value for frontend if any error on storage or storage not deploy
-                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                    .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
-                    .toValidation(ComposableClientException::make)
-            )
-            .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
-                accessSettings.getId(),
-                accessSettings.getMode(),
-                defaultLimits.getMaxQuota(),
-                defaultLimits.getRateLimit()
-            ))
-            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-            .map(this::toResource)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get()
-        ;
+        return toResponse(
+            Validation
+                .combine(
+                    Try.of(() -> accessSettingsClient.retrieveAccessSettings())
+                        .transform(handleClientFailure("accessrights-client"))
+                        .map(EntityModel::getContent),
+                    Try.of(() -> storageClient.getDefaultDownloadQuotaLimits())
+                        .map(ResponseEntity::getBody)
+                        // special value for frontend if any error on storage or storage not deploy
+                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                        .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+                        .toValidation(ComposableClientException::make)
+                )
+                .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
+                    accessSettings.getId(),
+                    accessSettings.getMode(),
+                    defaultLimits.getMaxQuota(),
+                    defaultLimits.getRateLimit()
+                ))
+                .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                .map(this::toResource)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+        );
     }
 
     /**
@@ -126,36 +126,46 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<AccessSettingsDto>> updateAccessSettings(@Valid @RequestBody AccessSettingsDto accessSettingsDto) throws ModuleException {
-        return Validation
-            .combine(
-                Try.of(() -> {
-                    AccessSettings accessSettings = new AccessSettings();
-                    accessSettings.setId(accessSettingsDto.getId());
-                    accessSettings.setMode(accessSettingsDto.getMode());
-                    return accessSettings;
-                })
-                    .map(accessSettingsClient::updateAccessSettings)
-                    .transform(handleClientFailure("accessrights-client"))
-                    .map(EntityModel::getContent),
-                Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
-                    .map(storageClient::changeDefaultDownloadQuotaLimits)
-                    .map(ResponseEntity::getBody)
-                    // special value for frontend if any error on storage or storage not deploy
-                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                    .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
-                    .toValidation(ComposableClientException::make)
-            )
-            .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
-                accessSettings.getId(),
-                accessSettings.getMode(),
-                defaultLimits.getMaxQuota(),
-                defaultLimits.getRateLimit()
-            ))
-            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-            .map(this::toResource)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get()
-            ;
+        return toResponse(
+            Validation
+                .combine(
+                    Try.of(() -> {
+                        AccessSettings accessSettings = new AccessSettings();
+                        accessSettings.setId(accessSettingsDto.getId());
+                        accessSettings.setMode(accessSettingsDto.getMode());
+                        return accessSettings;
+                    })
+                        .map(accessSettingsClient::updateAccessSettings)
+                        .transform(handleClientFailure("accessrights-client"))
+                        .map(EntityModel::getContent),
+                    Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
+                        .map(storageClient::changeDefaultDownloadQuotaLimits)
+                        .map(ResponseEntity::getBody)
+                        // special value for frontend if any error on storage or storage not deploy
+                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                        .orElse(() -> Try.success(new DefaultDownloadQuotaLimits(null, null)))
+                        .toValidation(ComposableClientException::make)
+                )
+                .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
+                    accessSettings.getId(),
+                    accessSettings.getMode(),
+                    defaultLimits.getMaxQuota(),
+                    defaultLimits.getRateLimit()
+                ))
+                .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                .map(this::toResource)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+        );
+    }
+
+    private <V> V toResponse(
+        Validation<ModuleException, V> v
+    ) throws ModuleException {
+        if (v.isValid()) {
+            return v.get();
+        } else {
+            throw v.getError();
+        }
     }
 
     @Override

@@ -36,9 +36,6 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.Seq;
-import io.vavr.collection.Stream;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import org.slf4j.Logger;
@@ -57,7 +54,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -130,7 +126,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         @RequestParam(name = "status", required = false) String status,
         @RequestParam(name = "partialEmail", required = false) String emailStart,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserDto> assembler) {
+        PagedResourcesAssembler<ProjectUserDto> assembler
+    ) throws ModuleException {
         return completeUserPagedResponseWithQuotas(
             () -> projectUsersClient.retrieveProjectUserList(status, emailStart, pageable.getPageNumber(), pageable.getPageSize()),
             pageable,
@@ -149,7 +146,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserDto>>> retrieveAccessRequestList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserDto> assembler) {
+        PagedResourcesAssembler<ProjectUserDto> assembler
+    ) throws ModuleException {
         return completeUserPagedResponseWithQuotas(
             () -> projectUsersClient.retrieveAccessRequestList(pageable.getPageNumber(), pageable.getPageSize()),
             pageable,
@@ -165,21 +163,22 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @ResponseBody
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUser(@PathVariable("user_id") Long userId) {
-        return Try.of(() -> projectUsersClient.retrieveProjectUser(userId))
-            .transform(handleClientFailure("accessrights-client"))
-            .map(EntityModel::getContent)
-            .flatMap(user ->
-                Try.of(() -> storageClient.getQuotaLimits(user.getEmail()))
-                    .transform(ignoreStorageQuotaErrors)
-                    .map(limits -> new ProjectUserDto(
-                        user,
-                        limits
-                    )))
-            .map(this::toResource)
-            .map(resource -> new ResponseEntity<>(resource, HttpStatus.OK))
-            .mapError(ModuleException::new)
-            .get();
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUser(@PathVariable("user_id") Long userId) throws ModuleException {
+        return toResponse(
+            Try.of(() -> projectUsersClient.retrieveProjectUser(userId))
+                .transform(handleClientFailure("accessrights-client"))
+                .map(EntityModel::getContent)
+                .flatMap(user ->
+                    Try.of(() -> storageClient.getQuotaLimits(user.getEmail()))
+                        .transform(ignoreStorageQuotaErrors)
+                        .map(limits -> new ProjectUserDto(
+                            user,
+                            limits
+                        )))
+                .mapError(ModuleException::new)
+                .map(this::toResource)
+                .map(resource -> new ResponseEntity<>(resource, HttpStatus.OK))
+        );
     }
 
     /**
@@ -190,7 +189,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @RequestMapping(value = "/myuser", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
         role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveCurrentProjectUser() {
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveCurrentProjectUser() throws ModuleException {
         return combineProjectUserThenQuotaCalls(
             () -> projectUsersClient.retrieveCurrentProjectUser(),
             () -> storageClient.getQuotaLimits(),
@@ -206,7 +205,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUserByEmail(@PathVariable("user_email") String userEmail) {
+    public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUserByEmail(@PathVariable("user_email") String userEmail)
+        throws ModuleException
+    {
         return combineProjectUserThenQuotaCalls(
             () -> projectUsersClient.retrieveProjectUserByEmail(userEmail),
             () -> storageClient.getQuotaLimits(userEmail),
@@ -231,7 +232,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "update the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserDto>> updateProjectUser(@PathVariable("user_id") Long userId,
-                                                                         @RequestBody ProjectUserDto updatedProjectUser) {
+                                                                         @RequestBody ProjectUserDto updatedProjectUser)
+        throws ModuleException
+    {
         String userEmail = updatedProjectUser.getEmail();
 
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t =
@@ -252,7 +255,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @ResponseBody
     @RequestMapping(value = "/myuser", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the current authenticated project user", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ProjectUserDto>> updateCurrentProjectUser(@RequestBody ProjectUserDto updatedProjectUser) {
+    public ResponseEntity<EntityModel<ProjectUserDto>> updateCurrentProjectUser(@RequestBody ProjectUserDto updatedProjectUser)
+        throws ModuleException
+    {
         String userEmail = authResolver.getUser();
 
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t =
@@ -274,7 +279,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
         role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUserDto>> createUser(@Valid @RequestBody AccessRequestDto dto) {
+    public ResponseEntity<EntityModel<ProjectUserDto>> createUser(@Valid @RequestBody AccessRequestDto dto) throws ModuleException {
         String userEmail = dto.getEmail();
 
         fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto accessRequest =
@@ -328,7 +333,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<ProjectUserDto> assembler
-    ) {
+    ) throws ModuleException {
         return completeUserPagedResponseWithQuotas(
             () -> projectUsersClient.retrieveRoleProjectUserList(roleId, pageable.getPageNumber(), pageable.getPageSize()),
             pageable,
@@ -353,7 +358,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<ProjectUserDto> assembler
-    ) {
+    ) throws ModuleException {
         return completeUserPagedResponseWithQuotas(
             () -> projectUsersClient.retrieveRoleProjectUsersList(role, pageable.getPageNumber(), pageable.getPageSize()),
             pageable,
@@ -365,40 +370,41 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         Supplier<ResponseEntity<PagedModel<EntityModel<ProjectUser>>>> usersRequest,
         Pageable pageable,
         PagedResourcesAssembler<ProjectUserDto> pagedResourcesAssembler
-    ) {
+    ) throws ModuleException {
         AtomicReference<PagedModel.PageMetadata> meta = new AtomicReference<>();
         AtomicReference<io.vavr.collection.List<ProjectUser>> users = new AtomicReference<>(io.vavr.collection.List.empty());
-        return Try.ofSupplier(usersRequest)
-            .transform(handleClientFailure("accessrights-client"))
-            .peek(r -> meta.set(r.getMetadata())) // need a piece of state (pagination metadata) for later if success
-            .map(PagedModel::getContent)
-            .map(c -> c.stream()
-                .map(EntityModel::getContent)
-                // fill the list of users while mapping, we'll need'em later
-                .peek(u -> users.updateAndGet(l -> l.append(u)))
-                .map(ProjectUser::getEmail)
-                .toArray(String[]::new))
-            .flatMap(a ->
-                Try.of(() -> storageClient.getQuotaLimits(a))
-                    .map(ResponseEntity::getBody)
-                    // special value for frontend if any error on storage or storage not deploy
-                    .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
-                    .orElse(() -> Try.success(Arrays.stream(a).map(email -> new DownloadQuotaLimitsDto(email, null, null)).collect(toList())))
-                    .toValidation(ComposableClientException::make)
-            )
-            .map(limits -> users.get()
-                .zip(limits)
-                .map(ul -> new ProjectUserDto(
-                    ul._1,
-                    ul._2
-                ))
-                .toJavaList()
-            )
-            .map(list -> new PageImpl<>(list, pageable, meta.get().getTotalElements()))
-            .map(page -> toPagedResources(page, pagedResourcesAssembler))
-            .map(paged -> new ResponseEntity<>(paged, HttpStatus.OK))
-            .mapError(ModuleException::new)
-            .get();
+        return toResponse(
+            Try.ofSupplier(usersRequest)
+                .transform(handleClientFailure("accessrights-client"))
+                .peek(r -> meta.set(r.getMetadata())) // need a piece of state (pagination metadata) for later if success
+                .map(PagedModel::getContent)
+                .map(c -> c.stream()
+                    .map(EntityModel::getContent)
+                    // fill the list of users while mapping, we'll need'em later
+                    .peek(u -> users.updateAndGet(l -> l.append(u)))
+                    .map(ProjectUser::getEmail)
+                    .toArray(String[]::new))
+                .flatMap(a ->
+                    Try.of(() -> storageClient.getQuotaLimits(a))
+                        .map(ResponseEntity::getBody)
+                        // special value for frontend if any error on storage or storage not deploy
+                        .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
+                        .orElse(() -> Try.success(Arrays.stream(a).map(email -> new DownloadQuotaLimitsDto(email, null, null)).collect(toList())))
+                        .toValidation(ComposableClientException::make)
+                )
+                .map(limits -> users.get()
+                    .zip(limits)
+                    .map(ul -> new ProjectUserDto(
+                        ul._1,
+                        ul._2
+                    ))
+                    .toJavaList()
+                )
+                .map(list -> new PageImpl<>(list, pageable, meta.get().getTotalElements()))
+                .map(page -> toPagedResources(page, pagedResourcesAssembler))
+                .map(paged -> new ResponseEntity<>(paged, HttpStatus.OK))
+                .mapError(ModuleException::new)
+        );
     }
 
     private Tuple2<ProjectUser, DownloadQuotaLimitsDto> makeProjectUserAndQuotaLimitsDto(ProjectUserDto updatedProjectUser) {
@@ -425,15 +431,17 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
         Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
         Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
-    ) {
+    ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(projectUsersCall)
                 .transform(handleClientFailure("accessrights-client"))
                 .map(EntityModel::getContent)
                 .combine(Try.ofSupplier(quotaLimitsCall)
                     .transform(ignoreStorageQuotaErrors))
-                .ap(ProjectUserDto::new),
-            resourceMapper
+                .ap(ProjectUserDto::new)
+                .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                .map(resourceMapper)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
         );
     }
 
@@ -441,15 +449,17 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         Supplier<ResponseEntity<DownloadQuotaLimitsDto>> quotaLimitsCall,
         Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
         Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
-    ) {
+    ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(quotaLimitsCall)
                 .transform(ignoreStorageQuotaErrors)
                 .combine(Try.ofSupplier(projectUsersCall)
                     .transform(handleClientFailure("accessrights-client"))
                     .map(EntityModel::getContent))
-                .ap(ProjectUserDto::new),
-            resourceMapper
+                .ap(ProjectUserDto::new)
+                .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                .map(resourceMapper)
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
         );
     }
 
@@ -461,15 +471,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
             .orElse(() -> Try.success(new DownloadQuotaLimitsDto(null, null, null)))
             .toValidation(ComposableClientException::make);
 
-    private ResponseEntity<EntityModel<ProjectUserDto>> toResponse(
-        Validation<Seq<ComposableClientException>, ProjectUserDto> v,
-        Function<ProjectUserDto, EntityModel<ProjectUserDto>> resourceMapper
-    ) {
-        return v
-            .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-            .map(resourceMapper)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+    private <V> V toResponse(
+        Validation<ModuleException, V> v
+    ) throws ModuleException {
+        if (v.isValid()) {
+            return v.get();
+        } else {
+            throw v.getError();
+        }
     }
 
     @Override

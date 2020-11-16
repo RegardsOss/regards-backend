@@ -18,21 +18,34 @@
  */
 package fr.cnes.regards.modules.access.services.rest.user;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient.*;
 
 @RestController
 public class StorageDownloadQuotaController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageDownloadQuotaController.class);
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     /**
      * Client handling storage quotas
@@ -45,8 +58,11 @@ public class StorageDownloadQuotaController {
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(
         @PathVariable(USER_EMAIL_PARAM) String userEmail
-    ) {
-        return storageClient.getQuotaLimits(userEmail);
+    ) throws ModuleException {
+        return wrapStorageErrorForFrontend(
+            () -> storageClient.getQuotaLimits(userEmail),
+            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
+        );
     }
 
     @PutMapping(path = PATH_USER_QUOTA)
@@ -55,21 +71,42 @@ public class StorageDownloadQuotaController {
     public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
         @PathVariable(USER_EMAIL_PARAM) String userEmail,
         @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits
-    ) {
-        return storageClient.upsertQuotaLimits(userEmail, quotaLimits);
+    ) throws ModuleException {
+        return wrapStorageErrorForFrontend(
+            () -> storageClient.upsertQuotaLimits(userEmail, quotaLimits),
+            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
+        );
     }
 
     @GetMapping(path = PATH_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current user download quota limits.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
-        return storageClient.getQuotaLimits();
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() throws ModuleException {
+        return wrapStorageErrorForFrontend(
+            () -> storageClient.getQuotaLimits(),
+            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
+        );
     }
 
     @GetMapping(path = PATH_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
-        return storageClient.getCurrentQuotas();
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() throws ModuleException {
+        return wrapStorageErrorForFrontend(
+            () -> storageClient.getCurrentQuotas(),
+            () -> new UserCurrentQuotas(authResolver.getUser(), null, null, null, null)
+        );
+    }
+
+    private <V> ResponseEntity<V> wrapStorageErrorForFrontend(
+        Supplier<ResponseEntity<V>> action,
+        Supplier<V> orElse
+    ) throws ModuleException {
+        return Try.ofSupplier(action)
+            // special value for frontend if any error on storage or storage not deploy
+            .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
+            .orElse(() -> Try.success(orElse.get())
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)))
+            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 }
