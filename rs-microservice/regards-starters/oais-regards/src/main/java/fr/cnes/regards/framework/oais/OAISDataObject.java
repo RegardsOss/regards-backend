@@ -26,7 +26,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
@@ -35,7 +34,6 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
-@ValidOAISDataObject
 public class OAISDataObject {
 
     /**
