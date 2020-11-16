@@ -306,20 +306,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Set <b>required</b> data object properties for a data object reference<br/>
-     * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
-     * file will not be stored by the system)<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
-     * @param url external url
-     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
-     * An arbitrary character string may be appropriate!
-     */
-    public void setDataObjectReference(DataType dataType, String filename, String url, String storage) {
-        ipPropertiesBuilder.setDataObjectReference(dataType, filename, url, storage);
-    }
-
-    /**
      * Set <b>required</b> data object properties<br/>
      * @param dataType {@link DataType}
      * @param filename filename

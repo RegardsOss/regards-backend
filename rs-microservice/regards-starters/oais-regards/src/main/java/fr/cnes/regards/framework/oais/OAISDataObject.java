@@ -64,8 +64,9 @@ public class OAISDataObject {
     private String algorithm;
 
     /**
-     * The checksum (<b>required</b> if data object is not a reference)
+     * The checksum (<b>required</b>)
      */
+    @NotEmpty(message = "Checksum is required")
     private String checksum;
 
     /**
