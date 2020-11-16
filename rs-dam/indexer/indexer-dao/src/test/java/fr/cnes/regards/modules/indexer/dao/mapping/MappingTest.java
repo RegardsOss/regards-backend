@@ -63,7 +63,7 @@ public class MappingTest {
                     //.withExposedService("kibana", 5601)
                     .withExposedService("elasticsearch", 9200);
 
-//    @Ignore
+    //    @Ignore
     @Test
     public void test() throws Exception {
         EasyRandom generator = this.easyRandom();

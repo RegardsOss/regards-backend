@@ -172,6 +172,7 @@ import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
 import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.array;
 import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
 import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
@@ -488,34 +489,34 @@ public class EsRepository implements IEsRepository {
                                 kv("creationDate", object(kv("type", "date"),
                                                           kv("format", "date_optional_time"))
                                 ),
-                                kv("ipId", object("type", "keyword")),
-                                kv("type", object("type", "keyword")),
+                                kv("ipId", stringMapping()),
+                                kv("type", stringMapping()),
                                 kv("wgs84", object("type", "geo_shape")),
-                                kv("tags", object("type", "keyword")),
-                                kv("groups", object("type", "keyword")),
+                                kv("tags", stringMapping()),
+                                kv("groups", stringMapping()),
                                 kv("lastUpdate", object(kv("type", "date"),
                                                         kv("format", "date_optional_time"))
                                 ),
                                 // then feature attributes
                                  kv("feature",
                                     object(kv("properties", object(
-                                                                   kv("entityType", object("type", "keyword")),
+                                                                   kv("entityType", stringMapping()),
                                                                    kv("files", object("type", "object")),
-                                                                   kv("id", object("type", "keyword")),
-                                                                   kv("label", object("type", "keyword")),
+                                                                   kv("id", stringMapping()),
+                                                                   kv("label", stringMapping()),
                                                                    kv("last", object("type", "boolean")),
-                                                                   kv("model", object("type", "keyword")),
+                                                                   kv("model", stringMapping()),
                                                                    kv("normalizedGeometry", object("type", "geo_shape")),
                                                                    kv("properties", object("type", "object")),
-                                                                   kv("providerId", object("type", "keyword")),
-                                                                   kv("type", object("type", "keyword")),
-                                                                   kv("version", object("type", "keyword")),
-                                                                   kv("crs", object("type", "keyword")),
-                                                                   kv("tags", object("type", "keyword")),
-                                                                   kv("virtualId", object("type", "keyword")),
+                                                                   kv("providerId", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping()),
+                                                                   kv("crs", stringMapping()),
+                                                                   kv("tags", stringMapping()),
+                                                                   kv("virtualId", stringMapping()),
                                                                    // DataObjectFeature specific attribute
-                                                                   kv("session", object("type", "keyword")),
-                                                                   kv("sessionOwner", object("type", "keyword")),
+                                                                   kv("session", stringMapping()),
+                                                                   kv("sessionOwner", stringMapping()),
                                                                    // DatasetFeature specific attribute
                                                                    kv("licence", object("type", "text"))
                                                             )
@@ -527,9 +528,9 @@ public class EsRepository implements IEsRepository {
                                     object(kv("properties", object(
                                                                    kv("description", object("type", "text")),
                                                                    kv("id", object("type", "long")),
-                                                                   kv("name", object("type", "keyword")),
-                                                                   kv("type", object("type", "keyword")),
-                                                                   kv("version", object("type", "keyword"))
+                                                                   kv("name", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping())
                                                             )
                                               )
                                            )
@@ -537,7 +538,7 @@ public class EsRepository implements IEsRepository {
                                  // then DataObject specific attributes
                                  kv("dataSourceId", object("type", "long")),
                                  kv("internal", object("type", "boolean")),
-                                 kv("datasetModelNames", object("type", "keyword")),
+                                 kv("datasetModelNames", stringMapping()),
                                  // then metadata attributes
                                  // metadata cannot be mapped that easily because it contains maps
 //                                 kv("metadata",
@@ -551,20 +552,20 @@ public class EsRepository implements IEsRepository {
 //                                    )
 //                                 ),
                                  // then Dataset specific attributes
-                                 kv("dataModel", object("type", "keyword")),
+                                 kv("dataModel", stringMapping()),
                                  kv("openSearchSubsettingClause", object("type", "text")),
                                  // subsettingClause cannot be mapped that easily
 //                                 kv("subsettingClause", object("type", "object")),
                                  kv("plgConfDataSource",
                                     object(kv("properties", object(
                                                                    kv("active",object("type", "boolean")),
-                                                                   kv("businessId",object("type", "keyword")),
+                                                                   kv("businessId",stringMapping()),
                                                                    kv("id",object("type", "long")),
-                                                                   kv("label",object("type", "keyword")),
-                                                                   kv("pluginId",object("type", "keyword")),
+                                                                   kv("label",stringMapping()),
+                                                                   kv("pluginId",stringMapping()),
                                                                    kv("priorityOrder",object("type", "long")),
                                                                    kv("parameters",object("type", "nested")),
-                                                                   kv("version",object("type", "keyword"))
+                                                                   kv("version",stringMapping())
                                                             )
                                            )
                                     )
