@@ -68,6 +68,7 @@ import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Sébastien Binda
@@ -145,7 +146,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, randomLabel("simpleOrder"), "http://frontend.com");
 
         LOGGER.info("Order has been created !!");
         // Wait order ends.
@@ -156,6 +157,10 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         }
         Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
         LOGGER.info("Order is done !!");
+    }
+
+    private String randomLabel(String prefix) {
+        return prefix + "_" + Long.toHexString(new Random().nextLong());
     }
 
     @Test
@@ -190,7 +195,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, randomLabel("multipleDsOrder"), "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         //Wait order in waiting user status
@@ -246,7 +251,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, randomLabel("simpleOrderPause"), "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order ends.
@@ -309,7 +314,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, randomLabel("multipleDsOrderPause"), "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
@@ -391,7 +396,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command","http://frontend.com");
+        Order order = orderService.createOrder(basket, randomLabel("multipleDsOrderPauseAndDelete"),"http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
