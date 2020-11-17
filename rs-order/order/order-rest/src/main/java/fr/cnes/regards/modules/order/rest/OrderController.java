@@ -18,8 +18,37 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -35,33 +64,16 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.dto.OrderDto;
-import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.MalformedJwtException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Order controller
@@ -72,33 +84,82 @@ import java.util.List;
 @RequestMapping("")
 public class OrderController implements IResourceController<OrderDto> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
+    public static class OrderRequest {
+
+        private String label;
+
+        private String onSuccessUrl;
+
+        public OrderRequest() {
+        }
+
+        public OrderRequest(String label, String onSuccessUrl) {
+            this.label = label;
+            this.onSuccessUrl = onSuccessUrl;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public String getOnSuccessUrl() {
+            return onSuccessUrl;
+        }
+
+        public void setOnSuccessUrl(String onSuccessUrl) {
+            this.onSuccessUrl = onSuccessUrl;
+        }
+    }
 
     public static final String ADMIN_ROOT_PATH = "/orders";
+
     public static final String CSV = "/csv";
+
     public static final String USER_ROOT_PATH = "/user/orders";
+
     public static final String REMOVE_ORDER_PATH = USER_ROOT_PATH + "/remove/{orderId}";
+
     public static final String DELETE_ORDER_PATH = USER_ROOT_PATH + "/{orderId}";
+
     public static final String RESUME_ORDER_PATH = USER_ROOT_PATH + "/resume/{orderId}";
+
     public static final String PAUSE_ORDER_PATH = USER_ROOT_PATH + "/pause/{orderId}";
+
     public static final String GET_ORDER_PATH = USER_ROOT_PATH + "/{orderId}";
+
     public static final String ZIP_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/download";
+
     public static final String METALINK_DOWNLOAD_PATH = USER_ROOT_PATH + "/{orderId}/metalink/download";
+
     public static final String PUBLIC_METALINK_DOWNLOAD_PATH = USER_ROOT_PATH + "/metalink/download";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
+
     @Autowired
     private IResourceService resourceService;
+
     @Autowired
     private IBasketService basketService;
+
     @Autowired
     private IOrderService orderService;
+
     @Autowired
     private IOrderDataFileService dataFileService;
+
     @Autowired
     private JWTService jwtService;
+
     @Autowired
     private IAuthenticationResolver authResolver;
+
     @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
+
     @Value("${regards.order.secret}")
     private String secret;
 
@@ -165,8 +226,8 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     public void generateCsv(@RequestParam(name = "status", required = false) OrderStatus status,
-                            @RequestParam(name = "from", required = false) String fromParam,
-                            @RequestParam(name = "to", required = false) String toParam, HttpServletResponse response)
+            @RequestParam(name = "from", required = false) String fromParam,
+            @RequestParam(name = "to", required = false) String toParam, HttpServletResponse response)
             throws IOException {
         OffsetDateTime from = Strings.isNullOrEmpty(fromParam) ? null : OffsetDateTimeAdapter.parse(fromParam);
         OffsetDateTime to = Strings.isNullOrEmpty(toParam) ? null : OffsetDateTimeAdapter.parse(toParam);
@@ -180,23 +241,23 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(
-                orderService.findAll(user, pageRequest, OrderStatus.DELETED,
-                        OrderStatus.REMOVED)
-                        .map(OrderDto::fromOrder),
-                orderDtoPagedResourcesAssembler));
+                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
+                                                                       OrderStatus.REMOVED)
+                                                          .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
-                                                                           HttpServletResponse response) throws EntityNotFoundException {
+            HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString() + ".zip");
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString() + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
         // No file available
@@ -205,19 +266,26 @@ public class OrderController implements IResourceController<OrderDto> {
         }
 
         // Stream the response
-        return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os),
-                HttpStatus.OK);
+        return new ResponseEntity<>(os -> {
+            try {
+                orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os);
+            } catch (RuntimeException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw e;
+            }
+        }, HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
-                                                                      HttpServletResponse response) throws EntityNotFoundException {
+            HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        return createMetalinkDownloadResponse(orderId, response);
+        return createMetalinkDownloadResponse(order, response);
+
     }
 
     @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
@@ -239,55 +307,59 @@ public class OrderController implements IResourceController<OrderDto> {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
 
-        return createMetalinkDownloadResponse(orderId, response);
+        return createMetalinkDownloadResponse(order, response);
     }
 
     /**
      * Fill Response headers and create streaming response
+     * @throws EntityNotFoundException
      */
-    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
-                                                                                 HttpServletResponse response) {
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + orderId + "_"
-                + OffsetDateTime.now().toString() + ".metalink");
-        response.setContentType("application/metalink+xml");
-
-        // Stream the response
-        return new ResponseEntity<>(os -> orderService.downloadOrderMetalink(orderId, os), HttpStatus.OK);
+    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(Order order,
+            HttpServletResponse response) throws EntityNotFoundException {
+        String error = null;
+        switch (order.getStatus()) {
+            case DELETED:
+            case REMOVED:
+                error = "Order is deleted";
+                break;
+            case EXPIRED:
+                error = "Order is expired since " + order.getExpirationDate().toString();
+                break;
+            case PENDING:
+                error = "Order is not ready yet. Files calculation pending.";
+                break;
+            case FAILED:
+                error = "Order creation failed.";
+                break;
+            case RUNNING:
+            case DONE:
+            case DONE_WITH_WARNING:
+            case PAUSED:
+            default:
+                // All those status allow metalink download
+                break;
+        }
+        if (error != null) {
+            final byte[] errorMessage = error.getBytes();
+            return new ResponseEntity<>(os -> os.write(errorMessage), HttpStatus.NOT_FOUND);
+        } else {
+            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_"
+                    + OffsetDateTime.now().toString() + ".metalink");
+            response.setContentType("application/metalink+xml");
+            // Stream the response
+            return new ResponseEntity<>(os -> {
+                try {
+                    orderService.downloadOrderMetalink(order.getId(), os);
+                } catch (RuntimeException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw e;
+                }
+            }, HttpStatus.OK);
+        }
     }
 
     @Override
     public EntityModel<OrderDto> toResource(OrderDto order, Object... extras) {
         return resourceService.toResource(order);
-    }
-
-    public static class OrderRequest {
-
-        private String label;
-
-        private String onSuccessUrl;
-
-        public OrderRequest() {
-        }
-
-        public OrderRequest(String label, String onSuccessUrl) {
-            this.label = label;
-            this.onSuccessUrl = onSuccessUrl;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-
-        public String getOnSuccessUrl() {
-            return onSuccessUrl;
-        }
-
-        public void setOnSuccessUrl(String onSuccessUrl) {
-            this.onSuccessUrl = onSuccessUrl;
-        }
     }
 }
