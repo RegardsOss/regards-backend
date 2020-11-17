@@ -86,4 +86,14 @@ public class StorageClientMock implements IStorageRestClient {
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
         return null;
     }
+
+    @Override
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(String userEmail) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+        return null;
+    }
 }
