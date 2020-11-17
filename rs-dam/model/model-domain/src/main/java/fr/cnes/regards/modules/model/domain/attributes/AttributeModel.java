@@ -254,7 +254,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         restriction = pRestriction;
     }
 
-    public Boolean hasRestriction() {
+    public boolean hasRestriction() {
         return (restriction != null) && !restriction.getType().equals(RestrictionType.NO_RESTRICTION);
     }
 

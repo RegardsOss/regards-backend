@@ -185,24 +185,28 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             Long datasourceId = pluginConf.getId();
             // If index doesn't exist, just create all data objects
             boolean mergeNeeded = entityIndexerService.createIndexIfNeeded(tenant);
-            //TODO cache to know if mappings have been done yet or not simply modelName <=> true|false
+            // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
+            // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
+            // but it should be reset with attribute updates
             //lets find the model attributes so that we can have mappings for this model and try to put them.
             String modelName = dsPlugin.getModelName();
             List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
-            Set<AttributeDescription> mappings = new HashSet<>();
-            for (ModelAttrAssoc modelAttribute : modelAttributes) {
-                AttributeModel attribute = modelAttribute.getAttribute();
-                mappings.add(new AttributeDescription("feature."+attribute.getJsonPath(),
-                                                      attribute.getType(),
-                                                      attribute.hasRestriction() ?
-                                                              attribute.getRestriction().getType() :
-                                                              RestrictionType.NO_RESTRICTION,
-                                                      attribute.getProperties().stream().collect(Collectors.toMap(
-                                                              AttributeProperty::getKey,
-                                                              AttributeProperty::getValue))));
+            if(!modelAttributes.isEmpty()) {
+                Set<AttributeDescription> mappings = new HashSet<>();
+                for (ModelAttrAssoc modelAttribute : modelAttributes) {
+                    AttributeModel attribute = modelAttribute.getAttribute();
+                    mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(),
+                                                          attribute.getType(),
+                                                          attribute.hasRestriction() ?
+                                                                  attribute.getRestriction().getType() :
+                                                                  RestrictionType.NO_RESTRICTION,
+                                                          attribute.getProperties().stream().collect(Collectors.toMap(
+                                                                  AttributeProperty::getKey,
+                                                                  AttributeProperty::getValue))));
+                }
+                // now lets put the mappings into ES
+                esRepos.putMappings(tenant, mappings);
             }
-            // now lets put the mappings into ES
-            esRepos.putMappings(tenant, mappings);
             // If index already exist, check if index already contains data objects (if not, no need to merge)
             if (mergeNeeded) {
                 SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),
