@@ -34,6 +34,7 @@
 
 	<properties>
 		<lombok.version>1.18.12</lombok.version>
+		<surefire.rerunFailingTestsCount>5</surefire.rerunFailingTestsCount>
 	</properties>
 
 	<dependencyManagement>
