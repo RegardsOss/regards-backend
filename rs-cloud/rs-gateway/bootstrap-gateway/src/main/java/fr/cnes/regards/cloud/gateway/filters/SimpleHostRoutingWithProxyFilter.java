@@ -22,29 +22,32 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.route.SimpleHostRoutingFilter;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.netflix.zuul.context.RequestContext;
+
+import fr.cnes.regards.framework.proxy.ProxyConfiguration;
 
 /**
  * @author sbinda
  *
  */
 @Component
-@DependsOn("proxyHttpClient")
+@AutoConfigureAfter(value = ProxyConfiguration.class)
 public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
 
-    @Autowired
-    private CloseableHttpClient httpClient;
+    @Autowired(required = false)
+    private HttpClient httpClient;
 
     public static final String HEADER_HOST = "Host";
 
@@ -65,10 +68,10 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
      */
     @Override
     protected CloseableHttpClient newClient() {
-        if (httpClient == null) {
+        if ((httpClient == null) || !(httpClient instanceof CloseableHttpClient)) {
             return super.newClient();
         } else {
-            return httpClient;
+            return (CloseableHttpClient) httpClient;
         }
     }
 
