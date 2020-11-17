@@ -32,6 +32,7 @@ import javax.persistence.Table;
 import javax.validation.Valid;
 
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessBatchDescription;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -101,14 +102,26 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     }
 
     public static DatasetTask fromBasketSelection(BasketDatasetSelection dsSel) {
-        return new DatasetTask(
-            dsSel.getDatasetIpid(),
-            dsSel.getDatasetLabel(),
-            dsSel.getFilesCount(),
-            dsSel.getFilesSize(),
-            dsSel.getObjectsCount(),
-            dsSel.getItemsSelections().stream().map(it -> it.getSelectionRequest()).collect(Collectors.toList())
+        DatasetTask dsTask = new DatasetTask();
+
+        dsTask.setDatasetIpid(dsSel.getDatasetIpid());
+        dsTask.setDatasetLabel(dsSel.getDatasetLabel());
+        dsTask.setFilesCount(
+                DataTypeSelection.ALL.getFileTypes().stream()
+                        .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                        .sum()
         );
+        dsTask.setFilesSize(
+                DataTypeSelection.ALL.getFileTypes().stream()
+                        .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                        .sum());
+        dsTask.setObjectsCount(dsSel.getObjectsCount());
+
+        dsSel.getItemsSelections().forEach(item -> {
+            dsTask.addSelectionRequest(item.getSelectionRequest());
+        });
+
+        return dsTask;
     }
 
     public String getDatasetIpid() {

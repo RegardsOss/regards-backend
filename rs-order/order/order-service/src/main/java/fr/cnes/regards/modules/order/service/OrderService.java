@@ -506,28 +506,6 @@ public class OrderService implements IOrderService {
         FeignSecurityManager.reset();
     }
 
-    private DatasetTask createDatasetTask(BasketDatasetSelection dsSel) {
-        DatasetTask dsTask = new DatasetTask();
-        dsTask.setDatasetIpid(dsSel.getDatasetIpid());
-        dsTask.setDatasetLabel(dsSel.getDatasetLabel());
-        dsTask.setFilesCount(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
-                .sum()
-        );
-        dsTask.setFilesSize(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
-                .sum());
-        dsTask.setObjectsCount(dsSel.getObjectsCount());
-
-        dsSel.getItemsSelections().forEach(item -> {
-            dsTask.addSelectionRequest(item.getSelectionRequest());
-        });
-
-        return dsTask;
-    }
-
     /**
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
