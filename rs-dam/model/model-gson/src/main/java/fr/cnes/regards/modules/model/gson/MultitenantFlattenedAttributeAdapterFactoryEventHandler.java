@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ import fr.cnes.regards.modules.model.domain.event.FragmentDeletedEvent;
  */
 @Component
 public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
-        implements ApplicationListener<ApplicationReadyEvent> {
+        implements ApplicationListener<ApplicationStartedEvent> {
 
     /**
      * Class logger
@@ -86,7 +87,7 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
-    public void onApplicationEvent(final ApplicationReadyEvent pEvent) {
+    public void onApplicationEvent(final ApplicationStartedEvent pEvent) {
         subscriber.subscribeTo(AttributeModelCreated.class, new RegisterHandler());
         subscriber.subscribeTo(AttributeModelDeleted.class, new UnregisterHandler());
         subscriber.subscribeTo(FragmentDeletedEvent.class, new UnregisterFragmentHandler());
