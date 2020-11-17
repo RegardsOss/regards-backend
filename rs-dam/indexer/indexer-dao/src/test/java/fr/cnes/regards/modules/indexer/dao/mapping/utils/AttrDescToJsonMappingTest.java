@@ -54,8 +54,8 @@ public class AttrDescToJsonMappingTest {
         String json = mapping.toString();
         assertThat(json).isEqualTo(
                 "{\"properties\":{\"some\":{\"properties\":{\"nested\":{\"properties\":{\"prop\":{\"properties\":{"
-                        + "\"lowerBound\":{\"type\":\"date\",\"format\":\"date_time\"},"
-                        + "\"upperBound\":{\"type\":\"date\",\"format\":\"date_time\"},"
+                        + "\"lowerBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
+                        + "\"upperBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
                         + "\"gte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.lowerBound\"},"
                         + "\"lte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.upperBound\"}}}}}}}}}");
     }
