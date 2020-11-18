@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -68,6 +64,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -100,11 +97,14 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -114,7 +114,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.filter.Filter;
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
-import org.elasticsearch.search.aggregations.bucket.filter.FiltersAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.Range.Bucket;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -129,7 +128,6 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.hipparchus.util.FastMath;
-import org.reflections.util.FilterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,9 +151,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -166,11 +164,22 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.array;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -315,6 +324,9 @@ public class EsRepository implements IEsRepository {
      */
     private final Gson gson;
 
+    @Autowired
+    private AttrDescToJsonMapping toMapping;
+
     private RequestOptions options = RequestOptions.DEFAULT;
 
     /**
@@ -339,13 +351,14 @@ public class EsRepository implements IEsRepository {
     /**
      * Constructor
      * @param gson JSon mapper bean
+     * @param toMapping
      */
     public EsRepository(@Autowired Gson gson, @Value("${regards.elasticsearch.host:}") String inEsHost,
             @Value("${regards.elasticsearch.address:}") String inEsAddress,
             @Value("${regards.elasticsearch.http.port}") int esPort,
             @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
-            AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor) {
-
+            AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor, AttrDescToJsonMapping toMapping) {
+        this.toMapping = toMapping;
         this.gson = gson;
         String esHost = Strings.isEmpty(inEsHost) ? inEsAddress : inEsHost;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
@@ -362,8 +375,7 @@ public class EsRepository implements IEsRepository {
 
         if (elasticClientBufferLimit > 0) {
             Builder builder = RequestOptions.DEFAULT.toBuilder();
-            builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(
-                    elasticClientBufferLimit));
+            builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(elasticClientBufferLimit));
             options = builder.build();
         }
         client = new RestHighLevelClient(restClientBuilder);
@@ -454,41 +466,138 @@ public class EsRepository implements IEsRepository {
         try {
             CreateIndexRequest request = Requests.createIndexRequest(index.toLowerCase());
             // mapping (properties)
-            request.mapping(TYPE, XContentFactory.jsonBuilder().startObject() // NOSONAR
-                    // XContentFactory.jsonBuilder() of type XContentBuilder is closed by request.mapping()
-                    // Automatic double mapping (dynamic_templates)
-                    .startArray("dynamic_templates").startObject().startObject("doubles")
-                    .field("match_mapping_type", "double").startObject("mapping").field("type", "double").endObject()
-                    .endObject().endObject().endArray()
-                    // Properties mapping for geometry and type
-                    .startObject("properties")
-                    // _doc is now this unique type => add a "type" property containing previous type
-                    .startObject("type").field("type", "keyword").endObject()
-                    // Geometry mapping (field is wgs84 even if two over fields contain geometry, they
-                    // are not mapped as geo_shape, they only bring informations)
-                    .startObject("wgs84").field("type", "geo_shape") // default
-                    // With geohash
-                    .field("tree", "geohash") // precison = 11 km Astro test 13s to fill constellations
-                    // .field("tree_levels", "5") // precision = 3.5 km Astro test 19 s to fill constellations
-                    // .field("tree_levels", "6") // precision = 3.5 km Astro test 41 s to fill constellations
-                    // .field("tree_levels", "7") // precision = 111 m Astro test 2 mn to fill constellations
-                    // .field("tree_levels", "8") // precision = 111 m Astro test 13 mn to fill constellations
-
-                    // With quadtree
-                    //                                    .field("tree", "quadtree") // precison = 11 km Astro test 10s to fill constellations
-                    // .field("tree_levels", "20") // precison = 16 m Astro test 7 mn to fill constellations
-                    // .field("tree_levels", "21") // precision = 7m Astro test 17mn to fill constellations
-
-                    .endObject()
-                    // add feature.session type which should be keyword and not date. Default sessions are UTF-8 date as a string.
-                    .startObject("feature").startObject("properties").startObject("session").field("type", "keyword")
-                    .endObject().endObject().endObject().endObject().endObject());
+            XContentBuilder source = new JsonConverter().toXContentBuilder(baseJsonMapping());
+            request.mapping(TYPE, source);
             CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
+    }
+
+    private JsonObject baseJsonMapping() {
+        //@formatter:off
+        return object(kv("dynamic_templates",
+                         array(object(kv("doubles",
+                                         object(kv("match_mapping_type", "double"),
+                                                kv("mapping", object("type", "double"))))))),
+                      kv("properties",
+                         //These are AbstractEntity standard attributes mappings
+                         object( // first root attributes from AbstractEntity hierrachy
+                                kv("id", object("type", "long")),
+                                kv("creationDate", object(kv("type", "date"),
+                                                          kv("format", "date_optional_time"))
+                                ),
+                                kv("ipId", stringMapping()),
+                                kv("type", stringMapping()),
+                                kv("wgs84", object("type", "geo_shape")),
+                                kv("tags", stringMapping()),
+                                kv("groups", stringMapping()),
+                                kv("lastUpdate", object(kv("type", "date"),
+                                                        kv("format", "date_optional_time"))
+                                ),
+                                // then feature attributes
+                                 kv("feature",
+                                    object(kv("properties", object(
+                                                                   kv("entityType", stringMapping()),
+                                                                   kv("files", object("type", "object")),
+                                                                   kv("id", stringMapping()),
+                                                                   kv("label", stringMapping()),
+                                                                   kv("last", object("type", "boolean")),
+                                                                   kv("model", stringMapping()),
+                                                                   kv("normalizedGeometry", object("type", "geo_shape")),
+                                                                   kv("properties", object("type", "object")),
+                                                                   kv("providerId", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping()),
+                                                                   kv("crs", stringMapping()),
+                                                                   kv("tags", stringMapping()),
+                                                                   kv("virtualId", stringMapping()),
+                                                                   // DataObjectFeature specific attribute
+                                                                   kv("session", stringMapping()),
+                                                                   kv("sessionOwner", stringMapping()),
+                                                                   // DatasetFeature specific attribute
+                                                                   kv("licence", object("type", "text"))
+                                                            )
+                                              )
+                                           )
+                                    ),
+                                 // then model attributes
+                                 kv("model",
+                                    object(kv("properties", object(
+                                                                   kv("description", object("type", "text")),
+                                                                   kv("id", object("type", "long")),
+                                                                   kv("name", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping())
+                                                            )
+                                              )
+                                           )
+                                    ),
+                                 // then DataObject specific attributes
+                                 kv("dataSourceId", object("type", "long")),
+                                 kv("internal", object("type", "boolean")),
+                                 kv("datasetModelNames", stringMapping()),
+                                 // then metadata attributes
+                                 // metadata cannot be mapped that easily because it contains maps
+//                                 kv("metadata",
+//                                    object(kv("properties", object(
+//                                            kv("groups", object("type", "object")),
+//                                            kv("modelNames", object("type", "object")),
+//                                            // specific Dataset metadata attribute
+//                                            kv("dataObjectsGroups", object("type", "object"))
+//                                              )
+//                                           )
+//                                    )
+//                                 ),
+                                 // then Dataset specific attributes
+                                 kv("dataModel", stringMapping()),
+                                 kv("openSearchSubsettingClause", object("type", "text")),
+                                 // subsettingClause cannot be mapped that easily
+//                                 kv("subsettingClause", object("type", "object")),
+                                 kv("plgConfDataSource",
+                                    object(kv("properties", object(
+                                                                   kv("active",object("type", "boolean")),
+                                                                   kv("businessId",stringMapping()),
+                                                                   kv("id",object("type", "long")),
+                                                                   kv("label",stringMapping()),
+                                                                   kv("pluginId",stringMapping()),
+                                                                   kv("priorityOrder",object("type", "long")),
+                                                                   kv("parameters",object("type", "nested")),
+                                                                   kv("version",stringMapping())
+                                                            )
+                                           )
+                                    )
+                                 )
+                         )
+                      )
+                      // mappings cannot be strict because of metadata and subsettingClause.
+        );
+        //@formatter:on
+    }
+
+    @Override
+    public boolean putMappings(String index, Set<AttributeDescription> mappings) {
+        JsonMerger merger = new JsonMerger();
+        JsonObject mappingsGson = mappings.stream().map(attrDesc -> toMapping.toJsonMapping(attrDesc))
+                .reduce(new JsonObject(), merger::merge, this::neverCalled);
+        try {
+            JsonConverter converter = new JsonConverter();
+            XContentBuilder mappingBuilder = converter.toXContentBuilder(mappingsGson);
+            PutMappingRequest request = new PutMappingRequest(index.toLowerCase());
+            request.source(mappingBuilder);
+            request.type(TYPE);
+            AcknowledgedResponse putMappingResponse = client.indices().putMapping(request, RequestOptions.DEFAULT);
+            return putMappingResponse.isAcknowledged();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    private <U> U neverCalled(U one, U two) {
+        throw new RsRuntimeException("Should never be called");
     }
 
     @Override
@@ -1013,7 +1122,7 @@ public class EsRepository implements IEsRepository {
                     initialCircleCriterion
                             .setRadius(FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
 
-                                    * AUTHALIC_SPHERE_RADIUS);
+                                               * AUTHALIC_SPHERE_RADIUS);
                 }
                 return searchWithCircleCriterionInProjectedCrs(searchKey, pageRequest, facetsMap, criterion);
             }
@@ -1974,36 +2083,30 @@ public class EsRepository implements IEsRepository {
                 String refSumName = "total_" + fileType + "_ref_files_size";
                 Sum refSum = ((Filter) aggs.get(refSumName)).getAggregations().get(refSumName);
                 // ref:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
-                        }
-                        return new FilesSummary(
-                            fs.getFilesCount() + refValueCount.getValue(),
-                            (long) (fs.getFilesSize()+refSum.getValue())
-                        );
-                    });
+                summary.getFileTypesSummaryMap().compute(fileType + "_ref", (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
+                    }
+                    return new FilesSummary(fs.getFilesCount() + refValueCount.getValue(),
+                                            (long) (fs.getFilesSize() + refSum.getValue()));
+                });
 
                 // !ref
                 // !ref:count
                 String notRefCountName = "total_" + fileType + "_!ref_files_count";
-                ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations().get(notRefCountName);
+                ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations()
+                        .get(notRefCountName);
                 // !ref:size
                 String notRefSumName = "total_" + fileType + "_!ref_files_size";
-                Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations()
-                    .get(notRefSumName);
+                Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations().get(notRefSumName);
                 // !ref:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
-                        }
-                        return new FilesSummary(
-                            fs.getFilesCount() + notRefValueCount.getValue(),
-                            (long) (fs.getFilesSize()+notRefSum.getValue())
-                        );
-                    });
+                summary.getFileTypesSummaryMap().compute(fileType + "_!ref", (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
+                    }
+                    return new FilesSummary(fs.getFilesCount() + notRefValueCount.getValue(),
+                                            (long) (fs.getFilesSize() + notRefSum.getValue()));
+                });
 
                 // total
                 // total:count
@@ -2011,16 +2114,12 @@ public class EsRepository implements IEsRepository {
                 // total:size
                 long totalFileSize = (long) (refSum.getValue() + notRefSum.getValue());
                 // total:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType,
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(totalFileCount, totalFileSize);
-                        }
-                        return new FilesSummary(
-                            fs.getFilesCount() + totalFileCount,
-                            fs.getFilesSize() + totalFileSize
-                        );
-                    });
+                summary.getFileTypesSummaryMap().compute(fileType, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(totalFileCount, totalFileSize);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + totalFileCount, fs.getFilesSize() + totalFileSize);
+                });
 
                 // 2020-10-22: keep this for backward compatibility
                 // In previous version DocFilesSummary did not have fileTypesSummary
@@ -2034,32 +2133,34 @@ public class EsRepository implements IEsRepository {
                 // Usually discriminant = tag name
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap()
-                        .put(discriminant, new DocFilesSubSummary(
-                            Arrays.stream(fileTypes)
-                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
-                                .toArray(String[]::new))
-                        );
+                    summary.getSubSummariesMap().put(discriminant,
+                                                     new DocFilesSubSummary(Arrays.stream(fileTypes)
+                                                                                    .flatMap(ft -> Stream.of(ft,
+                                                                                                             ft
+                                                                                                                     + "_ref",
+                                                                                                             ft
+                                                                                                                     + "_!ref"))
+                                                                                    .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
                     ValueCount refValueCount = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
-                        .get(fileType + "_ref_files_count");
+                            .get(fileType + "_ref_files_count");
                     Sum refSum = ((Filter) discAggs.get(fileType + "_ref_files_size")).getAggregations()
-                        .get(fileType + "_ref_files_size");
+                            .get(fileType + "_ref_files_size");
 
-                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_ref");
                     refFilesSummary.addFilesCount(refValueCount.getValue());
                     refFilesSummary.addFilesSize((long) refSum.getValue());
 
-                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
-                        .get(fileType + "_!ref_files_count");
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + "_!ref_files_count"))
+                            .getAggregations().get(fileType + "_!ref_files_count");
                     Sum notRefSum = ((Filter) discAggs.get(fileType + "_!ref_files_size")).getAggregations()
-                        .get(fileType + "_!ref_files_size");
+                            .get(fileType + "_!ref_files_size");
 
-                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_!ref");
                     notRefFilesSummary.addFilesCount(notRefValueCount.getValue());
                     notRefFilesSummary.addFilesSize((long) notRefSum.getValue());
 
@@ -2095,37 +2196,21 @@ public class EsRepository implements IEsRepository {
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
 
-            FilterAggregationBuilder refCountAgg =
-                AggregationBuilders
-                    .filter(refCount, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .count(refCount)
-                        .field(fileSizeField));
+            FilterAggregationBuilder refCountAgg = AggregationBuilders.filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders.count(refCount).field(fileSizeField));
 
-            FilterAggregationBuilder notRefCountAgg =
-                AggregationBuilders
-                    .filter(notRefCount, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .count(notRefCount)
-                        .field(fileSizeField));
+            FilterAggregationBuilder notRefCountAgg = AggregationBuilders.filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
 
             // file size sum
             String refSum = "total_" + fileType + "_ref_files_size";
             String notRefSum = "total_" + fileType + "_!ref_files_size";
 
-            FilterAggregationBuilder refSumAgg =
-                AggregationBuilders
-                    .filter(refSum, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .sum(refSum)
-                        .field(fileSizeField));
+            FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
 
-            FilterAggregationBuilder notRefSumAgg =
-                AggregationBuilders
-                    .filter(notRefSum, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .sum(notRefSum)
-                        .field(fileSizeField));
+            FilterAggregationBuilder notRefSumAgg = AggregationBuilders.filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders.sum(notRefSum).field(fileSizeField));
 
             // add aggs to builder
             builder.aggregation(refCountAgg);
@@ -2158,37 +2243,21 @@ public class EsRepository implements IEsRepository {
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
 
-            FilterAggregationBuilder refCountAgg =
-                AggregationBuilders
-                    .filter(refCount, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .count(refCount)
-                        .field(fileSizeField));
+            FilterAggregationBuilder refCountAgg = AggregationBuilders.filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders.count(refCount).field(fileSizeField));
 
-            FilterAggregationBuilder notRefCountAgg =
-                AggregationBuilders
-                    .filter(notRefCount, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .count(notRefCount)
-                        .field(fileSizeField));
+            FilterAggregationBuilder notRefCountAgg = AggregationBuilders.filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
 
             // file size sum
             String refSum = fileType + "_ref_files_size";
             String notRefSum = fileType + "_!ref_files_size";
 
-            FilterAggregationBuilder refSumAgg =
-                AggregationBuilders
-                    .filter(refSum, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .sum(refSum)
-                        .field(fileSizeField));
+            FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
 
-            FilterAggregationBuilder notRefSumAgg =
-                AggregationBuilders
-                    .filter(notRefSum, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .sum(notRefSum)
-                        .field(fileSizeField));
+            FilterAggregationBuilder notRefSumAgg = AggregationBuilders.filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders.sum(notRefSum).field(fileSizeField));
 
             // add aggs to builder
             termsAggBuilder.subAggregation(refCountAgg);
@@ -2221,37 +2290,34 @@ public class EsRepository implements IEsRepository {
             Aggregations aggs = response.getAggregations();
             for (String fileType : fileTypes) {
                 // ref
-                Cardinality refCardinality = ((Filter) aggs.get("total_" + fileType + "_ref_files_count")).getAggregations()
-                    .get("total_" + fileType + "_ref_files_count");
-                summary.getFileTypesSummaryMap().compute(fileType+"_ref",
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(refCardinality.getValue(), 0);
-                        }
-                        return new FilesSummary(fs.getFilesCount() + refCardinality.getValue(), 0);
-                    });
+                Cardinality refCardinality = ((Filter) aggs.get("total_" + fileType + "_ref_files_count"))
+                        .getAggregations().get("total_" + fileType + "_ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType + "_ref", (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(refCardinality.getValue(), 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + refCardinality.getValue(), 0);
+                });
 
                 // !ref
-                Cardinality notRefCardinality = ((Filter) aggs.get("total_" + fileType + "_!ref_files_count")).getAggregations()
-                    .get("total_" + fileType + "_!ref_files_count");
-                summary.getFileTypesSummaryMap().compute(fileType+"_!ref",
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(notRefCardinality.getValue(), 0);
-                        }
-                        return new FilesSummary(fs.getFilesCount() + notRefCardinality.getValue(), 0);
-                    });
+                Cardinality notRefCardinality = ((Filter) aggs.get("total_" + fileType + "_!ref_files_count"))
+                        .getAggregations().get("total_" + fileType + "_!ref_files_count");
+                summary.getFileTypesSummaryMap().compute(fileType + "_!ref", (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(notRefCardinality.getValue(), 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + notRefCardinality.getValue(), 0);
+                });
 
                 // total
                 long totalFileCount = refCardinality.getValue() + notRefCardinality.getValue();
                 // total:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType,
-                    (k, fs) -> {
-                        if (fs==null) {
-                            return new FilesSummary(totalFileCount, 0);
-                        }
-                        return new FilesSummary(fs.getFilesCount() + totalFileCount, 0);
-                    });
+                summary.getFileTypesSummaryMap().compute(fileType, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(totalFileCount, 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + totalFileCount, 0);
+                });
 
                 // 2020-10-22: keep this for backward compatibility
                 // In previous version DocFilesSummary did not have fileTypesSummary
@@ -2263,26 +2329,28 @@ public class EsRepository implements IEsRepository {
             for (Terms.Bucket bucket : buckets.getBuckets()) {
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap()
-                        .put(discriminant, new DocFilesSubSummary(
-                            Arrays.stream(fileTypes)
-                                .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
-                                .toArray(String[]::new)
-                        ));
+                    summary.getSubSummariesMap().put(discriminant,
+                                                     new DocFilesSubSummary(Arrays.stream(fileTypes)
+                                                                                    .flatMap(ft -> Stream.of(ft,
+                                                                                                             ft
+                                                                                                                     + "_ref",
+                                                                                                             ft
+                                                                                                                     + "_!ref"))
+                                                                                    .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
-                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
-                        .get(fileType + "_ref_files_count");
-                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + "_!ref_files_count")).getAggregations()
-                        .get(fileType + "_!ref_files_count");
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + "_ref_files_count"))
+                            .getAggregations().get(fileType + "_ref_files_count");
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + "_!ref_files_count"))
+                            .getAggregations().get(fileType + "_!ref_files_count");
 
-                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_ref");
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_ref");
                     refFilesSummary.addFilesCount(refCardinality.getValue());
 
-                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType+"_!ref");
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_!ref");
                     notRefFilesSummary.addFilesCount(notRefCardinality.getValue());
 
                     FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
@@ -2319,19 +2387,11 @@ public class EsRepository implements IEsRepository {
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
 
-            FilterAggregationBuilder refCardinalityAgg =
-                AggregationBuilders
-                    .filter(refCardinality, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .cardinality(refCardinality)
-                        .field(fileUriField));
+            FilterAggregationBuilder refCardinalityAgg = AggregationBuilders.filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders.cardinality(refCardinality).field(fileUriField));
 
-            FilterAggregationBuilder notRefCardinalityAgg =
-                AggregationBuilders
-                    .filter(notRefCardinality, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .cardinality(notRefCardinality)
-                        .field(fileUriField));
+            FilterAggregationBuilder notRefCardinalityAgg = AggregationBuilders.filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders.cardinality(notRefCardinality).field(fileUriField));
 
             builder.aggregation(refCardinalityAgg);
             builder.aggregation(notRefCardinalityAgg);
@@ -2361,19 +2421,11 @@ public class EsRepository implements IEsRepository {
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
 
-            FilterAggregationBuilder refCardinalityAgg =
-                AggregationBuilders
-                    .filter(refCardinality, refFilter)
-                    .subAggregation(AggregationBuilders
-                        .cardinality(refCardinality)
-                        .field(fileUriField));
+            FilterAggregationBuilder refCardinalityAgg = AggregationBuilders.filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders.cardinality(refCardinality).field(fileUriField));
 
-            FilterAggregationBuilder notRefCardinalityAgg =
-                AggregationBuilders
-                    .filter(notRefCardinality, notRefFilter)
-                    .subAggregation(AggregationBuilders
-                        .cardinality(notRefCardinality)
-                        .field(fileUriField));
+            FilterAggregationBuilder notRefCardinalityAgg = AggregationBuilders.filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders.cardinality(notRefCardinality).field(fileUriField));
 
             termsAggBuilder.subAggregation(refCardinalityAgg);
             termsAggBuilder.subAggregation(notRefCardinalityAgg);

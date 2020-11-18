@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import fr.cnes.regards.modules.model.domain.event.AttributeModelUpdated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,10 @@ public class AttributeModelService implements IAttributeModelService {
         this.eventPublisher = eventPublisher;
     }
 
+    @Override public List<AttributeModel> getAllAttributes() {
+        return attModelRepository.findAll();
+    }
+
     @Override
     public List<AttributeModel> getAttributes(PropertyType type, String fragmentName, Set<String> modelNames) {
         return attModelRepository.findAll(AttributeModelSpecifications.search(type, fragmentName, modelNames));
@@ -170,7 +175,9 @@ public class AttributeModelService implements IAttributeModelService {
             throw new EntityNotFoundException(attributeModel.getId(), AttributeModel.class);
         }
         manageRestriction(attributeModel);
-        return attModelRepository.save(attributeModel);
+        AttributeModel result = attModelRepository.save(attributeModel);
+        publisher.publish(new AttributeModelUpdated(result));
+        return result;
     }
 
     @Override

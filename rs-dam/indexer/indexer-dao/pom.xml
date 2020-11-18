@@ -101,6 +101,7 @@
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 		</dependency>
 
+
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
@@ -142,7 +143,11 @@
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-metadata</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+			<version>0.10.3</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -156,6 +161,24 @@
 			<version>1.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.thedeanda</groupId>
+			<artifactId>lorem</artifactId>
+			<version>2.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jeasy</groupId>
+			<artifactId>easy-random-core</artifactId>
+			<version>4.2.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>1.14.3</version>
+			<scope>test</scope>
+		</dependency>
 
-    </dependencies>
+	</dependencies>
 </project>

@@ -103,7 +103,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         String attName = criterion.getName();
         switch (criterion.getType()) {
             case EQUALS:
-                // attribute type is declared by hand so there is no correspondant keyword field.
+                // attribute type is declared by hand so there is no corresponding keyword field.
                 if (attName.equals("type")) {
                     return QueryBuilders.matchPhraseQuery(attName, searchValue);
                 } else {

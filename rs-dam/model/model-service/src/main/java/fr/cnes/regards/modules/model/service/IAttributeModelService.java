@@ -36,6 +36,8 @@ import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionExc
  */
 public interface IAttributeModelService {
 
+    List<AttributeModel> getAllAttributes();
+
     List<AttributeModel> getAttributes(PropertyType pType, String pFragmentName, Set<String> modelNames);
 
     /**

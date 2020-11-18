@@ -102,5 +102,9 @@
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dto</artifactId>
+        </dependency>
+    </dependencies>
 </project>
