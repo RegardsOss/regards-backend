@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketDatasetSelectionRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
@@ -19,9 +20,7 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
@@ -48,6 +47,8 @@ import java.util.function.Function;
 public class ProcessExecutionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessExecutionJob.class);
+
+    protected final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
 
     @Autowired
     protected IProcessingRestClient processingClient;
@@ -116,6 +117,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         return List.ofAll(inputs)
             .map(orderDataFile -> createInputWithCorrelationId(
                 orderDataFile,
+                feature.getIpId(),
                 ProcessInputCorrelationIdentifier.repr(batchCorrelationId, feature.getIpId(), orderDataFile.getFilename())
             ));
     }
@@ -129,6 +131,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         return featureAndFileTuples
             .map(featureAndFile -> createInputWithCorrelationId(
                     featureAndFile._2,
+                    featureAndFile._1.getIpId(),
                     ProcessInputCorrelationIdentifier.repr(batchCorrelationId, featureAndFile._1.getIpId(), featureAndFile._2.getFilename())
             ));
     }
@@ -176,8 +179,10 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         return new PExecutionRequestEvent(correlationId, batchId, inputFiles);
     }
 
-    protected PInputFile createInputWithCorrelationId(OrderDataFile df, String inputCorrelationId) {
+    protected PInputFile createInputWithCorrelationId(OrderDataFile df, String featureIpId, String inputCorrelationId) {
         URL fileUrl = Try.of(() -> new URL(df.getUrl())).getOrNull();
+        UniformResourceName featureIdUrn = UniformResourceName.fromString(featureIpId);
+        io.vavr.collection.Map<String, String> metadataMap = mapper.toMap(new OrderInputFileMetadata(!df.isReference(), featureIdUrn));
         return new PInputFile(
                 "", // unused parameter name
                 df.getFilename(),
@@ -185,7 +190,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                 fileUrl,
                 df.getFilesize(),
                 df.getChecksum(),
-                !df.isReference(),
+                metadataMap,
                 inputCorrelationId
         );
     }

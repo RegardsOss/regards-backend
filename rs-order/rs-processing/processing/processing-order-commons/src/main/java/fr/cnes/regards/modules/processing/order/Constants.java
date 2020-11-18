@@ -8,6 +8,9 @@ public interface Constants {
     String SIZE_LIMIT_TYPE = "sizeLimitType";
     String SIZE_LIMIT_VALUE = "sizeLimitValue";
 
+    String INTERNAL = "internal";
+    String FEATURE_ID = "featureId";
+
     String PROCESS_INFO_TENANT_PARAM_NAME = "regards.tenant";
     String PROCESS_INFO_ROLE_PARAM_NAME = "regards.userRole";
 

@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import static fr.cnes.regards.modules.processing.order.Constants.*;
 
-public class OrderProcessInfoMapper {
+public class OrderProcessInfoMapper extends AbstractMapper<OrderProcessInfo> {
 
     public Map<String, String> toMap(OrderProcessInfo params) {
         return HashMap.of(
@@ -33,7 +33,7 @@ public class OrderProcessInfoMapper {
                         .map(sizeLimit -> new OrderProcessInfo(scope, card, datatypes, sizeLimit)))));
     }
 
-    private static Option<List<DataType>> parseDatatypes(Map<String, String> map) {
+    protected Option<List<DataType>> parseDatatypes(Map<String, String> map) {
         return map.get(DATATYPES)
             .map(str -> str.split(","))
             .map(List::of)
@@ -41,20 +41,12 @@ public class OrderProcessInfoMapper {
             .map(strs -> strs.flatMap(str -> parse(DataType.class, str).toList()));
     }
 
-    private static Option<SizeLimit> parseSizeLimit(Map<String, String> map) {
+    protected Option<SizeLimit> parseSizeLimit(Map<String, String> map) {
         return map.get(SIZE_LIMIT_VALUE)
                 .flatMap(str -> Try.of(() -> Long.parseLong(str)).toOption())
                 .flatMap(value -> map.get(SIZE_LIMIT_TYPE)
                     .flatMap(str -> parse(SizeLimit.Type.class, str))
                     .map(type -> new SizeLimit(type, value)));
-    }
-
-    private static <T extends Enum<T>> Option<T> parse(Map<String, String> map, String name, Class<T> type) {
-        return map.get(name).flatMap(str -> parse(type, str));
-    }
-
-    private static <T extends Enum<T>> Option<T> parse(Class<T> type, String str) {
-        return Try.of(() -> Enum.valueOf(type, str)).toOption();
     }
 
 }

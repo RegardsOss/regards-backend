@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 import fr.cnes.regards.modules.processing.utils.gson.ProcessingGsonUtils;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class PExecutionTest extends AbstractMarshallingTest<PExecution> {
                     new URL("http://0.0.0.0:1000/file.raw"),
                     512L,
                     "checksum",
-                    false,
+                    HashMap.empty(),
                     "file.raw"
                 )),
                 List.of(registered("").withTime(registered),

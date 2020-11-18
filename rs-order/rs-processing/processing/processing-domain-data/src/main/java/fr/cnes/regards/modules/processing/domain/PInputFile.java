@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.processing.domain;
 
+import io.vavr.collection.Map;
 import lombok.Value;
 import lombok.With;
 import org.springframework.lang.NonNull;
@@ -29,8 +30,8 @@ public class PInputFile {
     /** The file checksum */
     @NonNull String checksum;
 
-    /** True if the file is accessible from the storageClient, false if accessible from en external ressource */
-    @NonNull Boolean internal;
+    /** Free metadata corresponding to the input */
+    @NonNull Map<String,String> metadata;
 
     /** Allows to provide some correlationId for this input file. Output files can refer to this correlationId. */
     @Nullable String inputCorrelationId;

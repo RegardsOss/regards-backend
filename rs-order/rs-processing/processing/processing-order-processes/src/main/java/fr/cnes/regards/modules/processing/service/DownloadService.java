@@ -5,8 +5,11 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.Set;
+import io.vavr.control.Option;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +36,8 @@ import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.
 @Service
 public class DownloadService implements IDownloadService {
 
+    private static final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
+
     private static final DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
 
     private final Proxy proxy;
@@ -55,7 +60,11 @@ public class DownloadService implements IDownloadService {
     }
 
     private Mono<Path> discriminateInternalExternal(PInputFile file, Path dest) {
-        return file.getInternal()
+        boolean internal = mapper.fromMap(file.getMetadata())
+            .map(OrderInputFileMetadata::getInternal)
+            .getOrElse(false);
+
+        return internal
             ? internalDownload(file.getChecksum(), dest)
             : externalDownload(file.getUrl(), dest);
     }
