@@ -77,7 +77,7 @@ import java.util.Random;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(
         properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
