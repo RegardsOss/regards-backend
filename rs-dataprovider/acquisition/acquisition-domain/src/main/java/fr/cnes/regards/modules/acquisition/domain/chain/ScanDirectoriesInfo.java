@@ -59,11 +59,14 @@ public class ScanDirectoriesInfo {
      */
     @Column(name = "lastModificationDate")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastModificationDatePerDir;
+    private OffsetDateTime lastDatePerDir;
 
-    public ScanDirectoriesInfo(Path scannedDirectory, OffsetDateTime lastModificationDatePerDir) {
+    public ScanDirectoriesInfo() {
+    }
+
+    public ScanDirectoriesInfo(Path scannedDirectory, OffsetDateTime lastDatePerDir) {
         this.scannedDirectory = scannedDirectory;
-        this.lastModificationDatePerDir = lastModificationDatePerDir;
+        this.lastDatePerDir = lastDatePerDir;
     }
 
     public Long getId() {
@@ -74,12 +77,12 @@ public class ScanDirectoriesInfo {
         this.id = id;
     }
 
-    public OffsetDateTime getLastModificationDatePerDir() {
-        return lastModificationDatePerDir;
+    public OffsetDateTime getLastDatePerDir() {
+        return lastDatePerDir;
     }
 
-    public void setLastModificationDatePerDir(OffsetDateTime lastModificationDatePerDir) {
-        this.lastModificationDatePerDir = lastModificationDatePerDir;
+    public void setLastDatePerDir(OffsetDateTime lastDatePerDir) {
+        this.lastDatePerDir = lastDatePerDir;
     }
 
     public Path getScannedDirectory() {

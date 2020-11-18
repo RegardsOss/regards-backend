@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -29,10 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,31 +58,21 @@ public class RegexDiskScanning implements IScanPlugin {
     private DirectoryStream.Filter<Path> filter;
 
     @Override
-    public Map<Path, Optional<OffsetDateTime>> scan(Set<ScanDirectoriesInfo> scanDirectoriesInfo) {
+    public List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         // Init filter
         filter = file -> Pattern.compile(regex).matcher(file.getFileName().toString()).matches();
-
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = new HashMap<>();
-        for (ScanDirectoriesInfo scanDirInfo : scanDirectoriesInfo) {
-            Path dirPath = scanDirInfo.getScannedDirectory();
-            if (Files.isDirectory(dirPath)) {
-                scannedFiles.putAll(scanDirectory(dirPath, scanDirInfo.getLastModificationDatePerDir()));
-            } else {
-                LOGGER.error("Invalid directory path : {}", dirPath.toString());
-            }
+        List<Path> scannedFiles = new ArrayList<>();
+        if (Files.isDirectory(dirPath)) {
+            scannedFiles.addAll(scanDirectory(dirPath, scanningDate));
+        } else {
+            LOGGER.error("Invalid directory path : {}", dirPath.toString());
         }
         return scannedFiles;
     }
 
-    private Map<Path, Optional<OffsetDateTime>> scanDirectory(Path dirPath, OffsetDateTime lastModificationDate) {
+    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         long startTime = System.currentTimeMillis();
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = new HashMap<>();
-
-        // handle lastModification with utc zone
-        Optional<OffsetDateTime> scanningDate = Optional.empty();
-        if (lastModificationDate != null) {
-            scanningDate = Optional.of(OffsetDateTime.ofInstant(lastModificationDate.toInstant(), ZoneOffset.UTC));
-        }
+        List<Path> scannedFiles = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, filter)) {
             for (Path entry : stream) {
@@ -93,10 +81,10 @@ public class RegexDiskScanning implements IScanPlugin {
                         OffsetDateTime lmd = OffsetDateTime
                                 .ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
                         if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
-                            scannedFiles.put(entry, scanningDate);
+                            scannedFiles.add(entry);
                         }
                     } else {
-                        scannedFiles.put(entry, scanningDate);
+                        scannedFiles.add(entry);
                     }
                 }
             }

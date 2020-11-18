@@ -29,6 +29,7 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -69,7 +70,7 @@ public class AcquisitionFileInfo {
 
     @NotNull(message = "Scan plugin is required")
     @ManyToOne(optional = false, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "scan_dir_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_dir_id"))
+    @JoinColumn(name = "scan_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_conf_id"))
     private PluginConfiguration scanPlugin;
 
     /**
@@ -98,8 +99,8 @@ public class AcquisitionFileInfo {
      */
     @NotNull(message = "At least one directory to scan is required")
     @Size(min = 1)
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "scan_dir_info_id", nullable = false, foreignKey = @ForeignKey(name = "fk_scan_dir_info_id"))
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "file_info_id", nullable = false, foreignKey = @ForeignKey(name = "fk_file_info_id"))
     private Set<ScanDirectoriesInfo> scanDirInfo;
 
 

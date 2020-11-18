@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
@@ -51,6 +52,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +70,7 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles({ "noschedule" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" })
 // locations = { "classpath:application-local.properties" })
-// @Ignore("Performances tests")
+@Ignore("Performances tests")
 public class PerformanceTest extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
@@ -178,7 +180,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo()));
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");

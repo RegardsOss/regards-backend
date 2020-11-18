@@ -34,7 +34,6 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -210,27 +209,28 @@ public interface IAcquisitionProcessingService {
 
     /**
      * Register multiple files in one transaction
-     * @param filePaths map - paths of the files to register / reference date used to launch scan plugin
+     * @param filePaths paths of the files to register
      * @param info related file info
-     * @param updateFileInfo does the fileInfo last modification date should be updated
-     *                       with the file last modification date
+     * @param scanningDate last modification date of the directory
      * @param limit maximum number of files to register
      * @return number of registered files
      */
-    RegisterFilesResponse registerFilesBatch(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
-            AcquisitionFileInfo info, int limit, String session, String sessionOwner) throws ModuleException;
+    RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner)
+            throws ModuleException;
 
     /**
      * Register multiple files by creating multiple transactions by batch
      * @param filePathsIt
      * @param fileInfo
+     * @param scanningDate
      * @param session
      * @param sessionOwner
      * @return
      * @throws ModuleException
      */
-    long registerFiles(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt, AcquisitionFileInfo fileInfo,
-            String session, String sessionOwner) throws ModuleException;
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException;
 
     /**
      * Register a new file in one transaction
