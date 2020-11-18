@@ -33,7 +33,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -73,16 +72,10 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
-import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
 
 /**
@@ -133,7 +126,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     private CrawlerPropertiesConfiguration crawlerConf;
 
     @Autowired
-    private IModelAttrAssocService modelAttrAssocService;
+    private IMappingService esMappingService;
 
     /**
      * Build an URN for a {@link EntityType} of type DATA. The URN contains an UUID builds for a specific value, it used
@@ -190,23 +183,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             // but it should be reset with attribute updates
             //lets find the model attributes so that we can have mappings for this model and try to put them.
             String modelName = dsPlugin.getModelName();
-            List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
-            if(!modelAttributes.isEmpty()) {
-                Set<AttributeDescription> mappings = new HashSet<>();
-                for (ModelAttrAssoc modelAttribute : modelAttributes) {
-                    AttributeModel attribute = modelAttribute.getAttribute();
-                    mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(),
-                                                          attribute.getType(),
-                                                          attribute.hasRestriction() ?
-                                                                  attribute.getRestriction().getType() :
-                                                                  RestrictionType.NO_RESTRICTION,
-                                                          attribute.getProperties().stream().collect(Collectors.toMap(
-                                                                  AttributeProperty::getKey,
-                                                                  AttributeProperty::getValue))));
-                }
-                // now lets put the mappings into ES
-                esRepos.putMappings(tenant, mappings);
-            }
+            esMappingService.configureMappings(tenant, modelName);
             // If index already exist, check if index already contains data objects (if not, no need to merge)
             if (mergeNeeded) {
                 SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),

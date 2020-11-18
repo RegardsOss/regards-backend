@@ -174,6 +174,9 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Value("${regards.crawler.max.bulk.size:10000}")
     private Integer maxBulkSize;
 
+    @Autowired
+    private IMappingService esMappingService;
+
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
         for (ObjectError objError : errorsObject.getAllErrors()) {
@@ -729,6 +732,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     public void updateDatasets(String tenant, Collection<Dataset> datasets, OffsetDateTime lastUpdateDate,
             OffsetDateTime updateDate, boolean forceDataObjectsUpdate, String dsiId) throws ModuleException {
         for (Dataset dataset : datasets) {
+            esMappingService.configureMappings(tenant, dataset.getModel().getName());
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
             sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
             updateEntityIntoEs(tenant, dataset.getIpId(), lastUpdateDate, updateDate, forceDataObjectsUpdate, dsiId);
@@ -989,6 +993,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException {
         for (fr.cnes.regards.modules.dam.domain.entities.Collection col : collectionService.findAll()) {
+            esMappingService.configureMappings(tenant, col.getModel().getName());
             updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null);
         }
     }
