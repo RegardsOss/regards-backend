@@ -223,6 +223,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId.toString()), dsiId);
         } else { // entity has been created or updated, it must be saved into ES
             createIndexIfNeeded(tenant);
+            esMappingService.configureMappings(tenant, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
             if (entity instanceof Dataset) {
@@ -732,7 +733,6 @@ public class EntityIndexerService implements IEntityIndexerService {
     public void updateDatasets(String tenant, Collection<Dataset> datasets, OffsetDateTime lastUpdateDate,
             OffsetDateTime updateDate, boolean forceDataObjectsUpdate, String dsiId) throws ModuleException {
         for (Dataset dataset : datasets) {
-            esMappingService.configureMappings(tenant, dataset.getModel().getName());
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
             sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
             updateEntityIntoEs(tenant, dataset.getIpId(), lastUpdateDate, updateDate, forceDataObjectsUpdate, dsiId);
@@ -994,7 +994,6 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException {
         for (fr.cnes.regards.modules.dam.domain.entities.Collection col : collectionService.findAll()) {
-            esMappingService.configureMappings(tenant, col.getModel().getName());
             updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null);
         }
     }
