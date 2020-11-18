@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 
 /**
  * {@link AcquisitionFileInfo} repository

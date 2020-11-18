@@ -18,7 +18,42 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
 import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
+import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskStreamScanning;
+import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,8 +62,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,44 +76,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
-import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
-import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskStreamScanning;
-import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -240,11 +235,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setDataType(DataType.RAWDATA);
         fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null)));
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(GlobDiskStreamScanning.FIELD_DIRS,
-                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
-
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskStreamScanning.class, null, parameters);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskStreamScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan streamed plugin");
         fileInfo.setScanPlugin(scanPlugin);

@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -41,6 +40,7 @@ import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifi
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
@@ -70,6 +71,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +79,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import org.slf4j.Logger;
@@ -114,6 +117,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IScanDirectoriesInfo scanDirectoriesInfo;
 
     @Autowired
     private IPluginService pluginService;
@@ -252,8 +258,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         String.format("A file information must not already have an identifier."));
             }
 
-            // Prevent bad value
-            //fileInfo.setLastModificationDate(null); FIXME
             // Manage scan plugin conf
             createPluginConfiguration(fileInfo.getScanPlugin());
             // Save file info
@@ -293,7 +297,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         checkProcessingChainMode(processingChain);
 
         List<Optional<PluginConfiguration>> confsToRemove = new ArrayList<>();
-        Optional<PluginConfiguration> existing;
+        Optional<PluginConfiguration> existingPlugin;
 
         // Manage acquisition file info
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
@@ -301,23 +305,17 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // Check identifier
             if (fileInfo.getId() == null) {
                 // New file info to create
-                // Prevent bad value
-                //fileInfo.setLastModificationDate(null); FIXME
                 // Manage scan plugin conf
                 createPluginConfiguration(fileInfo.getScanPlugin());
             } else {
                 // File info to update
                 // Manage scan plugin conf
-                existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
-                confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
-                if (existing.isPresent()) {
-                    PluginConfiguration exConf = existing.get();
-                    for (IPluginParam param : fileInfo.getScanPlugin().getParameters()) {
-                        if (!param.getValue().equals(exConf.getParameterValue(param.getName()))) {
-                            // Conf has changed, so reset the last scanning date
-                            //fileInfo.setLastModificationDate(null); FIXME
-                        }
-                    }
+                Long fileInfoId = fileInfo.getId();
+                existingPlugin = fileInfoRepository.findOneScanPlugin(fileInfoId);
+                confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existingPlugin));
+                Optional<AcquisitionFileInfo> existingFileInfo = fileInfoRepository.findById(fileInfoId);
+                if(existingFileInfo.isPresent()) {
+                  //FIXME if the last modification date per directory is changed, update it
                 }
             }
 
@@ -326,20 +324,20 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         // Manage validation plugin conf
-        existing = acqChainRepository.findOneValidationPlugin(processingChain.getId());
-        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getValidationPluginConf()), existing));
+        existingPlugin = acqChainRepository.findOneValidationPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getValidationPluginConf()), existingPlugin));
 
         // Manage product plugin conf
-        existing = acqChainRepository.findOneProductPlugin(processingChain.getId());
-        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getProductPluginConf()), existing));
+        existingPlugin = acqChainRepository.findOneProductPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getProductPluginConf()), existingPlugin));
 
         // Manage generate SIP plugin conf
-        existing = acqChainRepository.findOneGenerateSipPlugin(processingChain.getId());
-        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getGenerateSipPluginConf()), existing));
+        existingPlugin = acqChainRepository.findOneGenerateSipPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(Optional.of(processingChain.getGenerateSipPluginConf()), existingPlugin));
 
         // Manage post process SIP plugin conf
-        existing = acqChainRepository.findOnePostProcessSipPlugin(processingChain.getId());
-        confsToRemove.add(updatePluginConfiguration(processingChain.getPostProcessSipPluginConf(), existing));
+        existingPlugin = acqChainRepository.findOnePostProcessSipPlugin(processingChain.getId());
+        confsToRemove.add(updatePluginConfiguration(processingChain.getPostProcessSipPluginConf(), existingPlugin));
 
         // Save new chain
         acqChainRepository.save(processingChain);
@@ -457,6 +455,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         productService.deleteByProcessingChain(processingChain);
 
         // Delete acquisition file infos and its plugin configurations
+
         for (AcquisitionFileInfo afi : processingChain.getFileInfos()) {
             fileInfoRepository.delete(afi);
         }
@@ -671,48 +670,82 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 LOGGER.error("Unable to run files scan as plugin is disabled");
                 throw new ModuleException(e1.getMessage(), e1);
             }
-            // Get files scanned
-            Map<Path, Optional<OffsetDateTime>> scannedFiles;
-            if (scanPlugin instanceof IFluxScanPlugin) {
-                IFluxScanPlugin fluxPlugin = (IFluxScanPlugin) scanPlugin;
-                scannedFiles = fluxPlugin.stream(fileInfo.getScanDirInfo());
-            } else {
-                scannedFiles = scanPlugin.scan(fileInfo.getScanDirInfo());
-            }
-            // Register files if they were found
-            if (!scannedFiles.isEmpty()) {
-                registerFiles(scannedFiles.entrySet().iterator(), fileInfo, session, processingChain.getLabel());
+            // Get files to scan
+            Set<ScanDirectoriesInfo> scanDirs = fileInfo.getScanDirInfo();
+            for(ScanDirectoriesInfo scanDirInfo : scanDirs) {
+                // Clone scanning date for duplicate prevention
+                Optional<OffsetDateTime> scanningDate = Optional.empty();
+                if (scanDirInfo.getLastDatePerDir() != null) {
+                    scanningDate = Optional
+                            .of(OffsetDateTime.ofInstant((scanDirInfo.getLastDatePerDir()).toInstant(), ZoneOffset.UTC));
+                }
+                Path dirPath = scanDirInfo.getScannedDirectory();
+                // Scan folders
+                if (scanPlugin instanceof IFluxScanPlugin) {
+                    streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, dirPath, scanningDate, session,
+                                           processingChain.getLabel());
+                } else {
+                    scanAndRegisterFiles(fileInfo, scanPlugin, dirPath, scanningDate, session, processingChain.getLabel());
+                }
             }
         }
+    }
 
+
+    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin, Path dirPath,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
+        // Do scan
+        List<Path> scannedFiles = scanPlugin.scan(dirPath, scanningDate);
+
+        // Sort list according to last modification date
+        Collections.sort(scannedFiles, (file1, file2) -> {
+            try {
+                return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot read last modification date", e);
+                return 0;
+            }
+        });
+        if (!scannedFiles.isEmpty()) {
+            registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+        }
+    }
+    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin, Path dirPath,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
+        List<Stream<Path>> streams = scanPlugin.stream(dirPath, scanningDate);
+        Iterator<Stream<Path>> streamsIt = streams.iterator();
+        while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
+            try (Stream<Path> stream = streamsIt.next()) {
+                registerFiles(stream.iterator(), fileInfo, scanningDate, session, sessionOwner);
+            }
+        }
     }
 
     @Override
-    public long registerFiles(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
-            AcquisitionFileInfo fileInfo, String session, String sessionOwner) throws ModuleException {
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         RegisterFilesResponse response;
         long totalCount = 0;
         OffsetDateTime lmd = null;
         do {
             long startTime = System.currentTimeMillis();
-            response = self.registerFilesBatch(filePathsIt, fileInfo, BATCH_SIZE, session, sessionOwner);
+            response = self.registerFilesBatch(filePathsIt, fileInfo, scanningDate, BATCH_SIZE, session, sessionOwner);
             totalCount += response.getNumberOfRegisteredFiles();
             // Calculate most recent file registered.
-            if ((lmd == null) || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread()
-                    .isInterrupted())) {
+            if ((lmd == null)
+                    || (lmd.isBefore(response.getLastUpdateDate()) && !Thread.currentThread().isInterrupted())) {
                 lmd = response.getLastUpdateDate();
             }
             sessionNotifier.notifyFileAcquired(session, sessionOwner, response.getNumberOfRegisteredFiles());
-            LOGGER.info("[{} - {}] {} new file(s) registered in {} milliseconds", sessionOwner,
-                        session, response.getNumberOfRegisteredFiles(), System.currentTimeMillis() - startTime);
+            LOGGER.info("{} new file(s) registered in {} milliseconds", response.getNumberOfRegisteredFiles(),
+                        System.currentTimeMillis() - startTime);
         } while (response.hasNext());
         // Update file info last update date with the most recent file registered.
         if (lmd != null) {
             OffsetDateTime finalLmd = lmd;
             fileInfo.getScanDirInfo().forEach((dirInfo) -> {
-                if ((dirInfo.getLastModificationDatePerDir() == null) || finalLmd
-                        .isAfter(dirInfo.getLastModificationDatePerDir())) {
-                    dirInfo.setLastModificationDatePerDir(finalLmd);
+                if ((dirInfo.getLastDatePerDir() == null) || finalLmd.isAfter(dirInfo.getLastDatePerDir())) {
+                    dirInfo.setLastDatePerDir(finalLmd);
                 }
             });
             fileInfoRepository.save(fileInfo);
@@ -722,8 +755,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public RegisterFilesResponse registerFilesBatch(Iterator<Map.Entry<Path, Optional<OffsetDateTime>>> filePathsIt,
-            AcquisitionFileInfo info, int limit, String session, String sessionOwner) throws ModuleException {
+    public RegisterFilesResponse registerFilesBatch(Iterator<Path> filePaths, AcquisitionFileInfo info,
+            Optional<OffsetDateTime> scanningDate, int limit, String session, String sessionOwner) throws ModuleException {
         int countRegistered = 0;
         OffsetDateTime lastUpdateDate = null;
         // We catch general exception to avoid AccessDeniedException thrown by FileTreeIterator provided to this method.
@@ -731,9 +764,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // First calculate
         while (nextPath && (countRegistered < limit) && !Thread.currentThread().isInterrupted()) {
             try {
-                Map.Entry<Path, Optional<OffsetDateTime>> file = filePathsIt.next();
-                Path filePath = file.getKey();
-                if (registerFile(filePath, info, file.getValue())) {
+                Path filePath = filePaths.next();
+                if (registerFile(filePath, info, scanningDate)) {
                     countRegistered++;
                     OffsetDateTime lmd;
                     try {
@@ -749,10 +781,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             } catch (Exception e) { // NOSONAR
                 LOGGER.error("Error parsing file. {}", e.getMessage());
             } finally {
-                nextPath = filePathsIt.hasNext();
+                nextPath = filePaths.hasNext();
             }
         }
-        return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePathsIt.hasNext());
+        return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
     }
 
     @Override

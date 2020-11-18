@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -111,6 +112,9 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
     @Autowired
+    private IScanDirectoriesInfo scanDirectoriesInfo;
+
+    @Autowired
     private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
     @Autowired
@@ -126,6 +130,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
     public void before() throws ModuleException, IOException {
         acqFileRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
+        scanDirectoriesInfo.deleteAllInBatch();
         fileInfoRepository.deleteAllInBatch();
         acquisitionProcessingChainRepository.deleteAllInBatch();
         pluginConfRepository.deleteAllInBatch();
@@ -253,7 +258,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         for(AcquisitionFileInfo fileInfo : fileInfoSet) {
             Set<ScanDirectoriesInfo> dirInfoSet = fileInfo.getScanDirInfo();
             for(ScanDirectoriesInfo dirInfo : dirInfoSet) {
-                dirInfo.setLastModificationDatePerDir(null);
+                dirInfo.setLastDatePerDir(null);
             }
         }
 

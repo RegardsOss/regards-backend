@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -33,13 +32,11 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +55,6 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskStreamScanning.class);
 
-    public static final String FIELD_DIRS = "directories";
-
     public static final String FIELD_GLOB = "glob";
 
     @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
@@ -70,44 +65,32 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
     private INotificationClient notifClient;
 
     @Override
-    public Map<Path, Optional<OffsetDateTime>> stream(Set<ScanDirectoriesInfo> scanDirectoriesInfo) throws ModuleException {
-        Map<Path, Optional<OffsetDateTime>> dirStreams = new HashMap<>();
-        for (ScanDirectoriesInfo scanDirInfo : scanDirectoriesInfo) {
-            Path dirPath = scanDirInfo.getScannedDirectory();
-            if (Files.isDirectory(dirPath)) {
-                dirStreams.putAll(scanDirectory(dirPath, scanDirInfo.getLastModificationDatePerDir()));
-            } else {
-                String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
-                                               dirPath.toString());
-                LOGGER.error(message);
-                notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
-                                   DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
-            }
+    public List<Stream<Path>> stream(Path dirPath, Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
+        List<Stream<Path>> dirStreams = new ArrayList<>();
+        if (Files.isDirectory(dirPath)) {
+            dirStreams.add(scanDirectory(dirPath, lastModificationDate));
+        } else {
+            String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
+                                           dirPath.toString());
+            LOGGER.error(message);
+            notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
+                               DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
         }
         return dirStreams;
     }
 
-    private Map<Path,Optional<OffsetDateTime>> scanDirectory(Path dirPath, OffsetDateTime lastModificationDate)
-            throws ModuleException {
-
-        // handle lastModification with utc zone
-        Optional<OffsetDateTime> scanningDate = Optional.empty();
-        if (lastModificationDate != null) {
-            scanningDate = Optional.of(OffsetDateTime.ofInstant(lastModificationDate.toInstant(), ZoneOffset.UTC));
-        }
-
+    private Stream<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
         try {
             FileSystem fs = dirPath.getFileSystem();
             final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
-            Optional<OffsetDateTime> finalScanningDate = scanningDate;
             Predicate<Path> filter = entry -> {
-                boolean match = Files.isReadable(entry) && Files.isRegularFile(entry)
-                        && matcher.matches(entry.getFileName());
-                if (match && finalScanningDate.isPresent()) {
+                boolean match =
+                        Files.isReadable(entry) && Files.isRegularFile(entry) && matcher.matches(entry.getFileName());
+                if (match && lastModificationDate.isPresent()) {
                     OffsetDateTime lmd;
                     try {
                         lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
-                        return lmd.isAfter(finalScanningDate.get()) || lmd.isEqual(finalScanningDate.get());
+                        return lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get());
                     } catch (IOException e) {
                         LOGGER.error(e.getMessage(), e);
                         match = false;
@@ -115,16 +98,7 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
                 }
                 return match;
             };
-
-            // get all paths from stream and create a map with paths and scanning date
-            List<Path> paths = Files.walk(dirPath).filter(filter).collect(Collectors.toList());
-            Map<Path, Optional<OffsetDateTime>> scannedFiles = new HashMap<>();
-            for(Path filePath: paths) {
-                scannedFiles.put(filePath, scanningDate);
-            }
-
-            return scannedFiles;
-
+            return Files.walk(dirPath).filter(filter);
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

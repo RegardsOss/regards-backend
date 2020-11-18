@@ -20,12 +20,10 @@ package fr.cnes.regards.modules.acquisition.plugins;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * First <b>required</b> step of acquisition processing chain. This step is used to make disk scanning for file
@@ -45,10 +43,11 @@ public interface IScanPlugin {
      *  The system will filter duplicates if any!</b>
      *
 
-     * @param scanDirectoriesInfo set of directories to scan with their associated lastModificationDate. This date may be null
-     *                            for the first scan
-     * @return set of detected files with their last modification date
+     *
+     * @param dirPath directory to scan
+     * @param scanningDate last scanning date of the directory
+     * @return list of detected files
      * @throws ModuleException if error occurs!
      */
-    Map<Path, Optional<OffsetDateTime>> scan(Set<ScanDirectoriesInfo> scanDirectoriesInfo);
+    List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate);
 }

@@ -18,23 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.OffsetDateTime;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.Assert;
@@ -66,8 +62,7 @@ public class DiskScanningTest {
         Assert.assertNotNull(plugin);
 
         // Run plugin
-        HashSet<ScanDirectoriesInfo> scanDirInfo = Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null));
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = plugin.scan(scanDirInfo);
+        List<Path> scannedFiles = plugin.scan(searchDir, (Optional.empty()));
         Assert.assertNotNull(scannedFiles);
         Assert.assertTrue(scannedFiles.size() == 4);
     }
@@ -84,8 +79,7 @@ public class DiskScanningTest {
         Assert.assertNotNull(plugin);
 
         // Run plugin
-        HashSet<ScanDirectoriesInfo> scanDirInfo = Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null));
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = plugin.scan(scanDirInfo);
+        List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
         Assert.assertTrue(scannedFiles.size() == 2);
     }
@@ -99,8 +93,7 @@ public class DiskScanningTest {
         Assert.assertNotNull(plugin);
 
         // Run plugin
-        HashSet<ScanDirectoriesInfo> scanDirInfo = Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null));
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = plugin.scan(scanDirInfo);
+        List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
         Assert.assertTrue(scannedFiles.size() == 4);
     }
@@ -117,8 +110,7 @@ public class DiskScanningTest {
         Assert.assertNotNull(plugin);
 
         // Run plugin
-        HashSet<ScanDirectoriesInfo> scanDirInfo = Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null));
-        Map<Path, Optional<OffsetDateTime>> scannedFiles = plugin.scan(scanDirInfo);
+        List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
         Assert.assertTrue(scannedFiles.size() == 2);
     }

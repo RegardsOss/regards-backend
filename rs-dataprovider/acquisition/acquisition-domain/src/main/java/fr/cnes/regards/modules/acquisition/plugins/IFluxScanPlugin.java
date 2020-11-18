@@ -2,12 +2,11 @@ package fr.cnes.regards.modules.acquisition.plugins;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.NotImplementedException;
 
 /**
@@ -21,9 +20,9 @@ import org.apache.commons.lang3.NotImplementedException;
 public interface IFluxScanPlugin extends IScanPlugin {
 
     @Override
-    default Map<Path, Optional<OffsetDateTime>> scan(Set<ScanDirectoriesInfo> scanDirectoriesInfo) {
+    default List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         throw new NotImplementedException("Stream scan should not be used for synchronous scanning !!");
     }
 
-    Map<Path, Optional<OffsetDateTime>> stream(Set<ScanDirectoriesInfo> scanDirectoriesInfo) throws ModuleException;
+    List<Stream<Path>> stream(Path dirPath, Optional<OffsetDateTime> scanningDate) throws ModuleException;
 }
