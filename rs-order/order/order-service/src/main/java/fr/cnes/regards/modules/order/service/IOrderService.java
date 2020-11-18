@@ -75,8 +75,9 @@ public interface IOrderService {
      * @param basket basket used to create order (removed at the end of the method)
      * @param order created order to be completed
      * @param role user role
+     * @param tenant current tenant
      */
-    void completeOrderCreation(Basket basket, Order order, String role);
+    void completeOrderCreation(Basket basket, Order order, String role, String tenant);
 
     /**
      * Load an order.
@@ -223,4 +224,7 @@ public interface IOrderService {
      * @return
      */
     boolean isPaused(Long orderId);
+
+    /** Tells if this order involves processing on some dataset selection */
+    boolean hasProcessing(Order order);
 }

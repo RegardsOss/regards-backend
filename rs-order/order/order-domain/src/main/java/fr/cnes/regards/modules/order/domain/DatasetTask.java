@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.order.domain;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +31,9 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.validation.Valid;
 
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.process.ProcessBatchDescription;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -81,11 +85,44 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    // To be defined : a ProcessingTask should certainly be better
-    // Or directly specifying JobInfo managing processing task
-    @Column(name = "processing_service")
-    @Type(type = "text")
-    private String processingService;
+    @Column(name = "process_batch_desc")
+    @Type(type = "jsonb")
+    private ProcessBatchDescription processBatchDesc;
+
+
+    public DatasetTask() {}
+
+    public DatasetTask(String datasetIpid, String datasetLabel, long filesCount, long filesSize, int objectsCount, List<BasketSelectionRequest> selectionRequests) {
+        this.datasetIpid = datasetIpid;
+        this.datasetLabel = datasetLabel;
+        this.filesCount = filesCount;
+        this.filesSize = filesSize;
+        this.objectsCount = objectsCount;
+        selectionRequests.addAll(selectionRequests);
+    }
+
+    public static DatasetTask fromBasketSelection(BasketDatasetSelection dsSel) {
+        DatasetTask dsTask = new DatasetTask();
+
+        dsTask.setDatasetIpid(dsSel.getDatasetIpid());
+        dsTask.setDatasetLabel(dsSel.getDatasetLabel());
+        dsTask.setFilesCount(
+                DataTypeSelection.ALL.getFileTypes().stream()
+                        .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                        .sum()
+        );
+        dsTask.setFilesSize(
+                DataTypeSelection.ALL.getFileTypes().stream()
+                        .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                        .sum());
+        dsTask.setObjectsCount(dsSel.getObjectsCount());
+
+        dsSel.getItemsSelections().forEach(item -> {
+            dsTask.addSelectionRequest(item.getSelectionRequest());
+        });
+
+        return dsTask;
+    }
 
     public String getDatasetIpid() {
         return datasetIpid;
@@ -127,12 +164,16 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         this.filesSize = filesSize;
     }
 
-    public String getProcessingService() {
-        return processingService;
+    public ProcessBatchDescription getProcessBatchDesc() {
+        return processBatchDesc;
     }
 
-    public void setProcessingService(String processingService) {
-        this.processingService = processingService;
+    public void setProcessBatchDesc(ProcessBatchDescription processBatchDesc) {
+        this.processBatchDesc = processBatchDesc;
+    }
+
+    public List<BasketSelectionRequest> getSelectionRequests() {
+        return selectionRequests;
     }
 
     @Override
@@ -142,5 +183,9 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
 
     public void addSelectionRequest(BasketSelectionRequest selectionRequest) {
         selectionRequests.add(selectionRequest);
+    }
+
+    public boolean hasProcessing() {
+        return this.processBatchDesc != null;
     }
 }

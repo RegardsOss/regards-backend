@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -199,6 +200,24 @@ public class BasketService implements IBasketService {
         return basket;
     }
 
+    @Override
+    public Basket attachProcessing(Basket basket, Long datasetId, UUID processUuid) {
+        return basket.getDatasetSelections().stream()
+            .filter(ds -> ds.getId().equals(datasetId))
+            .findFirst()
+            .map(ds -> attachProcessToDatasetSelectionAndSaveBasket(basket, processUuid, ds))
+            .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+    }
+
+    private Basket attachProcessToDatasetSelectionAndSaveBasket(
+            Basket basket,
+            UUID processUuid,
+            BasketDatasetSelection ds
+    ) {
+        // FIXME won't work like this...
+        return repos.save(basket);
+    }
+
     /**
      * Create dated items selection
      * @param selectionRequest opensearch request from which this selection is created
@@ -273,4 +292,5 @@ public class BasketService implements IBasketService {
         });
         return request;
     }
+
 }

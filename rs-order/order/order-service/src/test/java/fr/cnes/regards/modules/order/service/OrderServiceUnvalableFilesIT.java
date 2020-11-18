@@ -21,11 +21,13 @@ package fr.cnes.regards.modules.order.service;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.order.domain.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -60,10 +62,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
@@ -198,7 +196,7 @@ public class OrderServiceUnvalableFilesIT {
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu","http://perdu.com");
-        Thread.sleep(5_000);
+        Thread.sleep(10_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
 

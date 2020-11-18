@@ -68,6 +68,7 @@ import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Sébastien Binda
@@ -76,7 +77,7 @@ import java.util.List;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(
         properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
@@ -129,7 +130,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     @Test
     public void simpleOrder() throws InterruptedException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = "simpleOrder";
+        String orderOwner = randomLabel("simpleOrder");
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
@@ -145,23 +146,27 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
 
         LOGGER.info("Order has been created !!");
         // Wait order ends.
         int loop = 0;
         while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
         LOGGER.info("Order is done !!");
     }
 
+    private String randomLabel(String prefix) {
+        return prefix + "_" + Long.toHexString(new Random().nextLong());
+    }
+
     @Test
     public void multipleDsOrder() throws InterruptedException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = "multipleDsOrder";
+        String orderOwner = randomLabel("multipleDsOrder");
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
@@ -190,7 +195,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         //Wait order in waiting user status
@@ -218,7 +223,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         // Wait order ends.
         loop = 0;
         while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
@@ -229,7 +234,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     @Test
     public void simpleOrderPause() throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = "simpleOrderPause";
+        String orderOwner = randomLabel("simpleOrderPause");
         storageClientMock.setWaitMode(true);
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -246,20 +251,20 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order ends.
         int loop = 0;
         while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.RUNNING) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Thread.sleep(1_500);
         orderService.pause(order.getId());
         loop = 0;
         while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());
@@ -269,7 +274,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         orderService.resume(order.getId());
         loop = 0;
         while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
@@ -280,7 +285,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     public void multipleDsOrderPause()
             throws InterruptedException, CannotPauseOrderException, CannotResumeOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = "multipleDsOrderPause";
+        String orderOwner = randomLabel("multipleDsOrderPause");
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
@@ -309,13 +314,13 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command", "http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner, "http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
         int loop = 0;
         while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertTrue(orderService.loadComplete(order.getId()).isWaitingForUser());
@@ -341,7 +346,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         orderService.pause(order.getId());
         loop = 0;
         while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());
@@ -351,7 +356,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         orderService.resume(order.getId());
         loop = 0;
         while (!orderService.loadComplete(order.getId()).getStatus().equals(OrderStatus.DONE) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.DONE, orderService.loadComplete(order.getId()).getStatus());
@@ -362,7 +367,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     public void multipleDsOrderPauseAndDelete() throws InterruptedException, CannotPauseOrderException,
             CannotResumeOrderException, CannotDeleteOrderException, CannotRemoveOrderException, EntityInvalidException {
         tenantResolver.forceTenant(getDefaultTenant());
-        String orderOwner = "multipleDsOrderPauseAndDelete";
+        String orderOwner = randomLabel("multipleDsOrderPauseAndDelete");
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
@@ -391,13 +396,13 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         basket.addDatasetSelection(dsSelection2);
         basketRepos.save(basket);
         // Run order.
-        Order order = orderService.createOrder(basket, "a command","http://frontend.com");
+        Order order = orderService.createOrder(basket, orderOwner,"http://frontend.com");
         LOGGER.info("Order has been created !!");
 
         // Wait order in waiting user status
         int loop = 0;
         while (!orderService.loadComplete(order.getId()).isWaitingForUser() && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertTrue(orderService.loadComplete(order.getId()).isWaitingForUser());
@@ -423,7 +428,7 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
         orderService.pause(order.getId());
         loop = 0;
         while (!orderService.isPaused(order.getId()) && (loop < 10)) {
-            Thread.sleep(1_000);
+            Thread.sleep(5_000);
             loop++;
         }
         Assert.assertEquals(OrderStatus.PAUSED, orderService.loadComplete(order.getId()).getStatus());

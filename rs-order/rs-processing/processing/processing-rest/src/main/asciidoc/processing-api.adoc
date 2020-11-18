@@ -1,0 +1,221 @@
+= REGARDS PROCESSING API
+
+== Overwiew
+// TODO
+
+
+////
+== Create a processing
+
+Allows to validate current basket and create corresponding processing.
+
+=== API endpoint description
+
+:TestClass: OrderControllerIT
+
+include::{snippets}/{TestClass}/testCreateNOK/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testCreateNOK/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/testCreateNOK/request-body.adoc[]
+
+include::{snippets}/{TestClass}/testCreateNOK/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testCreationWithEmptyBasket/http-response.adoc[]
+
+== Retrieve an processing
+
+Allows to retrieve specified processing.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testGetOrder/http-request.adoc[]
+
+==== Response
+
+include::{snippets}/{TestClass}/testGetOrder/response-fields.adoc[]
+
+include::{snippets}/{TestClass}/testGetOrder/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testGetNotFoundOrder/http-response.adoc[]
+
+== Pause an processing
+
+Allows to pause specified processing.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testPause/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testPause/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testPauseFailed/http-response.adoc[]
+
+== Resume an processing
+
+Allows to resume specified processing.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testResume/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testResume/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testResumeFailed/http-response.adoc[]
+
+== Delete an processing
+
+Allows to delete specified processing (still present into database).
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testDelete/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDelete/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testDeleteFailed/http-response.adoc[]
+
+== Remove an processing
+
+Allows to remove specified processing (delete from database).
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testRemove/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testRemove/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testRemoveFailed/http-response.adoc[]
+
+== Find all processings or all specifid user processings
+
+Allows to find all specified user processings or all users processings
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testFindAllSpecificUser/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllSpecificUser/request-parameters.adoc[]
+
+==== Response
+
+include::{snippets}/{TestClass}/testFindAllSpecificUser/response-fields.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllSpecificUser/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testFindAll/http-response.adoc[]
+
+== Find all current user processings
+
+Allows to find all current user processings
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testFindAllOwner/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOwner/request-parameters.adoc[]
+
+==== Response
+
+include::{snippets}/{TestClass}/testFindAllOwner/response-fields.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOwner/http-response.adoc[]
+
+== Generate a CSV file with all processings
+
+Allows to create a CSV file containing all users processings
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testCsv/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testCsv/http-response.adoc[]
+
+== Download current processing files
+
+Allows to download a zip file (with streaming) containing all currently available processing files.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testDownloadZipFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadZipFile/http-response.adoc[]
+
+Note: upper content is Zip file content that's why it isn't really readable.
+
+== Download processing metalink file
+
+Allows to download (with streaming) a metalink with all processing files.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testDownloadMetalinkFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadMetalinkFile/http-response.adoc[]
+
+Note: upper content is None because result is streamed and so isn't yet available.
+
+== Download processing metalink file with public token
+
+Allows to download a metalink with all processing files with public generated token (given into sent email)
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testPublicDownloadMetalinkFile/http-response.adoc[]
+
+== Find all processing files associated to a dataset
+
+Allows to find all files from an processing for a specified dataset.
+
+=== API endpoint description
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/request-parameters.adoc[]
+
+==== Response
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/response-fields.adoc[]
+
+include::{snippets}/{TestClass}/testFindAllOrderFiles/http-response.adoc[]
+
+== Download an processing file
+
+Allows to download a file that is part of an processing.
+
+=== API endpoint description
+
+:TestClass: OrderDataFileControllerIT
+
+include::{snippets}/{TestClass}/testDownloadFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFileFailed/http-response.adoc[]
+
+=== Download an processing file with public token
+
+Allows to download a file that is part of an processing with a public token (from metalink file).
+If file is not yet available, result HTTP code is 202 (Accepted).
+
+=== API endpoint description
+
+:TestClass: OrderControllerIT
+
+include::{snippets}/{TestClass}/testDownloadFile/http-request.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadFile/http-response.adoc[]
+
+include::{snippets}/{TestClass}/testDownloadNotYetAvailableFile/http-response.adoc[]
+
+////

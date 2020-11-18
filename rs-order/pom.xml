@@ -38,5 +38,6 @@
 	<modules>
 		<module>bootstrap-order</module>
 		<module>order</module>
+		<module>rs-processing</module>
 	</modules>
 </project>

@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+set -x
+
+case $1 in
+prep)
+    pushd $REGARDS_HOME/rs-order/rs-processing && \
+    mvn clean install -DskipTests=true && \
+    popd || exit
+;;
+boot)
+    case $2 in
+    debug)
+        mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$3 -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+    ;;
+    *)
+        mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$2"
+    ;;
+    esac
+;;
+deps)
+    case $2 in
+    up)
+        docker run \
+                -d \
+                --name pg-docker \
+                -p 5433:5432 \
+                -e 'POSTGRES_USER=user' \
+                -e 'POSTGRES_PASSWORD=secret' \
+            postgres:11.5
+
+        docker run \
+                --name rabbit-docker \
+                -d \
+                -p 15672:15672 \
+                -p 5672:5672 \
+            rabbitmq:3.6.5-management
+
+        docker run \
+                --name pgadmin-docker \
+                -d \
+                -p 8080:80 \
+                --link pg-docker \
+                -e 'PGADMIN_DEFAULT_EMAIL=a@a.a'     \
+                -e 'PGADMIN_DEFAULT_PASSWORD=secret'     \
+            dpage/pgadmin4
+
+        sleep 2
+
+        echo "Create databases"
+
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "DROP DATABASE processing_projecta_gandrieu"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "DROP DATABASE processing_projectb_gandrieu"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "DROP DATABASE processing_projecta_root"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "DROP DATABASE processing_projectb_root"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "DROP DATABASE r2dbcdb"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "CREATE DATABASE processing_projecta_gandrieu"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "CREATE DATABASE processing_projectb_gandrieu"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "CREATE DATABASE processing_projecta_root"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "CREATE DATABASE processing_projectb_root"'
+        docker exec pg-docker bash -c 'PGPASSWORD="secret" psql -h localhost -p 5432 -U user -c "CREATE DATABASE r2dbcdb"'
+    ;;
+    down)
+        docker kill pg-docker rabbit-docker pgadmin-docker
+        docker rm pg-docker rabbit-docker pgadmin-docker
+    ;;
+    esac
+;;
+image)
+    case $2 in
+    build)
+        PROFILES=${3:-docker}
+        mvn -P $PROFILES clean package docker:build \
+              -DdockerImageTags=featuredm063_rs-processing \
+              -DskipTests -DcmdLineTarget=target-docker \
+              -Dmaven.wagon.http.ssl.insecure=true \
+              -Dmaven.wagon.http.ssl.allowall=true \
+              -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+        docker tag 172.26.46.158/rs-processing:latest 172.26.46.158/rs-processing:featuredm063_rs-processing
+    ;;
+    push)
+        docker push 172.26.46.158/rs-processing:featuredm063_rs-processing
+    ;;
+    esac
+;;
+container)
+    case $2 in
+    up)
+        docker run \
+              --name rs-proc \
+              -d \
+              -p 9043:9043   \
+              --link pg-docker \
+              --link rabbit-docker \
+               -v /home/gandrieu/.regards:/home/root/.regards \
+               -e SPRING_PROFILES_ACTIVE=production,localcontainer \
+          172.26.46.158/rs-processing:featuredm063_rs-processing
+    ;;
+    down)
+        docker kill rs-proc
+        docker rm rs-proc
+    ;;
+    logs)
+       docker logs rs-proc -f
+    ;;
+    bash)
+        docker exec -it rs-proc bash
+    esac
+;;
+lcloop)
+    ./run container down
+    ./run prep
+    ./run image build docker,localcontainer
+    ./run container up
+    ./run container logs
+;;
+ansibleloop)
+    ./run prep
+    ./run image build
+    ./run image push
+;;
+*)
+    echo '$ run prep'
+    echo '    "mvn install" for rs-processing modules'
+    echo '$ run boot [debug] profiles'
+    echo '    Launch spring boot app with xxx profiles'
+    echo '$ run deps (up|down)'
+    echo '    Launches/removes docker containers for pgsql , rabbitmq'
+    echo '$ run image (build|push) [profiles]'
+    echo '    Create/push image with given maven profiles, docker profile by default'
+    echo '$ run container (up|down|logs|bash) [profiles]'
+    echo '    Create/remove/logs/exec-bash-in a container'
+;;
+esac

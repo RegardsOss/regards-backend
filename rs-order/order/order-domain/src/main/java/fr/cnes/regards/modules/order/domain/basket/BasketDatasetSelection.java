@@ -19,23 +19,13 @@
 package fr.cnes.regards.modules.order.domain.basket;
 
 import java.util.*;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.SortNatural;
+import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-import org.hibernate.annotations.Type;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 
 /**
  * A grouped items by dataset selection from a basket
@@ -80,6 +70,10 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @SortNatural
     private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 
+    @Column(name = "process_dataset_desc")
+    @Type(type = "jsonb")
+    private ProcessDatasetDescription processDatasetDescription;
+
     @Override
     public Long getId() {
         return id;
@@ -111,6 +105,14 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     public void setObjectsCount(int objectsCount) {
         this.objectsCount = objectsCount;
+    }
+
+    public long getFilesCount() {
+        return filesCount;
+    }
+
+    public long getFilesSize() {
+        return filesSize;
     }
 
     public Long getFileTypeSize(String fileType) {
@@ -151,6 +153,14 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.itemsSelections.remove(itemsSelection);
     }
 
+    public ProcessDatasetDescription getProcessDatasetDescription() {
+        return processDatasetDescription;
+    }
+
+    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+        this.processDatasetDescription = processDatasetDescription;
+    }
+
     @Override
     public int compareTo(BasketDatasetSelection o) {
         return datasetLabel.compareToIgnoreCase(o.datasetLabel);
@@ -173,5 +183,9 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Override
     public int hashCode() {
         return datasetIpid.hashCode();
+    }
+
+    public boolean hasProcessing() {
+        return this.processDatasetDescription != null;
     }
 }
