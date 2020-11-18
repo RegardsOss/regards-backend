@@ -53,10 +53,6 @@
             <artifactId>processing-commons</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-reactive-clients</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-core-starter</artifactId>
         </dependency>
@@ -104,11 +100,6 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>6.1.0</version> <!-- instead of 6.4.4 / FIXME once the rest of Regards adopts spring-boot 2.3.2-->
-        </dependency>
-        <dependency>
-            <groupId>com.playtika.reactivefeign</groupId>
-            <artifactId>feign-reactor-spring-configuration</artifactId>
-            <version>${feign-reactor.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.auto.service</groupId>

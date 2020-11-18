@@ -19,7 +19,7 @@ import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.modules.processing.config.ProcessingGsonConfiguration;
+import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.utils.gson.GsonInefficientHttpMessageCodec;
 import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import io.r2dbc.spi.ConnectionFactories;
@@ -60,7 +60,6 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.server.ServerWebExchange;
-import reactivefeign.spring.config.EnableReactiveFeignClients;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -90,7 +89,6 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @EnableWebFluxSecurity
 @EnableJpaRepositories
 @EnableFeignClients
-@EnableReactiveFeignClients
 @Import({
         MultitenantAutoConfiguration.class,
         MicroserviceAutoConfiguration.class,
@@ -282,5 +280,10 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
     @Override public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
         configurer.customCodecs().register(new GsonInefficientHttpMessageCodec.Co(gson));
         configurer.customCodecs().register(new GsonInefficientHttpMessageCodec.Dec(gson));
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public IRoleCheckerService roleCheckerService() {
+        return (a,b) -> Mono.just(true);
     }
 }

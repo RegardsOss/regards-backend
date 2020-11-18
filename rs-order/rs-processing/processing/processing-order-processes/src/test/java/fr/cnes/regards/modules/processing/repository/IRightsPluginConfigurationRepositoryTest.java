@@ -1,22 +1,24 @@
 package fr.cnes.regards.modules.processing.repository;
 
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import java.util.UUID;
 
+@EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
 public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessingTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IRightsPluginConfigurationRepositoryTest.class);
 
     @Autowired IRightsPluginConfigurationRepository rightsRepo;
-    @Autowired IPluginConfigurationRepository pluginConfRepo;
 
     @Test
     public void test_crud() {

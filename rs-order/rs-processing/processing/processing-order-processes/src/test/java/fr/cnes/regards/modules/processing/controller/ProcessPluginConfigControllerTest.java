@@ -1,9 +1,6 @@
 package fr.cnes.regards.modules.processing.controller;
 
 import feign.Feign;
-import feign.Headers;
-import feign.Param;
-import feign.RequestLine;
 import fr.cnes.regards.framework.feign.FeignContractSupplier;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
@@ -12,12 +9,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
-import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;

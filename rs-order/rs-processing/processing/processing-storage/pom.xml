@@ -39,10 +39,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.processing</groupId>
-            <artifactId>processing-reactive-clients</artifactId>
-        </dependency>
 
     </dependencies>
 

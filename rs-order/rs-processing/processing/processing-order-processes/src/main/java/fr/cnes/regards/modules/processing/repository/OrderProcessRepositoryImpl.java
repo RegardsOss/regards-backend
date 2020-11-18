@@ -5,12 +5,12 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.processing.client.IReactiveRolesClient;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
@@ -27,7 +27,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
-import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
 import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
 import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
 
@@ -40,17 +39,21 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     private final IWorkloadEngineRepository enginRepo;
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
     private final IRuntimeTenantResolver tenantResolver;
-    private final IReactiveRolesClient rolesClient;
+    private final IRoleCheckerService roleChecker;
 
     @Autowired
-    public OrderProcessRepositoryImpl(IPluginService pluginService, IWorkloadEngineRepository enginRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IRuntimeTenantResolver tenantResolver,
-            IReactiveRolesClient rolesClient) {
+    public OrderProcessRepositoryImpl(
+            IPluginService pluginService,
+            IWorkloadEngineRepository enginRepo,
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+            IRuntimeTenantResolver tenantResolver,
+            IRoleCheckerService roleChecker
+    ) {
         this.pluginService = pluginService;
         this.enginRepo = enginRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.tenantResolver = tenantResolver;
-        this.rolesClient = rolesClient;
+        this.roleChecker = roleChecker;
     }
 
     @Override public Flux<PProcess> findAllByTenant(String tenant) {
@@ -73,7 +76,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
 
     @Override public Flux<PProcess> findAllByTenantAndUserRole(PUserAuth details) {
         return findRightsPluginConfigurations()
-                .filterWhen(rights -> roleIsUnder(details, rights.getRole()))
+                .filterWhen(rights -> roleChecker.roleIsUnder(details, rights.getRole()))
                 .flatMap(rights -> buildPProcess(details.getTenant(), rights));
     }
 
@@ -109,15 +112,6 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class); }
         catch(Exception e) { return false; }
-    }
-
-    private Mono<Boolean> roleIsUnder(PUserAuth auth, String role) {
-        // TODO add cache ; cache invalidation when an event on Roles is received?
-        return rolesClient.shouldAccessToResourceRequiring(role, authHeader(auth));
-    }
-
-    private String authHeader(PUserAuth auth) {
-        return BEARER + ": " + auth.getAuthToken();
     }
 
     private <T> Mono<T> tryToMono(Try<T> t) {

@@ -44,8 +44,7 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             IPluginConfigurationRepository pluginConfigRepo,
             IRightsPluginConfigurationRepository rightsPluginConfigRepo,
             IPExecutionRepository executionRepository,
-            IPublisher publisher
-    ) {
+            IPublisher publisher) {
         this.pluginConfigRepo = pluginConfigRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;

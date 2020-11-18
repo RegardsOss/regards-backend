@@ -1,17 +1,19 @@
-package fr.cnes.regards.modules.processing.storage;
+package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
-import fr.cnes.regards.modules.processing.client.IReactiveStorageClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.Set;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,15 +33,17 @@ import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.
 @Service
 public class DownloadService implements IDownloadService {
 
+    private static final DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
+
     private final Proxy proxy;
 
     @Qualifier("nonProxyHosts")
     private final Set<String> nonProxyHosts;
 
-    private final IReactiveStorageClient storageClient;
+    private final IStorageRestClient storageClient;
 
     @Autowired
-    public DownloadService(Proxy proxy, Set<String> nonProxyHosts, IReactiveStorageClient storageClient) {
+    public DownloadService(Proxy proxy, Set<String> nonProxyHosts, IStorageRestClient storageClient) {
         this.proxy = proxy;
         this.nonProxyHosts = nonProxyHosts;
         this.storageClient = storageClient;
@@ -66,7 +70,7 @@ public class DownloadService implements IDownloadService {
     private Mono<Path> internalDownload(String checksum, Path dest) {
         return Mono.fromCallable(() -> {
             Files.createDirectories(dest.getParent());
-            Flux<DataBuffer> dataBufferFlux = storageClient.downloadFile(checksum);
+            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(checksum);
             return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
         })
         .flatMap(voidMono -> voidMono.map(n -> dest))
@@ -78,6 +82,11 @@ public class DownloadService implements IDownloadService {
                 t
             )
         ));
+    }
+
+    public Flux<DataBuffer> downloadUsingStorageRestClient(String checksum) {
+        return DataBufferUtils.readInputStream(() ->
+            storageClient.downloadFile(checksum).body().asInputStream(), bufferFactory, 4096);
     }
 
     private Mono<Path> externalDownload(URL url, Path dest) {

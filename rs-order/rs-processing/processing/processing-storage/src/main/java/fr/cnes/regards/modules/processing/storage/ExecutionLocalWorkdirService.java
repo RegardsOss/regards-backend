@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.processing.storage;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.utils.Unit;
 import io.vavr.collection.Seq;
@@ -30,7 +30,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
 
     private final IDownloadService downloadService;
 
-    public ExecutionLocalWorkdirService(@Qualifier("executionWorkdirParentPath") Path basePath, DownloadService downloadService) {
+    public ExecutionLocalWorkdirService(@Qualifier("executionWorkdirParentPath") Path basePath, IDownloadService downloadService) {
         this.basePath = basePath;
         this.downloadService = downloadService;
     }

@@ -23,13 +23,13 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.test.integration.DefaultTestFeignConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.vavr.gson.VavrGson;
 import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ApplicationContext;
@@ -48,11 +46,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -76,7 +73,9 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @EnableWebMvc
 @EnableJpaRepositories
 @EnableFeignClients(basePackageClasses = {
-        IAccountsClient.class
+        IAccountsClient.class,
+        IRolesClient.class,
+        IStorageRestClient.class
 })
 @ContextConfiguration(
         classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, MockAmqpConfiguration.class })
@@ -210,6 +209,11 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean
     public IRuntimeTenantResolver runtimeTenantResolver() {
         return new SecureTestRuntimeTenantResolver(TENANT_PROJECTA);
+    }
+
+    @Bean @ConditionalOnMissingBean
+    public IRoleCheckerService roleCheckerService() {
+        return (a,b) -> Mono.just(true);
     }
 
 }

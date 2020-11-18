@@ -18,7 +18,15 @@
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-spring-config</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-domain-data</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-client</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
@@ -44,6 +52,7 @@
             <artifactId>authentication-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
+
 
         <!-- Framework -->
         <dependency>
@@ -102,11 +111,6 @@
             <artifactId>vavr-gson</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.playtika.reactivefeign</groupId>
-            <artifactId>feign-reactor-spring-configuration</artifactId>
-            <version>${feign-reactor.version}</version>
-        </dependency>
-        <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-pool</artifactId>
         </dependency>
@@ -114,13 +118,6 @@
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.playtika.reactivefeign</groupId>
-            <artifactId>feign-reactor-webclient</artifactId>
-            <version>2.0.15</version>
-            <scope>compile</scope>
-        </dependency>
-
 
     </dependencies>
 </project>

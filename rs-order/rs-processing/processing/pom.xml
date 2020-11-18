@@ -35,7 +35,6 @@
     <properties>
         <auto.service.version>1.0-rc7</auto.service.version>
         <feign.version>10.4.0</feign.version>
-        <feign-reactor.version>2.0.0</feign-reactor.version>
         <vavr.version>0.10.2</vavr.version>
         <lombok.version>1.18.12</lombok.version>
         <spring.boot.version>2.3.2.RELEASE</spring.boot.version>
@@ -134,11 +133,6 @@
                 <artifactId>processing-spring-config</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.processing</groupId>
-                <artifactId>processing-reactive-clients</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>fr.cnes.regards.modules.processing</groupId>
@@ -233,7 +227,6 @@
 
     <modules>
         <module>processing-commons</module>
-        <module>processing-reactive-clients</module>
         <module>processing-test</module>
 
         <module>processing-domain-data</module>

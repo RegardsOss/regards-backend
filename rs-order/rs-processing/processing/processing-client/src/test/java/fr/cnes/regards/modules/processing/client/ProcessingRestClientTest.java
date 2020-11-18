@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -13,12 +14,14 @@ import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -68,6 +71,7 @@ public class ProcessingRestClientTest extends AbstractProcessingTest {
     }
 
     @Configuration
+    @EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
     static class Config {
 
         @Bean public IProcessService processService() {
