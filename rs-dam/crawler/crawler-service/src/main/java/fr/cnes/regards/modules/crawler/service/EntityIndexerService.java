@@ -752,6 +752,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         deleteIndex(tenant);
         sessionNotifier.notifyIndexDeletion();
         //2. Then re-create all entities
+        createIndexIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate);
         updateAllCollections(tenant, updateDate);
