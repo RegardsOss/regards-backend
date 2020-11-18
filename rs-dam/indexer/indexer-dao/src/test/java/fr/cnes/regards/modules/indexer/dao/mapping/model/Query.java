@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.indexer.dao.mapping.model;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import fr.cnes.regards.modules.indexer.dao.mapping.MappingTest;
 import io.vavr.control.Try;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.client.Request;
@@ -10,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Query {
 
