@@ -38,10 +38,9 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.ApplicationContextException;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.*;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -150,6 +149,8 @@ public class MultitenantJpaAutoConfiguration {
      * @return {@link PlatformTransactionManager}
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Primary
     public PlatformTransactionManager multitenantsJpaTransactionManager() throws JpaMultitenantException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
         jtm.setEntityManagerFactory(multitenantsEntityManagerFactory().getObject());
