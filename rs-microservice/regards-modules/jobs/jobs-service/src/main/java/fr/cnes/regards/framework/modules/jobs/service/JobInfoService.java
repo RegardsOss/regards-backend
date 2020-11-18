@@ -26,12 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +56,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import jdk.nashorn.internal.runtime.regexp.joni.WarnCallback;
 
 /**
  * @author oroussel
@@ -233,8 +230,8 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
         long deadAfter = JobService.HEARTBEAT_DELAY * timeSlotNumber;
         OffsetDateTime deadLimitDate = OffsetDateTime.now().minus(deadAfter, ChronoUnit.MILLIS);
         for (JobInfo job : jobs) {
-            if (job.getLastHeartbeatDate()
-                    .isBefore(deadLimitDate)) {
+            // if last heartbeat date is null it means job has been started but not yet pinged by job engine
+            if (job.getLastHeartbeatDate() != null && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
                 job.updateStatus(JobStatus.FAILED);
                 LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
                             job.getId(),
