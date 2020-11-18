@@ -55,7 +55,6 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 @TestPropertySource(locations = "classpath:test.properties")
 //@TestPropertySource(locations = "classpath:application-local.properties")
 @MultitenantTransactional
-@Ignore("TODO: add a fake controller to serve fake description")
 public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(OpenSearchServiceIT.class);
