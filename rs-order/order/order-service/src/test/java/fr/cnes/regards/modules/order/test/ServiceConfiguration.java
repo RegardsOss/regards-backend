@@ -48,7 +48,6 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 @ComponentScan(basePackages = { "fr.cnes.regards.modules.order.service" })
 @EnableAutoConfiguration
 @EnableScheduling
-@EnableFeignClients(basePackageClasses = IProcessingRestClient.class)
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
 public class ServiceConfiguration {
@@ -155,4 +154,8 @@ public class ServiceConfiguration {
     }
     */
 
+    @Bean
+    public IProcessingRestClient processingRestClient() {
+        return Mockito.mock(IProcessingRestClient.class);
+    }
 }
