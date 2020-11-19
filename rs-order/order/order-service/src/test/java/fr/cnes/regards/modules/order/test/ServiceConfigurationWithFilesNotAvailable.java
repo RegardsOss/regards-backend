@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.order.test;
 
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +47,7 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 @ComponentScan(basePackages = { "fr.cnes.regards.modules.order.service" })
 @EnableAutoConfiguration
 @EnableScheduling
+@EnableFeignClients(basePackageClasses = IProcessingRestClient.class)
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
         ignoreResourceNotFound = true)
 public class ServiceConfigurationWithFilesNotAvailable {
