@@ -81,7 +81,6 @@ import java.util.Random;
 public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
-    private static boolean firstInit = true;
     @Autowired
     private IOrderService orderService;
     @Autowired
@@ -114,17 +113,18 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceTest {
     public void init() {
         tenantResolver.forceTenant(getDefaultTenant());
         storageClientMock.setWaitMode(false);
-        if (firstInit) {
-            clean();
-            Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
-            Project project = new Project();
-            project.setHost("regardsHost");
-            Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                    .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
-            simulateApplicationReadyEvent();
-            simulateApplicationStartedEvent();
-            firstInit = false;
-        }
+
+        clean();
+        Mockito.when(authResolver.getRole()).thenAnswer(i -> {
+            LOGGER.info("Asking for role");
+            return DefaultRole.REGISTERED_USER.toString();
+        });
+        Project project = new Project();
+        project.setHost("regardsHost");
+        Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(project), HttpStatus.OK));
+        simulateApplicationReadyEvent();
+        simulateApplicationStartedEvent();
     }
 
     @Test
