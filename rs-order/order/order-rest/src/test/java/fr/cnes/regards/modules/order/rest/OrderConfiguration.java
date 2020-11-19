@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -123,5 +124,10 @@ public class OrderConfiguration {
     @Bean
     public IEmailClient emailClient() {
         return Mockito.mock(IEmailClient.class);
+    }
+
+    @Bean
+    public IProcessingRestClient processingRestClient() {
+        return Mockito.mock(IProcessingRestClient.class);
     }
 }
