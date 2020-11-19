@@ -120,7 +120,7 @@
 			<artifactId>regards-integration-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency> <!-- FIXME: waiting for olivier BS -->
+		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-dao</artifactId>
 			<scope>test</scope>
