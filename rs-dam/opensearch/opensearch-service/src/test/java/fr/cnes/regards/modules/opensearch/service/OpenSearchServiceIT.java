@@ -68,7 +68,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
                 .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
         LOG.info(desc.getDescription());
         UrlType url = opensearchService.getSearchRequestURL(desc, MediaType.APPLICATION_JSON);
-        Assert.assertNotNull("JSON Opensearch request should not be null from THEIA descriptor", url);
+        Assert.assertNotNull("JSON Opensearch request should not be null from PEPS descriptor", url);
         Assert.assertFalse("There sould be parameters for the search request", url.getParameter().isEmpty());
         url.getParameter().forEach(p -> {
             LOG.info(String.format("Available parameter %s - %s", p.getName(), p.getTitle()));
