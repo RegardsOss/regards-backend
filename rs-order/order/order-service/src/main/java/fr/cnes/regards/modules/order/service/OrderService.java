@@ -321,6 +321,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public void completeOrderCreation(Basket basket, Order order, String role, String tenant) {
+        boolean hasProcessing = false;
         try {
             String owner = order.getOwner();
 
@@ -330,8 +331,6 @@ public class OrderService implements IOrderService {
             int priority = orderJobService.computePriority(owner, role);
 
             OrderCounts orderCounts = new OrderCounts();
-
-            boolean hasProcessing = false;
 
             // Dataset selections
             Set<OrderDataFile> alreadyHandledFiles = new HashSet<>();

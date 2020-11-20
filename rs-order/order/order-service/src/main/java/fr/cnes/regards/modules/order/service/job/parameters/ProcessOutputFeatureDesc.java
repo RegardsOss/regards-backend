@@ -7,6 +7,11 @@ public class ProcessOutputFeatureDesc {
     String label;
     String ipId;
 
+    @Override
+    public String toString() {
+        return String.format("{\"label\":\"%s\", \"ipId\":\"%s\"}", label, ipId);
+    }
+
     public static ProcessOutputFeatureDesc from(EntityFeature feature) {
         return new ProcessOutputFeatureDesc(feature.getLabel(), feature.getId().toString());
     }

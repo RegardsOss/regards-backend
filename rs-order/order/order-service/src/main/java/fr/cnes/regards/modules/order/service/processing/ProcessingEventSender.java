@@ -5,9 +5,11 @@ import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEve
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
+@Profile("!test")
 public class ProcessingEventSender implements IProcessingEventSender {
 
     private final IPublisher publisher;

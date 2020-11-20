@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.test;
 
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -40,6 +41,8 @@ import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
+import static org.mockito.Mockito.mock;
+
 /**
  * @author oroussel
  * @author Sébastien Binda
@@ -59,7 +62,7 @@ public class ServiceConfiguration {
 
     @Bean
     public IStorageRestClient storageRestClient() {
-        return Mockito.mock(IStorageRestClient.class);
+        return mock(IStorageRestClient.class);
     }
 
     @Bean
@@ -69,17 +72,17 @@ public class ServiceConfiguration {
 
     @Bean
     public IProjectsClient mockProjectsClient() {
-        return Mockito.mock(IProjectsClient.class);
+        return mock(IProjectsClient.class);
     }
 
     @Bean
     public IAttributeModelClient attributeModelClient() {
-        return Mockito.mock(IAttributeModelClient.class);
+        return mock(IAttributeModelClient.class);
     }
 
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
-        return Mockito.mock(IModelAttrAssocClient.class);
+        return mock(IModelAttrAssocClient.class);
     }
 
     @Bean
@@ -108,12 +111,12 @@ public class ServiceConfiguration {
 
     @Bean
     public IAuthenticationResolver mockAuthResolver() {
-        return Mockito.mock(IAuthenticationResolver.class);
+        return mock(IAuthenticationResolver.class);
     }
 
     @Bean
     public IEmailClient mockEmailClient() {
-        return Mockito.mock(IEmailClient.class);
+        return mock(IEmailClient.class);
     }
 
     /**
@@ -156,6 +159,11 @@ public class ServiceConfiguration {
 
     @Bean
     public IProcessingRestClient processingRestClient() {
-        return Mockito.mock(IProcessingRestClient.class);
+        return mock(IProcessingRestClient.class);
+    }
+
+    @Bean
+    public IProcessingEventSender processingEventSender() {
+        return mock(IProcessingEventSender.class);
     }
 }
