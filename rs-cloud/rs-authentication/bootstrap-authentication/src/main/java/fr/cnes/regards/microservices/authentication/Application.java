@@ -34,7 +34,12 @@ public class Application { // NOSONAR
      * @param pArgs microservice bootstrap arguments
      */
     public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs); // NOSONAR
+        try {
+            SpringApplication.run(Application.class, pArgs); // NOSONAR
+        } catch (Exception e) {
+            System.out.println("Going to exit");
+            System.exit(1);
+        }
     }
 }
 // CHECKSTYLE:ON
