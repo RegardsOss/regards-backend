@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import io.vavr.gson.VavrGson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
@@ -65,7 +66,8 @@ public final class GsonCustomizer {
 
     public static GsonBuilder gsonBuilder(Optional<GsonProperties> properties,
             Optional<ApplicationContext> applicationContext) {
-        GsonBuilder builder = new GsonBuilder();
+        GsonBuilder builder = new GsonBuilder().enableComplexMapKeySerialization();
+        VavrGson.registerAll(builder);
         customizeBuilder(builder);
         addTypeAdapters(builder, properties);
         addBeanFactories(builder, applicationContext);

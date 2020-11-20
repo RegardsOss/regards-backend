@@ -72,6 +72,11 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>multitenant-regards</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr-gson</artifactId>
+            <version>0.10.2</version>
+        </dependency>
         <!-- <dependency> <groupId>org.danilopianini</groupId> <artifactId>gson-extras</artifactId>
             <version>0.2.1</version> </dependency> -->
         <!-- Tests -->
