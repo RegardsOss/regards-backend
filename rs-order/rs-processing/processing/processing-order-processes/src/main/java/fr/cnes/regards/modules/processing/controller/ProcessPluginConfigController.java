@@ -102,6 +102,8 @@ public class ProcessPluginConfigController {
     }
 
     @GetMapping(path = LINKDATASET_SUFFIX)
+    @ResourceAccess(description = "Find processes attached to any of the given dataset",
+            role = DefaultRole.REGISTERED_USER)
     public Collection<ProcessLabelDTO> findProcessesByDataset(@PathVariable(DATASET_PARAM) String dataset) {
         return rightsConfigService.getDatasetLinkedProcesses(dataset).collectList().block();
     }
