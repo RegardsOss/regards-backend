@@ -17,7 +17,8 @@ public class ProcessPluginConfigurationRightsDTO {
 
         String role;
 
-        List<String> datasets = List.empty();
+        List<String> datasets;
+
     }
 
     PluginConfiguration pluginConfiguration;
