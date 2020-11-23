@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.order.domain;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
@@ -237,5 +238,26 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     public void setDownloadError(String downloadError) {
         this.downloadError = downloadError;
+    }
+
+    /**
+     * Files should be ordered only once: so we only base equals on checksum and digestAlgorithm
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        OrderDataFile dataFile = (OrderDataFile) o;
+        return Objects.equals(getChecksum(), dataFile.getChecksum()) && Objects
+                .equals(getDigestAlgorithm(), dataFile.getDigestAlgorithm());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getChecksum(), getDigestAlgorithm());
     }
 }
