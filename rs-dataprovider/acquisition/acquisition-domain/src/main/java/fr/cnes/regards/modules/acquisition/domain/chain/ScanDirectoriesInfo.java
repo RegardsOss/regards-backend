@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -57,7 +58,7 @@ public class ScanDirectoriesInfo {
     /**
      * Last modification date of a scanned files
      */
-    @Column(name = "lastModificationDate")
+    @Column(name = "last_modification_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastDatePerDir;
 
@@ -91,5 +92,21 @@ public class ScanDirectoriesInfo {
 
     public void setScannedDirectory(Path scannedDirectory) {
         this.scannedDirectory = scannedDirectory;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        ScanDirectoriesInfo that = (ScanDirectoriesInfo) o;
+        return Objects.equals(scannedDirectory, that.scannedDirectory) && Objects
+                .equals(lastDatePerDir, that.lastDatePerDir);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(scannedDirectory, lastDatePerDir);
     }
 }

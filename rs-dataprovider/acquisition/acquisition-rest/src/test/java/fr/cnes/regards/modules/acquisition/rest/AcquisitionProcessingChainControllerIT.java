@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainReposi
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
@@ -41,6 +42,7 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -243,6 +245,12 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         loadedChain.getFileInfos().iterator().next().setScanPlugin(scanPlugin);
 
         customizer = customizer().expectStatusOk();
+
+        // Update fileInfo
+        loadedChain.getFileInfos().forEach((fileInfo) -> fileInfo.getScanDirInfo().add(
+                new ScanDirectoriesInfo(Paths.get("src/resources/fake"), OffsetDateTime.now())
+        ));
+
         // Document path parameter
         customizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)

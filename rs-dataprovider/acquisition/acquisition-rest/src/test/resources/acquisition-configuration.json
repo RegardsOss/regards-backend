@@ -40,7 +40,8 @@
                                 },
                                 "mimeType": "application/octet-stream",
                                 "dataType": "RAWDATA",
-                                "comment": "A comment"
+                                "comment": "A comment",
+                                "scanDirInfo":[{}]
                             }
                         ],
                         "validationPluginConf": {

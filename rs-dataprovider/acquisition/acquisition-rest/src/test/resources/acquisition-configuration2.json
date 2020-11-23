@@ -31,18 +31,12 @@
                   "version": "1.0.0-SNAPSHOT",
                   "priorityOrder": 0,
                   "active": true,
-                  "parameters": [
-                    {
-                      "name": "directories",
-                      "type": "COLLECTION",
-                      "value": [],
-                      "dynamic": false
-                    }
-                  ]
+                  "parameters": []
                 },
                 "mimeType": "application/octet-stream",
                 "dataType": "RAWDATA",
-                "comment": "A comment"
+                "comment": "A comment",
+                "scanDirInfo":[{}]
               }
             ],
             "validationPluginConf": {

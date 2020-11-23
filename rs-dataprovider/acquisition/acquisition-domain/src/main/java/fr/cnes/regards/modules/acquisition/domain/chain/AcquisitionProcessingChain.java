@@ -18,12 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -50,24 +60,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 
 /**
  *
@@ -79,11 +75,15 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 @Entity
 @Table(name = "t_acq_processing_chain")
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
-        attributeNodes = { @NamedAttributeNode(value = "fileInfos"),
-                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
-                        subgraph = "graph.acquisition.chain.jobs") },
-        subgraphs = { @NamedSubgraph(name = "graph.acquisition.chain.jobs",
-                attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
+        attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
+                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
+        subgraphs = {
+        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+                attributeNodes = { @NamedAttributeNode(value = "parameters") }),
+        @NamedSubgraph(name = "subgraph.file.info",
+                attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") })
+})
+})
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 
