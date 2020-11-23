@@ -108,6 +108,37 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         ).map(mapper::toDomain);
     }
 
+    @Override
+    public Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    ) {
+        return entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                tenant,
+                status,
+                from,
+                to
+        );
+    }
+
+    @Override
+    public Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    ) {
+        return entityExecRepo.countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                tenant,
+                userEmail,
+                status,
+                from,
+                to
+        );
+    }
 
     public static final class ExecutionNotFoundException extends ProcessingException {
         public ExecutionNotFoundException(UUID execId) {

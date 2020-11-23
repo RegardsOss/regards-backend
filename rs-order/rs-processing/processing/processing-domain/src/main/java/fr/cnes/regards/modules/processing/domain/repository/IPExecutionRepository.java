@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.processing.domain.repository;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Seq;
+import io.vavr.control.Option;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,6 +30,13 @@ public interface IPExecutionRepository {
             Pageable page
     );
 
+    Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    );
+
     Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
             String userEmail,
@@ -38,5 +46,15 @@ public interface IPExecutionRepository {
             Pageable page
     );
 
+    Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    );
+
     Flux<PExecution> findByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
+
+
 }
