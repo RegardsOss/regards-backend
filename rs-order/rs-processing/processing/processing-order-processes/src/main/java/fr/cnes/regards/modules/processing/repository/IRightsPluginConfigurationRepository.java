@@ -41,17 +41,22 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
     );
 
     @Query(
-        value = " SELECT sub.id,"
+        value = " SELECT "
+              + " DISTINCT ON (sub.id) "
+              + "        sub.id,"
               + "        sub.plugin_configuration_id, "
               + "        sub.process_business_id, "
               + "        sub.tenant, "
               + "        sub.user_role, "
-              + "        sub.datasets "
+              + "        sub.datasets, "
+              + "        sub.is_linked_to_all_datasets "
               + " FROM ( "
               + "         SELECT rpc.*, unnest(rpc.datasets) AS x "
               + "         FROM t_rights_plugin_configuration AS rpc "
               + " ) AS sub "
-              + " WHERE sub.x = CAST(:dataset AS TEXT) ",
+              + " WHERE sub.x = CAST(:dataset AS TEXT)"
+              + "    OR sub.is_linked_to_all_datasets = TRUE"
+              + " ORDER BY sub.id ",
             nativeQuery = true
     )
     List<RightsPluginConfiguration> findByReferencedDataset(
