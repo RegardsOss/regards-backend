@@ -180,7 +180,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo()));
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(Paths.get("src/resources/doesnotexist"), null)));
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");

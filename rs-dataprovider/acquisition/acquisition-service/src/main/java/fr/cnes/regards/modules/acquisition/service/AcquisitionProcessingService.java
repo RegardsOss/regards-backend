@@ -40,7 +40,6 @@ import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifi
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -117,9 +116,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionFileInfoRepository fileInfoRepository;
-
-    @Autowired
-    private IScanDirectoriesInfoRepository scanDirectoriesInfoRepository;
 
     @Autowired
     private IPluginService pluginService;
@@ -313,14 +309,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 Long fileInfoId = fileInfo.getId();
                 existingPlugin = fileInfoRepository.findOneScanPlugin(fileInfoId);
                 confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existingPlugin));
-
-                // Manage scan directories of file acquisition info
-                // compare if scan dir information were modified if true delete old conf
-                Optional<AcquisitionFileInfo> existingFileInfoOpt = fileInfoRepository.findById(fileInfoId);
-                if(existingFileInfoOpt.isPresent() && !existingFileInfoOpt.get().getScanDirInfo()
-                        .equals(fileInfo.getScanDirInfo())) {
-                    scanDirectoriesInfoRepository.deleteAll();
-                }
             }
             fileInfoRepository.save(fileInfo);
         }
