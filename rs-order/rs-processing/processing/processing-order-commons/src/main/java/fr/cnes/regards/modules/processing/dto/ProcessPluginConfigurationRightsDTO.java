@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import io.vavr.collection.List;
@@ -18,7 +17,7 @@ public class ProcessPluginConfigurationRightsDTO {
 
         String role;
 
-        List<String> datasets = Lists.newArrayList();
+        List<String> datasets = List.empty();
     }
 
     PluginConfiguration pluginConfiguration;
