@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.dao;
 
-import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
@@ -10,14 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Flux;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
-import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.SUCCESS;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
-import static java.time.OffsetDateTime.now;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,7 +25,6 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
     @Test public void test_timedout_executions() throws Exception {
         // GIVEN
-        List<POutputFile> emptyList = Arrays.asList();
         BatchEntity batch = randomInstance(BatchEntity.class).withPersisted(false);
 
         // This execution has succeeded, and so, it will not be found as timed out.
@@ -81,6 +78,86 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
         assertThat(timedoutExecs.get(0).getId()).isEqualTo(shortUnfinishedExec.getId());
 
     }
+
+    @Test public void test_count_executions() throws Exception {
+        // GIVEN
+        BatchEntity batch = randomInstance(BatchEntity.class).withPersisted(false);
+
+        // This execution has succeeded, and so, it will not be found as timed out.
+        ExecutionEntity finishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
+                .withCurrentStatus(SUCCESS)
+                .withLastUpdated(nowUtc().minusMinutes(3))
+                .withTimeoutAfterMillis(1_000L)
+                .withPersisted(false)
+                ;
+
+        // This execution has not terminated and has short timeout, and so, it will be found as timed out.
+        ExecutionEntity shortUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
+                .withCurrentStatus(RUNNING)
+                .withLastUpdated(nowUtc().minusMinutes(4))
+                .withTimeoutAfterMillis(1_000L)
+                .withPersisted(false)
+                ;
+        LOGGER.info("Test should find this execution as timedout: {}", shortUnfinishedExec.getId());
+
+        // This execution has not terminated but has long timeout, and so, it will not be found as timed out.
+        ExecutionEntity longUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withProcessBusinessId(batch.getProcessBusinessId())
+                .withCurrentStatus(RUNNING)
+                .withLastUpdated(nowUtc().minusHours(4))
+                .withTimeoutAfterMillis(1_000_000L)
+                .withPersisted(false)
+                ;
+
+        BatchEntity batchEntity = entityBatchRepo
+                .save(batch)
+                .doOnError(t -> LOGGER.error("Could not save batch", t))
+                .block();
+
+        List<ExecutionEntity> execEntities = entityExecRepo
+                .saveAll(Flux.just(finishedExec, shortUnfinishedExec, longUnfinishedExec))
+                .doOnError(t -> LOGGER.error("Could not save execs", t))
+                .collectList()
+                .block();
+
+        // WHEN
+        Integer countSuccess = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                batch.getTenant(),
+                singletonList(SUCCESS),
+                nowUtc().minusHours(5),
+                nowUtc().plusHours(5)
+        ).block();
+
+        // THEN
+        assertThat(countSuccess).isEqualTo(1);
+
+        // WHEN
+        Integer countRunning = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                batch.getTenant(),
+                singletonList(RUNNING),
+                nowUtc().minusHours(5),
+                nowUtc().plusHours(5)
+        ).block();
+
+        // THEN
+        assertThat(countRunning).isEqualTo(2);
+
+        // WHEN
+        Integer countRunningTimed = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+                batch.getTenant(),
+                singletonList(RUNNING),
+                nowUtc().minusHours(1),
+                nowUtc().plusHours(1)
+        ).block();
+        assertThat(countRunningTimed).isEqualTo(1);
+
+    }
+
 
     @Test public void test_findByStatus() throws Exception {
         BatchEntity batch = randomInstance(BatchEntity.class).withPersisted(false);
