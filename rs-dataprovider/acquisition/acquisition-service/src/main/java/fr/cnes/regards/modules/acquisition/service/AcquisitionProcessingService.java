@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifi
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -119,7 +119,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
     @Autowired
-    private IScanDirectoriesInfo scanDirectoriesInfo;
+    private IScanDirectoriesInfoRepository scanDirectoriesInfoRepository;
 
     @Autowired
     private IPluginService pluginService;
@@ -150,6 +150,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
 
     @Override
     public Page<AcquisitionProcessingChain> getAllChains(Pageable pageable) throws ModuleException {
@@ -308,18 +309,19 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 // Manage scan plugin conf
                 createPluginConfiguration(fileInfo.getScanPlugin());
             } else {
-                // File info to update
                 // Manage scan plugin conf
                 Long fileInfoId = fileInfo.getId();
                 existingPlugin = fileInfoRepository.findOneScanPlugin(fileInfoId);
                 confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existingPlugin));
-                Optional<AcquisitionFileInfo> existingFileInfo = fileInfoRepository.findById(fileInfoId);
-                if(existingFileInfo.isPresent()) {
-                  //FIXME if the last modification date per directory is changed, update it
+
+                // Manage scan directories of file acquisition info
+                // compare if scan dir information were modified if true delete old conf
+                Optional<AcquisitionFileInfo> existingFileInfoOpt = fileInfoRepository.findById(fileInfoId);
+                if(existingFileInfoOpt.isPresent() && !existingFileInfoOpt.get().getScanDirInfo()
+                        .equals(fileInfo.getScanDirInfo())) {
+                    scanDirectoriesInfoRepository.deleteAll();
                 }
             }
-
-            // Save file info
             fileInfoRepository.save(fileInfo);
         }
 

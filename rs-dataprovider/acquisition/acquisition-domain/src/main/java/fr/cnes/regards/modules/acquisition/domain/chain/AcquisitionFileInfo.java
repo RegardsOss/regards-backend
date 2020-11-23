@@ -29,7 +29,6 @@ import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -99,7 +98,7 @@ public class AcquisitionFileInfo {
      */
     @NotNull(message = "At least one directory to scan is required")
     @Size(min = 1)
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "file_info_id", nullable = false, foreignKey = @ForeignKey(name = "fk_file_info_id"))
     private Set<ScanDirectoriesInfo> scanDirInfo;
 

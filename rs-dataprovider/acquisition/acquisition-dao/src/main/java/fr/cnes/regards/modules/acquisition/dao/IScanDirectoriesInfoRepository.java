@@ -27,6 +27,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Iliana Ghazali
  */
 
-public interface IScanDirectoriesInfo extends JpaRepository<ScanDirectoriesInfo, Long> {
+public interface IScanDirectoriesInfoRepository extends JpaRepository<ScanDirectoriesInfo, Long> {
 
 }

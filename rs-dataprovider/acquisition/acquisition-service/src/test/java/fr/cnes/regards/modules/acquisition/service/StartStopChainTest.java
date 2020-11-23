@@ -388,7 +388,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         }
 
         // Waiting for stop chain thread to really stop!
-        Thread.sleep(2_000);
+        Thread.sleep(4_000);
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
@@ -441,5 +441,4 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                           SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
                                                           SessionNotificationOperator.DEC));
     }
-
 }
