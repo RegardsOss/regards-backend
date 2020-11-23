@@ -88,7 +88,7 @@ public class ProcessPluginConfigController {
         return rightsConfigService.update(tenant, processBusinessId, rightsDto).block();
     }
 
-    @DeleteMapping(path = CONFIG_BID_SUFFIX, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = CONFIG_BID_SUFFIX)
     @ResourceAccess(description = "Delete the given process", role = DefaultRole.ADMIN)
     public ProcessPluginConfigurationRightsDTO delete(@PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId) {
         return rightsConfigService.delete(processBusinessId).block();
