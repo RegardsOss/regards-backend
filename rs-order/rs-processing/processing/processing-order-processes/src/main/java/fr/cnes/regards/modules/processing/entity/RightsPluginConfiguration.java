@@ -53,17 +53,24 @@ public class RightsPluginConfiguration {
     @Type(type = "string-array")
     private String[] datasets;
 
+    @Column(name="is_linked_to_all_datasets")
+    private boolean linkedToAllDatasets;
+
     public List<String> getDatasets() {
         return Arrays.asList(datasets);
     }
 
+    public boolean isLinkedToAllDatasets() {
+        return linkedToAllDatasets;
+    }
 
     public static ProcessPluginConfigurationRightsDTO toDto(RightsPluginConfiguration rights) {
         return new ProcessPluginConfigurationRightsDTO(
                 rights.getPluginConfiguration(),
                 new ProcessPluginConfigurationRightsDTO.Rights(
                         rights.getRole(),
-                        io.vavr.collection.List.ofAll(rights.getDatasets())
+                        io.vavr.collection.List.ofAll(rights.getDatasets()),
+                        rights.isLinkedToAllDatasets()
                 )
         );
     }
@@ -75,7 +82,8 @@ public class RightsPluginConfiguration {
                 UUID.fromString(dto.getPluginConfiguration().getBusinessId()),
                 tenant,
                 dto.getRights().getRole(),
-                dto.getRights().getDatasets().toJavaArray(String[]::new)
+                dto.getRights().getDatasets().toJavaArray(String[]::new),
+                dto.getRights().isLinkedToAllDatasets()
         );
     }
 }

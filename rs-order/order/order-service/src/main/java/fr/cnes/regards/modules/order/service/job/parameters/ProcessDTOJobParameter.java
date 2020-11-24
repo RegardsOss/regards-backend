@@ -8,7 +8,7 @@ public class ProcessDTOJobParameter extends JobParameter {
 
     public static final String NAME = "processDesc";
 
-    public ProcessDTOJobParameter(OrderProcessInfo value) {
+    public ProcessDTOJobParameter(PProcessDTO value) {
         super(NAME, value);
     }
 

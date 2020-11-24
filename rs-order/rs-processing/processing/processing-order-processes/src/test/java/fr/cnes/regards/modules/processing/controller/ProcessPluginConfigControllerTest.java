@@ -72,7 +72,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", "useless-processName-1")));
         io.vavr.collection.List<String> datasets = list(randomDataset(), randomDataset());
         ProcessPluginConfigurationRightsDTO created = client.create(new ProcessPluginConfigurationRightsDTO(
-                useless1Config, new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets)));
+                useless1Config, new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets, false)));
 
         // THERE IS THE CONFIG IN THE DATABASE!
         ProcessPluginConfigurationRightsDTO fetched = client
@@ -84,7 +84,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         fetched.getPluginConfiguration()
                 .setParameters(IPluginParam.set(IPluginParam.build("processName", "useless-processName-2")));
         ProcessPluginConfigurationRightsDTO toBeUpdated = new ProcessPluginConfigurationRightsDTO(
-                fetched.getPluginConfiguration(), new ProcessPluginConfigurationRightsDTO.Rights("ADMIN", datasets));
+                fetched.getPluginConfiguration(), new ProcessPluginConfigurationRightsDTO.Rights("ADMIN", datasets, false));
         ProcessPluginConfigurationRightsDTO updated = client
                 .update(UUID.fromString(toBeUpdated.getPluginConfiguration().getBusinessId()), toBeUpdated);
         assertThat(updated.getRights().getRole()).isEqualTo("ADMIN");
@@ -200,7 +200,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", s2)));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         return client.create(new ProcessPluginConfigurationRightsDTO(useless1Config,
-                new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", initDatasets)));
+                new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", initDatasets, false)));
     }
 
     @Before

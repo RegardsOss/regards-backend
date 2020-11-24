@@ -97,7 +97,8 @@ public class SimpleShellProcessPluginTest {
                 1L, pc, bid,
                 "tenant",
                 "EXPLOIT",
-                new String[]{}
+                new String[]{},
+                false
         );
     }
 

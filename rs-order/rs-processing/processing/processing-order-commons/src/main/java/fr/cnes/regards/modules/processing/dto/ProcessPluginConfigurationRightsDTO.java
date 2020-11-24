@@ -14,15 +14,12 @@ public class ProcessPluginConfigurationRightsDTO {
     @Value
     @AllArgsConstructor(onConstructor_ = { @JsonCreator })
     public static class Rights {
-
         String role;
-
         List<String> datasets;
-
+        boolean isLinkedToAllDatasets;
     }
 
     PluginConfiguration pluginConfiguration;
-
     Rights rights;
 
 }

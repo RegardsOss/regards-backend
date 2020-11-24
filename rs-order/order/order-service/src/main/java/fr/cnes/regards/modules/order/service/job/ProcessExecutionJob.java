@@ -1,9 +1,11 @@
 package fr.cnes.regards.modules.order.service.job;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketDatasetSelectionRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
@@ -12,6 +14,7 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
+import fr.cnes.regards.modules.order.service.processing.correlation.ExecutionCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ProcessInputCorrelationIdentifier;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
@@ -25,6 +28,7 @@ import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -57,13 +62,15 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     protected IProcessingEventSender eventSender;
 
     @Autowired
-    protected IBasketDatasetSelectionRepository dsSelRepository;
+    protected Gson gson;
 
     protected String tenant;
 
     protected String user;
 
     protected String userRole;
+
+    protected BasketDatasetSelection dsSel;
 
     protected BatchSuborderCorrelationIdentifier batchCorrelationId;
 
@@ -78,8 +85,6 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     @Override
     public void run() {
         try {
-            BasketDatasetSelection dsSel = findDatasetSelectionById(dsSelRepository, batchCorrelationId.getDsSelId());
-
             PBatchResponse batchResponse = createBatch(dsSel, processingClient);
 
             Scope scope = processInfo.getScope();
@@ -89,7 +94,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                     HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
                             .forEach((feature, inputs) -> {
                                 sendExecRequest(createExecRequestEvent(
-                                        feature.getIpId(),
+                                        gson.toJson(new ExecutionCorrelationIdentifier(user, Option.of(feature.getIpId()))),
                                         batchResponse.getBatchId(),
                                         createInputsForFeatureWithCorrelationId(feature, inputs)
                                 ));
@@ -98,7 +103,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                 }
                 case SUBORDER: {
                     sendExecRequest(createExecRequestEvent(
-                            batchCorrelationId.repr(),
+                            gson.toJson(new ExecutionCorrelationIdentifier(user, Option.none())),
                             batchResponse.getBatchId(),
                             createAllInputsWithCorrelationId()
                     ));
@@ -139,18 +144,6 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     private void sendExecRequest(PExecutionRequestEvent event) {
         this.eventSender.sendProcessingRequest(event)
             .onFailure(t -> LOGGER.error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
-    }
-
-    private List<OrderDataFile> allInputFilesIn(ProcessInputsPerFeature processInputDataFiles) {
-        return HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
-                .values()
-                .flatMap(Function.identity())
-                .collect(List.collector());
-    }
-
-    protected BasketDatasetSelection findDatasetSelectionById(IBasketDatasetSelectionRepository dsSelRepository, Long dsSelId) {
-        return dsSelRepository.findById(dsSelId)
-                .orElseThrow(() -> new DatasetSelectionNotFoundException(jobInfoId, dsSelId));
     }
 
     protected PBatchRequest createBatchRequest(
@@ -235,6 +228,8 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             } else if (ProcessBatchCorrelationIdJobParameter.isCompatible(param)) {
                 batchCorrelationId = BatchSuborderCorrelationIdentifier.parse(param.getValue())
                         .getOrElseThrow(() -> new JobParameterInvalidException("Cannot parse batchCorrelationId"));
+            } else if (BasketDatasetSelectionJobParameter.isCompatible(param)) {
+                dsSel = param.getValue();
             }
         }
         checkForMissingParameters();
@@ -249,6 +244,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         checkMissing(missingParams, processDesc, ProcessDTOJobParameter.NAME);
         checkMissing(missingParams, processResultDataFiles, ProcessOutputFilesJobParameter.NAME);
         checkMissing(missingParams, batchCorrelationId, ProcessBatchCorrelationIdJobParameter.NAME);
+        checkMissing(missingParams, dsSel, BasketDatasetSelectionJobParameter.NAME);
         if (!missingParams.isEmpty()) {
             throw new JobParameterMissingException("Missing parameters: " + StringUtils.join(missingParams, ", "));
         }
@@ -256,15 +252,6 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
     private void checkMissing(ArrayList<String> missingParams, Object field, String name) {
         if (field == null) { missingParams.add(name); }
-    }
-
-
-    public static class DatasetSelectionNotFoundException extends RuntimeException {
-        public DatasetSelectionNotFoundException(UUID jobInfoId, Long dsSelId) {
-            super(String.format("jobInfo:%s dsSel:%d The dataset selection could not be found.",
-                    jobInfoId, dsSelId)
-            );
-        }
     }
 
     public static class CouldNotCreateBatchException extends RuntimeException {
