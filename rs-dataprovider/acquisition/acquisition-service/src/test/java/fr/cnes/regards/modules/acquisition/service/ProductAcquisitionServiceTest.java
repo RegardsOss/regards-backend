@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropert
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -132,7 +134,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         productRepository.deleteAll();
     }
 
-    public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
+    public AcquisitionProcessingChain createProcessingChain(Set<Path> searchDir) throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -149,7 +151,9 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null)));
+        Set<ScanDirectoriesInfo> setScanDir = Sets.newHashSet();
+        searchDir.forEach((path) -> setScanDir.add(new ScanDirectoriesInfo(path, null)));
+        fileInfo.setScanDirInfo(setScanDir);
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
@@ -302,9 +306,13 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Test
     public void acquisitionWorkflowTest() throws ModuleException, InterruptedException {
-
-        AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
-                                                                                     "plugins", "scan"));
+        Set<Path> searchPaths = Sets.newHashSet(Paths.get("src", "test", "resources", "data", "plugins", "scan"),
+                                                    Paths.get("src", "test", "resources", "data", "plugins", "scan2"));
+        int nbFiles = 0;
+        for(Path folderPath : searchPaths) {
+            nbFiles+= new File(folderPath.toString()).listFiles().length;
+        }
+        AcquisitionProcessingChain processingChain = createProcessingChain(searchPaths);
         AcquisitionFileInfo fileInfo = processingChain.getFileInfos().iterator().next();
 
         Mockito.reset(publisher);
@@ -315,7 +323,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Check registered files
         Page<AcquisitionFile> inProgressFiles = acqFileRepository
                 .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, PageRequest.of(0, 1));
-        Assert.assertTrue(inProgressFiles.getTotalElements() == 4);
+        Assert.assertTrue(inProgressFiles.getTotalElements() == nbFiles);
 
         processingService.manageRegisteredFiles(processingChain, session);
 
@@ -332,16 +340,16 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         Page<AcquisitionFile> acquiredFiles = acqFileRepository
                 .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, PageRequest.of(0, 1));
-        Assert.assertTrue(acquiredFiles.getTotalElements() == 4);
+        Assert.assertTrue(acquiredFiles.getTotalElements() == nbFiles);
 
         // Find product to schedule
         long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
                                                                             Arrays.asList(ProductSIPState.SCHEDULED));
-        Assert.assertTrue(scheduled == 4);
+        Assert.assertTrue(scheduled == nbFiles);
 
-        Assert.assertTrue(fileService.countByChain(processingChain) == 4);
+        Assert.assertTrue(fileService.countByChain(processingChain) == nbFiles);
         Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == 4);
+                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == nbFiles);
         Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
                                                              Arrays.asList(AcquisitionFileState.ERROR)) == 0);
 
@@ -353,8 +361,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Check product
         Assert.assertEquals(0, productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
                 .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID)));
-        Assert.assertEquals(4, productService.countByChain(processingChain));
-        Assert.assertEquals(4,
+        Assert.assertEquals(nbFiles, productService.countByChain(processingChain));
+        Assert.assertEquals(nbFiles,
                             productService.countByProcessingChainAndSipStateIn(processingChain, Arrays
                                     .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED,
                                             ProductSIPState.SCHEDULED_INTERRUPTED)));
@@ -363,7 +371,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertEquals(0, fileService
                 .countByChainAndStateIn(processingChain,
                                         Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
-        Assert.assertEquals(4, fileService.countByChain(processingChain));
+        Assert.assertEquals(nbFiles, fileService.countByChain(processingChain));
         Assert.assertEquals(0, fileService
                 .countByChainAndStateIn(processingChain,
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
@@ -391,16 +399,16 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Integer incCompleted = callByProperty
                 .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.INC);
         Assert.assertNotNull(incCompleted);
-        Assert.assertEquals(4, incCompleted.intValue());
+        Assert.assertEquals(nbFiles, incCompleted.intValue());
 
         Integer decCompleted = callByProperty
                 .get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue() + "_" + SessionNotificationOperator.DEC);
         Assert.assertNotNull(decCompleted);
-        Assert.assertEquals(4, decCompleted.intValue());
+        Assert.assertEquals(nbFiles, decCompleted.intValue());
 
         Integer incGenerated = callByProperty
                 .get(SessionProductPropertyEnum.PROPERTY_GENERATED.getValue() + "_" + SessionNotificationOperator.INC);
         Assert.assertNotNull(incGenerated);
-        Assert.assertEquals(4, incGenerated.intValue());
+        Assert.assertEquals(nbFiles, incGenerated.intValue());
     }
 }

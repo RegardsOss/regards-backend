@@ -239,7 +239,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
-        // Save processing chainJe vois q
+        // Save processing chain
         return processingService.createChain(processingChain);
     }
 

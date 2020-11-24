@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -47,7 +46,6 @@ public interface IScanPlugin {
      * @param dirPath directory to scan
      * @param scanningDate last scanning date of the directory
      * @return list of detected files
-     * @throws ModuleException if error occurs!
      */
     List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate);
 }

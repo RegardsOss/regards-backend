@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import java.nio.file.Path;
@@ -223,13 +224,14 @@ public interface IAcquisitionProcessingService {
      * Register multiple files by creating multiple transactions by batch
      * @param filePathsIt
      * @param fileInfo
+     * @param scanDir
      * @param scanningDate
      * @param session
      * @param sessionOwner
      * @return
      * @throws ModuleException
      */
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDir,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException;
 
     /**
