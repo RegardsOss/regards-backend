@@ -32,6 +32,29 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
 
     @MultitenantTransactional
     @Test
+    public void test_linked_to_all_datasets_with_empty_array() {
+        String targetDataset = randomDataset();
+
+        PluginConfiguration configAllDatasetsArrayEmpty = makeConfig();
+        RightsPluginConfiguration allDatasetsArrayEmpty = new RightsPluginConfiguration(
+                null,
+                configAllDatasetsArrayEmpty,
+                UUID.fromString(configAllDatasetsArrayEmpty.getBusinessId()),
+                TENANT_PROJECTA,
+                "EXPLOIT",
+                new String[]{},
+                true
+        );
+        RightsPluginConfiguration persistedAllDatasetsArrayEmpty = rightsRepo.save(allDatasetsArrayEmpty);
+
+        java.util.List<RightsPluginConfiguration> referencingTargetBeforeUpdate = rightsRepo.findByReferencedDataset(targetDataset);
+        assertThat(referencingTargetBeforeUpdate).hasSize(1);
+        assertThat(referencingTargetBeforeUpdate.get(0).getId()).isEqualTo(persistedAllDatasetsArrayEmpty.getId());
+    }
+
+
+    @MultitenantTransactional
+    @Test
     public void test_crud_and_update() {
         String targetDataset = randomDataset();
 

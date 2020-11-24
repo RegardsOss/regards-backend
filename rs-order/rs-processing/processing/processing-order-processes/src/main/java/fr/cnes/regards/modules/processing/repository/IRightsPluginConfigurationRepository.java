@@ -51,7 +51,7 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
               + "        sub.datasets, "
               + "        sub.is_linked_to_all_datasets "
               + " FROM ( "
-              + "         SELECT rpc.*, unnest(rpc.datasets) AS x "
+              + "         SELECT rpc.*, unnest(array_append(rpc.datasets, '')) AS x "
               + "         FROM t_rights_plugin_configuration AS rpc "
               + " ) AS sub "
               + " WHERE sub.x = CAST(:dataset AS TEXT)"
