@@ -90,7 +90,8 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(Paths.get("src/resources/doesnotexist"), null)));
+        ScanDirectoriesInfo scanDirInfo = new ScanDirectoriesInfo(Paths.get("src/resources/doesnotexist"), null);
+        fileInfo.setScanDirInfo(Sets.newHashSet(scanDirInfo));
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
@@ -112,8 +113,8 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         filePaths.add(first);
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertEquals(2, processingService.registerFiles(filePaths.iterator(), fileInfo, Optional.of(lmd),
-                                                               "chain1", "session1"));
+        Assert.assertEquals(2, processingService.registerFiles(filePaths.iterator(), fileInfo, scanDirInfo,
+                                                               Optional.of(lmd), "chain1", "session1"));
 
     }
 }

@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifi
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -116,6 +117,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IScanDirectoriesInfoRepository scanDirInfoRepository;
 
     @Autowired
     private IPluginService pluginService;
@@ -669,23 +673,23 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     scanningDate = Optional
                             .of(OffsetDateTime.ofInstant((scanDirInfo.getLastDatePerDir()).toInstant(), ZoneOffset.UTC));
                 }
-                Path dirPath = scanDirInfo.getScannedDirectory();
                 // Scan folders
                 if (scanPlugin instanceof IFluxScanPlugin) {
-                    streamAndRegisterFiles(fileInfo, (IFluxScanPlugin) scanPlugin, dirPath, scanningDate, session,
+                    streamAndRegisterFiles(fileInfo, scanDirInfo, (IFluxScanPlugin) scanPlugin, scanningDate, session,
                                            processingChain.getLabel());
                 } else {
-                    scanAndRegisterFiles(fileInfo, scanPlugin, dirPath, scanningDate, session, processingChain.getLabel());
+                    scanAndRegisterFiles(fileInfo, scanDirInfo, scanPlugin, scanningDate, session, processingChain.getLabel());
                 }
             }
         }
     }
 
 
-    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, IScanPlugin scanPlugin, Path dirPath,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
+    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDirInfo,
+            IScanPlugin scanPlugin, Optional<OffsetDateTime> scanningDate, String session,
+            String sessionOwner) throws ModuleException {
         // Do scan
-        List<Path> scannedFiles = scanPlugin.scan(dirPath, scanningDate);
+        List<Path> scannedFiles = scanPlugin.scan(scanDirInfo.getScannedDirectory(), scanningDate);
 
         // Sort list according to last modification date
         Collections.sort(scannedFiles, (file1, file2) -> {
@@ -697,22 +701,23 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         });
         if (!scannedFiles.isEmpty()) {
-            registerFiles(scannedFiles.iterator(), fileInfo, scanningDate, session, sessionOwner);
+            registerFiles(scannedFiles.iterator(), fileInfo, scanDirInfo , scanningDate, session, sessionOwner);
         }
     }
-    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, IFluxScanPlugin scanPlugin, Path dirPath,
-            Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
-        List<Stream<Path>> streams = scanPlugin.stream(dirPath, scanningDate);
+    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDirInfo,
+            IFluxScanPlugin scanPlugin, Optional<OffsetDateTime> scanningDate, String session,
+            String sessionOwner) throws ModuleException {
+        List<Stream<Path>> streams = scanPlugin.stream(scanDirInfo.getScannedDirectory(), scanningDate);
         Iterator<Stream<Path>> streamsIt = streams.iterator();
         while (streamsIt.hasNext() && !Thread.currentThread().isInterrupted()) {
             try (Stream<Path> stream = streamsIt.next()) {
-                registerFiles(stream.iterator(), fileInfo, scanningDate, session, sessionOwner);
+                registerFiles(stream.iterator(), fileInfo, scanDirInfo , scanningDate, session, sessionOwner);
             }
         }
     }
 
     @Override
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo,
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDir,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         RegisterFilesResponse response;
         long totalCount = 0;
@@ -730,15 +735,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             LOGGER.info("{} new file(s) registered in {} milliseconds", response.getNumberOfRegisteredFiles(),
                         System.currentTimeMillis() - startTime);
         } while (response.hasNext());
-        // Update file info last update date with the most recent file registered.
-        if (lmd != null) {
-            OffsetDateTime finalLmd = lmd;
-            fileInfo.getScanDirInfo().forEach((dirInfo) -> {
-                if ((dirInfo.getLastDatePerDir() == null) || finalLmd.isAfter(dirInfo.getLastDatePerDir())) {
-                    dirInfo.setLastDatePerDir(finalLmd);
-                }
-            });
-            fileInfoRepository.save(fileInfo);
+        // Update scanDirInfo last update date with the most recent file registered.
+        if (lmd != null && (scanDir.getLastDatePerDir() == null) || lmd.isAfter(scanDir.getLastDatePerDir())) {
+            Optional<ScanDirectoriesInfo> existingScanDirInfoOpt = scanDirInfoRepository.findById(scanDir.getId());
+            if (existingScanDirInfoOpt.isPresent()) {
+                ScanDirectoriesInfo existingScanDirInfo = existingScanDirInfoOpt.get();
+                existingScanDirInfo.setLastDatePerDir(lmd);
+                scanDirInfoRepository.save(existingScanDirInfo);
+            }
         }
         return totalCount;
     }

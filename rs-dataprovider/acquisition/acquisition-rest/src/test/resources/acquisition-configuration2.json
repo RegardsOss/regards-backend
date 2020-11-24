@@ -36,7 +36,9 @@
                 "mimeType": "application/octet-stream",
                 "dataType": "RAWDATA",
                 "comment": "A comment",
-                "scanDirInfo":[{}]
+                "scanDirInfo":[{
+                  "scannedDirectory": "src/resources/doesnotexist"
+                }]
               }
             ],
             "validationPluginConf": {
