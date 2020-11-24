@@ -76,17 +76,16 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete", attributeNodes = {
-        @NamedAttributeNode(value = "fileInfos", subgraph = "graph.acquisition.chain.file.infos.scan"),
-        @NamedAttributeNode(value = "validationPluginConf"),
-        @NamedAttributeNode(value = "productPluginConf"),
-        @NamedAttributeNode(value = "generateSipPluginConf"),
-        @NamedAttributeNode(value = "postProcessSipPluginConf"),
-        @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
-        subgraphs = { @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
+        attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
+                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
+        subgraphs = {
+        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
                 attributeNodes = { @NamedAttributeNode(value = "parameters") }),
-                @NamedSubgraph(name = "graph.acquisition.chain.file.infos.scan",
-                        attributeNodes = { @NamedAttributeNode(value = "scanPlugin") }) }) })
+        @NamedSubgraph(name = "subgraph.file.info",
+                attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") })
+})
+})
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 

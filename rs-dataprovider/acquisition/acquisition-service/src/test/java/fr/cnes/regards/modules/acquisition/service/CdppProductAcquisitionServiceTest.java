@@ -18,6 +18,36 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
+import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
+import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
+import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +59,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,38 +72,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
-import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
-import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationState;
-
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
  *
@@ -82,7 +79,7 @@ import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationSt
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product" })
-public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
+public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(CdppProductAcquisitionServiceTest.class);
@@ -115,6 +112,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
     @Autowired
+    private IScanDirectoriesInfoRepository scanDirectoriesInfo;
+
+    @Autowired
     private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
     @Autowired
@@ -130,6 +130,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
     public void before() throws ModuleException, IOException {
         acqFileRepository.deleteAllInBatch();
         productRepository.deleteAllInBatch();
+        scanDirectoriesInfo.deleteAllInBatch();
         fileInfoRepository.deleteAllInBatch();
         acquisitionProcessingChainRepository.deleteAllInBatch();
         pluginConfRepository.deleteAllInBatch();
@@ -165,12 +166,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setComment("RAWDATA");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_DATA_PATH, null)));
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                                        PluginParameterTransformer.toJson(Arrays.asList(TARGET_DATA_PATH.toString()))));
-
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin RAWDATA" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
@@ -183,12 +181,10 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setComment("QUICKLOOK_SD");
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_SD);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_BROWSE_PATH, null)));
 
-        parameters = IPluginParam.set(
-                                      IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                                                         PluginParameterTransformer
-                                                                 .toJson(Arrays.asList(TARGET_BROWSE_PATH.toString()))),
-                                      IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
+
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
 
         scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
@@ -203,12 +199,9 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         fileInfo.setComment("QUICKLOOK_MD");
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_MD);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_BROWSE_PATH, null)));
 
-        parameters = IPluginParam.set(
-                                      IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                                                         PluginParameterTransformer
-                                                                 .toJson(Arrays.asList(TARGET_BROWSE_PATH.toString()))),
-                                      IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
+        parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
 
         scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         scanPlugin.setIsActive(true);
@@ -246,7 +239,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));
         processingChain.setStorages(storages);
 
-        // Save processing chainJe vois q
+        // Save processing chain
         return processingService.createChain(processingChain);
     }
 
@@ -261,7 +254,13 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         doAcquire(processingChain, session1, true);
 
         // Reset last modification date
-        processingChain.getFileInfos().forEach(f -> f.setLastModificationDate(null));
+        Set<AcquisitionFileInfo> fileInfoSet = processingChain.getFileInfos();
+        for(AcquisitionFileInfo fileInfo : fileInfoSet) {
+            Set<ScanDirectoryInfo> dirInfoSet = fileInfo.getScanDirInfo();
+            for(ScanDirectoryInfo dirInfo : dirInfoSet) {
+                dirInfo.setLastModificationDate(null);
+            }
+        }
 
         String session2 = "session2";
         doAcquire(processingChain, session2, true);
@@ -282,6 +281,8 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // Prepare data (browse data)
         FileUtils.copyDirectory(SRC_BROWSE_PATH.toFile(), TARGET_BROWSE_PATH.toFile(), false);
 
+        // Reload chain from database
+        processingChain = acquisitionProcessingChainRepository.findCompleteById(processingChain.getId());
         String session2 = "session2";
         doAcquire(processingChain, session2, false);
 

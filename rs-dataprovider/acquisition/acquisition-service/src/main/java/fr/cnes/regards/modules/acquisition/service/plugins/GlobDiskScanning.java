@@ -18,22 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -41,6 +25,18 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Scan directories and return detected files according to last modification date filter and glob pattern.
@@ -56,12 +52,7 @@ public class GlobDiskScanning implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
 
-    public static final String FIELD_DIRS = "directories";
-
     public static final String FIELD_GLOB = "glob";
-
-    @PluginParameter(name = FIELD_DIRS, label = "List of directories to scan")
-    private List<String> directories;
 
     @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
             optional = true)
@@ -71,36 +62,32 @@ public class GlobDiskScanning implements IScanPlugin {
     private INotificationClient notifClient;
 
     @Override
-    public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
-
+    public List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         List<Path> scannedFiles = new ArrayList<>();
 
-        for (String dir : directories) {
-            Path dirPath = Paths.get(dir);
-            if (Files.isDirectory(dirPath)) {
-                scannedFiles.addAll(scanDirectory(dirPath, lastModificationDate));
-            } else {
-                String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
-                                               dirPath.toString());
-                LOGGER.error(message);
-                notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
-                                   DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
-            }
+        if (Files.isDirectory(dirPath)) {
+            scannedFiles.addAll(scanDirectory(dirPath, scanningDate));
+        } else {
+            String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
+                                           dirPath.toString());
+            LOGGER.error(message);
+            notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
+                               DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
         }
         return scannedFiles;
     }
 
-    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
+    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         long startTime = System.currentTimeMillis();
         List<Path> scannedFiles = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, glob)) {
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
-                    if (lastModificationDate.isPresent()) {
-                        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
-                                                                      ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
+                    if (scanningDate.isPresent()) {
+                        OffsetDateTime lmd = OffsetDateTime
+                                .ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
+                        if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
                             scannedFiles.add(entry);
                         }
                     } else {

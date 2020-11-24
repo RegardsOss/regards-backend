@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -43,6 +25,21 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
+import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Scan directories and return detected files according to last modification date filter and glob pattern by stream.
@@ -58,12 +55,7 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskStreamScanning.class);
 
-    public static final String FIELD_DIRS = "directories";
-
     public static final String FIELD_GLOB = "glob";
-
-    @PluginParameter(name = FIELD_DIRS, label = "List of directories to scan")
-    private List<String> directories;
 
     @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
             optional = true)
@@ -73,31 +65,27 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
     private INotificationClient notifClient;
 
     @Override
-    public List<Stream<Path>> stream(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
-        List<Stream<Path>> dirStreams = Lists.newArrayList();
-        for (String dir : directories) {
-            Path dirPath = Paths.get(dir);
-            if (Files.isDirectory(dirPath)) {
-                dirStreams.add(scanDirectory(dirPath, lastModificationDate));
-            } else {
-                String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
-                                               dirPath.toString());
-                LOGGER.error(message);
-                notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
-                                   DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
-            }
+    public List<Stream<Path>> stream(Path dirPath, Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
+        List<Stream<Path>> dirStreams = new ArrayList<>();
+        if (Files.isDirectory(dirPath)) {
+            dirStreams.add(scanDirectory(dirPath, lastModificationDate));
+        } else {
+            String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
+                                           dirPath.toString());
+            LOGGER.error(message);
+            notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
+                               DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
         }
         return dirStreams;
     }
 
-    private Stream<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate)
-            throws ModuleException {
+    private Stream<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
         try {
             FileSystem fs = dirPath.getFileSystem();
             final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
             Predicate<Path> filter = entry -> {
-                boolean match = Files.isReadable(entry) && Files.isRegularFile(entry)
-                        && matcher.matches(entry.getFileName());
+                boolean match =
+                        Files.isReadable(entry) && Files.isRegularFile(entry) && matcher.matches(entry.getFileName());
                 if (match && lastModificationDate.isPresent()) {
                     OffsetDateTime lmd;
                     try {
@@ -111,7 +99,6 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
                 return match;
             };
             return Files.walk(dirPath).filter(filter);
-
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }

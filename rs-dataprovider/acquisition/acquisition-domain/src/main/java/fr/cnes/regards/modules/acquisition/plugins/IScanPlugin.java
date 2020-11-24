@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * First <b>required</b> step of acquisition processing chain. This step is used to make disk scanning for file
  * detection.
  *
  * @author Marc Sordi
- *
+ * @author Iliana Ghazali
  */
 @PluginInterface(description = "File scanning plugin contract")
 public interface IScanPlugin {
@@ -43,10 +41,11 @@ public interface IScanPlugin {
      * Plugin has to return files with last modification date equals or after the given last modification date.
      *  The system will filter duplicates if any!</b>
      *
-     * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
-     *            null for first scan!
+
+     *
+     * @param dirPath directory to scan
+     * @param scanningDate last scanning date of the directory
      * @return list of detected files
-     * @throws ModuleException if error occurs!
      */
-    List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException;
+    List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate);
 }

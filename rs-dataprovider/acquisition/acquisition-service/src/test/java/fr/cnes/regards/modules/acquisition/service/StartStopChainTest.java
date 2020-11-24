@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -49,13 +28,13 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
@@ -69,6 +48,24 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -144,12 +141,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDir, null)));
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(GlobDiskScanning.FIELD_DIRS,
-                                        PluginParameterTransformer.toJson(Arrays.asList(searchDir.toString()))));
-
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -162,13 +156,10 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             fileInfo2.setComment("A comment 2");
             fileInfo2.setMimeType(MediaType.IMAGE_PNG);
             fileInfo2.setDataType(DataType.THUMBNAIL);
-
-            Set<IPluginParam> parameters2 = IPluginParam.set(IPluginParam
-                    .build(GlobDiskScanning.FIELD_DIRS,
-                           PluginParameterTransformer.toJson(Arrays.asList(searchDirThumbnail.toString()))));
+            fileInfo2.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDirThumbnail, null)));
 
             PluginConfiguration scanPlugin2 = PluginConfiguration.build(GlobDiskScanning.class, "ScanPlugin2",
-                                                                        parameters2);
+                                                                        null);
             scanPlugin2.setIsActive(true);
             scanPlugin2.setLabel("Scan plugin");
             fileInfo2.setScanPlugin(scanPlugin2);
@@ -300,37 +291,37 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         // Check notification for acquired files
         // --- 195 files scanned / 100 data / 95 images
         Assert.assertEquals(195,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getValue(),
                                                           SessionNotificationOperator.INC));
         // Check notification for completed files
         // -- 95 products set to COMPLETED status
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
                                                           SessionNotificationOperator.INC));
         // -- 95 products pass from COMPLETED to GENERATED
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_COMPLETED.getValue(),
                                                           SessionNotificationOperator.DEC));
         // Check notification for incomplet files
         // --- After All 5 products should be incomplets
-        int inc = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+        int inc = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                 SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
                                                 SessionNotificationOperator.INC);
-        int dec = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+        int dec = notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                 SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
                                                 SessionNotificationOperator.DEC);
         Assert.assertEquals(5, inc - dec);
 
         // Check notification for generated products files
         Assert.assertEquals(95,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
                                                           SessionNotificationOperator.INC));
         Assert.assertEquals(0,
-                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
+                            notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
                                                           SessionNotificationOperator.DEC));
     }
@@ -397,7 +388,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         }
 
         // Waiting for stop chain thread to really stop!
-        Thread.sleep(2_000);
+        Thread.sleep(4_000);
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
@@ -450,5 +441,4 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                           SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
                                                           SessionNotificationOperator.DEC));
     }
-
 }
