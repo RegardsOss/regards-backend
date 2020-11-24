@@ -19,14 +19,14 @@
 
 package fr.cnes.regards.modules.acquisition.dao;
 
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * JPA repository to access {@link ScanDirectoriesInfo}
+ * JPA repository to access {@link ScanDirectoryInfo}
  * @author Iliana Ghazali
  */
 
-public interface IScanDirectoriesInfoRepository extends JpaRepository<ScanDirectoriesInfo, Long> {
+public interface IScanDirectoriesInfoRepository extends JpaRepository<ScanDirectoryInfo, Long> {
 
 }

@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -166,7 +166,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         fileInfo.setComment("RAWDATA");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(TARGET_DATA_PATH, null)));
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_DATA_PATH, null)));
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
@@ -181,7 +181,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         fileInfo.setComment("QUICKLOOK_SD");
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_SD);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(TARGET_BROWSE_PATH, null)));
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_BROWSE_PATH, null)));
 
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*B.png"));
@@ -199,7 +199,7 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         fileInfo.setComment("QUICKLOOK_MD");
         fileInfo.setMimeType(MediaType.IMAGE_PNG);
         fileInfo.setDataType(DataType.QUICKLOOK_MD);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(TARGET_BROWSE_PATH, null)));
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(TARGET_BROWSE_PATH, null)));
 
         parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*C.png"));
 
@@ -256,9 +256,9 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         // Reset last modification date
         Set<AcquisitionFileInfo> fileInfoSet = processingChain.getFileInfos();
         for(AcquisitionFileInfo fileInfo : fileInfoSet) {
-            Set<ScanDirectoriesInfo> dirInfoSet = fileInfo.getScanDirInfo();
-            for(ScanDirectoriesInfo dirInfo : dirInfoSet) {
-                dirInfo.setLastDatePerDir(null);
+            Set<ScanDirectoryInfo> dirInfoSet = fileInfo.getScanDirInfo();
+            for(ScanDirectoryInfo dirInfo : dirInfoSet) {
+                dirInfo.setLastModificationDate(null);
             }
         }
 
@@ -281,6 +281,8 @@ public class  CdppProductAcquisitionServiceTest extends AbstractMultitenantServi
         // Prepare data (browse data)
         FileUtils.copyDirectory(SRC_BROWSE_PATH.toFile(), TARGET_BROWSE_PATH.toFile(), false);
 
+        // Reload chain from database
+        processingChain = acquisitionProcessingChainRepository.findCompleteById(processingChain.getId());
         String session2 = "session2";
         doAcquire(processingChain, session2, false);
 

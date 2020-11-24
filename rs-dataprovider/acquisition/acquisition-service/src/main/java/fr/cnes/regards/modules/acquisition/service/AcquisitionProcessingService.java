@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import fr.cnes.regards.modules.acquisition.plugins.IFluxScanPlugin;
@@ -665,13 +665,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 throw new ModuleException(e1.getMessage(), e1);
             }
             // Get files to scan
-            Set<ScanDirectoriesInfo> scanDirs = fileInfo.getScanDirInfo();
-            for(ScanDirectoriesInfo scanDirInfo : scanDirs) {
+            Set<ScanDirectoryInfo> scanDirs = fileInfo.getScanDirInfo();
+            for(ScanDirectoryInfo scanDirInfo : scanDirs) {
                 // Clone scanning date for duplicate prevention
                 Optional<OffsetDateTime> scanningDate = Optional.empty();
-                if (scanDirInfo.getLastDatePerDir() != null) {
+                if (scanDirInfo.getLastModificationDate() != null) {
                     scanningDate = Optional
-                            .of(OffsetDateTime.ofInstant((scanDirInfo.getLastDatePerDir()).toInstant(), ZoneOffset.UTC));
+                            .of(OffsetDateTime.ofInstant((scanDirInfo.getLastModificationDate()).toInstant(), ZoneOffset.UTC));
                 }
                 // Scan folders
                 if (scanPlugin instanceof IFluxScanPlugin) {
@@ -685,9 +685,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
 
-    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDirInfo,
-            IScanPlugin scanPlugin, Optional<OffsetDateTime> scanningDate, String session,
-            String sessionOwner) throws ModuleException {
+    private void scanAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoryInfo scanDirInfo,
+            IScanPlugin scanPlugin, Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         // Do scan
         List<Path> scannedFiles = scanPlugin.scan(scanDirInfo.getScannedDirectory(), scanningDate);
 
@@ -703,8 +702,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         if (!scannedFiles.isEmpty()) {
             registerFiles(scannedFiles.iterator(), fileInfo, scanDirInfo , scanningDate, session, sessionOwner);
         }
+        if (scanningDate.isPresent()) {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with last update date > {} ", sessionOwner,
+                        session, fileInfo.getComment(), scannedFiles.size(), scanningDate.get().toString());
+        } else {
+            LOGGER.info("[{} - {}] Scan for files <{}> found {} files with no date filter.", sessionOwner, session,
+                        fileInfo.getComment(), scannedFiles.size());
+        }
     }
-    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDirInfo,
+    private void streamAndRegisterFiles(AcquisitionFileInfo fileInfo, ScanDirectoryInfo scanDirInfo,
             IFluxScanPlugin scanPlugin, Optional<OffsetDateTime> scanningDate, String session,
             String sessionOwner) throws ModuleException {
         List<Stream<Path>> streams = scanPlugin.stream(scanDirInfo.getScannedDirectory(), scanningDate);
@@ -717,7 +723,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDir,
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoryInfo scanDir,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException {
         RegisterFilesResponse response;
         long totalCount = 0;
@@ -736,13 +742,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                         System.currentTimeMillis() - startTime);
         } while (response.hasNext());
         // Update scanDirInfo last update date with the most recent file registered.
-        if (lmd != null && (scanDir.getLastDatePerDir() == null) || lmd.isAfter(scanDir.getLastDatePerDir())) {
-            Optional<ScanDirectoriesInfo> existingScanDirInfoOpt = scanDirInfoRepository.findById(scanDir.getId());
-            if (existingScanDirInfoOpt.isPresent()) {
-                ScanDirectoriesInfo existingScanDirInfo = existingScanDirInfoOpt.get();
-                existingScanDirInfo.setLastDatePerDir(lmd);
-                scanDirInfoRepository.save(existingScanDirInfo);
-            }
+        if (lmd != null && ((scanDir.getLastModificationDate() == null) || lmd.isAfter(scanDir.getLastModificationDate()))) {
+            scanDir.setLastModificationDate(lmd);
+            scanDirInfoRepository.save(scanDir);
         }
         return totalCount;
     }

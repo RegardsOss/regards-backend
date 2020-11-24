@@ -100,7 +100,7 @@ public class AcquisitionFileInfo {
     @Size(min = 1)
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "file_info_id", nullable = false, foreignKey = @ForeignKey(name = "fk_file_info_id"))
-    private Set<ScanDirectoriesInfo> scanDirInfo;
+    private Set<ScanDirectoryInfo> scanDirInfo;
 
 
     public Long getId() {
@@ -151,11 +151,11 @@ public class AcquisitionFileInfo {
         this.mandatory = mandatory;
     }
 
-    public Set<ScanDirectoriesInfo> getScanDirInfo() {
+    public Set<ScanDirectoryInfo> getScanDirInfo() {
         return scanDirInfo;
     }
 
-    public void setScanDirInfo(Set<ScanDirectoriesInfo> scanDirInfo) {
+    public void setScanDirInfo(Set<ScanDirectoryInfo> scanDirInfo) {
         this.scanDirInfo = scanDirInfo;
     }
 

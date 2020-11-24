@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
@@ -151,8 +151,8 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        Set<ScanDirectoriesInfo> setScanDir = Sets.newHashSet();
-        searchDir.forEach((path) -> setScanDir.add(new ScanDirectoriesInfo(path, null)));
+        Set<ScanDirectoryInfo> setScanDir = Sets.newHashSet();
+        searchDir.forEach((path) -> setScanDir.add(new ScanDirectoryInfo(path, null)));
         fileInfo.setScanDirInfo(setScanDir);
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
@@ -237,7 +237,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setComment("A streamed comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoriesInfo(searchDir, null)));
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDir, null)));
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskStreamScanning.class, null, null);
         scanPlugin.setIsActive(true);
