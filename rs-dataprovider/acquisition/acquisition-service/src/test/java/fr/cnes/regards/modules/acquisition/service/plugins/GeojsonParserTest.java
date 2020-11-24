@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,20 +32,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=geojson_test" })
 public class GeojsonParserTest extends AbstractMultitenantServiceTest {
@@ -60,10 +57,10 @@ public class GeojsonParserTest extends AbstractMultitenantServiceTest {
         Files.copy(Paths.get("src/test/resources/Ain.pdf"), Paths.get("target/output/Ain.pdf"));
         Files.copy(Paths.get("src/test/resources/Ain.png"), Paths.get("target/output/Ain.png"));
         Files.copy(Paths.get("src/test/resources/Ain.dat"), Paths.get("target/output/Ain.dat"));
-        plugin.setDirectoryToScan(targetDir.toString());
         plugin.setGson(gson);
         plugin.setFeatureId("nom");
-        List<Path> paths = plugin.scan(Optional.empty());
+        // scan directory
+        List<Path> paths = plugin.scan(targetDir, Optional.empty());
         Assert.assertEquals(1, paths.size());
     }
 

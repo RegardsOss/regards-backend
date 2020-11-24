@@ -18,6 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.geojson.Feature;
+import fr.cnes.regards.framework.geojson.FeatureCollection;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,27 +46,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
-
-import fr.cnes.regards.framework.geojson.Feature;
-import fr.cnes.regards.framework.geojson.FeatureCollection;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
 /**
  * This plugin allows to scan a directory to find geojson files and generate a new file to acquire for each feature found in it.
@@ -68,18 +63,12 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
 
-    public static final String FIELD_DIR = "directoryToScan";
-
     public static final String FIELD_FEATURE_ID = "featureId";
 
     public static final String ALLOW_EMPTY_FEATURES = "allowEmptyFeatures";
 
     @Autowired
     private Gson gson;
-
-    @PluginParameter(name = FIELD_DIR,
-            label = "Directories to scan to find *.json files containing geojson feature collections")
-    private String directoryToScan;
 
     @PluginParameter(name = FIELD_FEATURE_ID,
             label = "Json path to access the identifier of each feature in the geojson file", optional = false)
@@ -91,28 +80,28 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     private boolean allowEmptyFeature;
 
     @Override
-    public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
+    public List<Path> scan(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         List<Path> scannedFiles = new ArrayList<>();
-        Path dirPath = Paths.get(directoryToScan);
         if (Files.isDirectory(dirPath)) {
-            scannedFiles.addAll(scanDirectory(dirPath, lastModificationDate));
+            scannedFiles.addAll(scanDirectory(dirPath, scanningDate));
         } else {
             throw new PluginUtilsRuntimeException(String.format("Invalid directory path : %s", dirPath.toString()));
         }
+
         return scannedFiles;
 
     }
 
-    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
+    private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> scanningDate) {
         List<Path> genetateFeatureFiles = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, "*.geojson")) {
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
-                    if (lastModificationDate.isPresent()) {
-                        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
-                                                                      ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
+                    if (scanningDate.isPresent()) {
+                        OffsetDateTime lmd = OffsetDateTime
+                                .ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
+                        if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
                             genetateFeatureFiles.addAll(generateFeatureFiles(entry));
                         }
                     } else {
@@ -128,8 +117,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
     }
 
     private List<Path> generateFeatureFiles(Path entry) {
-
-        List<Path> generatedFiles = Lists.newArrayList();
+    List<Path> generatedFiles = new ArrayList<>();
 
         try {
 
@@ -155,8 +143,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
 
                 if (Files.exists(rawDataFile)) {
-                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(rawDataFile.toFile()),
-                                                                       "MD5");
+                    String checksum = ChecksumUtils
+                            .computeHexChecksum(new FileInputStream(rawDataFile.toFile()), "MD5");
                     builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, rawDataFile.toAbsolutePath(),
                                                                          rawDataFile.getFileName().toString(), "MD5",
                                                                          checksum, rawDataFile.toFile().length());
@@ -164,8 +152,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.addContentInformation();
                 }
                 if (Files.exists(thumbnailFilePng)) {
-                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFilePng.toFile()),
-                                                                       "MD5");
+                    String checksum = ChecksumUtils
+                            .computeHexChecksum(new FileInputStream(thumbnailFilePng.toFile()), "MD5");
                     builder.getContentInformationBuilder()
                             .setDataObject(DataType.THUMBNAIL, thumbnailFilePng.toAbsolutePath(),
                                            thumbnailFilePng.getFileName().toString(), "MD5", checksum,
@@ -181,8 +169,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.addContentInformation();
                 }
                 if (Files.exists(thumbnailFileJpg)) {
-                    String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFileJpg.toFile()),
-                                                                       "MD5");
+                    String checksum = ChecksumUtils
+                            .computeHexChecksum(new FileInputStream(thumbnailFileJpg.toFile()), "MD5");
                     builder.getContentInformationBuilder()
                             .setDataObject(DataType.THUMBNAIL, thumbnailFileJpg.toAbsolutePath(),
                                            thumbnailFileJpg.getFileName().toString(), "MD5", checksum,
@@ -199,10 +187,10 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 }
                 if (Files.exists(descFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(descFile.toFile()), "MD5");
-                    builder.getContentInformationBuilder().setDataObject(DataType.DESCRIPTION,
-                                                                         descFile.toAbsolutePath(),
-                                                                         descFile.getFileName().toString(), "MD5",
-                                                                         checksum, descFile.toFile().length());
+                    builder.getContentInformationBuilder()
+                            .setDataObject(DataType.DESCRIPTION, descFile.toAbsolutePath(),
+                                           descFile.getFileName().toString(), "MD5", checksum,
+                                           descFile.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_PDF);
                     builder.addContentInformation();
                 }
@@ -220,10 +208,6 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
             LOGGER.error(e.getMessage(), e);
         }
         return generatedFiles;
-    }
-
-    public void setDirectoryToScan(String dir) {
-        this.directoryToScan = dir;
     }
 
     public void setGson(Gson gson) {

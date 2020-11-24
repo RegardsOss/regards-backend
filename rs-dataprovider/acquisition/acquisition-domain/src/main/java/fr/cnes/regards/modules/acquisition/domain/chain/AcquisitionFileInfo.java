@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.urn.DataType;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -32,19 +35,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
+import javax.validation.constraints.Size;
 import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.urn.DataType;
 
 /**
  *
@@ -75,13 +73,6 @@ public class AcquisitionFileInfo {
     private PluginConfiguration scanPlugin;
 
     /**
-     * The most recent last modification date of all scanned files as millisecond
-     */
-    @Column(name = "lastModificationDate")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastModificationDate;
-
-    /**
      * A {@link String} corresponding to the data file mime-type
      */
     @NotNull(message = "Mime type is required")
@@ -101,6 +92,16 @@ public class AcquisitionFileInfo {
     @Column(name = "comment")
     @Type(type = "text")
     private String comment;
+
+    /**
+     * Scan directories information
+     */
+    @NotNull(message = "At least one directory to scan is required")
+    @Size(min = 1)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "file_info_id", nullable = false, foreignKey = @ForeignKey(name = "fk_file_info_id"))
+    private Set<ScanDirectoryInfo> scanDirInfo;
+
 
     public Long getId() {
         return id;
@@ -146,16 +147,16 @@ public class AcquisitionFileInfo {
         return mandatory;
     }
 
-    public OffsetDateTime getLastModificationDate() {
-        return lastModificationDate;
-    }
-
-    public void setLastModificationDate(OffsetDateTime lastModificationDate) {
-        this.lastModificationDate = lastModificationDate;
-    }
-
     public void setMandatory(Boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public Set<ScanDirectoryInfo> getScanDirInfo() {
+        return scanDirInfo;
+    }
+
+    public void setScanDirInfo(Set<ScanDirectoryInfo> scanDirInfo) {
+        this.scanDirInfo = scanDirInfo;
     }
 
     @Override

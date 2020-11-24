@@ -16,23 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package fr.cnes.regards.modules.acquisition.dao;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import java.util.Optional;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 /**
- * {@link AcquisitionFileInfo} repository
- *
- * @author Marc Sordi
+ * JPA repository to access {@link ScanDirectoryInfo}
+ * @author Iliana Ghazali
  */
-@Repository
-public interface IAcquisitionFileInfoRepository extends JpaRepository<AcquisitionFileInfo, Long> {
 
-    @Query("select fileInfo.scanPlugin from AcquisitionFileInfo fileInfo,PluginConfiguration conf where fileInfo.id = ?1 and fileInfo.scanPlugin.id = conf.id")
-    Optional<PluginConfiguration> findOneScanPlugin(Long fileInfoId);
+public interface IScanDirectoriesInfoRepository extends JpaRepository<ScanDirectoryInfo, Long> {
+
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -136,10 +137,10 @@ public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantSer
         fileInfo.setComment("GeoJson");
         fileInfo.setMimeType(MediaType.APPLICATION_JSON);
         fileInfo.setDataType(DataType.RAWDATA);
+        fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(dataPath, null)));
 
         Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"),
-                     IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_DIR, dataPath.toString()));
+                .set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"));
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GeoJsonFeatureCollectionParserPlugin.class, null,
                                                                    parameters);
