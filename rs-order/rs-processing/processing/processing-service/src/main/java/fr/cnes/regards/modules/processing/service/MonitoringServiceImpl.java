@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -67,6 +68,7 @@ public class MonitoringServiceImpl implements IMonitoringService {
                                 return p;
                             })
                     )
+                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
                     .doOnError(t -> LOGGER.error(t.getMessage(), t));
         } else {
             return execRepo
@@ -79,6 +81,7 @@ public class MonitoringServiceImpl implements IMonitoringService {
                                 return p;
                             })
                     )
+                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
                     .doOnError(t -> LOGGER.error(t.getMessage(), t));
         }
     }
