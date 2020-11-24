@@ -2,10 +2,12 @@ package fr.cnes.regards.modules.order.dao;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,15 +44,46 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      */
     Optional<Order> findByLabelAndOwner(String label, String owner);
 
-    @EntityGraph("graph.order.simple")
-    Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest);
+    default Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest) {
+        // pagination and entity graph do not cohexist well so we need to handle it by hand
+        // 1. get a page of Ids concerned
+        Page<Long> idPage = findIdPageByOrderByCreationDateDesc(pageRequest);
+        // 2. query Orders from these ids
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        // 3. Recreate the page from this
+        return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
+    }
 
-    @EntityGraph("graph.order.simple")
-    Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
+    Page<Long> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
 
-    @EntityGraph("graph.order.simple")
-    Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
+    default Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest) {
+        // pagination and entity graph do not cohexist well so we need to handle it by hand
+        // 1. get a page of Ids concerned
+        Page<Long> idPage = findAllIdsByOwnerOrderByCreationDateDesc(owner, pageRequest);
+        // 2. query Orders from these ids
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        // 3. Recreate the page from this
+        return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
+    }
+
+    Page<Long> findAllIdsByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
+
+    default Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
+            Pageable pageRequest) {
+        // pagination and entity graph do not cohexist well so we need to handle it by hand
+        // 1. get a page of Ids concerned
+        Page<Long> idPage = findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(owner, excludeStatuses, pageRequest);
+        // 2. query Orders from these ids
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        // 3. Recreate the page from this
+        return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
+    }
+
+    Page<Long> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
             Pageable pageRequest);
+
+    @EntityGraph("graph.order.simple")
+    List<Order> findAllByIdInOrderByCreationDateDesc(Collection<Long> ids);
 
     @EntityGraph("graph.order.simple")
     List<Order> findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(boolean waitingForUser,
@@ -70,7 +103,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      */
     default List<Order> findAsideOrders(int daysBeforeConsideringAside) {
         OffsetDateTime date = OffsetDateTime.now().minus(daysBeforeConsideringAside, ChronoUnit.DAYS);
-        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0, date,
+        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0,
+                                                                                                            date,
                                                                                                             OrderStatus.PENDING,
                                                                                                             OrderStatus.DELETED,
                                                                                                             OrderStatus.FAILED,
@@ -81,15 +115,19 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      * Find one expired order.
      */
     default Optional<Order> findOneExpiredOrder() {
-        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(), OrderStatus.PENDING,
-                                                          OrderStatus.RUNNING, OrderStatus.PAUSED);
+        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(),
+                                                          OrderStatus.PENDING,
+                                                          OrderStatus.RUNNING,
+                                                          OrderStatus.PAUSED);
     }
 
     /**
      * Find all finished orders not waiting for user with availableCount > 0
      */
     default List<Order> findFinishedOrdersToUpdate() {
-        return findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(false, 0, OrderStatus.EXPIRED,
+        return findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(false,
+                                                                                   0,
+                                                                                   OrderStatus.EXPIRED,
                                                                                    OrderStatus.DONE,
                                                                                    OrderStatus.DONE_WITH_WARNING,
                                                                                    OrderStatus.FAILED);
