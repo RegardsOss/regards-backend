@@ -8,8 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
@@ -39,7 +42,7 @@ public class PMonitoringReactiveController {
     }
 
     @GetMapping
-    public Mono<Page<PExecution>> executions(
+    public Mono<PagedModel<EntityModel<PExecution>>> executions(
             @RequestParam(name = TENANT_PARAM) String tenant,
             @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
             @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
@@ -56,7 +59,15 @@ public class PMonitoringReactiveController {
         OffsetDateTime to = TimeUtils.parseUtc(toStr);
 
         PageRequest paged = PageRequest.of(page, size);
-        return monitoringService.getExecutionsPageForCriteria(tenant, status, userEmail, from, to, paged);
+        return monitoringService.getExecutionsPageForCriteria(tenant, status, userEmail, from, to, paged)
+                .map(p -> {
+                    PagedModel<EntityModel<PExecution>> result = PagedModel.of(
+                            p.getContent().stream().map(EntityModel::of).collect(Collectors.toList()),
+                            new PagedModel.PageMetadata(size, page, p.getTotalElements(), p.getTotalPages())
+                    );
+                    return result;
+                }
+        );
     }
 
 }

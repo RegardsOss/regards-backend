@@ -5,29 +5,25 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
 import fr.cnes.regards.modules.processing.entity.*;
-import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
+import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
+import fr.cnes.regards.modules.processing.testutils.servlet.TestSpringConfiguration;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;
-import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
-import fr.cnes.regards.modules.processing.utils.random.RandomUtils;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
-import lombok.Getter;
-import lombok.Setter;
-import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -37,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -51,16 +45,17 @@ import java.util.Random;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ContextConfiguration(
-        classes = { TestSpringConfiguration.class, PMonitoringReactiveControllerTest.Config.class }
+        classes = { TestSpringConfiguration.class, PMonitoringControllerTest.Config.class }
 )
-public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
+public class PMonitoringControllerTest extends AbstractProcessingTest {
 
     @Autowired private IBatchEntityRepository batchRepo;
     @Autowired private IExecutionEntityRepository execRepo;
@@ -81,6 +76,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         // THEN
         assertThat(response.getMetadata().getTotalElements()).isEqualTo(35);
         assertThat(response.getContent()).hasSize(10);
+
 
         // WHEN
         PagedModel<EntityModel<PExecution>> responseEmpty = client
@@ -173,7 +169,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
     //==================================================================================================================
     //==================================================================================================================
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringReactiveControllerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringControllerTest.class);
 
     private Client client;
 
@@ -184,7 +180,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
                 .encoder(new GsonLoggingEncoder(gson))
                 .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port, feignSecurityManager));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
-        FeignSecurityManager.asSystem();
+        FeignSecurityManager.asUser("regards@cnes.fr", DefaultRole.ADMIN.name());
     }
 
     @RestClient(name = "rs-processing-config", contextId = "rs-processing.rest.plugin-conf.client")
@@ -199,9 +195,11 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
     }
 
     @Configuration
-    @EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
     static class Config {
-
+        @Bean
+        public IWorkloadEngineRepository workloadEngineRepository() {
+            return Mockito.mock(IWorkloadEngineRepository.class);
+        }
     }
 
 }
