@@ -223,7 +223,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         long startTime = System.currentTimeMillis();
         productService.deleteByProcessingChain(acqProService.getFullChains().get(0));
         LOGGER.info("File(s) deleted by chain in {} milliseconds", System.currentTimeMillis() - startTime);
-        if ((System.currentTimeMillis() - startTime) > 10_000) {
+        if ((System.currentTimeMillis() - startTime) > 15_000) {
             Assert.fail("Performance not reached for prodcuts deletion by chain");
         }
     }
@@ -233,7 +233,7 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
         long startTime = System.currentTimeMillis();
         productService.deleteBySession(acqProService.getFullChains().get(1), sessionName);
         LOGGER.info("File(s) deleted by session in {} milliseconds", System.currentTimeMillis() - startTime);
-        if ((System.currentTimeMillis() - startTime) > 10_000) {
+        if ((System.currentTimeMillis() - startTime) > 15_000) {
             Assert.fail("Performance not reached for prodcuts deletion by session");
         }
     }
