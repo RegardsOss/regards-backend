@@ -5,6 +5,7 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
@@ -184,7 +185,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
                 .encoder(new GsonLoggingEncoder(gson))
                 .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port, feignSecurityManager));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
-        FeignSecurityManager.asSystem();
+        FeignSecurityManager.asUser("regards@cnes.fr", DefaultRole.ADMIN.name());
     }
 
     @RestClient(name = "rs-processing-config", contextId = "rs-processing.rest.plugin-conf.client")
