@@ -68,7 +68,7 @@ public interface IExecutionEntityRepository
             OffsetDateTime to
     );
 
-    Flux<ExecutionEntity> findByProcessBusinessIdAndCurrentStatusIn(
+    Mono<Integer> countByProcessBusinessIdAndCurrentStatusIn(
             UUID processBusinessId,
             List<ExecutionStatus> nonFinalStatusList
     );

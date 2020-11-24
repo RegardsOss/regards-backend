@@ -54,7 +54,7 @@ public interface IPExecutionRepository {
             OffsetDateTime to
     );
 
-    Flux<PExecution> findByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
+    Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
 
 
 }

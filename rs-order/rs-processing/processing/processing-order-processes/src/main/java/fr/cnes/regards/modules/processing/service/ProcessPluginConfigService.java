@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.processing.service;
 
 import java.util.UUID;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,8 @@ import io.vavr.control.Option;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
+
 @Service
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
@@ -44,13 +47,20 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private final IPublisher publisher;
 
-    public ProcessPluginConfigService(IPluginConfigurationRepository pluginConfigRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IPExecutionRepository executionRepository,
-            IPublisher publisher) {
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public ProcessPluginConfigService(
+            IPluginConfigurationRepository pluginConfigRepo,
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+            IPExecutionRepository executionRepository,
+            IPublisher publisher,
+            IRuntimeTenantResolver runtimeTenantResolver
+    ) {
         this.pluginConfigRepo = pluginConfigRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;
         this.publisher = publisher;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -98,15 +108,31 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     }
 
     @Override
-    public Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId) {
-        return Mono.fromCallable(() -> {
+    public Mono<Boolean> canDelete(UUID processBusinessId) {
+        return executionRepository
+            .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
+            .map(count -> count == 0);
+    }
+
+    @Override
+    public Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId, String tenant) {
+        return Mono.defer(() -> {
             RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
-            executionRepository.findByProcessBusinessIdAndStatusIn(processBusinessId,
-                                                                   ExecutionStatus.nonFinalStatusList());
-            rightsPluginConfigRepo.delete(rights);
-            return RightsPluginConfiguration.toDto(rights);
-        }).doOnNext(dto -> publisher
-                .publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.DELETE, dto, null)));
+            return canDelete(processBusinessId).flatMap(canDelete -> {
+                if (canDelete) {
+                    runtimeTenantResolver.forceTenant(tenant); // We're in some reactor thread somewhere...
+                    rightsPluginConfigRepo.delete(rights);
+                    runtimeTenantResolver.clearTenant();
+                    return Mono.just(RightsPluginConfiguration.toDto(rights));
+                }
+                else {
+                    return Mono.error(new DeleteAttemptOnUsedProcessException(processBusinessId));
+                }
+            })
+            .doOnNext(dto ->
+                    publisher.publish(new RightsPluginConfigurationEvent(DELETE, dto, null))
+            );
+        });
     }
 
     @Override
@@ -154,6 +180,19 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class);
         } catch (ClassNotFoundException e) {
             return false;
+        }
+    }
+
+    public static class DeleteAttemptOnUsedProcessException extends Exception {
+        private final UUID processBusinessID;
+
+        public DeleteAttemptOnUsedProcessException(UUID processBusinessID) {
+            super(String.format("Can not delete process %s because still in use by executions.", processBusinessID));
+            this.processBusinessID = processBusinessID;
+        }
+
+        public UUID getProcessBusinessID() {
+            return processBusinessID;
         }
     }
 

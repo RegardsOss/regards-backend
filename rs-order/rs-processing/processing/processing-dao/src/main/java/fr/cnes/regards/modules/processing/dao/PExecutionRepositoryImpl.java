@@ -55,12 +55,11 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             .doOnNext(e -> cache.put(e.getId(), e));
     }
 
-    @Override public Flux<PExecution> findByProcessBusinessIdAndStatusIn(
+    @Override public Mono<Integer> countByProcessBusinessIdAndStatusIn(
             UUID processBusinessId,
             Seq<ExecutionStatus> nonFinalStatusList
     ) {
-        return entityExecRepo.findByProcessBusinessIdAndCurrentStatusIn(processBusinessId, nonFinalStatusList.toJavaList())
-                .map(mapper::toDomain);
+        return entityExecRepo.countByProcessBusinessIdAndCurrentStatusIn(processBusinessId, nonFinalStatusList.toJavaList());
     }
 
     @Override public Mono<PExecution> update(PExecution exec) {

@@ -19,7 +19,9 @@ public interface IProcessPluginConfigService {
 
     Mono<ProcessPluginConfigurationRightsDTO> create(String tenant, ProcessPluginConfigurationRightsDTO rightsDto);
 
-    Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId);
+    Mono<Boolean> canDelete(UUID processBusinessId);
+
+    Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId, String tenant);
 
     Mono<Void> putDatasetLinkedProcesses(List<UUID> processBusinessIds, String dataset);
 
