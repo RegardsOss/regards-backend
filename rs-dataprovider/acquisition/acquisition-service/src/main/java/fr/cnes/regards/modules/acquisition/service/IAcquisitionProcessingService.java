@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
 import java.nio.file.Path;
@@ -231,7 +231,7 @@ public interface IAcquisitionProcessingService {
      * @return
      * @throws ModuleException
      */
-    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoriesInfo scanDir,
+    public long registerFiles(Iterator<Path> filePathsIt, AcquisitionFileInfo fileInfo, ScanDirectoryInfo scanDir,
             Optional<OffsetDateTime> scanningDate, String session, String sessionOwner) throws ModuleException;
 
     /**

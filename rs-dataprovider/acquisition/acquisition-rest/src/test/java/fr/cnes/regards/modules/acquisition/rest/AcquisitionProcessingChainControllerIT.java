@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainReposi
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChainType;
 import fr.cnes.regards.modules.acquisition.domain.payload.UpdateAcquisitionProcessingChains;
@@ -248,7 +248,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         // Update fileInfo
         loadedChain.getFileInfos().forEach((fileInfo) -> fileInfo.getScanDirInfo().add(
-                new ScanDirectoriesInfo(Paths.get("src/resources/fake"), OffsetDateTime.now())
+                new ScanDirectoryInfo(Paths.get("src/resources/fake"), OffsetDateTime.now())
         ));
 
         // Document path parameter

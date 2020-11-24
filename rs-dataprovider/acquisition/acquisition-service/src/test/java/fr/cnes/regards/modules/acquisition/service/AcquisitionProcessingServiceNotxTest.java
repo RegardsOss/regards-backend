@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoriesInfo;
+import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -90,7 +90,7 @@ public class AcquisitionProcessingServiceNotxTest extends AbstractMultitenantSer
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-        ScanDirectoriesInfo scanDirInfo = new ScanDirectoriesInfo(Paths.get("src/resources/doesnotexist"), null);
+        ScanDirectoryInfo scanDirInfo = new ScanDirectoryInfo(Paths.get("src/resources/doesnotexist"), null);
         fileInfo.setScanDirInfo(Sets.newHashSet(scanDirInfo));
 
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);

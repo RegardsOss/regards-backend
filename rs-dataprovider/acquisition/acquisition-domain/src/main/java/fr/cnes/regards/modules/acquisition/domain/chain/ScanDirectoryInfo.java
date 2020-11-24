@@ -41,7 +41,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="t_scan_dir_info")
-public class ScanDirectoriesInfo {
+public class ScanDirectoryInfo {
 
     @Id
     @SequenceGenerator(name= "ScanDirInfoSequence", initialValue = 1, sequenceName = "seq_scan_dir_info")
@@ -60,14 +60,14 @@ public class ScanDirectoriesInfo {
      */
     @Column(name = "last_modification_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastDatePerDir;
+    private OffsetDateTime lastModificationDate;
 
-    public ScanDirectoriesInfo() {
+    public ScanDirectoryInfo() {
     }
 
-    public ScanDirectoriesInfo(Path scannedDirectory, OffsetDateTime lastDatePerDir) {
+    public ScanDirectoryInfo(Path scannedDirectory, OffsetDateTime lastModificationDate) {
         this.scannedDirectory = scannedDirectory;
-        this.lastDatePerDir = lastDatePerDir;
+        this.lastModificationDate = lastModificationDate;
     }
 
     public Long getId() {
@@ -78,12 +78,12 @@ public class ScanDirectoriesInfo {
         this.id = id;
     }
 
-    public OffsetDateTime getLastDatePerDir() {
-        return lastDatePerDir;
+    public OffsetDateTime getLastModificationDate() {
+        return lastModificationDate;
     }
 
-    public void setLastDatePerDir(OffsetDateTime lastDatePerDir) {
-        this.lastDatePerDir = lastDatePerDir;
+    public void setLastModificationDate(OffsetDateTime lastModificationDate) {
+        this.lastModificationDate = lastModificationDate;
     }
 
     public Path getScannedDirectory() {
@@ -100,13 +100,13 @@ public class ScanDirectoriesInfo {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        ScanDirectoriesInfo that = (ScanDirectoriesInfo) o;
+        ScanDirectoryInfo that = (ScanDirectoryInfo) o;
         return Objects.equals(scannedDirectory, that.scannedDirectory) && Objects
-                .equals(lastDatePerDir, that.lastDatePerDir);
+                .equals(lastModificationDate, that.lastModificationDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(scannedDirectory, lastDatePerDir);
+        return Objects.hash(scannedDirectory, lastModificationDate);
     }
 }
