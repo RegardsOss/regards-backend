@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +29,31 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
     @Before
     public void setup() {
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
+    }
+
+
+    @MultitenantTransactional
+    @Test
+    public void test_update_role() {
+
+        PluginConfiguration pc = makeConfig();
+        UUID processBusinessId = UUID.fromString(pc.getBusinessId());
+        RightsPluginConfiguration rpc = new RightsPluginConfiguration(
+                null,
+                pc,
+                processBusinessId,
+                TENANT_PROJECTA,
+                "EXPLOIT",
+                new String[]{},
+                true
+        );
+        RightsPluginConfiguration persistedAllDatasetsArrayEmpty = rightsRepo.save(rpc);
+
+        rightsRepo.updateRoleToForProcessBusinessId("ADMIN", processBusinessId);
+
+
+        Optional<RightsPluginConfiguration> fetched = rightsRepo.findById(rpc.getId());
+        assertThat(fetched.map(RightsPluginConfiguration::getRole)).contains("ADMIN");
     }
 
     @MultitenantTransactional

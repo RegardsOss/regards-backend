@@ -17,6 +17,29 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
 
     Option<RightsPluginConfiguration> findByPluginConfiguration(PluginConfiguration pluginConfigurationId);
 
+    @Query(
+            value = " SELECT "
+                    + " DISTINCT ON (sub.id) "
+                    + "        sub.id,"
+                    + "        sub.plugin_configuration_id, "
+                    + "        sub.process_business_id, "
+                    + "        sub.tenant, "
+                    + "        sub.user_role, "
+                    + "        sub.datasets, "
+                    + "        sub.is_linked_to_all_datasets "
+                    + " FROM ( "
+                    + "         SELECT rpc.*, unnest(array_append(rpc.datasets, '')) AS x "
+                    + "         FROM t_rights_plugin_configuration AS rpc "
+                    + " ) AS sub "
+                    + " WHERE sub.x = CAST(:dataset AS TEXT)"
+                    + "    OR sub.is_linked_to_all_datasets = TRUE"
+                    + " ORDER BY sub.id ",
+            nativeQuery = true
+    )
+    List<RightsPluginConfiguration> findByReferencedDataset(
+            @Param("dataset") String dataset
+    );
+
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(
         value = " UPDATE t_rights_plugin_configuration AS rpc "
@@ -40,27 +63,13 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
             @Param("dataset") String dataset
     );
 
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(
-        value = " SELECT "
-              + " DISTINCT ON (sub.id) "
-              + "        sub.id,"
-              + "        sub.plugin_configuration_id, "
-              + "        sub.process_business_id, "
-              + "        sub.tenant, "
-              + "        sub.user_role, "
-              + "        sub.datasets, "
-              + "        sub.is_linked_to_all_datasets "
-              + " FROM ( "
-              + "         SELECT rpc.*, unnest(array_append(rpc.datasets, '')) AS x "
-              + "         FROM t_rights_plugin_configuration AS rpc "
-              + " ) AS sub "
-              + " WHERE sub.x = CAST(:dataset AS TEXT)"
-              + "    OR sub.is_linked_to_all_datasets = TRUE"
-              + " ORDER BY sub.id ",
+            value = " UPDATE t_rights_plugin_configuration AS rpc "
+                    + " SET user_role = :userRole "
+                    + " WHERE rpc.process_business_id = :processBusinessId "
+            ,
             nativeQuery = true
     )
-    List<RightsPluginConfiguration> findByReferencedDataset(
-            @Param("dataset") String dataset
-    );
-
+    void updateRoleToForProcessBusinessId(@Param("userRole") String userRole, @Param("processBusinessId") UUID processBusinessId);
 }
