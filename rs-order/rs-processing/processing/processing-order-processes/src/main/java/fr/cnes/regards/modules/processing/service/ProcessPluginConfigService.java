@@ -162,7 +162,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public Mono<Void> attachRoleToProcess(UUID processBusinessId, String userRole) {
-        return null; // TODO
+        return Mono.fromCallable(() -> {
+            rightsPluginConfigRepo.updateRoleToForProcessBusinessId(userRole, processBusinessId);
+            return processBusinessId;
+        }).then();
     }
 
     private RightsPluginConfiguration findEntityByBusinessId(UUID processBusinessId) {

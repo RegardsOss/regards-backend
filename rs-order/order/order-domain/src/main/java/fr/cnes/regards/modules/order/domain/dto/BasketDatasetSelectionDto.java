@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.domain.dto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 
 import java.util.Set;
 import java.util.SortedSet;
@@ -43,6 +44,8 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
     private long quota;
 
     private SortedSet<BasketDatedItemsSelectionDto> itemsSelections;
+
+    private ProcessDatasetDescription processDatasetDescription;
 
     public Long getId() {
         return id;
@@ -100,13 +103,20 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
         this.quota = quota;
     }
 
-
     public SortedSet<BasketDatedItemsSelectionDto> getItemsSelections() {
         return itemsSelections;
     }
 
     public void setItemsSelections(SortedSet<BasketDatedItemsSelectionDto> itemsSelections) {
         this.itemsSelections = itemsSelections;
+    }
+
+    public ProcessDatasetDescription getProcessDatasetDescription() {
+        return processDatasetDescription;
+    }
+
+    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+        this.processDatasetDescription = processDatasetDescription;
     }
 
     public static BasketDatasetSelectionDto makeBasketDatasetSelectionDto(BasketDatasetSelection basketDatasetSelection) {
@@ -134,6 +144,7 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
                 )
         );
         dto.setQuota(basketDatasetSelection.getFileTypeCount(DataType.RAWDATA.name()+"_!ref"));
+        dto.setProcessDatasetDescription(basketDatasetSelection.getProcessDatasetDescription());
         return dto;
     }
 

@@ -29,7 +29,9 @@ import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
 
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -201,21 +203,26 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket attachProcessing(Basket basket, Long datasetId, UUID processUuid) {
+    public Basket attachProcessing(
+            Basket basket,
+            Long datasetId,
+            @Nullable ProcessDatasetDescription desc
+    ) {
         return basket.getDatasetSelections().stream()
-            .filter(ds -> ds.getId().equals(datasetId))
-            .findFirst()
-            .map(ds -> attachProcessToDatasetSelectionAndSaveBasket(basket, processUuid, ds))
-            .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+                .filter(ds -> ds.getId().equals(datasetId))
+                .findFirst()
+                .map(ds -> attachProcessToDatasetSelectionAndSaveBasket(basket, ds, desc))
+                .orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
     }
 
     private Basket attachProcessToDatasetSelectionAndSaveBasket(
             Basket basket,
-            UUID processUuid,
-            BasketDatasetSelection ds
+            BasketDatasetSelection ds,
+            ProcessDatasetDescription desc
     ) {
-        // FIXME won't work like this...
-        return repos.save(basket);
+        ds.setProcessDatasetDescription(desc);
+        Basket modified = repos.save(basket);
+        return modified;
     }
 
     /**
