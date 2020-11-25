@@ -56,7 +56,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    @Query(value = "select o.id from Order o order by o.creationDate desc")
+    @Query(value = "select o.id as id from Order o order by o.creationDate desc",
+            countQuery = "select count(o.id) from Order o order by o.creationDate desc")
     Page<OrderIdOnly> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
 
     default Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest) {
@@ -69,7 +70,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    @Query(value = "select o.id from Order o where o.owner = :owner order by o.creationDate desc")
+    @Query(value = "select o.id as id from Order o where o.owner = :owner order by o.creationDate desc",
+            countQuery = "select count(o.id) from Order o where o.owner = :owner order by o.creationDate desc")
     Page<OrderIdOnly> findAllIdsByOwnerOrderByCreationDateDesc(@Param("owner") String owner, Pageable pageRequest);
 
     default Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
@@ -85,7 +87,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    @Query(value = "select o.id from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc")
+    @Query(value = "select o.id as id from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc",
+            countQuery = "select count(o.id) from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc")
     Page<OrderIdOnly> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(@Param("owner") String owner,
             @Param("excludeStatuses") OrderStatus[] excludeStatuses, Pageable pageRequest);
 
