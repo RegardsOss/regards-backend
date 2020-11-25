@@ -640,6 +640,9 @@ public class RoleService implements IRoleService {
         if (RoleAuthority.isProjectAdminRole(first.getName())) {
             return false;
         }
+        if (RoleAuthority.isInstanceAdminRole(second.getName())) {
+            return true;
+        }
         if (RoleAuthority.isProjectAdminRole(second.getName())) {
             return true;
         }
