@@ -37,8 +37,10 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import io.vavr.collection.HashMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -200,6 +202,36 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
                            customizer().expectStatusNoContent(), "error");
+    }
+
+
+    @Test
+    public void testAddThenRemoveProcessDescription() throws BadBasketSelectionRequestException {
+        UUID processBusinessId = UUID.randomUUID();
+        java.util.HashMap<String, String> parameters = HashMap.of("key", "value").toJavaMap();
+
+        Basket basket = createBasket();
+
+        RequestBuilderCustomizer customizerAdd = customizer()
+                .expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId", processBusinessId.toString())
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+        performDefaultPut(
+                BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                new ProcessDatasetDescription(processBusinessId, parameters),
+                customizerAdd,
+                "error",
+                basket.getDatasetSelections().first().getId());
+
+        RequestBuilderCustomizer customizerRemove = customizer()
+                .expectStatusOk()
+                .expectDoesNotExist("$.content.datasetSelections[0].processDatasetDescription");
+        performDefaultPut(
+                BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                "",
+                customizerRemove,
+                "error",
+                basket.getDatasetSelections().first().getId());
     }
 
     @Test
