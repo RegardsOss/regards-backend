@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.order.domain.Order;
@@ -47,40 +49,45 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     default Page<Order> findAllByOrderByCreationDateDesc(Pageable pageRequest) {
         // pagination and entity graph do not cohexist well so we need to handle it by hand
         // 1. get a page of Ids concerned
-        Page<Long> idPage = findIdPageByOrderByCreationDateDesc(pageRequest);
+        Page<OrderIdOnly> idPage = findIdPageByOrderByCreationDateDesc(pageRequest);
         // 2. query Orders from these ids
-        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.map(OrderIdOnly::getId).getContent());
         // 3. Recreate the page from this
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    Page<Long> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
+    @Query(value = "select o.id from Order o order by o.creationDate desc")
+    Page<OrderIdOnly> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
 
     default Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest) {
         // pagination and entity graph do not cohexist well so we need to handle it by hand
         // 1. get a page of Ids concerned
-        Page<Long> idPage = findAllIdsByOwnerOrderByCreationDateDesc(owner, pageRequest);
+        Page<OrderIdOnly> idPage = findAllIdsByOwnerOrderByCreationDateDesc(owner, pageRequest);
         // 2. query Orders from these ids
-        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.map(OrderIdOnly::getId).getContent());
         // 3. Recreate the page from this
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    Page<Long> findAllIdsByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest);
+    @Query(value = "select o.id from Order o where o.owner = :owner order by o.creationDate desc")
+    Page<OrderIdOnly> findAllIdsByOwnerOrderByCreationDateDesc(@Param("owner") String owner, Pageable pageRequest);
 
     default Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
             Pageable pageRequest) {
         // pagination and entity graph do not cohexist well so we need to handle it by hand
         // 1. get a page of Ids concerned
-        Page<Long> idPage = findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(owner, excludeStatuses, pageRequest);
+        Page<OrderIdOnly> idPage = findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(owner,
+                                                                                          excludeStatuses,
+                                                                                          pageRequest);
         // 2. query Orders from these ids
-        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.getContent());
+        List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.map(OrderIdOnly::getId).getContent());
         // 3. Recreate the page from this
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    Page<Long> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
-            Pageable pageRequest);
+    @Query(value = "select o.id from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc")
+    Page<OrderIdOnly> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(@Param("owner") String owner,
+            @Param("excludeStatuses") OrderStatus[] excludeStatuses, Pageable pageRequest);
 
     @EntityGraph("graph.order.simple")
     List<Order> findAllByIdInOrderByCreationDateDesc(Collection<Long> ids);
@@ -131,5 +138,10 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
                                                                                    OrderStatus.DONE,
                                                                                    OrderStatus.DONE_WITH_WARNING,
                                                                                    OrderStatus.FAILED);
+    }
+
+    interface OrderIdOnly {
+
+        Long getId();
     }
 }
