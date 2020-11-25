@@ -39,6 +39,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
@@ -95,7 +96,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      *            Feign client to query administration service for resources
      * @param runtimeTenantResolver
      *            runtime tenant resolver
-    
+
      */
     public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
@@ -130,6 +131,21 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
                                   tenant, e.getMessage()),
                     e);
         }
+
+    }
+
+    @Override
+    public boolean shouldAccessToResourceRequiring(String roleName) {
+        ResponseEntity<Boolean> response;
+        try {
+            response = roleClient.shouldAccessToResourceRequiring(roleName);
+            if ((response != null) && response.hasBody()) {
+                return response.getBody();
+            }
+        } catch (EntityNotFoundException e) {
+            // Nothing  to do. Role does not exists so acccess is denied
+        }
+        return false;
 
     }
 
@@ -183,7 +199,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      * @param pRole
      *            role to convert to RoleAuthority
      * @return {@link RoleAuthority}
-    
+
      */
     private RoleAuthority createRoleAuthority(final Role pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());
