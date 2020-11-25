@@ -84,7 +84,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Override
     public void registerEndpoints(String microserviceName, String tenant, final List<ResourceMapping> pLocalEndpoints) {
         LOG.warn("No authority provider defined. Default one is used."
-                         + " The local endpoints are not registered to administration service. Only the default configuration is available");
+                + " The local endpoints are not registered to administration service. Only the default configuration is available");
         if (authorities != null) {
             LOG.debug("Initializing granted authorities from property file");
             for (final String auth : authorities) {
@@ -97,8 +97,8 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
 
         // Add default roles to returned endpoints
         pLocalEndpoints.forEach(endpoint -> {
-            if ((endpoint != null) && (endpoint.getResourceAccess() != null) && (endpoint.getResourceAccess().role()
-                    != null)) {
+            if ((endpoint != null) && (endpoint.getResourceAccess() != null)
+                    && (endpoint.getResourceAccess().role() != null)) {
                 endpoint.addAuthorizedRole(new RoleAuthority(endpoint.getResourceAccess().role().name()));
             }
         });
@@ -123,7 +123,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Override
     public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
         LOG.warn("No authority provider defined. Default one is used."
-                         + " The local endpoints are not registered to administration service. Only the default configuration is available");
+                + " The local endpoints are not registered to administration service. Only the default configuration is available");
         return new HashSet<>(resources);
     }
 
@@ -153,6 +153,11 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
             }
         }
         return result;
+    }
+
+    @Override
+    public boolean shouldAccessToResourceRequiring(String roleName) {
+        return true;
     }
 
 }

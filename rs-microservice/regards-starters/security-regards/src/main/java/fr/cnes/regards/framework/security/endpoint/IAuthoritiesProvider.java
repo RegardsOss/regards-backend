@@ -43,4 +43,11 @@ public interface IAuthoritiesProvider {
      * @return current ResourceMapping for a given role on a given microservice type for a given tenant
      */
     Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName);
+
+    /**
+     * Does provided ${@link Role} is inferior to the one brought by the current request
+     * @param roleName that should be inferior
+     * @return true when the current role should have access to something requiring at least the provided role
+     */
+    public boolean shouldAccessToResourceRequiring(String roleName);
 }
