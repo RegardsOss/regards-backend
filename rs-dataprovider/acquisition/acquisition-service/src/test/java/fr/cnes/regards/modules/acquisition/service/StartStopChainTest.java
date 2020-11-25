@@ -18,7 +18,34 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.AmqpIOException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -48,24 +75,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.acquisition.service.session.SessionProductPropertyEnum;
 import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -104,8 +113,29 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     @Autowired
     private SessionNotificationHandler notifHandler;
 
+    @Autowired
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private IRabbitVirtualHostAdmin vhostAdmin;
+
+    @After
+    public void after() throws ModuleException, InterruptedException {
+        int loops = 0;
+        do {
+            Thread.sleep(100);
+            loops++;
+        } while ((jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING) > 0) || (loops > 600));
+        this.before();
+        LOGGER.info("|-----------------------------> TEST DONE REMAINING RUNNING JOBS = {} <-----------------------------------------|",
+                    jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING));
+        LOGGER.info("|-----------------------------> TEST ENDING .... <-----------------------------------------|");
+        Thread.sleep(5_000);
+        LOGGER.info("|-----------------------------> TEST DONE .... <-----------------------------------------|");
+    }
+
     @Before
-    public void before() throws ModuleException {
+    public void before() throws ModuleException, InterruptedException {
         processingService.getFullChains().forEach(c -> {
             try {
                 processingService.patchStateAndMode(c.getId(), UpdateAcquisitionProcessingChains
@@ -115,9 +145,35 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                 Assert.fail(e.getMessage());
             }
         });
+        Thread.sleep(2_000);
         pluginRepo.deleteAll();
         jobInfoRepo.deleteAll();
         productRepository.deleteAll();
+        notifHandler.clear();
+        cleanAMQPQueues();
+        LOGGER.info("|-----------------------------> TEST RESET DONE <-----------------------------------------|");
+        Thread.sleep(2_000);
+    }
+
+    /**
+     * Internal method to clean AMQP queues, if actives
+     */
+    public void cleanAMQPQueues() {
+        if (vhostAdmin != null) {
+            // Re-set tenant because above simulation clear it!
+
+            // Purge event queue
+            try {
+                vhostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+                amqpAdmin.purgeQueue(amqpAdmin.getSubscriptionQueueName(SessionNotificationHandler.class,
+                                                                        Target.ONE_PER_MICROSERVICE_TYPE),
+                                     false);
+            } catch (AmqpIOException e) {
+                LOGGER.warn("Failed to clean AMQP queues", e);
+            } finally {
+                vhostAdmin.unbind();
+            }
+        }
     }
 
     /**
@@ -158,8 +214,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             fileInfo2.setDataType(DataType.THUMBNAIL);
             fileInfo2.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDirThumbnail, null)));
 
-            PluginConfiguration scanPlugin2 = PluginConfiguration.build(GlobDiskScanning.class, "ScanPlugin2",
-                                                                        null);
+            PluginConfiguration scanPlugin2 = PluginConfiguration.build(GlobDiskScanning.class, "ScanPlugin2", null);
             scanPlugin2.setIsActive(true);
             scanPlugin2.setLabel("Scan plugin");
             fileInfo2.setScanPlugin(scanPlugin2);
@@ -228,7 +283,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void startChainWithIncompletes() throws ModuleException, InterruptedException {
-        notifHandler.clear();
+        LOGGER.info("|-----------------------------> START TEST 2 <-----------------------------------------|");
         // Create a chain
         AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1", DefaultSIPGeneration.class,
                                                                            Paths.get("src", "test", "resources",
@@ -324,10 +379,12 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP,
                                                           SessionProductPropertyEnum.PROPERTY_GENERATED.getValue(),
                                                           SessionNotificationOperator.DEC));
+        LOGGER.info("|-----------------------------> END TEST 2 <-----------------------------------------|");
     }
 
     @Test
     public void startAndStop() throws ModuleException, InterruptedException {
+        LOGGER.info("|-----------------------------> START TEST 1 <-----------------------------------------|");
         // Create a chain
         AcquisitionProcessingChain processingChain = createProcessingChain("Start Stop 1",
                                                                            LongLastingSIPGeneration.class,
@@ -440,5 +497,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                             notifHandler.getPropertyCount(SessionNotifier.GLOBAL_SESSION_STEP.toString(),
                                                           SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getValue(),
                                                           SessionNotificationOperator.DEC));
+        LOGGER.info("|-----------------------------> END TEST 1 <-----------------------------------------|");
     }
 }
