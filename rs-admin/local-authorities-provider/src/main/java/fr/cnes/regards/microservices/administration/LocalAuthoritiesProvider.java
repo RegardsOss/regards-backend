@@ -131,4 +131,14 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         }
     }
 
+    @Override
+    public boolean shouldAccessToResourceRequiring(String roleName) {
+        try {
+            return roleService.isCurrentRoleSuperiorTo(roleName);
+        } catch (EntityNotFoundException e) {
+            // Nothing to do
+        }
+        return false;
+    }
+
 }
