@@ -67,7 +67,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
@@ -121,9 +120,6 @@ public class OrderServiceIT {
 
     @Autowired
     private IOrderDataFileRepository dataFileRepos;
-
-    @Autowired
-    private IFilesTasksRepository filesTasksRepository;
 
     @Autowired
     private IBasketRepository basketRepos;

@@ -18,6 +18,62 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
+import org.xml.sax.SAXException;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.io.ByteStreams;
@@ -114,7 +170,7 @@ public class OrderService implements IOrderService {
 
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
-    private static final int MAX_EXTERNAL_BUCKET_FILE_COUNT = 1_000;
+    private static final int MAX_BUCKET_FILE_COUNT = 1_000;
 
     /**
      * Format for generated order label
@@ -304,20 +360,19 @@ public class OrderService implements IOrderService {
                         dispatchFeatureFilesInBuckets(basket, order, role, feature, storageBucketFiles,
                                 externalBucketFiles);
                         // If sum of files size > storageBucketSize, add a new bucket
-                        if (storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize) {
+                        if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || (storageBucketFiles.stream()
+                                .mapToLong(DataFile::getFilesize).sum() >= storageBucketSize)) {
                             internalFilesCount += storageBucketFiles.size();
                             // Create all bucket data files at once
-                            dataFileService.create(storageBucketFiles);
-                            createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                            self.createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
                             subOrderNumber++;
                             storageBucketFiles.clear();
                         }
                         // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                        if (externalBucketFiles.size() > MAX_EXTERNAL_BUCKET_FILE_COUNT) {
+                        if (externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) {
                             externalFilesCount += externalBucketFiles.size();
                             // Create all bucket data files at once
-                            dataFileService.create(externalBucketFiles);
-                            createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                            self.createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
                             externalBucketFiles.clear();
                         }
                     }
@@ -328,15 +383,13 @@ public class OrderService implements IOrderService {
                 if (!storageBucketFiles.isEmpty()) {
                     internalFilesCount += storageBucketFiles.size();
                     // Create all bucket data files at once
-                    dataFileService.create(storageBucketFiles);
-                    createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                    self.createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
                     subOrderNumber++;
                 }
                 if (!externalBucketFiles.isEmpty()) {
                     externalFilesCount += externalBucketFiles.size();
                     // Create all bucket data files at once
-                    dataFileService.create(externalBucketFiles);
-                    createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                    self.createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
                 }
 
                 // Add dsTask ONLY IF it contains at least one FilesTask
@@ -344,9 +397,8 @@ public class OrderService implements IOrderService {
                     order.addDatasetOrderTask(dsTask);
                 }
             }
-            // Compute order expiration date using number of sub order created + 2,
-            // that gives time to users to download there last suborders
-            order.setExpirationDate(OffsetDateTime.now().plusDays((subOrderNumber + 2) * orderValidationPeriodDays));
+            // Compute order expiration date using number of sub orders
+            order.setExpirationDate(OffsetDateTime.now().plusDays(orderValidationPeriodDays).plusHours(subOrderNumber));
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
             if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
@@ -497,9 +549,13 @@ public class OrderService implements IOrderService {
     /**
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
-                                       String role, int priority) {
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createStorageSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order,
+            String role, int priority) {
         LOGGER.info("Creating storage sub-order of {} files", bucketFiles.size());
+        dataFileService.create(bucketFiles);
+
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
@@ -522,9 +578,11 @@ public class OrderService implements IOrderService {
     /**
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
-    private void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles,
-                                        Order order) {
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createExternalSubOrder(Basket basket, DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
+        dataFileService.create(bucketFiles);
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
