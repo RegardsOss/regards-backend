@@ -1,0 +1,1 @@
+create index IF NOT EXISTS idx_data_file_task_id on t_data_file (files_task_id);

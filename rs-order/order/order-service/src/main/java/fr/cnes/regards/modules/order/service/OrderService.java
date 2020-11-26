@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +46,16 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -81,6 +83,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
+
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -157,6 +160,8 @@ public class OrderService implements IOrderService {
      */
     private static final String ORDER_GENERATED_LABEL_FORMAT = "Order of %s";
 
+    private static final int MAX_BUCKET_FILE_COUNT = 5_000;
+
     /**
      * Date formatter for order generated label
      */
@@ -170,12 +175,6 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IBasketRepository basketRepository;
-
-    @Autowired
-    private IBasketService basketService;
-
-    @Autowired
-    private IDatasetTaskService datasetTaskService;
 
     @Autowired
     private IOrderDataFileService dataFileService;
@@ -261,12 +260,9 @@ public class OrderService implements IOrderService {
     @PostConstruct
     public void init() {
         LOGGER.info("OrderService created/refreshed with, orderValidationPeriodDays: {}"
-                            + ", daysBeforeSendingNotifEmail: {}...",
-                    orderValidationPeriodDays,
-                    daysBeforeSendingNotifEmail);
-        proxy = Strings.isNullOrEmpty(proxyHost) ?
-                Proxy.NO_PROXY :
-                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                + ", daysBeforeSendingNotifEmail: {}...", orderValidationPeriodDays, daysBeforeSendingNotifEmail);
+        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
+                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
         }
@@ -336,28 +332,24 @@ public class OrderService implements IOrderService {
             Set<OrderDataFile> alreadyHandledFiles = new HashSet<>();
             for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
                 if (dsSel.hasProcessing()) {
-                    orderCounts = orderProcessingService
-                            .manageProcessedDatasetSelection(order, dsSel, tenant, owner, role, orderCounts);
+                    orderCounts = orderProcessingService.manageProcessedDatasetSelection(order, dsSel, tenant, owner,
+                                                                                         role, orderCounts);
                     hasProcessing = true;
                 } else {
-                    orderCounts = manageDatasetSelection(order,
-                                                         role,
-                                                         priority,
-                                                         orderCounts,
-                                                         dsSel,
+                    orderCounts = manageDatasetSelection(order, role, priority, orderCounts, dsSel,
                                                          alreadyHandledFiles);
                 }
             }
 
             // Compute order expiration date using number of sub order created + 2,
             // that gives time to users to download there last suborders
-            order.setExpirationDate(OffsetDateTime.now().plusDays(
-                    (orderCounts.getSubOrderCount() + 2) * orderValidationPeriodDays));
+            order.setExpirationDate(OffsetDateTime.now()
+                    .plusDays((orderCounts.getSubOrderCount() + 2) * orderValidationPeriodDays));
 
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
-            if (!hasProcessing && (orderCounts.getInternalFilesCount() == 0) && (orderCounts.getExternalFilesCount()
-                    > 0)) {
+            if (!hasProcessing && (orderCounts.getInternalFilesCount() == 0)
+                    && (orderCounts.getExternalFilesCount() > 0)) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
@@ -414,27 +406,22 @@ public class OrderService implements IOrderService {
         for (List<EntityFeature> features : basketSelectionPageSearch.pagedSearchDataObjects(dsSel)) {
             // For each DataObject
             for (EntityFeature feature : features) {
-                dispatchFeatureFilesInBuckets(order,
-                                              feature,
-                                              storageBucketFiles,
-                                              externalBucketFiles,
+                dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles,
                                               alreadyHandledFiles);
 
                 // If sum of files size > storageBucketSize, add a new bucket
-                if (suborderSizeCounter.storageBucketTooBig(storageBucketFiles)) {
+                if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT)
+                        || suborderSizeCounter.storageBucketTooBig(storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-                    // Create all bucket data files at once
-                    dataFileService.create(storageBucketFiles);
-                    createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
+                    self.createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
                     orderCounts.incrSubOrderCount();
                     storageBucketFiles.clear();
                 }
                 // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                if (suborderSizeCounter.externalBucketTooBig(externalBucketFiles)) {
+                if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT)
+                        || suborderSizeCounter.externalBucketTooBig(externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
-                    // Create all bucket data files at once
-                    dataFileService.create(externalBucketFiles);
-                    createExternalSubOrder(dsTask, externalBucketFiles, order);
+                    self.createExternalSubOrder(dsTask, externalBucketFiles, order);
                     externalBucketFiles.clear();
                 }
             }
@@ -442,16 +429,12 @@ public class OrderService implements IOrderService {
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
-            // Create all bucket data files at once
-            dataFileService.create(storageBucketFiles);
-            createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
+            self.createStorageSubOrder(dsTask, storageBucketFiles, order, role, priority);
             orderCounts.incrSubOrderCount();
         }
         if (!externalBucketFiles.isEmpty()) {
             orderCounts.addToExternalFilesCount(externalBucketFiles.size());
-            // Create all bucket data files at once
-            dataFileService.create(externalBucketFiles);
-            createExternalSubOrder(dsTask, externalBucketFiles, order);
+            self.createExternalSubOrder(dsTask, externalBucketFiles, order);
         }
 
         // Add dsTask ONLY IF it contains at least one FilesTask
@@ -503,9 +486,7 @@ public class OrderService implements IOrderService {
             // To send a notification, NotificationClient needs it
             notificationClient
                     .notify(String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
-                            "Order creation",
-                            NotificationLevel.WARNING,
-                            DefaultRole.PROJECT_ADMIN);
+                            "Order creation", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
         }
     }
 
@@ -514,14 +495,9 @@ public class OrderService implements IOrderService {
      * order data files)
      */
     private String generateToken4PublicEndpoint(Order order) {
-        return jwtService.generateToken(runtimeTenantResolver.getTenant(),
-                                        authResolver.getUser(),
-                                        authResolver.getUser(),
-                                        authResolver.getRole(),
-                                        order.getExpirationDate(),
-                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()),
-                                        secret,
-                                        true);
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(),
+                                        authResolver.getUser(), authResolver.getRole(), order.getExpirationDate(),
+                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
     }
 
     private void sendOrderCreationEmail(Order order) {
@@ -540,9 +516,8 @@ public class OrderService implements IOrderService {
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
         dataMap.put("order_label", order.getId().toString());
-        dataMap.put("metalink_download_url",
-                    urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
-                            .getTenant());
+        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
+                + "&scope=" + runtimeTenantResolver.getTenant());
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
 
@@ -556,9 +531,7 @@ public class OrderService implements IOrderService {
 
         // Send it
         FeignSecurityManager.asSystem();
-        emailClient.sendEmail(message,
-                              String.format("Order number %d is confirmed", order.getId()),
-                              null,
+        emailClient.sendEmail(message, String.format("Order number %d is confirmed", order.getId()), null,
                               order.getOwner());
         FeignSecurityManager.reset();
     }
@@ -566,10 +539,13 @@ public class OrderService implements IOrderService {
     /**
      * Create a storage sub-order ie a FilesTask, a persisted JobInfo (associated to FilesTask) and add it to DatasetTask
      */
-    private void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, String role,
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, String role,
             int priority) {
         String owner = order.getOwner();
         LOGGER.info("Creating storage sub-order of {} files (owner={})", bucketFiles.size(), owner);
+        dataFileService.create(bucketFiles);
 
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
@@ -580,8 +556,7 @@ public class OrderService implements IOrderService {
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
                                      new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
-                                     new UserJobParameter(owner),
-                                     new UserRoleJobParameter(role));
+                                     new UserJobParameter(owner), new UserRoleJobParameter(role));
         storageJobInfo.setOwner(owner);
         storageJobInfo.setClassName(StorageFilesJob.class.getName());
         storageJobInfo.setPriority(priority);
@@ -594,8 +569,11 @@ public class OrderService implements IOrderService {
     /**
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask
      */
-    private void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
+    @Override
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order) {
         LOGGER.info("Creating external sub-order of {} files", bucketFiles.size());
+        dataFileService.create(bucketFiles);
         FilesTask currentFilesTask = new FilesTask();
         currentFilesTask.setOrderId(order.getId());
         currentFilesTask.setOwner(order.getOwner());
@@ -682,9 +660,10 @@ public class OrderService implements IOrderService {
     private boolean orderEffectivelyInPause(Order order) {
         // No associated jobInfo or all associated jobs finished
         return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null).count() == 0) || order.getDatasetTasks().stream()
-                .flatMap(dsTask -> dsTask.getReliantTasks().stream()).filter(ft -> ft.getJobInfo() != null)
-                .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
+                .filter(ft -> ft.getJobInfo() != null).count() == 0)
+                || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                        .filter(ft -> ft.getJobInfo() != null).map(ft -> ft.getJobInfo().getStatus().getStatus())
+                        .allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -730,8 +709,8 @@ public class OrderService implements IOrderService {
     @Override
     public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
             throws IOException {
-        List<Order> orders = repos
-                .findAll(OrderSpecifications.search(status, from, to), Sort.by(Sort.Direction.ASC, "id"));
+        List<Order> orders = repos.findAll(OrderSpecifications.search(status, from, to),
+                                           Sort.by(Sort.Direction.ASC, "id"));
         writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
@@ -770,7 +749,7 @@ public class OrderService implements IOrderService {
             zos.setCreateUnicodeExtraFields(ZipArchiveOutputStream.UnicodeExtraFieldPolicy.NOT_ENCODEABLE);
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
-            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
+            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext();) {
                 OrderDataFile dataFile = i.next();
                 // Externally downloadable
                 if (dataFile.isReference()) {
@@ -778,8 +757,8 @@ public class OrderService implements IOrderService {
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
-                    try (InputStream is = DownloadUtils
-                            .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, timeout)) {
+                    try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
+                                                                                   noProxyHosts, timeout)) {
                         readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
                     } catch (IOException e) {
                         String stack = getStack(e);
@@ -810,12 +789,10 @@ public class OrderService implements IOrderService {
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
                         downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.of(response))));
                         i.remove();
-                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
-                                    aip,
+                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                     dataFile.getChecksum());
-                        dataFile.setDownloadError(
-                                "Cannot retrieve data file from storage, feign downloadFile method returns " + (
-                                        response == null ? "null" : response.toString()));
+                        dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
+                                + (response == null ? "null" : response.toString()));
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
                             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
@@ -827,8 +804,7 @@ public class OrderService implements IOrderService {
                 zos.putArchiveEntry(new ZipArchiveEntry("NOTICE.txt"));
                 StringJoiner joiner = new StringJoiner("\n");
                 downloadErrorFiles.forEach(p -> joiner.add(String.format("Failed to download file (%s): %s.",
-                                                                         p.getLeft().getFilename(),
-                                                                         p.getRight())));
+                                                                         p.getLeft().getFilename(), p.getRight())));
                 zos.write(joiner.toString().getBytes());
                 zos.closeArchiveEntry();
             }
@@ -906,12 +882,10 @@ public class OrderService implements IOrderService {
             if (copiedBytes != dataFile.getFilesize()) {
                 i.remove();
                 LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId,
-                            dataFile.getFilename());
-                String downloadError = String.format(
-                        "Cannot completely download data file from storage, only %d/%d bytes",
-                        copiedBytes,
-                        dataFile.getFilesize());
+                            dataObjectIpId, dataFile.getFilename());
+                String downloadError = String
+                        .format("Cannot completely download data file from storage, only %d/%d bytes", copiedBytes,
+                                dataFile.getFilesize());
                 downloadErrorFiles.add(Pair.of(dataFile, downloadError));
                 dataFile.setDownloadError(downloadError);
             }
@@ -939,9 +913,8 @@ public class OrderService implements IOrderService {
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            String filename = file.getFilename() != null ?
-                    file.getFilename() :
-                    file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
+            String filename = file.getFilename() != null ? file.getFilename()
+                    : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
             xmlFile.setName(filename);
             if (file.getFilesize() != null) {
@@ -1035,8 +1008,8 @@ public class OrderService implements IOrderService {
     public void sendTenantPeriodicNotifications() {
         List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap
-                .create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
+        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
+                                                                    Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner

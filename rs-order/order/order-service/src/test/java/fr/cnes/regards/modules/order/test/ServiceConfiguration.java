@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
-import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -34,14 +32,14 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-
-import static org.mockito.Mockito.mock;
 
 /**
  * @author oroussel
@@ -91,24 +89,6 @@ public class ServiceConfiguration {
         return new StorageClientMock(listener, true);
     }
 
-    /**
-     * TODO : Replace by new storage client
-    @Bean
-    public IAipClient mockAipClient() {
-        final AipClientProxy aipClientProxy = new AipClientProxy(publisher);
-        InvocationHandler handler = (proxy, method, args) -> {
-            for (Method aipClientProxyMethod : aipClientProxy.getClass().getMethods()) {
-                if (aipClientProxyMethod.getName().equals(method.getName())) {
-                    return aipClientProxyMethod.invoke(aipClientProxy, args);
-                }
-            }
-            return null;
-        };
-        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
-                                                   new Class<?>[] { IAipClient.class }, handler);
-    }
-    */
-
     @Bean
     public IAuthenticationResolver mockAuthResolver() {
         return mock(IAuthenticationResolver.class);
@@ -118,44 +98,6 @@ public class ServiceConfiguration {
     public IEmailClient mockEmailClient() {
         return mock(IEmailClient.class);
     }
-
-    /**
-     * TODO : Replace by new storage client
-    private class AipClientProxy {
-
-        private final IPublisher publisher;
-
-        public AipClientProxy(IPublisher publisher) {
-            this.publisher = publisher;
-        }
-
-        @SuppressWarnings("unused")
-        public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
-            for (String checksum : availabilityRequest.getChecksums()) {
-                if (((int) (Math.random() * 10) % 2) == 0) {
-                    publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, checksum));
-                } else {
-                    publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
-                }
-            }
-            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
-                    Collections.emptySet()));
-        }
-
-        @SuppressWarnings("unused")
-        public Response downloadFile(String aipId, String checksum) {
-            Response mockResp = Mockito.mock(Response.class);
-            try {
-                Mockito.when(mockResp.body().asInputStream())
-                        .thenReturn(getClass().getResourceAsStream("/files/" + checksum));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return mockResp;
-        }
-
-    }
-    */
 
     @Bean
     public IProcessingRestClient processingRestClient() {

@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;

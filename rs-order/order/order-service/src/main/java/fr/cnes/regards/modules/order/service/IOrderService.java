@@ -24,12 +24,14 @@ import java.io.OutputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
@@ -59,6 +61,27 @@ public interface IOrderService {
      * @return copletely loaded order
      */
     Order createOrder(Basket basket, String label, String url) throws EntityInvalidException;
+
+    /**
+     *
+     * @param basket
+     * @param dsTask
+     * @param bucketFiles
+     * @param order
+     */
+    void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order);
+
+    /**
+     *
+     * @param basket
+     * @param dsTask
+     * @param bucketFiles
+     * @param order
+     * @param role
+     * @param priority
+     */
+    void createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, String role,
+            int priority);
 
     /**
      * Asynchronous method called by createOrder to complete order creation. This method cannot be transactional (due

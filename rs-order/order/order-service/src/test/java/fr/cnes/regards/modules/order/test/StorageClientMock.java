@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.order.test;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
@@ -63,67 +62,54 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public RequestInfo store(FileStorageRequestDTO file) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<RequestInfo> store(Collection<FileStorageRequestDTO> files) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public void storeRetry(RequestInfo requestInfo) {
-        // TODO Auto-generated method stub
 
     }
 
     @Override
     public void storeRetry(Collection<String> owners) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void availabilityRetry(RequestInfo requestInfo) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public RequestInfo reference(FileReferenceRequestDTO file) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<RequestInfo> reference(Collection<FileReferenceRequestDTO> files) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public RequestInfo delete(FileDeletionRequestDTO file) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<RequestInfo> delete(Collection<FileDeletionRequestDTO> files) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public RequestInfo copy(FileCopyRequestDTO file) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public Collection<RequestInfo> copy(Collection<FileCopyRequestDTO> files) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -143,23 +129,12 @@ public class StorageClientMock implements IStorageClient {
                     groupIds.add(UUID.randomUUID().toString());
                 }
                 if (!isAvailable) {
-                    notAvailable.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
-                                                                                        null,
-                                                                                        FileReferenceEventType.AVAILABILITY_ERROR,
-                                                                                        null,
-                                                                                        "",
-                                                                                        null,
-                                                                                        null,
-                                                                                        groupIds)));
+                    notAvailable.add(new FileReferenceEventDTO(
+                            FileReferenceEvent.build(c, null, FileReferenceEventType.AVAILABILITY_ERROR, null, "", null,
+                                                     null, groupIds)));
                 } else {
-                    available.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
-                                                                                        null,
-                                                                                        FileReferenceEventType.AVAILABLE,
-                                                                                        null,
-                                                                                        "",
-                                                                                        null,
-                                                                                        null,
-                                                                                        groupIds)));
+                    available.add(new FileReferenceEventDTO(FileReferenceEvent
+                            .build(c, null, FileReferenceEventType.AVAILABLE, null, "", null, null, groupIds)));
                 }
             }
             listener.onFileNotAvailable(notAvailable);
