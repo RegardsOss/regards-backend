@@ -22,8 +22,6 @@ public class AccessRightTemplateConf {
 
     public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME = "EMAIL_ACCOUNT_VALIDATION_TEMPLATE";
 
-    public static final String EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME = "EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE";
-
     @Bean
     public Template userDeniedTemplate() throws IOException {
         return TemplateConfigUtil.readTemplate(USER_DENIED_TEMPLATE_NAME, "template/user-denied-template.html");
@@ -43,12 +41,6 @@ public class AccessRightTemplateConf {
     public Template emailAccountValidationTemplate() throws IOException {
         return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME,
             "template/email-account-validation-template.html");
-    }
-
-    @Bean
-    public Template emailAccountValidationQuotaParagraphTemplate() throws IOException {
-        return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME,
-            "template/email-account-validation-quota-paragraph-template.html");
     }
 
 }

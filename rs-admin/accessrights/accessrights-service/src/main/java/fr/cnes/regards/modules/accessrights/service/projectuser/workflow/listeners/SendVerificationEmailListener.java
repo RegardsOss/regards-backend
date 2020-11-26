@@ -109,53 +109,9 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         }
 
         // Create a hash map in order to store the data to inject in the mail
-        Map<String, String> data = new HashMap<>();
-        // lets retrive the account
-        try {
-            FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
-                    .retrieveAccounByEmail(projectUser.getEmail());
-            if (accountResponse.getStatusCode().is2xxSuccessful()) {
-                data.put("name", accountResponse.getBody().getContent().getFirstName());
-            } else {
-                LOGGER.error("Could not find the associated Account for templating the email content.");
-                data.put("name", "");
-            }
-        } catch (FeignException e) {
-            LOGGER.error("Could not find the associated Account for templating the email content.", e);
-            data.put("name", "");
-        } finally {
-            FeignSecurityManager.reset();
-        }
+        Map<String, Object> data = new HashMap<>();
 
         data.put("project", runtimeTenantResolver.getTenant());
-
-        data.put("quotaParagraph", "");
-        try {
-            FeignSecurityManager.asSystem();
-            ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
-            if (storageResponse.getStatusCode().is2xxSuccessful()) {
-                DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
-                Map<String, Long> quotaData = new HashMap<String, Long>() {
-
-                    {
-                        put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-2L));
-                        put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-2L));
-                    }
-                };
-                String quotaParagraph = templateService
-                        .render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_QUOTA_PARAGRAPH_TEMPLATE_NAME,
-                                quotaData);
-                data.put("quotaParagraph", quotaParagraph);
-            } else {
-                LOGGER.error("Could not find the associated quota limits for templating the email content.");
-            }
-        } catch (Exception e) {
-            LOGGER.debug("Could not add quota paragraph to the email content.", e);
-        } finally {
-            FeignSecurityManager.reset();
-        }
-
         String linkUrlTemplate;
         if (token.getRequestLink().contains("?")) {
             linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
@@ -166,6 +122,27 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
                                                UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
                                                token.getToken(), userEmail);
         data.put("confirmationUrl", confirmationUrl);
+
+        // quota management: unlimited / not interesting while storage does not answer
+        data.put("quota", -1L);
+        data.put("rate", -1L);
+        try {
+            FeignSecurityManager.asSystem();
+            ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
+            if (storageResponse.getStatusCode().is2xxSuccessful()) {
+                DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
+                data.put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()));
+                data.put("rate", Optional.ofNullable(quotaLimits.getRateLimit()));
+            } else {
+                LOGGER.error("Could not find the associated quota limits for templating the email content.");
+            }
+        } catch (Exception e) {
+            LOGGER.debug("Could not add quota paragraph to the email content.", e);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+
+
 
         String message;
         try {
