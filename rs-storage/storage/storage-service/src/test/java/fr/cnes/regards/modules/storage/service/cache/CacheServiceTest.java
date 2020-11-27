@@ -18,26 +18,32 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
+import java.awt.PageAttributes.MediaType;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import fr.cnes.regards.framework.urn.DataType;
+import javax.activation.MimeType;
+
+import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 
@@ -46,8 +52,10 @@ import fr.cnes.regards.modules.storage.domain.database.CacheFile;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests",
+                "regards.storage.cache.path=target/cache", "regards.storage.cache.schedule.purge.bulk.size=5" },
+        locations = { "classpath:application-test.properties" })
 public class CacheServiceTest extends AbstractMultitenantServiceTest {
 
     @Autowired
@@ -71,15 +79,17 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         String checksum = UUID.randomUUID().toString();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         Assert.assertFalse("File should not referenced in cache", service.getCacheFile(checksum).isPresent());
-        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
-                        new URL("file", null, "/plop/test.file.test"), expirationDate, UUID.randomUUID().toString());
+        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), expirationDate,
+                        UUID.randomUUID().toString());
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", expirationDate.isEqual(oCf.get().getExpirationDate()));
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2);
-        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),DataType.RAWDATA.name(),
-                        new URL("file", null, "/plop/test.file.test"), newExpirationDate, UUID.randomUUID().toString());
+        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), newExpirationDate,
+                        UUID.randomUUID().toString());
         oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", newExpirationDate.isEqual(oCf.get().getExpirationDate()));
@@ -90,7 +100,7 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 1_000; i++) {
             service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
-                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),DataType.RAWDATA.name(),
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
                             new URL("file", null, "/plop/test.file.test"), expirationDate,
                             UUID.randomUUID().toString());
         }
@@ -110,7 +120,7 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         for (int i = 0; i < 1_000; i++) {
             expirationDate = expirationDate.plusDays(1);
             service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
-                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),DataType.RAWDATA.name(),
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
                             new URL("file", null, "/plop/test.file.test"), expirationDate,
                             UUID.randomUUID().toString());
         }
@@ -121,5 +131,38 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         service.checkDiskDBCoherence();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Assert.assertEquals("There should be 0 files in cache", 0, repository.findAll().size());
+    }
+
+    @Test
+    public void checkCacheCoherence() throws IOException {
+
+        int nbFiles = 50;
+        // Init files in cache does not exists
+        List<CacheFile> files = Lists.newArrayList();
+        for (int i = 0; i < nbFiles; i++) {
+            files.add(new CacheFile(UUID.randomUUID().toString(), 12L, "plip" + i + ".test",
+                    MediaType.APPLICATION_ATOM_XML, new URL("file:/plop/plip_" + i + ".test"),
+                    OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString()));
+        }
+        repository.saveAll(files);
+        // Init existing files in cache
+        Path path = Paths.get(service.getTenantCachePath().toString(), "example-one.txt");
+        if (!Files.exists(path)) {
+            Files.createFile(path);
+        }
+        Files.walk(path).filter(p -> Files.isRegularFile(p)).forEach(p -> {
+            try {
+                repository.save(new CacheFile(UUID.randomUUID().toString(), 12L, p.getFileName().toString(),
+                        MediaType.APPLICATION_ATOM_XML, new URL("file:" + p.toAbsolutePath().toString()),
+                        OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString()));
+            } catch (MalformedURLException e) {
+                Assert.fail(e.getMessage());
+            }
+        });
+
+        Assert.assertEquals(nbFiles + 1, repository.count());
+        service.checkDiskDBCoherence();
+        Assert.assertEquals("File in database that does not exists on disk should be removed", 1, repository.count());
+
     }
 }

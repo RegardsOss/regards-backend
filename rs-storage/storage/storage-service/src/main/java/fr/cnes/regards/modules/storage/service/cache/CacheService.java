@@ -25,13 +25,11 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +50,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -88,13 +83,11 @@ public class CacheService {
 
     public static final String CACHE_NAME = "internal-cache";
 
+    @Value("${regards.storage.cache.schedule.purge.bulk.size:500}")
     private static int BULK_SIZE = 500;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private INotificationClient notificationClient;
 
     @Autowired
     private ICacheFileRepository cachedFileRepository;
@@ -157,6 +150,7 @@ public class CacheService {
             for (CacheFile shouldBeAvailable : shouldBeAvailableSet) {
                 Path path = Paths.get(shouldBeAvailable.getLocation().getPath());
                 if (Files.notExists(path)) {
+                    LOGGER.warn("Dirty cache file in database : {}", path.toString());
                     toDelete.add(shouldBeAvailable.getId());
                 }
             }
@@ -170,48 +164,6 @@ public class CacheService {
             }
         } while (shouldBeAvailableSet.hasNext());
         toDelete.forEach(id -> cachedFileRepository.deleteById(id));
-
-        if (Files.exists(getTenantCachePath())) {
-            page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
-            Page<CacheFile> availableFiles;
-            long count = 0;
-            do {
-                availableFiles = cachedFileRepository.findAll(page);
-                Set<String> referencedCacheFiles = availableFiles.getContent().stream()
-                        .map(availableFile -> availableFile.getLocation().getPath().toString())
-                        .collect(Collectors.toSet());
-                try (Stream<Path> stream = Files.walk(getTenantCachePath())) {
-                 // @formatter:off
-                    count = stream
-                            .filter(path -> Files.isRegularFile(path) && !referencedCacheFiles.contains(path.toAbsolutePath().toString()))
-                            .peek(p -> LOGGER.warn("Dirty file in cache : {}.", p.toString()))
-                            .peek(CacheService::deleteFileInCache)
-                            .count();
-                 // @formatter:on
-                }
-                page = availableFiles.nextPageable();
-            } while (availableFiles.hasNext());
-            if (count > 0) {
-                String message = String
-                        .format("%s files deleted in cache directory does not match system cached files. Thoses files are listed in storage microservice logs and can be deleted.",
-                                count);
-                notificationClient.notify(message, "Dirty cache", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
-            }
-        }
-    }
-
-    /**
-     * Delete a file from cache directory if
-     * @param path
-     */
-    private static void deleteFileInCache(Path path) {
-        try {
-            if (Files.getLastModifiedTime(path).toInstant().isBefore(Instant.now().minusSeconds(60 * 60 * 2))) {
-                Files.delete(path);
-            }
-        } catch (IOException e) {
-            LOGGER.error(String.format("Error deleting file %s during cache db coherence check.", path.toString()), e);
-        }
     }
 
     /**
@@ -367,7 +319,7 @@ public class CacheService {
     /**
      * Retrieve the path of the cache for te curent tenant.
      */
-    private Path getTenantCachePath() {
+    public Path getTenantCachePath() {
         String currentTenant = runtimeTenantResolver.getTenant();
         if (currentTenant == null) {
             throw new RuntimeException(
