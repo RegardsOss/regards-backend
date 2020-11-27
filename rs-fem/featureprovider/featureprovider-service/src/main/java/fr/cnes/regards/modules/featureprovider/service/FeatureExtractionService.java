@@ -328,11 +328,11 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             FeatureCreationMetadataEntity metadata = request.getMetadata();
             StorageMetadata[] array = new StorageMetadata[metadata.getStorages().size()];
             array = metadata.getStorages().toArray(array);
-            return FeatureCreationRequestEvent.build(request.getRequestOwner(), request.getRequestId(),
-                                                     FeatureCreationSessionMetadata
-                                                             .build(metadata.getSessionOwner(), metadata.getSession(),
-                                                                    request.getPriority(), false, array),
-                                                     feature);
+            return FeatureCreationRequestEvent
+                    .build(request.getRequestOwner(), request.getRequestId(),
+                           FeatureCreationSessionMetadata.build(metadata.getSessionOwner(), metadata.getSession(),
+                                                                request.getPriority(), metadata.isOverride(), array),
+                           feature);
         } catch (ModuleException e) {
             throw new ModuleException(String.format("Error generating feature for request %s", request.getRequestId()),
                     e);
