@@ -554,8 +554,8 @@ public class OrderService implements IOrderService {
 
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
-        storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
-                                     new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
+        storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
+                new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
                                      new UserJobParameter(owner), new UserRoleJobParameter(role));
         storageJobInfo.setOwner(owner);
         storageJobInfo.setClassName(StorageFilesJob.class.getName());

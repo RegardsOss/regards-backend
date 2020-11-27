@@ -355,7 +355,7 @@ public class OrderServiceIT {
         OrderDataFile df3 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
         OrderDataFile df4 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
 
-        storageJobInfo.setParameters(new FilesJobParameter(new OrderDataFile[] { df3, df4 }));
+        storageJobInfo.setParameters(new FilesJobParameter(new Long[] { df3.getId(), df4.getId() }));
 
         storageJobInfo = jobInfoRepos.save(storageJobInfo);
 

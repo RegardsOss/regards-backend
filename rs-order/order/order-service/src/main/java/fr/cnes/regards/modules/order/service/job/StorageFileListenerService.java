@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.order.service.job;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 @Service
 public class StorageFileListenerService implements IStorageFileListener, IStorageFileListenerService {
 
-    private final Set<StorageFilesJob> subscribers = new HashSet<>();
+    private final Set<StorageFilesJob> subscribers = ConcurrentHashMap.newKeySet();
 
     @Override
     public void onFileAvailable(List<FileReferenceEventDTO> available) {

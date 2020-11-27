@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -40,6 +42,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
@@ -79,6 +82,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Autowired
     protected IJobInfoService jobInfoService;
 
+    @Autowired
+    private IOrderDataFileRepository orderDataFileRepository;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -99,7 +105,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
                                 + "classes are here to facilitate your life so please use them.");
             }
             if (FilesJobParameter.isCompatible(param)) {
-                OrderDataFile[] files = param.getValue();
+                Long[] fileIds = param.getValue();
+                List<OrderDataFile> files = orderDataFileRepository.findAllById(Arrays.asList(fileIds));
                 for (OrderDataFile dataFile : files) {
                     dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
                 }

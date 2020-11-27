@@ -11,17 +11,17 @@ public class FilesJobParameter extends JobParameter {
 
     public static final String NAME = "files";
 
-    public FilesJobParameter(OrderDataFile[] value) {
+    public FilesJobParameter(Long[] value) {
         super(NAME, value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public OrderDataFile[] getValue() {
+    public Long[] getValue() {
         return super.getValue();
     }
 
-    public void setValue(OrderDataFile[] value) {
+    public void setValue(Long[] value) {
         super.setValue(value);
     }
 
