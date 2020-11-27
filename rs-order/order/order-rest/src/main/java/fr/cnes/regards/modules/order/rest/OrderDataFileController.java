@@ -145,13 +145,6 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
-                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
-        response.addHeader("Content-disposition", "attachment;filename=" + filename);
-        if (dataFile.getMimeType() != null) {
-            response.setContentType(dataFile.getMimeType().toString());
-        }
-
         switch (dataFile.getState()) {
             case PENDING:
                 // For JDownloader : status 202 when file not yet available
@@ -164,6 +157,12 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     // Omit payload, just send an OK response
                     return new ResponseEntity<>(HttpStatus.OK);
                 } else {
+                    String filename = dataFile.getFilename() != null ? dataFile.getFilename()
+                            : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+                    response.addHeader("Content-disposition", "attachment;filename=" + filename);
+                    if (dataFile.getMimeType() != null) {
+                        response.setContentType(dataFile.getMimeType().toString());
+                    }
                     // Stream the response
                     return new ResponseEntity<>(os -> {
                         FeignSecurityManager.asUser(user, role);
