@@ -131,8 +131,8 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
             if (storageResponse.getStatusCode().is2xxSuccessful()) {
                 DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
-                data.put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()));
-                data.put("rate", Optional.ofNullable(quotaLimits.getRateLimit()));
+                data.put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-1L));
+                data.put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-1L));
             } else {
                 LOGGER.error("Could not find the associated quota limits for templating the email content.");
             }
