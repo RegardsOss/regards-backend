@@ -30,7 +30,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
@@ -47,7 +46,6 @@ import fr.cnes.regards.modules.notification.service.utils.NotificationUserSettin
  */
 @Service
 @EnableScheduling
-@RegardsTransactional
 public class SendingScheduler implements ApplicationListener<NotificationToSendEvent> {
 
     /**
@@ -144,21 +142,21 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     private void filterAndSend(final Predicate<NotificationUserSetting> pFilter) {
         // With the stream of unsent notifications
         String tenant = runtimeTenantResolver.getTenant();
-        try (Stream<Notification> stream = notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10))
-                .getContent().parallelStream()) {
-            stream.forEach(notification -> {
-                runtimeTenantResolver.forceTenant(tenant);
-                // Build the list of recipients
-                String[] recipients = notificationService.findRecipients(notification).stream()
-                        .map(projectUser -> new NotificationUserSetting(notification, projectUser,
-                                notificationSettingsService.retrieveNotificationSettings(projectUser)))
-                        .filter(pFilter).map(NotificationUserSetting::getProjectUser).distinct().toArray(String[]::new);
+        notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10)).getContent().forEach(notification -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            // Build the list of recipients
+            String[] recipients = notificationService.findRecipients(notification).stream()
+                    .map(projectUser -> new NotificationUserSetting(notification,
+                                                                    projectUser,
+                                                                    notificationSettingsService
+                                                                            .retrieveNotificationSettings(projectUser)))
+                    .filter(pFilter).map(NotificationUserSetting::getProjectUser).distinct().toArray(String[]::new);
 
-                // Send the notification to recipients
-                sendNotification(notification, recipients);
+            // Send the notification to recipients
+            sendNotification(notification, recipients);
 
-            });
-        }
+        });
+
     }
 
     private void sendNotification(Notification notification, String... recipients) {
