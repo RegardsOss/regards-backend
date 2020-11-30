@@ -88,31 +88,21 @@ public interface INotificationRepository
             String projectUser, String role, Pageable pageable) {
         // handling pagination by hand here is a bit touchy as we have conditions on joined tables
         // first lets get all notification ids that respect our wishes
-        List<Long> allNotifIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status, projectUser, role);
-        // now, lets extract ids corresponding to the page wished
-        int from = pageable.getPageNumber() * pageable.getPageSize();
-        int to = (pageable.getPageNumber() + 1) * pageable.getPageSize();
-        int nbNotifs = allNotifIds.size();
-        List<Long> pageIds;
-        if (to < nbNotifs) {
-            pageIds = allNotifIds.subList(from, to);
-        } else {
-            pageIds = allNotifIds.subList(from, nbNotifs);
-        }
+        Page<Long> pageIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status, projectUser, role, pageable);
         // now let get all the notif according to extracted ids
-        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds);
+        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.getContent());
         // eventually, reconstruct a page
-        return new PageImpl<>(notifs, pageable, nbNotifs);
+        return new PageImpl<>(notifs, pageable, pageIds.getTotalElements());
     }
 
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(List<Long> pageIds);
 
     @Query(value = "select distinct n.id from Notification n"
-            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
-            + " ?3 member of n.roleRecipients) ORDER BY id DESC")
-    List<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(NotificationStatus status, String projectUser,
-            String role);
+            + " where n.status= :status and (:user member of n.projectUserRecipients or "
+            + " :role member of n.roleRecipients) ORDER BY id DESC")
+    Page<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc( @Param("status") NotificationStatus status, @Param("user") String projectUser,
+            @Param("role") String role, Pageable pageable);
 
     @Query(value = "select COUNT(distinct n.id) from Notification n"
             + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
