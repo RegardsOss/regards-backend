@@ -58,6 +58,8 @@
         <!-- Default entrypoint for microservices, it should be overridden if needed -->
 	<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
         </docker.entryPoint>
+        <!-- Default guest port -->
+        <docker.guest.port>8080</docker.guest.port>
     </properties>
 
     <build>
@@ -66,7 +68,7 @@
                 <plugin>
                     <groupId>com.spotify</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.4.11</version>
+                    <version>1.2.2</version>
                     <configuration>
                         <retryPushCount>0</retryPushCount>
                         <skipDockerBuild>false</skipDockerBuild>
@@ -79,6 +81,10 @@
                             <imageTag>${project.version}</imageTag>
                         </imageTags>
                         <entryPoint>${docker.entryPoint}</entryPoint>
+                        <healthcheck>
+                        	<options>--interval=1m --timeout=5s --retries=3 --start-period=1m</options>
+                        	<cmd>curl --fail http://localhost:${docker.guest.port}/actuator/health?scope=instance || exit 1</cmd>
+                        </healthcheck>
                         <!-- copy the service's jar file from target into the root directory
                             of the image -->
                         <resources>
