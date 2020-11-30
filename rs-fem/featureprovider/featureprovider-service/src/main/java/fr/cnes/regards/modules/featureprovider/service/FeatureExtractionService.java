@@ -334,7 +334,10 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                                                                 request.getPriority(), metadata.isOverride(), array),
                            feature);
         } catch (ModuleException e) {
-            throw new ModuleException(String.format("Error generating feature for request %s", request.getRequestId()),
+            // Error should be logged before so only debug level is set.
+            LOGGER.debug("Generation issue", e);
+            throw new ModuleException(String.format("Error generating feature for request %s : %s",
+                                                    request.getRequestId(), e.getMessage()),
                     e);
         }
 
