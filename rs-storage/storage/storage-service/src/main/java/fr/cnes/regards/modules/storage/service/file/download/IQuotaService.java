@@ -6,6 +6,7 @@ import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.control.Try;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 public interface IQuotaService<T> {
@@ -55,6 +56,8 @@ public interface IQuotaService<T> {
     UserCurrentQuotas getCurrentQuotas(String userEmail);
 
     Try<List<UserCurrentQuotas>> getCurrentQuotas(String[] userEmails);
+
+    void removeQuotaFor(Set<String> emails);
 
     interface WithQuotaOperationHandler {
         void start();

@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
@@ -35,7 +36,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -138,16 +141,19 @@ public class DownloadQuotaService<T>
     }
 
     @Override
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
     public void handleBatch(String tenant, List<ProjectUserEvent> messages) {
         runtimeTenantResolver.forceTenant(tenant);
-        messages.forEach(event ->  {
-            QuotaKey key = QuotaKey.make(tenant, event.getEmail());
-            switch (event.getAction()) {
-                case DELETION:
-                    quotaRepository.deleteByEmail(event.getEmail());
-                    cache.invalidate(key);
+        runtimeTenantResolver.forceTenant(tenant);
+        Set<String> emailsToRemove = new HashSet<>();
+        messages.forEach(event -> {
+            if (event.getAction() == ProjectUserAction.DELETION) {
+                emailsToRemove.add(event.getEmail());
             }
         });
+        if (!emailsToRemove.isEmpty()) {
+            self.removeQuotaFor(emailsToRemove);
+        }
     }
 
     /**
@@ -291,6 +297,16 @@ public class DownloadQuotaService<T>
                 }
                 return Tuple.of(quotaLimits, quota, rate);
             });
+    }
+
+    @Override
+    public void removeQuotaFor(Set<String> emails) {
+        String tenant = runtimeTenantResolver.getTenant();
+        emails.forEach(email -> {
+            QuotaKey key = QuotaKey.make(tenant, email);
+            quotaRepository.deleteByEmail(email);
+            cache.invalidate(key);
+        });
     }
 
     @VisibleForTesting
