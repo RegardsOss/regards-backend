@@ -5,7 +5,7 @@ alter table t_scan_dir_info add constraint fk_file_info_id foreign key (file_inf
 
 -- fill t_scan_dir_info with previous lastModificationDate and plugin parameter directories
 INSERT INTO t_scan_dir_info(id, last_modification_date, scan_directory, file_info_id)
-SELECT nextval('seq_scan_dir_info'), info.lastModificationDate, json_paths.paths, info.id
+SELECT nextval('seq_scan_dir_info'), info.lastModificationDate, trim(both '"' from json_paths.paths::text), info.id
 FROM (SELECT id, json_array_elements(json_extract_path(params, 'value')) paths
      FROM t_plugin_configuration, json_array_elements(parameters::json) params
      where params->>'name'='directories') json_paths  LEFT JOIN  t_acq_file_info info
@@ -13,7 +13,7 @@ ON json_paths.id = info.scan_conf_id;
 
 -- fill t_scan_dir_info with previous lastModificationDate and plugin parameter directoryToScan
 INSERT INTO t_scan_dir_info(id, last_modification_date, scan_directory, file_info_id)
-SELECT nextval('seq_scan_dir_info'), info.lastModificationDate, json_path.path, info.id
+SELECT nextval('seq_scan_dir_info'), info.lastModificationDate, trim(both '"' from json_path.path::text), info.id
 FROM (SELECT id, json_extract_path(params, 'value') path
      FROM t_plugin_configuration, json_array_elements(parameters::json) params
      where params->>'name'='directoryToScan') json_path  LEFT JOIN  t_acq_file_info info
