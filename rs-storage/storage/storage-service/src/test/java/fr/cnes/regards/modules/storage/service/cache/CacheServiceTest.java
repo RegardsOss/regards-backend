@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
-import java.awt.PageAttributes.MediaType;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,15 +29,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.activation.MimeType;
-
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -141,8 +140,8 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         List<CacheFile> files = Lists.newArrayList();
         for (int i = 0; i < nbFiles; i++) {
             files.add(new CacheFile(UUID.randomUUID().toString(), 12L, "plip" + i + ".test",
-                    MediaType.APPLICATION_ATOM_XML, new URL("file:/plop/plip_" + i + ".test"),
-                    OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString()));
+                    MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE), new URL("file:/plop/plip_" + i + ".test"),
+                    OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString(), "RAWDATA"));
         }
         repository.saveAll(files);
         // Init existing files in cache
@@ -153,8 +152,8 @@ public class CacheServiceTest extends AbstractMultitenantServiceTest {
         Files.walk(path).filter(p -> Files.isRegularFile(p)).forEach(p -> {
             try {
                 repository.save(new CacheFile(UUID.randomUUID().toString(), 12L, p.getFileName().toString(),
-                        MediaType.APPLICATION_ATOM_XML, new URL("file:" + p.toAbsolutePath().toString()),
-                        OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString()));
+                                              MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE), new URL("file:" + p.toAbsolutePath().toString()),
+                        OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString(), "RAWDATA"));
             } catch (MalformedURLException e) {
                 Assert.fail(e.getMessage());
             }
