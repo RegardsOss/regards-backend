@@ -34,6 +34,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -142,5 +143,5 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     List<ProjectUser> findAllById(Iterable<Long> longs);
 
     @Query(value = "SELECT id FROM ProjectUser pu WHERE status = :status AND email LIKE :emailStart%")
-    Page<Long> findIdPageByStatusAndEmailStartingBy(String status, String emailStart, Pageable pageable);
+    Page<Long> findIdPageByStatusAndEmailStartingBy(@Param("status") String status,@Param("emailStart") String emailStart, Pageable pageable);
 }
