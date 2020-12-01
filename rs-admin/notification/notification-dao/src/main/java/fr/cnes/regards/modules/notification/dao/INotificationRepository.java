@@ -96,7 +96,7 @@ public interface INotificationRepository
     }
 
 //    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    @Query("SELECT n.id ad id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUser, "
+    @Query("SELECT n.id as id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUser, "
             + "n.sender as sender, n.status as status, n.level as level, n.title as title, n.mimeType as mimeType "
             + "FROM Notification n LEFT JOIN n.roleRecipients LEFT JOIN n.projectUserRecipients WHERE n.id in :ids")
     List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(@Param("ids") List<Long> ids);
