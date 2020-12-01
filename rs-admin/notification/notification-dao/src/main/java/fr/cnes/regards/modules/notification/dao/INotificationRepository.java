@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -78,6 +80,7 @@ public interface INotificationRepository
     @Query(value = "select distinct n.id from Notification n" + " ORDER BY id DESC")
     Page<Long> findAllId(Pageable page);
 
+    Logger LOGGER = LoggerFactory.getLogger(INotificationRepository.class);
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
      * @param projectUser The required project user recipient
@@ -86,24 +89,29 @@ public interface INotificationRepository
      */
     default Page<INotificationWithoutMessage> findByStatusAndRecipientsContaining(NotificationStatus status,
             String projectUser, String role, Pageable pageable) {
+        LOGGER.trace("----------------------------- STARTING findByStatusAndRecipientsContaining");
         // handling pagination by hand here is a bit touchy as we have conditions on joined tables
         // first lets get all notification ids that respect our wishes
+        LOGGER.trace("----------------------------- STARTING find id page");
         Page<Long> pageIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status, projectUser, role, pageable);
+        LOGGER.trace("----------------------------- ENDING find id page");
         // now let get all the notif according to extracted ids
+        LOGGER.trace("----------------------------- STARTING notif without message by ids");
         List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.getContent());
+        LOGGER.trace("----------------------------- ENDING findByStatusAndRecipientsContaining");
         // eventually, reconstruct a page
         return new PageImpl<>(notifs, pageable, pageIds.getTotalElements());
     }
 
-//    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    @Query("SELECT n.id as id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUser, "
-            + "n.sender as sender, n.status as status, n.level as level, n.title as title, n.mimeType as mimeType "
-            + "FROM Notification n LEFT JOIN n.roleRecipients LEFT JOIN n.projectUserRecipients WHERE n.id in :ids")
-    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(@Param("ids") List<Long> ids);
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+//    @Query("SELECT n.id as id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUserRecipients, "
+//            + "n.sender as sender, n.status as status, n.level as level, n.title as title, n.mimeType as mimeType "
+//            + "FROM Notification n WHERE n.id in (:ids)")
+    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(List<Long> ids);
 
     @Query(value = "select n.id from Notification n"
-            + " where n.status= :status and (n.projectUserRecipients in :user or "
-            + "n.roleRecipients in :role) ORDER BY id DESC")
+            + " where n.status= :status and (:user member of n.projectUserRecipients or "
+            + ":role member of n.roleRecipients ) ORDER BY id DESC")
     Page<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc( @Param("status") NotificationStatus status, @Param("user") String projectUser,
             @Param("role") String role, Pageable pageable);
 
@@ -144,7 +152,7 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, pageable, pageNotifications.getTotalElements());
     }
 
-    @Query(value = "select n.id from Notification n" + " where n.status = :status order by id desc")
+    @Query(value = "select n.id from Notification n where n.status = :status order by id desc")
     Page<Long> findPageIdByStatus(@Param("status") NotificationStatus status, Pageable pageable);
 
     Long countByStatus(NotificationStatus pStatus);
