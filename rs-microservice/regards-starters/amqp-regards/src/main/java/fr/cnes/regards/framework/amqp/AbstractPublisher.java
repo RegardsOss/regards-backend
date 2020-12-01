@@ -280,7 +280,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param target publishing scope
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
+    protected synchronized final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
             int priority, boolean purgeQueue) {
 
         final Class<?> eventType = event.getClass();
