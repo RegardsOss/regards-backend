@@ -27,9 +27,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
 import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,20 +46,33 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import org.springframework.context.ApplicationEventPublisher;
 
 public class StorageFilesJob extends AbstractJob<Void> {
 
     @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    protected IOrderDataFileService dataFileService;
+
+    @Autowired
+    protected IJobInfoService jobInfoService;
+
+    @Autowired
+    protected IStorageFileListenerService subscriber;
+
+    @Autowired
     protected IStorageClient storageClient;
+
+    @Autowired
+    protected IOrderJobService orderJobService;
 
     protected Integer subOrderValidationPeriodDays;
 
     protected Semaphore semaphore;
 
     protected Option<UUID> processJobInfoId = Option.none();
-
-    @Autowired
-    protected IStorageFileListenerService subscriber;
 
     /**
      * Map { checksum -> ( dataFiles) } of data files.
@@ -76,11 +88,11 @@ public class StorageFilesJob extends AbstractJob<Void> {
      */
     protected final Set<String> alreadyHandledFiles = Sets.newHashSet();
 
-    @Autowired
-    protected IOrderDataFileService dataFileService;
+    /**
+     * The user.
+     */
+    private String user;
 
-    @Autowired
-    protected IJobInfoService jobInfoService;
 
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
@@ -116,6 +128,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
             else if (ProcessJobInfoJobParameter.isCompatible(param)) {
                 processJobInfoId = Option.some(param.getValue());
             }
+            else if (UserJobParameter.isCompatible(param)) {
+                user = param.getValue();
+            }
         }
     }
 
@@ -150,20 +165,19 @@ public class StorageFilesJob extends AbstractJob<Void> {
             subscriber.unsubscribe(this);
 
             processJobInfoId
-                    // ... and all order data files statuses are updated into database (if there is no process to launch)
-                    .onEmpty(() -> dataFileService.save(dataFilesMultimap.values()))
-                    // ... and enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
-                    .peek(jobInfoId -> {
-                        setJobStatusAsQueued(jobInfoId);
-                        dataFileService.launchNextFilesTasks(dataFilesMultimap.values());
-                    });
+                // NO PROCESSING
+                .onEmpty(() ->
+                    // All order data files statuses are updated into database (if there is no process to launch)
+                    dataFileService.save(dataFilesMultimap.values())
+                )
+                // PROCESSING TO BE LAUNCHED
+                .peek(id -> {
+                    // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
+                    jobInfoService.enqueueJobForId(id);
+                    // Nudge the order job service to enqueue next storage files jobs.
+                    orderJobService.manageUserOrderStorageFilesJobInfos(user);
+                });
         }
-    }
-
-    private void setJobStatusAsQueued(UUID jobInfoId) {
-        JobInfo jobInfo = jobInfoService.retrieveJob(jobInfoId);
-        jobInfo.updateStatus(JobStatus.QUEUED);
-        jobInfoService.save(jobInfo);
     }
 
     /**

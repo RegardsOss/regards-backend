@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.net.URL;
 import java.util.UUID;
 
 @Service
@@ -24,8 +25,8 @@ public class OutputFileServiceImpl implements IOutputFileService {
         this.storageService = storageService;
     }
 
-    @Override public Flux<POutputFile> markDownloaded(List<UUID> ids) {
-        return outFileRepo.save(outFileRepo.findByIdIn(ids).map(POutputFile::markDownloaded));
+    @Override public Flux<POutputFile> markDownloaded(List<URL> urls) {
+        return outFileRepo.save(outFileRepo.findByUrlIn(urls).map(POutputFile::markDownloaded));
     }
 
     @Scheduled(

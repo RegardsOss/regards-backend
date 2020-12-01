@@ -63,11 +63,11 @@ public class ProcessPluginConfigController implements IResourceController<Proces
             @RequestParam(required = false) String processNameLike) {
         Flux<ProcessPluginConfigurationRightsDTO> allRightsPluginConfigs = rightsConfigService
                 .findAllRightsPluginConfigs();
-        Flux<ProcessPluginConfigurationRightsDTO> filteredRightsPluginConfigs;
+        final Flux<ProcessPluginConfigurationRightsDTO> filteredRightsPluginConfigs;
         if (processNameLike != null) {
             filteredRightsPluginConfigs = allRightsPluginConfigs
-                    .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(dto.getRights().getRole()))
-                    .filter(dto -> dto.getPluginConfiguration().getLabel().matches("^.*" + processNameLike + ".*$"));
+                    .filter(dto -> dto.getPluginConfiguration().getLabel().matches("^.*" + processNameLike + ".*$"))
+                    .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(dto.getRights().getRole()));
         } else {
             filteredRightsPluginConfigs = allRightsPluginConfigs
                     .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(dto.getRights().getRole()));

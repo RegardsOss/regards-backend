@@ -418,7 +418,7 @@ public class OrderServiceIT {
         files.forEach(f -> f.setState(FileState.DOWNLOADED));
         orderDataFileService.save(files);
         // Act as true downloads
-        orderJobService.manageUserOrderJobInfos(user);
+        orderJobService.manageUserOrderStorageFilesJobInfos(user);
         // Re-wait a while to permit execution of last jobInfo
         Thread.sleep(10_000);
 

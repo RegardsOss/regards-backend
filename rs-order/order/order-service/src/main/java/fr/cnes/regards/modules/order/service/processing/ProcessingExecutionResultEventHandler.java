@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ExecutionCorrelationIdentifier;
@@ -25,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -43,6 +44,8 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
     private final ISubscriber subscriber;
     private final IOrderDataFileRepository orderDataFileRepository;
     private final IOrderJobService orderJobService;
+    private final IOrderDataFileService dataFileService;
+    private final ApplicationEventPublisher applicationPublisher;
     private final Gson gson;
 
     @Autowired
@@ -51,12 +54,15 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             ISubscriber subscriber,
             IOrderDataFileRepository orderDataFileRepository,
             IOrderJobService orderJobService,
-            Gson gson
+            IOrderDataFileService dataFileService,
+            ApplicationEventPublisher applicationPublisher, Gson gson
     ) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
+        this.dataFileService = dataFileService;
+        this.applicationPublisher = applicationPublisher;
         this.gson = gson;
     }
 
@@ -66,7 +72,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
 
     @Override public void handle(String tenant, PExecutionResultEvent evt) {
         runtimeTenantResolver.forceTenant(tenant);
-        LOGGER.info("Received execution result: {}", evt);
+        LOGGER.info("Received execution result: cid={} evt={}", evt.getExecutionCorrelationId(), evt);
 
         OrderProcessInfo processInfo = readProcessInfo(evt);
         Cardinality cardinality = processInfo.getCardinality();
@@ -111,8 +117,11 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
 
         }
 
-        orderDataFileRepository.saveAll(updatedDataFiles);
-        orderJobService.manageUserOrderJobInfos(user);
+        dataFileService.save(updatedDataFiles);
+        orderJobService.manageUserOrderStorageFilesJobInfos(user);
+        // Used by tests
+        applicationPublisher.publishEvent(ExecResultHandlerResultEvent.event(evt, updatedDataFiles));
+
     }
 
     private String logPrefix(PExecutionResultEvent evt) {

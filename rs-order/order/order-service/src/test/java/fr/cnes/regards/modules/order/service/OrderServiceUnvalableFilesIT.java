@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.service;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -222,7 +221,7 @@ public class OrderServiceUnvalableFilesIT {
         files.forEach(f -> f.setState(FileState.DOWNLOADED));
         orderDataFileService.save(files);
         // Act as true downloads
-        orderJobService.manageUserOrderJobInfos(user);
+        orderJobService.manageUserOrderStorageFilesJobInfos(user);
         // Re-wait a while to permit execution of last jobInfo
         Thread.sleep(10_000);
 

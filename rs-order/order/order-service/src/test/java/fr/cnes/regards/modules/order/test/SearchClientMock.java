@@ -74,11 +74,11 @@ public class SearchClientMock implements IComplexSearchClient {
     public static final UniformResourceName DS3_IP_ID = UniformResourceName
             .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    private static Dataset ds1;
+    protected static Dataset ds1;
 
-    private static Dataset ds2;
+    protected static Dataset ds2;
 
-    private static Dataset ds3;
+    protected static Dataset ds3;
 
     static {
 
@@ -106,7 +106,7 @@ public class SearchClientMock implements IComplexSearchClient {
      * DS1 => 2 documents, 2 RAWDATA files (+ 6 QUICKLOOKS 2 x 3 of each size), 1 Mb each RAW file
      * 500 b QUICKLOOK SD, 1 kb MD, 500 kb HD (1 501 500 b)
      */
-    private static DocFilesSummary createSummaryForDs1AllFiles() {
+    protected static DocFilesSummary createSummaryForDs1AllFiles() {
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(2);
 
@@ -175,7 +175,7 @@ public class SearchClientMock implements IComplexSearchClient {
      * 1 raw by doc, 3 quicklooks
      * 1Mb, 10 kb, 100 b, 1 b
      */
-    private static DocFilesSummary createSummaryForDs2Ds3AllFilesFirstCall() {
+    protected static DocFilesSummary createSummaryForDs2Ds3AllFilesFirstCall() {
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(3);
 
@@ -302,7 +302,7 @@ public class SearchClientMock implements IComplexSearchClient {
      * 1 raw by doc
      * 1Mb
      */
-    private static DocFilesSummary createSummaryForDs2AllFiles() {
+    protected static DocFilesSummary createSummaryForDs2AllFiles() {
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(2);
 
@@ -370,7 +370,7 @@ public class SearchClientMock implements IComplexSearchClient {
      * 1 raw by doc
      * 1Mb
      */
-    private static DocFilesSummary createSummaryForDs3AllFiles() {
+    protected static DocFilesSummary createSummaryForDs3AllFiles() {
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(1);
 
@@ -433,7 +433,7 @@ public class SearchClientMock implements IComplexSearchClient {
         return summary;
     }
 
-    private static DocFilesSummary createSummaryForAllDsAllFiles() {
+    protected static DocFilesSummary createSummaryForAllDsAllFiles() {
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(5);
 
@@ -610,7 +610,7 @@ public class SearchClientMock implements IComplexSearchClient {
         return summary;
     }
 
-    private static DataType getDataType(String filename) {
+    protected static DataType getDataType(String filename) {
         if (filename.endsWith("ql_hd.txt")) {
             return DataType.QUICKLOOK_HD;
         } else if (filename.endsWith("ql_md.txt")) {
@@ -653,29 +653,7 @@ public class SearchClientMock implements IComplexSearchClient {
         if (complexSearchRequest.getPage() == 0) {
             try {
                 List<EntityModel<EntityFeature>> list = new ArrayList<>();
-                File testDir = new File("src/test/resources/files");
-                for (File dir : testDir.listFiles()) {
-                    EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
-                            dir.getName(), dir.getName());
-                    Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
-                    for (File file : dir.listFiles()) {
-                        DataFile dataFile = new DataFile();
-                        dataFile.setOnline(false);
-                        dataFile.setUri(new URI("file:///test/" + file.getName()));
-                        dataFile.setFilename(file.getName());
-                        dataFile.setFilesize(file.length());
-                        dataFile.setReference(false);
-                        dataFile.setChecksum(file.getName());
-                        dataFile.setDigestAlgorithm("MD5");
-                        dataFile.setMimeType(file.getName().endsWith("txt") ? MediaType.TEXT_PLAIN
-                                : MediaType.APPLICATION_OCTET_STREAM);
-                        dataFile.setDataType(getDataType(file.getName()));
-                        fileMultimap.put(getDataType(file.getName()), dataFile);
-                    }
-                    feature.setFiles(fileMultimap);
-                    list.add(new EntityModel<>(feature));
-                }
-
+                registerFilesIn("src/test/resources/files", list);
                 return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), list,
                         new PagedModel.PageMetadata(list.size(), 0, list.size())));
             } catch (URISyntaxException e) {
@@ -684,5 +662,31 @@ public class SearchClientMock implements IComplexSearchClient {
         }
         return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), Collections.emptyList(),
                 new PagedModel.PageMetadata(0, 0, 0)));
+    }
+
+
+    protected void registerFilesIn(String path, List<EntityModel<EntityFeature>> list) throws URISyntaxException {
+        File testDir = new File(path);
+        for (File dir : testDir.listFiles()) {
+            EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
+                    dir.getName(), dir.getName());
+            Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
+            for (File file : dir.listFiles()) {
+                DataFile dataFile = new DataFile();
+                dataFile.setOnline(false);
+                dataFile.setUri(new URI("file:///test/" + file.getName()));
+                dataFile.setFilename(file.getName());
+                dataFile.setFilesize(file.length());
+                dataFile.setReference(false);
+                dataFile.setChecksum(file.getName());
+                dataFile.setDigestAlgorithm("MD5");
+                dataFile.setMimeType(file.getName().endsWith("txt") ? MediaType.TEXT_PLAIN
+                        : MediaType.APPLICATION_OCTET_STREAM);
+                dataFile.setDataType(getDataType(file.getName()));
+                fileMultimap.put(getDataType(file.getName()), dataFile);
+            }
+            feature.setFiles(fileMultimap);
+            list.add(new EntityModel<>(feature));
+        }
     }
 }

@@ -46,5 +46,5 @@ public interface IOrderJobService {
      * them if it is the case
      * @param user
      */
-    void manageUserOrderJobInfos(String user);
+    void manageUserOrderStorageFilesJobInfos(String user);
 }

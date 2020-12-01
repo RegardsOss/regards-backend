@@ -295,8 +295,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                         new FeatureAccumulator(),
                         (acc, f) -> acc.addFeatureAndReturnInitialAccumulatorIfOverLimits(f, orderProcessInfo))
                 )
-                        .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
-                        .map(featsAndAccs -> List.ofAll(featsAndAccs).map(Tuple2::getT1)));
+                .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
+                .map(featsAndAccs -> List.ofAll(featsAndAccs).map(Tuple2::getT1)));
     }
 
     protected Flux<FilesTask> manageFeaturesWithFilesInStorage(
@@ -325,7 +325,17 @@ public class OrderProcessingService implements IOrderProcessingService {
             String userRole,
             List<EntityFeature> features
     ) {
-        JobInfo processExecJobUnsaved = createProcessExecutionJobForFeatures(order, suborderCount, pProcessDTO, orderProcessInfo, dsSel, tenant, user, userRole, features);
+        JobInfo processExecJobUnsaved = createProcessExecutionJobForFeatures(
+                order,
+                suborderCount,
+                pProcessDTO,
+                orderProcessInfo,
+                dsSel,
+                tenant,
+                user,
+                userRole,
+                features
+        );
         processExecJobUnsaved.setExpirationDate(order.getExpirationDate());
         JobInfo processExecJob = jobInfoService.createAsPending(processExecJobUnsaved);
 
@@ -369,7 +379,7 @@ public class OrderProcessingService implements IOrderProcessingService {
 
     protected boolean hasAtLeastOneRequiredFileInStorage(EntityFeature entityFeature, List<DataType> requiredDatatypes) {
         return featureRequiredDatafiles(entityFeature, requiredDatatypes)
-                .anyMatch(DataFile::isReference);
+                .anyMatch(df -> !df.isReference());
     }
 
     protected boolean hasRequiredFilesInStorage(GroupedFlux<Boolean, EntityFeature> featureGroup) {
@@ -405,10 +415,14 @@ public class OrderProcessingService implements IOrderProcessingService {
             SizeLimit sizeLimit = orderProcessInfo.getSizeLimit();
             SizeLimit.Type processLimitType = sizeLimit.getType();
             Long processLimitValue = sizeLimit.getLimit();
-            return count > suborderSizeCounter.maxExternalBucketSize()
-                    || size > suborderSizeCounter.getStorageBucketSize()
-                    || (processLimitType == SizeLimit.Type.FILES && count > processLimitValue)
-                    || (processLimitType == SizeLimit.Type.BYTES && size > processLimitValue);
+            boolean countExceedsMaxExternalBucketSize = count >= suborderSizeCounter.maxExternalBucketSize();
+            boolean sizeExceedsStorageBucketSize = size >= suborderSizeCounter.getStorageBucketSize();
+            boolean countExceedsProcessFilesLimit = processLimitType == SizeLimit.Type.FILES && count >= processLimitValue;
+            boolean sizeExceedsProcessBytesLimit = processLimitType == SizeLimit.Type.BYTES && size >= processLimitValue;
+            return countExceedsMaxExternalBucketSize
+                    || sizeExceedsStorageBucketSize
+                    || countExceedsProcessFilesLimit
+                    || sizeExceedsProcessBytesLimit;
         }
 
         public boolean isInitial() {
