@@ -132,7 +132,9 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public Page<ProjectUser> retrieveUserList(String status, String emailStart, final Pageable pageable) {
-        return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
+        //TODO find a way to fix HHH000104 while using Specification. Quick fix needed so lets use traditional way here
+//        return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
+        return projectUserRepository.findAll(status, emailStart, pageable);
     }
 
     @Override
