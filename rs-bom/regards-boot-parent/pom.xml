@@ -56,10 +56,8 @@
     <properties>
         <microservice.heap.size>256m</microservice.heap.size>
         <!-- Default entrypoint for microservices, it should be overridden if needed -->
-	<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
+		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
         </docker.entryPoint>
-        <!-- Default guest port -->
-        <docker.guest.port>8080</docker.guest.port>
     </properties>
 
     <build>
@@ -81,10 +79,6 @@
                             <imageTag>${project.version}</imageTag>
                         </imageTags>
                         <entryPoint>${docker.entryPoint}</entryPoint>
-                        <healthcheck>
-                        	<options>--interval=1m --timeout=5s --retries=3 --start-period=1m</options>
-                        	<cmd>curl --fail http://localhost:${docker.guest.port}/actuator/health?scope=instance || exit 1</cmd>
-                        </healthcheck>
                         <!-- copy the service's jar file from target into the root directory
                             of the image -->
                         <resources>
