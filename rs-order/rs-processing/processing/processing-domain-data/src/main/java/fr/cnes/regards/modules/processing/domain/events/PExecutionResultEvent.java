@@ -8,7 +8,8 @@ import fr.cnes.regards.modules.processing.domain.dto.POutputFileDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
-import lombok.*;
+import lombok.Value;
+import lombok.With;
 
 import java.util.UUID;
 

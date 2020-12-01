@@ -1,14 +1,15 @@
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
-import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import io.vavr.collection.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.net.URL;
 import java.util.UUID;
 
 @Component
@@ -38,8 +39,8 @@ public class POutputFileRepositoryImpl implements IPOutputFilesRepository {
                 .map(mapper::toDomain);
     }
 
-    @Override public Flux<POutputFile> findByIdIn(List<UUID> ids) {
-        return entityOutputFileRepo.findAllById(ids)
+    @Override public Flux<POutputFile> findByUrlIn(List<URL> urls) {
+        return entityOutputFileRepo.findByUrlIn(urls.asJava())
                 .map(mapper::toDomain);
     }
 

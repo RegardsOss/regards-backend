@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -111,7 +112,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
     }
 
     @Override
-    public void manageUserOrderJobInfos(String user) {
+    public void manageUserOrderStorageFilesJobInfos(String user) {
         // Current count of user jobs running, planned or to be run
         int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
 
@@ -121,8 +122,8 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
         // There is room for several jobs to be executed for this user if sum of theses 2 values is less than maximum
         // defined one
         if (currentJobsCount + finishedJobsWithFilesToBeDownloadedCount < maxJobsPerUser) {
-            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, maxJobsPerUser - currentJobsCount
-                    - finishedJobsWithFilesToBeDownloadedCount);
+            int count = maxJobsPerUser - currentJobsCount - finishedJobsWithFilesToBeDownloadedCount;
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, StorageFilesJob.class.getName(), count);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);
@@ -147,7 +148,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
                 tenantResolver.forceTenant(wrapper.getTenant());
                 Optional<JobInfo> endedJobInfo = jobInfoRepository.findById(jobId);
                 if (endedJobInfo.isPresent()) {
-                    self.manageUserOrderJobInfos(endedJobInfo.get().getOwner());
+                    self.manageUserOrderStorageFilesJobInfos(endedJobInfo.get().getOwner());
                 }
                 break;
             default:

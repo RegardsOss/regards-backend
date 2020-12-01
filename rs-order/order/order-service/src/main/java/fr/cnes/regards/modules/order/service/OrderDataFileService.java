@@ -149,8 +149,6 @@ public class OrderDataFileService implements IOrderDataFileService {
         return dataFiles;
     }
 
-    // TODO: this causes problems when called from StorageFilesJob when a process is in place
-    // because in that case, the OrderDataFile represent input files and will never be downloaded.
     @Override
     public void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles) {
         // Look at FilesTasks if they are ended (no more file to download)...
@@ -261,7 +259,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         }
         dataFile = self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());
-        orderJobService.manageUserOrderJobInfos(order.getOwner());
+        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
     }
 
     @Override

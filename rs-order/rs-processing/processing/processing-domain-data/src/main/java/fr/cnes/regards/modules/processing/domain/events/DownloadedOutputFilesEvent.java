@@ -8,12 +8,13 @@ import io.vavr.collection.List;
 import lombok.Value;
 import lombok.With;
 
+import java.net.URL;
 import java.util.UUID;
 
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value @With
 public class DownloadedOutputFilesEvent implements ISubscribable {
 
-    List<UUID> outputFileIds;
+    List<URL> outputFileUrls;
 
 }

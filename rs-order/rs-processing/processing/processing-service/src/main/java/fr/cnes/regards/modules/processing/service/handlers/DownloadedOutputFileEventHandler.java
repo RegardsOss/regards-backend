@@ -38,7 +38,7 @@ public class DownloadedOutputFileEventHandler
 
         LOGGER.info("Downloaded outputfile event received: {}", message);
 
-        outFileService.markDownloaded(message.getOutputFileIds())
+        outFileService.markDownloaded(message.getOutputFileUrls())
                 .subscribe(
                         exec -> LOGGER.info("Output files marked as downloaded: {}", message),
                         err -> LOGGER.error(err.getMessage(), err)
