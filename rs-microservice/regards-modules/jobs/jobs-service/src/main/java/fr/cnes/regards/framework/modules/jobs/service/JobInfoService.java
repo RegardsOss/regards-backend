@@ -154,6 +154,13 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public JobInfo enqueueJobForId(UUID jobInfoId) {
+        JobInfo jobInfo = retrieveJob(jobInfoId);
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        return save(jobInfo);
+    }
+
+    @Override
     public JobInfo save(final JobInfo jobInfo) {
         if (jobInfo.getId() == null) {
             throw new IllegalArgumentException(SOME_FUNNY_MESSAGE);

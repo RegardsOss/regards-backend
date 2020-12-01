@@ -153,14 +153,14 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Find all jobInfo by owner with a specified status. Results are ordered by desc priority and limited thanks to
      * page
      */
-    List<JobInfo> findByOwnerAndStatusStatusOrderByPriorityDesc(String owner, JobStatus status, Pageable page);
+    List<JobInfo> findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(String owner, JobStatus status, String className, Pageable page);
 
     /**
      * Find top priority user pending jobs
      * @param count number of results to retrieve
      */
-    default List<JobInfo> findTopUserPendingJobs(String user, int count) {
-        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, PageRequest.of(0, count));
+    default List<JobInfo> findTopUserPendingJobs(String user, String className, int count) {
+        return findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(user, JobStatus.PENDING, className, PageRequest.of(0, count));
     }
 
     /**
