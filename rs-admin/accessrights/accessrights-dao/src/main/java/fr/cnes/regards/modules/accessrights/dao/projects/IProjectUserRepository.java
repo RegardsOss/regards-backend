@@ -25,14 +25,11 @@ import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -130,17 +127,4 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @Override
     @EntityGraph(value = "graph.user.metadata")
     Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
-
-    default Page<ProjectUser> findAll(String status, String emailStart, Pageable pageable) {
-        Page<Long> idPage = findIdPageByStatusAndEmailStartingBy(status, emailStart, pageable);
-        List<ProjectUser> pageContent = findAllById(idPage.getContent());
-        return new PageImpl<>(pageContent, idPage.getPageable(), idPage.getTotalElements());
-    }
-
-    @Override
-    @EntityGraph(value = "graph.user.metadata")
-    List<ProjectUser> findAllById(Iterable<Long> longs);
-
-    @Query(value = "SELECT id FROM ProjectUser pu WHERE status = :status AND email LIKE :emailStart%")
-    Page<Long> findIdPageByStatusAndEmailStartingBy(String status, String emailStart, Pageable pageable);
 }
