@@ -95,12 +95,15 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, pageable, pageIds.getTotalElements());
     }
 
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(List<Long> pageIds);
+//    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+    @Query("SELECT n.id ad id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUser, "
+            + "n.sender as sender, n.status as status, n.level as level, n.title as title, n.mimeType as mimeType "
+            + "FROM Notification n LEFT JOIN n.roleRecipients LEFT JOIN n.projectUserRecipients WHERE n.id in :ids")
+    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(@Param("ids") List<Long> ids);
 
-    @Query(value = "select distinct n.id from Notification n"
-            + " where n.status= :status and (:user member of n.projectUserRecipients or "
-            + " :role member of n.roleRecipients) ORDER BY id DESC")
+    @Query(value = "select n.id from Notification n"
+            + " where n.status= :status and (n.projectUserRecipients in :user or "
+            + "n.roleRecipients in :role) ORDER BY id DESC")
     Page<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc( @Param("status") NotificationStatus status, @Param("user") String projectUser,
             @Param("role") String role, Pageable pageable);
 
@@ -141,7 +144,7 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, pageable, pageNotifications.getTotalElements());
     }
 
-    @Query(value = "select distinct n.id from Notification n" + " where n.status = :status" + " order by id desc")
+    @Query(value = "select n.id from Notification n" + " where n.status = :status order by id desc")
     Page<Long> findPageIdByStatus(@Param("status") NotificationStatus status, Pageable pageable);
 
     Long countByStatus(NotificationStatus pStatus);
