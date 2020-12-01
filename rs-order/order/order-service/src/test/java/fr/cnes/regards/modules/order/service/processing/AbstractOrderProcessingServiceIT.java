@@ -3,15 +3,10 @@ package fr.cnes.regards.modules.order.service.processing;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
@@ -21,7 +16,6 @@ import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
@@ -45,18 +39,13 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterTy
 import fr.cnes.regards.modules.processing.order.*;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.hateoas.EntityModel;
@@ -70,7 +59,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import javax.annotation.PostConstruct;
 import java.io.*;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -93,6 +81,7 @@ import static org.mockito.Mockito.when;
         "logging.level.org.springframework.transaction=TRACE",
         "regards.order.files.bucket.size.Mb=50", // We regulate the suborder sizes with process info limits
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitenantServiceTest {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
@@ -144,10 +133,8 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
         jobInfoRepos.deleteAll();
+        execResultHandlerResultEventHandler.clear();
     }
-
-    @Test
-    public abstract void simpleOrderWithProcess() throws Exception;
 
     protected void showMetalink(Order order) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -157,13 +144,14 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         }
     }
 
-    protected void assertProcessingEventSizes(int expectedExecutions, ProcessingMock processingMock) {
+    protected void assertProcessingEventSizes(int expectedExecutions, ProcessingMock processingMock, Long storageJobsSuccessBefore, Long execJobsSuccessBefore) {
+        assertThat(processingMock.getExecRequestEvents()).hasSize(expectedExecutions);
+
         Long storageJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(), JobStatus.SUCCEEDED);
         Long execJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(), JobStatus.SUCCEEDED);
+        assertThat(storageJobsSuccessAfter - storageJobsSuccessBefore).isEqualTo(expectedExecutions);
+        assertThat(execJobsSuccessAfter - execJobsSuccessBefore).isEqualTo(expectedExecutions);
 
-        assertThat(processingMock.getExecRequestEvents()).hasSize(expectedExecutions);
-        assertThat(storageJobsSuccessAfter).isEqualTo(expectedExecutions);
-        assertThat(execJobsSuccessAfter).isEqualTo(expectedExecutions);
     }
 
     protected void awaitLatches(CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) throws InterruptedException {
@@ -180,6 +168,8 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     protected void setupMocksAndHandlers(UUID processBusinessId, OrderProcessInfoMapper processInfoMapper, OrderProcessInfo processInfo, String defaultTenant, ProcessingMock processingMock, AtomicInteger sendProcessingRequestCallCount, String orderOwner, CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) {
+        Mockito.reset(processingClient, processingEventSender);
+
         when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> {
             return new ResponseEntity<>(new PProcessDTO(
                     processBusinessId,
@@ -241,7 +231,6 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         return basket;
     }
 
-    @MultitenantTransactional
     protected Basket saveBasket(String tenant, Basket basket) {
         runtimeTenantResolver.forceTenant(tenant);
         Basket savedBasket = basketRepos.saveAndFlush(basket);
@@ -350,6 +339,7 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
             consumer.accept(event);
         }
         public List<ExecResultHandlerResultEvent> getEvents() { return List.ofAll(events); }
+        public void clear() { events.clear(); }
     }
 
     @Component
@@ -360,6 +350,5 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
             consumer.accept(event);
         }
     }
-
 
 }

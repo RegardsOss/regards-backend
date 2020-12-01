@@ -5,19 +5,19 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 public class ProcessOutputFilesJobParameter extends JobParameter {
 
-    public static final String NAME = "processOutputFiles";
+    public static final String NAME = "processOutputFileIds";
 
-    public ProcessOutputFilesJobParameter(OrderDataFile[] value) {
+    public ProcessOutputFilesJobParameter(Long[] value) {
         super(NAME, value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public OrderDataFile[] getValue() {
+    public Long[] getValue() {
         return super.getValue();
     }
 
-    public void setValue(OrderDataFile[] value) {
+    public void setValue(Long[] value) {
         super.setValue(value);
     }
 

@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IBasketDatasetSelectionRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
@@ -54,6 +55,9 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessExecutionJob.class);
 
     protected final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
+
+    @Autowired
+    protected IOrderDataFileRepository orderDataFileRepository;
 
     @Autowired
     protected IProcessingRestClient processingClient;
@@ -214,7 +218,8 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             if (ProcessInputsPerFeatureJobParameter.isCompatible(param)) {
                 processInputDataFiles = param.getValue();
             } else if (ProcessOutputFilesJobParameter.isCompatible(param)) {
-                processResultDataFiles = List.of(param.getValue());
+                List<Long> odfIds = List.of(param.getValue());
+                processResultDataFiles = List.ofAll(orderDataFileRepository.findAllById(odfIds));
             } else if (TenantJobParameter.isCompatible(param)) {
                 tenant = param.getValue();
             } else if (UserJobParameter.isCompatible(param)) {

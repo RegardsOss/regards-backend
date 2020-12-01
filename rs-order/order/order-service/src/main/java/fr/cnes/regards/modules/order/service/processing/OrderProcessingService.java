@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -53,6 +54,7 @@ public class OrderProcessingService implements IOrderProcessingService {
     protected final IProcessingRestClient processingClient;
     protected final SuborderSizeCounter suborderSizeCounter;
     protected final IOrderDataFileService orderDataFileService;
+    protected final IOrderDataFileRepository orderDataFileRepository;
     protected final IOrderJobService orderJobService;
     protected final IJobInfoService jobInfoService;
     protected final int orderValidationPeriodDays;
@@ -63,6 +65,7 @@ public class OrderProcessingService implements IOrderProcessingService {
             IProcessingRestClient processingClient,
             SuborderSizeCounter suborderSizeCounter,
             IOrderDataFileService orderDataFileService,
+            IOrderDataFileRepository orderDataFileRepository,
             IOrderJobService orderJobService,
             IJobInfoService jobInfoService,
             @Value("${regards.order.validation.period.days:3}") int orderValidationPeriodDays
@@ -71,6 +74,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         this.processingClient = processingClient;
         this.suborderSizeCounter = suborderSizeCounter;
         this.orderDataFileService = orderDataFileService;
+        this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.jobInfoService = jobInfoService;
         this.orderValidationPeriodDays = orderValidationPeriodDays;
@@ -181,7 +185,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         Long suborderCountId = suborderCount.getAndIncrement();
 
         BatchSuborderCorrelationIdentifier batchSuborderIdentifier = new BatchSuborderCorrelationIdentifier(order.getId(), dsSel.getId(), suborderCountId);
-        OrderDataFile[] outputFiles = createOutputFiles(
+        Long[] outputFiles = createOutputFilesAndReturnIds(
                 batchSuborderIdentifier,
                 UniformResourceName.fromString(dsSel.getDatasetIpid()),
                 features,
@@ -208,7 +212,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         return result;
     }
 
-    protected OrderDataFile[] createOutputFiles(
+    protected Long[] createOutputFilesAndReturnIds(
             BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
             UniformResourceName dsSelIpId,
             List<EntityFeature> features,
@@ -226,7 +230,9 @@ public class OrderProcessingService implements IOrderProcessingService {
                     true,
                     true
             );
-            return new OrderDataFile[]{createAndSaveOrderDataFile(dataFile, dsSelIpId, orderId)};
+            return List.of(createAndSaveOrderDataFile(dataFile, dsSelIpId, orderId))
+                    .map(OrderDataFile::getId)
+                    .toJavaArray(Long[]::new);
         } else {
             return features.flatMap(feature -> {
                 if (cardinality == Cardinality.ONE_PER_FEATURE) {
@@ -257,7 +263,9 @@ public class OrderProcessingService implements IOrderProcessingService {
                     // Happens only if some new cases appear for Cardinality
                     throw new NotImplementedException("New Cardinality case missing");
                 }
-            }).toJavaArray(OrderDataFile[]::new);
+            })
+            .map(OrderDataFile::getId)
+            .toJavaArray(Long[]::new);
         }
     }
 
@@ -339,8 +347,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         processExecJobUnsaved.setExpirationDate(order.getExpirationDate());
         JobInfo processExecJob = jobInfoService.createAsPending(processExecJobUnsaved);
 
-        OrderDataFile[] outputFiles = extractOutputFilesFromProcessExecJob(processExecJob);
-        OrderDataFile[] internalInputFiles = findInputFilesInStorage(order.getId(), features);
+        Long[] internalInputFiles = findInputFilesInStorage(order.getId(), features);
         JobInfo storageFilesJobUnsaved = new JobInfo(false,
                 orderJobService.computePriority(user, userRole),
                 HashSet.of(
@@ -356,6 +363,8 @@ public class OrderProcessingService implements IOrderProcessingService {
         storageFilesJobUnsaved.setExpirationDate(order.getExpirationDate());
         JobInfo storageFilesJob = jobInfoService.createAsPending(storageFilesJobUnsaved);
 
+        OrderDataFile[] outputFiles = extractOutputFilesFromProcessExecJob(processExecJob);
+
         FilesTask filesTask = new FilesTask();
         filesTask.setOrderId(order.getId());
         filesTask.setOwner(user);
@@ -365,16 +374,19 @@ public class OrderProcessingService implements IOrderProcessingService {
     }
 
     private OrderDataFile[] extractOutputFilesFromProcessExecJob(JobInfo processExecJob) {
-        return processExecJob.getParametersAsMap().get(ProcessOutputFilesJobParameter.NAME).getValue();
+        List<Long> ids = List.of(processExecJob.getParametersAsMap().get(ProcessOutputFilesJobParameter.NAME).getValue());
+        return List.ofAll(orderDataFileRepository.findAllById(ids)).toJavaArray(OrderDataFile[]::new);
     }
 
-    private OrderDataFile[] findInputFilesInStorage(Long orderId, List<EntityFeature> features) {
+    private Long[] findInputFilesInStorage(Long orderId, List<EntityFeature> features) {
         return features
                 .flatMap(f -> List.ofAll(f.getFiles().values())
                         .filter(file -> !file.isReference())
                         .map(file -> new OrderDataFile(file, f.getId(), orderId))
                 )
-                .toJavaArray(OrderDataFile[]::new);
+                .map(orderDataFileRepository::save)
+                .map(OrderDataFile::getId)
+                .toJavaArray(Long[]::new);
     }
 
     protected boolean hasAtLeastOneRequiredFileInStorage(EntityFeature entityFeature, List<DataType> requiredDatatypes) {
