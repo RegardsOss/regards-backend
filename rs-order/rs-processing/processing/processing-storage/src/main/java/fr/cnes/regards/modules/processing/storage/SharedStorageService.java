@@ -108,7 +108,7 @@ public class SharedStorageService implements ISharedStorageService {
                             return FileVisitResult.CONTINUE;
                         }
                     });
-                } catch (RuntimeException e) {
+                } catch (Exception e) {
                     sink.error(e);
                 }
             }).flatMap(mono -> mono).collect(List.collector());
