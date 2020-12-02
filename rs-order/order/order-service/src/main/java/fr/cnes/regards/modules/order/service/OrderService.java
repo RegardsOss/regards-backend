@@ -18,9 +18,74 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
+import org.xml.sax.SAXException;
+
 import com.google.common.base.Strings;
-import com.google.common.collect.*;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
+
 import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -45,12 +110,25 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.dao.OrderSpecifications;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.exception.*;
-import fr.cnes.regards.modules.order.metalink.schema.*;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
+import fr.cnes.regards.modules.order.metalink.schema.FileType;
+import fr.cnes.regards.modules.order.metalink.schema.FilesType;
+import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
+import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
+import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
@@ -68,48 +146,6 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
 import io.vavr.collection.Array;
 import io.vavr.control.Try;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriUtils;
-import org.xml.sax.SAXException;
-
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-import java.io.*;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -373,12 +409,16 @@ public class OrderService implements IOrderService {
     /**
      * Event type (used by tests) to be notified when the order creation process is finished.
      */
+    @SuppressWarnings("serial")
     public static class OrderCreationCompletedEvent extends ApplicationEvent {
+
         private final Order order;
+
         public OrderCreationCompletedEvent(Order order) {
             super(order);
             this.order = order;
         }
+
         public Order getOrder() {
             return order;
         }
@@ -546,8 +586,10 @@ public class OrderService implements IOrderService {
 
         // storageJobInfo is pointed by currentFilesTask so it must be locked to avoid being cleaned before FilesTask
         JobInfo storageJobInfo = new JobInfo(true);
-        storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
-                new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
+        storageJobInfo.setParameters(
+                                     new FilesJobParameter(
+                                             bucketFiles.stream().map(OrderDataFile::getId).toArray(Long[]::new)),
+                                     new SubOrderAvailabilityPeriodJobParameter(orderValidationPeriodDays),
                                      new UserJobParameter(owner), new UserRoleJobParameter(role));
         storageJobInfo.setOwner(owner);
         storageJobInfo.setClassName(StorageFilesJob.class.getName());
@@ -813,12 +855,8 @@ public class OrderService implements IOrderService {
         availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).collect(Collectors.toList()));
         dataFileService.save(availableFiles);
 
-        publisher.publish(new DownloadedOutputFilesEvent(
-            Array.ofAll(availableFiles)
-                .map(OrderDataFile::getUrl)
-                .flatMap(url -> Try.of(() -> new URL(url)).toOption())
-                .toList()
-        ));
+        publisher.publish(new DownloadedOutputFilesEvent(Array.ofAll(availableFiles).map(OrderDataFile::getUrl)
+                .flatMap(url -> Try.of(() -> new URL(url)).toOption()).toList()));
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
         orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
