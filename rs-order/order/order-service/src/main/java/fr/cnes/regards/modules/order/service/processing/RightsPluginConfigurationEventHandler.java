@@ -79,6 +79,9 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
                 handleUpdate(evt.getAfter());
                 break;
             }
+            case CREATE:
+                // Nothing to do
+                break;
             default:
                 LOGGER.error("Unknown RightsPluginConfigurationEvent type: {}", evt.getType());
                 break;
