@@ -63,7 +63,7 @@ public class DemoSimulatedAsyncProcess {
                     publisher.publish(new StepEvent(ctx.getExec().getId(), new ExecutionEvent.FinalEvent(
                             PStep.success("success for profile " + profile + "..."), List.empty())));
                 }
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 LOGGER.error("Something unexpected happened during the simulation.", e);
             }
         }).start();
