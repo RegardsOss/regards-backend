@@ -18,14 +18,12 @@
 package fr.cnes.regards.modules.processing.entity.converter;
 
 import com.google.gson.Gson;
-
 import io.vavr.collection.List;
 
 /**
- * TODO : Class description
+ * This class defines custom converters for Gson.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class DaoCustomConverters {
 

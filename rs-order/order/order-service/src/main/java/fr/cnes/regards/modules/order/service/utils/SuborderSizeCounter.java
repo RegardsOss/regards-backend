@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.order.service.utils;
 
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import javax.annotation.PostConstruct;
+import java.util.Set;
 
 /**
- * TODO : Class description
+ * This class contains the data necessary to determine if a suborder gets too big or not.
  *
  * @author Guillaume Andrieu
  *

@@ -24,20 +24,18 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-
 import java.util.UUID;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.PBatch}
  *
+ * @author gandrieu
  */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
+
 @Table("t_batch")
 public class BatchEntity implements Persistable<UUID> {
 
@@ -58,9 +56,6 @@ public class BatchEntity implements Persistable<UUID> {
 
     @Column("user_role") @NonNull
     private String userRole;
-
-    @Column("process_name") @NonNull
-    private String processName;
 
     @Column("parameters") @NonNull
     private ParamValues parameters;

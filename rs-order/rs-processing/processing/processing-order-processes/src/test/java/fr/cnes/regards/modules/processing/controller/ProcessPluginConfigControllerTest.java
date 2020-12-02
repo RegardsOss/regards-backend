@@ -17,27 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.controller;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import io.vavr.collection.Array;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import feign.Feign;
 import fr.cnes.regards.framework.feign.FeignContractSupplier;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
@@ -55,9 +34,25 @@ import fr.cnes.regards.modules.processing.plugins.impl.UselessProcessPlugin;
 import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;
+import io.vavr.collection.Array;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
 

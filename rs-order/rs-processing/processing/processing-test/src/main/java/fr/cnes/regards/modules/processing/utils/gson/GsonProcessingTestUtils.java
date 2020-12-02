@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.processing.utils.gson;
 import com.google.gson.Gson;
 
 /**
- * TODO : Class description
+ * This class defines Gson utilities in tests.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class GsonProcessingTestUtils {
 

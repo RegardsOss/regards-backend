@@ -17,17 +17,15 @@
 */
 package fr.cnes.regards.modules.processing.testutils;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-
 /**
- * TODO : Class description
+ * Base test application in reactive context.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "processing-test", version = "2.0.0-SNAPSHOT")

@@ -17,33 +17,36 @@
 */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
+import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.entity.StepEntity;
+import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
-import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.modules.processing.domain.PStep;
-import fr.cnes.regards.modules.processing.entity.StepEntity;
-
 /**
- * TODO : Class description
+ * This class define a mapper between domain and database entities for Steps
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
+
 @Component
 public class StepMapper implements DomainEntityMapper.Step {
 
-    @Override
     public StepEntity toEntity(PStep step) {
-        return new StepEntity(step.getStatus(), step.getTime().toEpochSecond() * 1000L, step.getMessage());
+        return new StepEntity(
+                step.getStatus(),
+                step.getTime().toEpochSecond() * 1000L,
+                step.getMessage()
+        );
     }
 
-    @Override
     public PStep toDomain(StepEntity entity) {
-        return PStep.from(entity.getStatus(),
-                          OffsetDateTime.ofInstant(Instant.ofEpochMilli(entity.getEpochTs()), ZoneId.of("UTC")),
-                          entity.getMessage());
+        return PStep.from(
+                entity.getStatus(),
+                OffsetDateTime.ofInstant(Instant.ofEpochMilli(entity.getEpochTs()), ZoneId.of("UTC")),
+                entity.getMessage()
+        );
     }
 }

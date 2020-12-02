@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.order.dao;
 
+import fr.cnes.regards.modules.order.domain.FileState;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-
-import fr.cnes.regards.modules.order.domain.FileState;
 
 /**
  * @author oroussel

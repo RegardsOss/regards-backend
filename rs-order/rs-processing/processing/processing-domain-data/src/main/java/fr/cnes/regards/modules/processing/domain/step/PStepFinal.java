@@ -17,18 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.domain.step;
 
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.toUtc;
-
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 
+import java.time.OffsetDateTime;
+
+import static fr.cnes.regards.modules.processing.utils.TimeUtils.toUtc;
+
+
 /**
- * TODO : Class description
+ * This class defines final steps. It must be instanciated only with a final {@link ExecutionStatus},
+ * which can not be enforced by the type checker so is left to be checked in the constructor.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class PStepFinal extends PStep {
 

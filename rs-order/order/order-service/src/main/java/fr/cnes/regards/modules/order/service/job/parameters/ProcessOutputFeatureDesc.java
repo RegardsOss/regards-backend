@@ -21,10 +21,12 @@ package fr.cnes.regards.modules.order.service.job.parameters;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 
 /**
- * TODO : Class description
+ * This class allows to keep the necessary information about EntityFeatures when creating
+ * correlations IDs for data files sent to processing. This way, input data files keep the
+ * information of their parent feature, and this information is propagated back in process
+ * output files, which refer to their corresponding input correlation ID.
  *
  * @author Guillaume Andrieu
- *
  */
 @lombok.Value
 public class ProcessOutputFeatureDesc {

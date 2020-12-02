@@ -20,15 +20,13 @@ package fr.cnes.regards.modules.processing.domain.dto;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
-import lombok.*;
+import lombok.Value;
 
 import java.util.UUID;
-
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines a DTO for processes.
  *
+ * @author gandrieu
  */
 @Value
 public class PProcessDTO {

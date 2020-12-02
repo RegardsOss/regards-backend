@@ -18,22 +18,13 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
+import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
+
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.OneToMany;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
-
-import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
 
 /**
  * A sub-order task is a job that manage a set of data files.

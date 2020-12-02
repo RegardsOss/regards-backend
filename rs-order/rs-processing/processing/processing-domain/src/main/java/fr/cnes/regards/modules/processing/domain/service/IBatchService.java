@@ -23,10 +23,9 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
 import reactor.core.publisher.Mono;
 
 /**
- * TODO : Class description
+ * This interface defines a service contract for {@link PBatch} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IBatchService {
 

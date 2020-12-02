@@ -23,11 +23,11 @@ import lombok.Value;
 
 import java.util.UUID;
 
+
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines a DTO for monitoring executions.
  *
+ * @author gandrieu
  */
 @Value
 public class ExecutionBatchMonitoringDTO {

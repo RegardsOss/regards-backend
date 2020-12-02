@@ -17,7 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.forecast;
 
-import fr.cnes.regards.modules.processing.forecast.ForecastParser;
 import org.junit.Test;
 
 import java.time.Duration;

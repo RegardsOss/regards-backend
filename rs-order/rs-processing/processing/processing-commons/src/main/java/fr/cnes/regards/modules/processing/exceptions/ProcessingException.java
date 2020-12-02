@@ -17,18 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.exceptions;
 
-import java.util.UUID;
-import java.util.function.Predicate;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+import java.util.function.Predicate;
+
 /**
- * TODO : Class description
+ * Generic processing exception, with a specific ID transmitted to the client.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
+
 @SuppressWarnings("serial")
 public abstract class ProcessingException extends RuntimeException {
 

@@ -17,19 +17,23 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import static org.apache.commons.io.FilenameUtils.getName;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
-
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 
+import static org.apache.commons.io.FilenameUtils.getName;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
+
 /**
- * TODO : Class description
+ * This interface defines how to find the input files corresponding to a
+ * given output file.
  *
- * @author Guillaume Andrieu
+ * {@link POutputFile} instances may refer to the correlation ID of one or more {@link PInputFile}
+ * that are thus supposed to have contributed to generate the output. (There is no
+ * generic way to link output back to inputs, so the list of input correlation IDs may be empty.)
  *
+ * @author gandrieu
  */
 public interface IOutputToInputMapper {
 

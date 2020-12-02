@@ -31,10 +31,9 @@ import lombok.With;
 import java.util.UUID;
 
 /**
- * TODO : Class description
+ * This class defines an event sent by processing to the client when an execution has finished.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value @With

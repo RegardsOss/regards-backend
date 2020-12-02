@@ -17,13 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.REGISTERED;
-
-import java.time.Duration;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
@@ -31,13 +24,19 @@ import fr.cnes.regards.modules.processing.entity.FileParameters;
 import fr.cnes.regards.modules.processing.entity.Steps;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.REGISTERED;
 
 /**
- * TODO : Class description
+ * This class define a mapper between domain and database entities for Executions
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
+
 @Component
 public class ExecutionMapper implements DomainEntityMapper.Execution {
 
@@ -50,21 +49,43 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
 
     @Override
     public ExecutionEntity toEntity(PExecution exec) {
-        return new ExecutionEntity(exec.getId(), exec.getBatchId(),
-                new FileParameters(exec.getInputFiles().toJavaList()), exec.getExpectedDuration().toMillis(),
-                toEntity(exec.getSteps()), exec.getSteps().lastOption().map(PStep::getStatus).getOrElse(REGISTERED),
-                exec.getTenant(), exec.getUserName(), exec.getProcessBusinessId(), exec.getProcessName(),
-                exec.getExecutionCorrelationId(), exec.getBatchCorrelationId(), exec.getCreated(),
-                exec.getLastUpdated(), exec.getVersion(), exec.isPersisted());
+        return new ExecutionEntity(
+                exec.getId(),
+                exec.getBatchId(),
+                new FileParameters(exec.getInputFiles().toJavaList()),
+                exec.getExpectedDuration().toMillis(),
+                toEntity(exec.getSteps()),
+                exec.getSteps().lastOption().map(PStep::getStatus).getOrElse(REGISTERED),
+                exec.getTenant(),
+                exec.getUserName(),
+                exec.getProcessBusinessId(),
+                exec.getExecutionCorrelationId(),
+                exec.getBatchCorrelationId(),
+                exec.getCreated(),
+                exec.getLastUpdated(),
+                exec.getVersion(),
+                exec.isPersisted()
+        );
     }
 
     @Override
     public PExecution toDomain(ExecutionEntity entity) {
-        return new PExecution(entity.getId(), entity.getCorrelationId(), entity.getBatchId(),
-                entity.getBatchCorrelationId(), Duration.ofMillis(entity.getTimeoutAfterMillis()),
-                List.ofAll(entity.getFileParameters().getValues()), toDomain(entity.getSteps()), entity.getTenant(),
-                entity.getUserEmail(), entity.getProcessBusinessId(), entity.getProcessName(), entity.getCreated(),
-                entity.getLastUpdated(), entity.getVersion(), entity.isPersisted());
+        return new PExecution(
+                entity.getId(),
+                entity.getCorrelationId(),
+                entity.getBatchId(),
+                entity.getBatchCorrelationId(),
+                Duration.ofMillis(entity.getTimeoutAfterMillis()),
+                List.ofAll(entity.getFileParameters().getValues()),
+                toDomain(entity.getSteps()),
+                entity.getTenant(),
+                entity.getUserEmail(),
+                entity.getProcessBusinessId(),
+                entity.getCreated(),
+                entity.getLastUpdated(),
+                entity.getVersion(),
+                entity.isPersisted()
+        );
     }
 
     private Steps toEntity(Seq<PStep> domain) {

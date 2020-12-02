@@ -17,19 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-
 /**
- * TODO : Class description
+ * This class is the implementation for the {@link IProcessService} interface.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Service
 public class ProcessServiceImpl implements IProcessService {
@@ -41,9 +38,9 @@ public class ProcessServiceImpl implements IProcessService {
         this.processRepo = processRepo;
     }
 
-    @Override
     public Flux<PProcessDTO> findByTenant(String tenant) {
-        return processRepo.findAllByTenant(tenant).map(PProcessDTO::fromProcess);
+        return processRepo.findAllByTenant(tenant)
+                .map(PProcessDTO::fromProcess);
     }
 
 }

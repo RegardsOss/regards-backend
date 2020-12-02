@@ -17,21 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import java.lang.reflect.Type;
-
+import com.google.gson.Gson;
+import feign.RequestTemplate;
+import feign.codec.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
-import feign.RequestTemplate;
-import feign.codec.Encoder;
+import java.lang.reflect.Type;
 
 /**
- * TODO : Class description
+ * This class is a logging encoder used only in tests.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class GsonLoggingEncoder implements Encoder {
 

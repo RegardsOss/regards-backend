@@ -28,15 +28,15 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.PExecution}
  *
+ * @author gandrieu
  */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
+
 @Table("t_execution")
 public class ExecutionEntity implements Persistable<UUID> {
 
@@ -66,9 +66,6 @@ public class ExecutionEntity implements Persistable<UUID> {
 
     @Column("process_business_id") @NonNull
     private UUID processBusinessId;
-
-    @Column("process_name") @NonNull
-    private String processName;
 
     @Column("correlation_id") @NonNull
     private String correlationId;

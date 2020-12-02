@@ -17,16 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
-
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -47,14 +37,22 @@ import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
+
 /**
- * TODO : Class description
+ * This class is the implementation for {@link IProcessPluginConfigService}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Service
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
@@ -71,9 +69,13 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public ProcessPluginConfigService(IPluginConfigurationRepository pluginConfigRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IPExecutionRepository executionRepository,
-            IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
+    public ProcessPluginConfigService(
+            IPluginConfigurationRepository pluginConfigRepo,
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+            IPExecutionRepository executionRepository,
+            IPublisher publisher,
+            IRuntimeTenantResolver runtimeTenantResolver
+    ) {
         this.pluginConfigRepo = pluginConfigRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;
@@ -128,8 +130,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     @Override
     public Mono<Boolean> canDelete(UUID processBusinessId) {
         return executionRepository
-                .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
-                .map(count -> count == 0);
+            .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
+            .map(count -> count == 0);
     }
 
     @Override
@@ -142,10 +144,14 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
                     rightsPluginConfigRepo.delete(rights);
                     runtimeTenantResolver.clearTenant();
                     return Mono.just(RightsPluginConfiguration.toDto(rights));
-                } else {
+                }
+                else {
                     return Mono.error(new DeleteAttemptOnUsedProcessException(processBusinessId));
                 }
-            }).doOnNext(dto -> publisher.publish(new RightsPluginConfigurationEvent(DELETE, dto, null)));
+            })
+            .doOnNext(dto ->
+                    publisher.publish(new RightsPluginConfigurationEvent(DELETE, dto, null))
+            );
         });
     }
 
@@ -203,7 +209,6 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @SuppressWarnings("serial")
     public static class DeleteAttemptOnUsedProcessException extends Exception {
-
         private final UUID processBusinessID;
 
         public DeleteAttemptOnUsedProcessException(UUID processBusinessID) {

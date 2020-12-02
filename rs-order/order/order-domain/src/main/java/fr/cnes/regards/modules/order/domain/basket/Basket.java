@@ -18,29 +18,12 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import org.hibernate.annotations.SortNatural;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
+import javax.persistence.*;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Represents an order basket.

@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.order.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
+import org.junit.Ignore;
 
 /**
  * @author oroussel

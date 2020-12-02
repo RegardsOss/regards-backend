@@ -17,29 +17,26 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import static feign.Util.ensureClosed;
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonParseException;
+import feign.Request;
+import feign.Response;
+import feign.codec.Decoder;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonParseException;
-
-import feign.Request;
-import feign.Response;
-import feign.codec.Decoder;
+import static feign.Util.ensureClosed;
 
 /**
- * TODO : Class description
+ * This class is a looging decoder used only in tests.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class GsonLoggingDecoder implements Decoder {
 

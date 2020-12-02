@@ -17,8 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.domain.events;
 
-import java.net.URL;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -27,15 +25,16 @@ import io.vavr.collection.List;
 import lombok.Value;
 import lombok.With;
 
+import java.net.URL;
+
 /**
- * TODO : Class description
+ * This class defines an event received when an output file has been
+ * downloaded and can thus be deleted.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-@Value
-@With
+@Value @With
 public class DownloadedOutputFilesEvent implements ISubscribable {
 
     List<URL> outputFileUrls;

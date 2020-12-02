@@ -17,25 +17,23 @@
 */
 package fr.cnes.regards.modules.order.dao;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import javax.persistence.Convert;
+import javax.persistence.Converts;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.persistence.Convert;
-import javax.persistence.Converts;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
  * Specific OrderDataFile repository methods

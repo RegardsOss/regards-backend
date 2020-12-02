@@ -21,17 +21,15 @@ import com.google.auto.service.AutoService;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 
 /**
- * TODO : Class description
+ * This class is a type adapter for {@link ProcessesByDatasetsDTO}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @AutoService(TypedGsonTypeAdapter.class)
 public class ProcessesByDatasetsDTOTypeAdapter implements TypedGsonTypeAdapter<ProcessesByDatasetsDTO> {

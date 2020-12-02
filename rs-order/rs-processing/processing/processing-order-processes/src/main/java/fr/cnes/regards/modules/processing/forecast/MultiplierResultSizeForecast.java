@@ -21,10 +21,9 @@ import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class represents a size forecast depending on the input.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class MultiplierResultSizeForecast implements IResultSizeForecast {

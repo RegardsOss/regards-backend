@@ -17,18 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
+import lombok.Value;
+
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class is a database wrapper around a list of steps.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
+
 public class Steps {
 
     List<StepEntity> values;

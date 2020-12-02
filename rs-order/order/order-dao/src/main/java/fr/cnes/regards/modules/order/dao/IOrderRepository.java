@@ -17,12 +17,8 @@
 */
 package fr.cnes.regards.modules.order.dao;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,8 +29,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Order repository

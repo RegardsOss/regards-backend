@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.util.NoSuchElementException;
-
-import fr.cnes.regards.modules.order.domain.dto.OrderDto;
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import org.springframework.core.annotation.Order;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import java.util.NoSuchElementException;
 
 /**
  * @author oroussel

@@ -30,10 +30,9 @@ import static io.vavr.control.Option.none;
 import static io.vavr.control.Option.some;
 
 /**
- * TODO : Class description
+ * Defines information present in, and ser/deser for, a processing input file correlation ID.
  *
  * @author Guillaume Andrieu
- *
  */
 @Value
 public class ProcessInputCorrelationIdentifier {

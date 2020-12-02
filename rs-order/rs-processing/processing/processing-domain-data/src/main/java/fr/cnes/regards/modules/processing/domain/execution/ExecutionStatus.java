@@ -21,10 +21,10 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 
 /**
- * TODO : Class description
+ * This enum lists all the possible execution statuses, and for each one, their possible following steps,
+ * making it a definition of a state machine.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public enum ExecutionStatus {
 

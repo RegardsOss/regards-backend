@@ -17,20 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import java.time.Duration;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import fr.cnes.regards.modules.processing.domain.PBatch;
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.PInputFile;
-import fr.cnes.regards.modules.processing.domain.PProcess;
-import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
@@ -42,13 +29,20 @@ import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesReposit
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import io.vavr.collection.Seq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.util.UUID;
+
 /**
- * TODO : Class description
+ * This class is the implementation for the {@link IExecutionService} interface.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Service
 public class ExecutionServiceImpl implements IExecutionService {
@@ -115,11 +109,17 @@ public class ExecutionServiceImpl implements IExecutionService {
                 .flatMap(execRepo::create);
     }
 
-    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch,
-            Duration duration) {
-        return PExecution.create(request.getExecutionCorrelationId(), batch.getId(), batch.getCorrelationId(), duration,
-                                 request.getInputFiles(), batch.getTenant(), batch.getUser(),
-                                 batch.getProcessBusinessId(), batch.getProcessName());
+    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch, Duration duration) {
+        return PExecution.create(
+            request.getExecutionCorrelationId(),
+            batch.getId(),
+            batch.getCorrelationId(),
+            duration,
+            request.getInputFiles(),
+            batch.getTenant(),
+            batch.getUser(),
+            batch.getProcessBusinessId()
+        );
     }
 
     private Mono<Duration> estimateDuration(PBatch batch, Seq<PInputFile> inputFiles) {

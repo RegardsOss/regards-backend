@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.processing.exceptions;
 import org.springframework.http.HttpStatus;
 
 /**
- * TODO : Class description
+ * List of the different possible types of error.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public enum ProcessingExceptionType {
 
@@ -38,8 +37,10 @@ public enum ProcessingExceptionType {
     PERSIST_EXECUTION_STEP_ERROR,
     SEND_EXECUTION_RESULT_ERROR,
     NOTIFY_TIMEOUT_ERROR,
-    MISSING_EXECUTION_CONTEXT_PARAM_ERROR,;
+    MISSING_EXECUTION_CONTEXT_PARAM_ERROR,
+    ;
 
+    /** In case the error is used in an http request, this tells which http status to set for the response. */
     private final HttpStatus status;
 
     ProcessingExceptionType(HttpStatus status) {

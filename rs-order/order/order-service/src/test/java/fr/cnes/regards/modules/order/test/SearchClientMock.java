@@ -18,27 +18,10 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -57,6 +40,17 @@ import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import org.junit.Assert;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration

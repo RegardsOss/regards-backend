@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.IOException;
-
+import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.service.TemplateConfigUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.service.TemplateConfigUtil;
+import java.io.IOException;
 
 /**
  * Configuration used to defined templates

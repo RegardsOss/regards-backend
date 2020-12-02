@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import java.util.List;
 
 /**
  * @author Sébastien Binda

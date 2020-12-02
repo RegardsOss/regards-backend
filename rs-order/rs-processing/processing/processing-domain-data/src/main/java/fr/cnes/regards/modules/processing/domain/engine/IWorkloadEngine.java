@@ -17,17 +17,21 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import javax.annotation.PostConstruct;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
+
+
 /**
- * TODO : Class description
+ * This interface defines an engine: something that takes a context and returns a running execution.
  *
- * @author Guillaume Andrieu
+ * The engine may perform the execution's executable asynchronously, saving some state about
+ * the execution, etc., but ultimately it is responsible for launching the process's
+ * executable for the given context.
  *
+ * @author gandrieu
  */
 public interface IWorkloadEngine {
 

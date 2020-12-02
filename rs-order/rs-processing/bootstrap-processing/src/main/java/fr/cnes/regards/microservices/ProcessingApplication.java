@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.microservices;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * Start microservice processing

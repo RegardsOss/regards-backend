@@ -20,12 +20,10 @@ package fr.cnes.regards.modules.processing.plugins;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import io.vavr.control.Try;
-
 /**
- * TODO : Class description
+ * This interface defines forecasts for {@link IProcessDefinition}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IProcessForecastDefinition {
 

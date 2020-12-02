@@ -17,29 +17,28 @@
 */
 package fr.cnes.regards.modules.processing.controller;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.METADATA_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
-
-import java.util.Collection;
-import java.util.stream.Collectors;
-
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.Stream;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.METADATA_SUFFIX;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
 
 /**
- * TODO : Class description
+ * This class is the controller to create {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}
+ * out of {@link PluginMetaData} found in the classpath corresponding to processes.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @RestController
 @RequestMapping(path = PROCESSPLUGIN_PATH + METADATA_SUFFIX)

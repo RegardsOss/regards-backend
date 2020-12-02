@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -54,12 +39,26 @@ import io.vavr.collection.HashSet;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
- * TODO : Class description
+ * When rs-process has finished an execution, it sends a PExecutionResultEvent.
+ * This class handles these events, setting the corresponding output OrderDataFiles as
+ * available for download in case of success.
  *
  * @author Guillaume Andrieu
- *
  */
 @Service
 public class ProcessingExecutionResultEventHandler implements IProcessingExecutionResultEventHandler {
@@ -121,7 +120,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             LOGGER.error("{} no output found", logPrefix(evt));
             updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
         } else {
-            /*
+            /*ProcessingExecu
              * As a reminder of what the previous steps of the process did:
              * - in OrderProcessingService, we created OrderDataFile corresponding to the output files
              *   and we gave a temporary URL for these files with the following pattern as defined in

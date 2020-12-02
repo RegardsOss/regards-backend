@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.order.service.utils;
 
 /**
- * TODO : Class description
+ * Allows to count internal/external files and suborders during the order creation.
+ *
+ * {@link #add(OrderCounts, OrderCounts)} allows to combine easily two instances.
  *
  * @author Guillaume Andrieu
  *

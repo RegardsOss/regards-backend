@@ -18,11 +18,10 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
+import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
+import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;

@@ -17,15 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.domain.parameters;
 
+
 /**
- * TODO : Class description
+ * This enum lists the execution parameter types, right now only STRING is allowed.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public enum ExecutionParameterType {
 
-    FILE,
     STRING
 
 }

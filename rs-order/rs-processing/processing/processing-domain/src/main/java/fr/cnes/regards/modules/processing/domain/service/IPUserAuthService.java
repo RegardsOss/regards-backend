@@ -17,16 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
-import org.springframework.security.core.context.SecurityContext;
-
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
+import org.springframework.security.core.context.SecurityContext;
 
 /**
- * TODO : Class description
+ * This interface defines a service contract for {@link PUserAuth} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IPUserAuthService {
 

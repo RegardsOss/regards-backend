@@ -22,12 +22,10 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 
 /**
- * TODO : Class description
+ * This class is for exception occurring in the context of an output file.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
-@SuppressWarnings("serial")
 public class ProcessingOutputFileException extends ProcessingException {
 
     protected final POutputFile outFile;

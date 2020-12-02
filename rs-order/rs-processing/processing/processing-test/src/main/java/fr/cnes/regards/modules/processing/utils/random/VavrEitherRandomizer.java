@@ -17,16 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
+import io.vavr.control.Either;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.AbstractRandomizer;
 
-import io.vavr.control.Either;
-
 /**
- * TODO : Class description
+ * This class provides random generation for vavr Either.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>> {
 
@@ -39,8 +37,8 @@ public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>>
     public VavrEitherRandomizer() {
     }
 
-    public VavrEitherRandomizer(Randomizer<Boolean> booleanRandomizer, Randomizer<? extends R> rightRandomizer,
-            Randomizer<? extends L> leftRandomizer) {
+    public VavrEitherRandomizer(Randomizer<Boolean> booleanRandomizer,
+            Randomizer<? extends R> rightRandomizer, Randomizer<? extends L> leftRandomizer) {
         this.booleanRandomizer = booleanRandomizer;
         this.rightRandomizer = rightRandomizer;
         this.leftRandomizer = leftRandomizer;
@@ -70,8 +68,7 @@ public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>>
         this.leftRandomizer = leftRandomizer;
     }
 
-    @Override
-    public Either<L, R> getRandomValue() {
+    @Override public Either<L, R> getRandomValue() {
         if (booleanRandomizer.getRandomValue()) {
             return Either.right(rightRandomizer.getRandomValue());
         } else {

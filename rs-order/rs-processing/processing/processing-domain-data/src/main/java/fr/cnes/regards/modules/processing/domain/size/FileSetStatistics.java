@@ -20,10 +20,11 @@ package fr.cnes.regards.modules.processing.domain.size;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class defines data for statistics over a set of files given as input for a batch.
+ * This allows to decide in advance whether the batch can be executed or not, based on
+ * the process's size and duration forecasts.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class FileSetStatistics {

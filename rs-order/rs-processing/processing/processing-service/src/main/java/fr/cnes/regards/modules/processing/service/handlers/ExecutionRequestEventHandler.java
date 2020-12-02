@@ -17,25 +17,23 @@
 */
 package fr.cnes.regards.modules.processing.service.handlers;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
+import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
-import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import reactor.core.publisher.Mono;
 
 /**
- * TODO : Class description
+ * This class defines the handler for execution request events.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class ExecutionRequestEventHandler

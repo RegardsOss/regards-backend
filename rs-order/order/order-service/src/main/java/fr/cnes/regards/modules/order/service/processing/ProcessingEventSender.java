@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import io.vavr.control.Try;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 /**
- * TODO : Class description
+ * Wrapper around {@link IPublisher}, used in  to be able to modify the sending behaviour during tests.
  *
  * @author Guillaume Andrieu
  *

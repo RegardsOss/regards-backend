@@ -30,10 +30,9 @@ import org.slf4j.LoggerFactory;
 import static fr.cnes.regards.modules.processing.demo.DemoConstants.FORCE_FAILURE;
 
 /**
- * TODO : Class description
+ * This class is the demo async launch of a process.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class DemoSimulatedAsyncProcess {
 

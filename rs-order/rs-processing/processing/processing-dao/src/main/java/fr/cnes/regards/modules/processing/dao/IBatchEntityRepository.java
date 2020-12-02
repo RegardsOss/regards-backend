@@ -17,19 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.util.UUID;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import java.util.UUID;
 
 /**
- * TODO : Class description
+ * This interface defines operations on BatchEntities in the database.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @InstanceEntity
 @Repository

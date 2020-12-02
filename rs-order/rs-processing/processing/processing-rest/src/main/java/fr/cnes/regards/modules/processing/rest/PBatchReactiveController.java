@@ -17,8 +17,10 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_PATH;
-
+import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
+import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
+import fr.cnes.regards.modules.processing.domain.service.IBatchService;
+import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -26,18 +28,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
-import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
-import fr.cnes.regards.modules.processing.domain.service.IBatchService;
-import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import reactor.core.publisher.Mono;
 
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_PATH;
+
 /**
- * TODO : Class description
+ * This class defines REST endpoints to deal with batches in reactive application.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")

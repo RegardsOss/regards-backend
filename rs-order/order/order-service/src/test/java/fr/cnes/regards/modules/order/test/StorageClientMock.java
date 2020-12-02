@@ -18,19 +18,7 @@
  */
 package fr.cnes.regards.modules.order.test;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
@@ -42,6 +30,16 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class StorageClientMock implements IStorageClient {
 

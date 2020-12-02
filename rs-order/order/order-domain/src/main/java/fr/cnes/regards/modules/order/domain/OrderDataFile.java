@@ -18,37 +18,19 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Objects;
-
-import javax.persistence.Column;
-import javax.persistence.ColumnResult;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EntityResult;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.NamedNativeQueries;
-import javax.persistence.NamedNativeQuery;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.SqlResultSetMappings;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import org.hibernate.annotations.Type;
+import org.springframework.util.MimeType;
+
+import javax.persistence.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Inherits from DataFile to add nearline state and IP_ID

@@ -17,24 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.net.URL;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import io.vavr.collection.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.net.URL;
+import java.util.UUID;
+
 /**
- * TODO : Class description
+ * This class implements is a bridge between batch domain entities and database entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class POutputFileRepositoryImpl implements IPOutputFilesRepository {

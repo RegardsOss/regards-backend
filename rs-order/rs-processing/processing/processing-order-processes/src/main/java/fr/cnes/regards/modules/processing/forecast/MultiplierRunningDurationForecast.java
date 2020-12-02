@@ -21,12 +21,10 @@ import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForeca
 import lombok.Value;
 
 import java.time.Duration;
-
 /**
- * TODO : Class description
+ * This class represents a duration forecast depending on the input.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class MultiplierRunningDurationForecast implements IRunningDurationForecast {

@@ -18,26 +18,11 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
-import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
-import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
@@ -45,13 +30,12 @@ import org.junit.Assert;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration

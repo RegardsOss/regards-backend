@@ -22,10 +22,9 @@ package fr.cnes.regards.modules.processing.order;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
- * TODO : Class description
+ * This class defines how to interpret PInputFile metadata field for rs-order use of processing.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @lombok.Value
 public class OrderInputFileMetadata {

@@ -17,17 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_EXECUTION_STEP_ERROR;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_OUTPUT_FILES_ERROR;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
-
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.OptimisticLockingFailureException;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.PStep;
@@ -42,16 +31,23 @@ import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesReposit
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_EXECUTION_STEP_ERROR;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_OUTPUT_FILES_ERROR;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 /**
- * TODO : Class description
+ * This class is the implementation for the {@link IExecutionEventNotifier} interface.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
-@SuppressWarnings("serial")
 public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEventNotifierImpl.class);

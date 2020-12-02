@@ -22,10 +22,9 @@ import lombok.Value;
 import lombok.With;
 
 /**
- * TODO : Class description
+ * This class defines the size limits for a process execution, appearing in {@link OrderProcessInfo}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @With @Value @AllArgsConstructor
 public class SizeLimit {

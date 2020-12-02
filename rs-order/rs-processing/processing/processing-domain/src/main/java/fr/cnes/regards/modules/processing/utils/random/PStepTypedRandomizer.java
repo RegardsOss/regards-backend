@@ -17,20 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
-import org.jeasy.random.EasyRandom;
-import org.jeasy.random.api.Randomizer;
-
 import com.google.auto.service.AutoService;
-
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
-
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.api.Randomizer;
 /**
- * TODO : Class description
+ * This class allows to generate random instances for {@link PStep}
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @AutoService(TypedRandomizer.class)
 public class PStepTypedRandomizer implements TypedRandomizer<PStep> {

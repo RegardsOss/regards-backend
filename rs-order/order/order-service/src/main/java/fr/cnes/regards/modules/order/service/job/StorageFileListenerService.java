@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.storage.client.FileReferenceEventDTO;
 import fr.cnes.regards.modules.storage.client.FileReferenceUpdateDTO;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handle storage AMQP message that can be received. Empty methods concerns messages that are of no importance for rs-order

@@ -23,16 +23,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
-
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines a DTO for execution parameters.
  *
+ * @author gandrieu
  */
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
+
 public class ExecutionParamDTO {
 
     private final String name;

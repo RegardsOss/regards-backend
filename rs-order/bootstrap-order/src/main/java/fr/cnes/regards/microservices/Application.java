@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.microservices;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * Start microservice order

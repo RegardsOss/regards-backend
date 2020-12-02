@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.processing.domain;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class represents an authenticated user creating a batch or launching an execution.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class PUserAuth {

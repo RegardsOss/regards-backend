@@ -21,10 +21,9 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
 
 /**
- * TODO : Class description
+ * Various constants (paths, parameter names, etc.) used in different modules.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface ProcessingConstants {
 

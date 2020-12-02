@@ -17,15 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -33,13 +24,24 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import io.vavr.collection.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
+
+import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
+
 /**
- * TODO : Class description
+ * This class defines a worload engine based on REGARDS Jobs mechanism.
  *
- * @author Guillaume Andrieu
+ * In order to launch an execution, the engine creation a {@link JobInfo} referencing
+ * a {@link LaunchExecutionJob}. The actual execution (calling the process' executable on the
+ * execution parameters) will be done by this job.
  *
+ * @author gandrieu
  */
 @Component
 public class JobWorkloadEngine implements IWorkloadEngine {

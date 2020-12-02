@@ -18,12 +18,10 @@
 package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-
 /**
- * TODO : Class description
+ * This interface defines engine/executable for {@link IProcessDefinition}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IProcessLauncherDefinition {
 

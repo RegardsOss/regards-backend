@@ -17,15 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.storage;
 
-import java.nio.file.Path;
-
 import lombok.Value;
 
+import java.nio.file.Path;
+
 /**
- * TODO : Class description
+ * This class defines a local working directory, with "input" and "output" subfolders.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class ExecutionLocalWorkdir {

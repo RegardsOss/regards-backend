@@ -18,15 +18,32 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvailable;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -48,26 +65,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvailable;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author oroussel

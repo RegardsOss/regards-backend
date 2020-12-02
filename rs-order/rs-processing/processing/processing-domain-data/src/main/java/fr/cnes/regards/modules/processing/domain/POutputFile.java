@@ -26,10 +26,11 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * TODO : Class description
+ * This class defines an execution output file.
  *
- * @author Guillaume Andrieu
+ * An output file is immutable.
  *
+ * @author gandrieu
  */
 @Value @With
 public class POutputFile {
@@ -70,6 +71,9 @@ public class POutputFile {
     /** Whether the file has been deleted or not */
     transient boolean deleted;
 
+    /** This information leaks from the database but needs to be kept in the domain.
+     * It allows the database layer to know if it must CREATE or UPDATE the database
+     * for this instance. */
     transient boolean persisted;
 
 

@@ -17,11 +17,9 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
-
-import java.util.UUID;
-
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -29,18 +27,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
-import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
+
 /**
- * TODO : Class description
+ * This class defines REST endpoints to deal with processes in reactive application.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")

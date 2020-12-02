@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.processing.config;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class defines a format for postgresql config properties.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class PgSqlProperties {

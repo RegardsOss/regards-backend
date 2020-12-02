@@ -17,9 +17,11 @@
 */
 package fr.cnes.regards.modules.processing.config.reactive;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -28,20 +30,16 @@ import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.vote.AffirmativeBased;
 
-import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * TODO : Class description
- *
- * @author Guillaume Andrieu
- *
+ * This class is the AccessDecisionManager config for reactive application.
+ * @author gandrieu
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
+
 public class ProcessingAccessDecisionConfiguration {
 
     @Autowired

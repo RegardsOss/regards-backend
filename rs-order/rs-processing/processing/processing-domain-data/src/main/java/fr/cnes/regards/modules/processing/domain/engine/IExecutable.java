@@ -17,18 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.Function2;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
- * TODO : Class description
+ * This interface defines an executable which is a function taking a context
+ * and returning an updated context.
  *
- * @author Guillaume Andrieu
+ * Executables can be chained using {@link #andThen(IExecutable)}.
  *
+ * This interface also defines several basic constructors for executables.
+ *
+ * @author gandrieu
  */
 public interface IExecutable {
 

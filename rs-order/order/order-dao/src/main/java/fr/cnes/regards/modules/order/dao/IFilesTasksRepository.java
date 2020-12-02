@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.order.dao;
 
-import java.util.List;
-import java.util.stream.Stream;
-
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author oroussel

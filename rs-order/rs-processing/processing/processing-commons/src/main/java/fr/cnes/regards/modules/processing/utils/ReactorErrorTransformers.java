@@ -17,18 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.utils;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 /**
- * TODO : Class description
+ * Various utility functions regarding Reactor context to pass context information
+ * (current tenant, user, role, batch, execution, etc.)
+ * in the context instead of having to propagate the content in functions signatures.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface ReactorErrorTransformers {
 

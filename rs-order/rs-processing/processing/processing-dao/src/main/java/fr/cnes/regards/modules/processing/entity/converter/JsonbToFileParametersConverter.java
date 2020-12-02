@@ -17,21 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.entity.converter;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.modules.processing.entity.FileParameters;
+import io.r2dbc.postgresql.codec.Json;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.modules.processing.entity.FileParameters;
-import io.r2dbc.postgresql.codec.Json;
-import lombok.AllArgsConstructor;
-
 /**
- * TODO : Class description
+ * This class define a Gson converter for FileParameters
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @ReadingConverter
 @AllArgsConstructor

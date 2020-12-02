@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.urn.DataType;
+
+import java.util.List;
 
 /**
  * Data type selection (quilooks and/or raw data)

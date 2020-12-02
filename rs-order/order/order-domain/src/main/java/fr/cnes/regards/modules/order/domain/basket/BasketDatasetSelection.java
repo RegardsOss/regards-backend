@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
-import java.util.*;
-import javax.persistence.*;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import javax.persistence.*;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A grouped items by dataset selection from a basket

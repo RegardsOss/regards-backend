@@ -103,7 +103,7 @@ public class POutputFileRepositoryImplTest extends AbstractRepoTest {
         OffsetDateTime lastUpdated = nowUtc().minusMinutes(3);
         return entityExecRepo
                 .save(randomInstance(ExecutionEntity.class).withBatchId(batch.getId()).withTenant(batch.getTenant())
-                              .withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                              .withUserEmail(batch.getUserEmail())
                               .withProcessBusinessId(batch.getProcessBusinessId()).withCurrentStatus(SUCCESS)
                               .withLastUpdated(lastUpdated).withTimeoutAfterMillis(1_000L).withSteps(
                                 Steps.of(new StepEntity(REGISTERED, toEpochMillisUTC(lastUpdated), "registered msg")))

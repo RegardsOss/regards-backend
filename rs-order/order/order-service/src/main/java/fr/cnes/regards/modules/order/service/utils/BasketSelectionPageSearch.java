@@ -18,25 +18,26 @@
  */
 package fr.cnes.regards.modules.order.service.utils;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.service.BasketService;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
- * TODO : Class description
+ * This class is a helper to query ES in OrderService and OrderProcessingService.
+ * Its logic used to reside entirely within OrderService, but has been taken out to be
+ * used also in case of dataset selections with processsing.
  *
  * @author Guillaume Andrieu
  *

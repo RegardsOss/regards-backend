@@ -21,10 +21,9 @@ import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import reactor.core.publisher.Flux;
 
 /**
- * TODO : Class description
+ * This interface defines a service contract for {@link PProcessDTO} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IProcessService {
 

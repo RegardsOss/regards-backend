@@ -17,26 +17,24 @@
 */
 package fr.cnes.regards.modules.processing.service.handlers;
 
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.SEND_EXECUTION_RESULT_ERROR;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.SEND_EXECUTION_RESULT_ERROR;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
+
 /**
- * TODO : Class description
+ * This class defines the sender for execution result events.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class ExecutionResultEventSender implements IExecutionResultEventSender {

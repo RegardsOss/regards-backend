@@ -21,14 +21,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import io.vavr.collection.Map;
 
 /**
- * TODO : Class description
+ * This interface is an aggregation of interfaces defining processes in the context of rs-order, to be mapped
+ * onto the {@link fr.cnes.regards.modules.processing.domain.PProcess} interface.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @PluginInterface(description = "Defines the quotas, rights, parameters and launching properties for a Process")
-public interface IProcessDefinition extends IProcessCheckerDefinition, IProcessParametersDefinition,
-        IProcessLauncherDefinition, IProcessForecastDefinition {
+public interface IProcessDefinition extends IProcessCheckerDefinition,
+    IProcessParametersDefinition,
+    IProcessLauncherDefinition,
+    IProcessForecastDefinition
+{
 
     Map<String, String> processInfo();
 

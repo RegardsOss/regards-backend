@@ -17,11 +17,12 @@
 */
 package fr.cnes.regards.modules.processing.domain.constraints;
 
+
 /**
- * TODO : Class description
+ * This interface defines the operations needed for a violation of constraints
+ * in te context of a {@link ConstraintChecker} given by a process.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface Violation {
 

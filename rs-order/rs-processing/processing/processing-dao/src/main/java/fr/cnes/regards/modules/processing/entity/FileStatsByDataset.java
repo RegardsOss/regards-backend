@@ -17,16 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
-import java.util.Map;
-
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
 import lombok.Value;
 
+import java.util.Map;
+
+
 /**
- * TODO : Class description
+ * This class is a database wrapper around a map of {@link FileSetStatistics}.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class FileStatsByDataset {

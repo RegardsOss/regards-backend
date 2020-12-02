@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import io.vavr.collection.List;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Used by tests to be notified that an execution result has been received and dealt with properly.

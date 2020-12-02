@@ -17,11 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
@@ -33,13 +28,16 @@ import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.exception.ProcessConstraintViolationsException;
 import io.vavr.collection.Seq;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 /**
- * TODO : Class description
+ * This class is the implementation for the {@link IBatchService} interface.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Service
 public class BatchServiceImpl implements IBatchService {
@@ -65,9 +63,17 @@ public class BatchServiceImpl implements IBatchService {
     }
 
     private Mono<PBatch> createBatch(PProcess process, PBatchRequest data) {
-        return Mono.just(new PBatch(data.getCorrelationId(), UUID.randomUUID(), process.getProcessId(),
-                process.getProcessName(), data.getTenant(), data.getUser(), data.getUserRole(), paramValues(data),
-                data.getFilesetsByDataset(), false));
+        return Mono.just(new PBatch(
+            data.getCorrelationId(),
+            UUID.randomUUID(),
+            process.getProcessId(),
+            data.getTenant(),
+            data.getUser(),
+            data.getUserRole(),
+            paramValues(data),
+            data.getFilesetsByDataset(),
+            false)
+        );
     }
 
     private Seq<ExecutionStringParameterValue> paramValues(PBatchRequest data) {

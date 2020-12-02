@@ -35,10 +35,14 @@ import reactor.core.publisher.Mono;
 import java.util.function.Supplier;
 
 /**
- * TODO : Class description
+ * This class corresponds to all the context for an execution:
+ * - its designated process,
+ * - its parent batch,
+ * - the execution itself,
+ * - a set of parameters (free params left to the engine, independent from the batch parameters),
+ * - an event notifier to send occurring steps to.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExecutionContext {

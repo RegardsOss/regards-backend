@@ -17,16 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
+import io.vavr.control.Option;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.AbstractRandomizer;
 
-import io.vavr.control.Option;
-
 /**
- * TODO : Class description
+ * This class provides random generation for vavr Option.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
 
@@ -34,7 +32,8 @@ public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
 
     private Randomizer<? extends T> valueRandomizer;
 
-    public VavrOptionRandomizer(Randomizer<Boolean> booleanRandomizer, Randomizer<? extends T> valueRandomizer) {
+    public VavrOptionRandomizer(Randomizer<Boolean> booleanRandomizer,
+            Randomizer<? extends T> valueRandomizer) {
         super();
         this.booleanRandomizer = booleanRandomizer;
         this.valueRandomizer = valueRandomizer;
@@ -59,8 +58,7 @@ public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
         this.valueRandomizer = valueRandomizer;
     }
 
-    @Override
-    public Option<T> getRandomValue() {
+    @Override public Option<T> getRandomValue() {
         if (booleanRandomizer.getRandomValue()) {
             return Option.of(valueRandomizer.getRandomValue());
         } else {

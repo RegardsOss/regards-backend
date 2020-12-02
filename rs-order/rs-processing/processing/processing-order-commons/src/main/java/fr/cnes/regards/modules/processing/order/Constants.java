@@ -18,10 +18,9 @@
 package fr.cnes.regards.modules.processing.order;
 
 /**
- * TODO : Class description
+ * This class defines various constants.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface Constants {
 

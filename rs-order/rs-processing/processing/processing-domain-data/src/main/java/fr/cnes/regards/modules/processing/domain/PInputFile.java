@@ -26,10 +26,11 @@ import org.springframework.lang.Nullable;
 import java.net.URL;
 
 /**
- * TODO : Class description
+ * This class represents an execution input file.
  *
- * @author Guillaume Andrieu
+ * An input file is immutable.
  *
+ * @author gandrieu
  */
 @Value @With
 public class PInputFile {

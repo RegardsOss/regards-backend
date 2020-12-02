@@ -29,16 +29,15 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.POutputFile}
  *
+ * @author gandrieu
  */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
+
 @Table("t_outputfile")
 public class OutputFileEntity implements Persistable<UUID> {
 

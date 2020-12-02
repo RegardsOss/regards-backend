@@ -19,19 +19,18 @@ package fr.cnes.regards.modules.processing.domain.constraints;
 
 import lombok.Value;
 
+
 /**
- * TODO : Class description
+ * This class defines an exception as a violation in the context of constraint checking.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class ExceptionViolation extends Exception implements Violation {
 
     Throwable cause;
 
-    @Override
-    public String getMessage() {
+    @Override public String getMessage() {
         return cause.getClass().getSimpleName() + " " + cause.getMessage();
     }
 }

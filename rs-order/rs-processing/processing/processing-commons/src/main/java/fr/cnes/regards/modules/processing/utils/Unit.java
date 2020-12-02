@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
  * <br/>
  * It is still possible to use null as a secondary instance of Unit, but it must never be done.
  *
- * @author Guillaume Andrieu
+ * @author gandrieu
  */
 public class Unit {
 

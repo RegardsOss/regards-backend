@@ -17,51 +17,8 @@
 */
 package fr.cnes.regards.modules.processing.testutils.servlet;
 
-import static fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest.TENANT_PROJECTA;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
-import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.HOST;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PORT;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PROTOCOL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.builder;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.authentication.autoconfigure.Oauth2AutoConfiguration;
 import fr.cnes.regards.framework.feign.FeignClientConfiguration;
@@ -88,56 +45,100 @@ import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions.Builder;
 import io.vavr.gson.VavrGson;
 import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
+
+import static fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest.TENANT_PROJECTA;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
+import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+
+/**
+ * Base test configuration in servlet context.
+ *
+ * @author gandrieu
+ */
 @Configuration
-@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class, })
+@EnableAutoConfiguration(exclude = {
+        R2dbcMigrateAutoConfiguration.class,
+})
 @EnableWebMvc
 @EnableJpaRepositories
-@EnableFeignClients(basePackageClasses = { IAccountsClient.class, IRolesClient.class, IStorageRestClient.class })
+@EnableFeignClients(basePackageClasses = {
+        IAccountsClient.class,
+        IRolesClient.class,
+        IStorageRestClient.class
+})
 @ContextConfiguration(
         classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, MockAmqpConfiguration.class })
-@Import({ MultitenantAutoConfiguration.class, MicroserviceAutoConfiguration.class, AmqpAutoConfiguration.class,
-        DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class, JacksonAutoConfiguration.class,
-        FeignClientConfiguration.class, Oauth2AutoConfiguration.class, GsonAutoConfiguration.class, })
+@Import({
+        MultitenantAutoConfiguration.class,
+        MicroserviceAutoConfiguration.class,
+        AmqpAutoConfiguration.class,
+        DataSourcesAutoConfiguration.class,
+        MultitenantJpaAutoConfiguration.class,
+        JacksonAutoConfiguration.class,
+        FeignClientConfiguration.class,
+        Oauth2AutoConfiguration.class,
+        GsonAutoConfiguration.class,
+})
 public class TestSpringConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);
 
-    @Value("${regards.processing.r2dbc.host:localhost}")
-    public String r2dbcHost;
+    @Value("${regards.processing.r2dbc.host:localhost}") public String r2dbcHost;
+    @Value("${regards.processing.r2dbc.port:5433}") public Integer r2dbcPort;
+    @Value("${regards.processing.r2dbc.username:user}") public String r2dbcUsername;
+    @Value("${regards.processing.r2dbc.password:secret}") public String r2dbcPassword;
+    @Value("${regards.processing.r2dbc.dbname:testdb}") public String r2dbcDbname;
+    @Value("${regards.processing.r2dbc.schema:testschema}") public String r2dbcSchema;
 
-    @Value("${regards.processing.r2dbc.port:5433}")
-    public Integer r2dbcPort;
+    @Autowired private GsonProperties properties;
+    @Autowired private ApplicationContext applicationContext;
 
-    @Value("${regards.processing.r2dbc.username:user}")
-    public String r2dbcUsername;
-
-    @Value("${regards.processing.r2dbc.password:secret}")
-    public String r2dbcPassword;
-
-    @Value("${regards.processing.r2dbc.dbname:testdb}")
-    public String r2dbcDbname;
-
-    @Value("${regards.processing.r2dbc.schema:testschema}")
-    public String r2dbcSchema;
-
-    @Autowired
-    private GsonProperties properties;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean @ConditionalOnMissingBean
     public ConnectionFactory connectionFactory() {
-        Builder builder = builder().option(DRIVER, "pool").option(ACQUIRE_RETRY, 5)
-                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5)).option(PROTOCOL, "postgresql").option(HOST, r2dbcHost)
-                .option(PORT, r2dbcPort).option(DATABASE, r2dbcDbname).option(SCHEMA, r2dbcSchema)
-                .option(USER, r2dbcUsername).option(PASSWORD, r2dbcPassword);
+        Builder builder = builder()
+                .option(DRIVER, "pool")
+                .option(ACQUIRE_RETRY, 5)
+                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
+                .option(PROTOCOL, "postgresql")
+                .option(HOST, r2dbcHost)
+                .option(PORT, r2dbcPort)
+                .option(DATABASE, r2dbcDbname)
+                .option(SCHEMA, r2dbcSchema)
+                .option(USER, r2dbcUsername)
+                .option(PASSWORD, r2dbcPassword);
         return ConnectionFactories.get(builder.build());
     }
 
@@ -155,12 +156,12 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean
     @ConditionalOnMissingBean
     public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext) {
-
-            @Override
-            public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
-                                                                 Optional.ofNullable(applicationContext));
+        return new GsonBuilderFactory(properties, applicationContext){
+            @Override public GsonBuilder newBuilder() {
+                GsonBuilder builder = GsonCustomizer.gsonBuilder(
+                        Optional.ofNullable(properties),
+                        Optional.ofNullable(applicationContext)
+                );
                 ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
                 loader.iterator().forEachRemaining(tr -> {
                     builder.registerTypeAdapter(tr.type(), tr.serializer());
@@ -176,45 +177,35 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean public IRolesClient iRolesClient() {
         return Mockito.mock(IRolesClient.class);
     }
-    
+
     @Bean public IStorageRestClient iStorageRestClient() {
         return Mockito.mock(IStorageRestClient.class);
     }
      */
 
-    @Value("${regards.test.role:USER_ROLE}")
-    public String role;
+    @Value("${regards.test.role:USER_ROLE}") public String role;
+    @Value("${regards.test.user:a@a.a}") public String user;
+    @Value("${regards.test.tenant:PROJECTA}") public String tenant;
 
-    @Value("${regards.test.user:a@a.a}")
-    public String user;
-
-    @Value("${regards.test.tenant:PROJECTA}")
-    public String tenant;
-
-    @Bean
-    @Qualifier("defaultRole")
+    @Bean @Qualifier("defaultRole")
     public String defaultRole() {
         return role;
     }
 
-    @Bean
-    @Qualifier("defaultUser")
+    @Bean @Qualifier("defaultUser")
     public String defaultUser() {
         return user;
     }
 
-    @Bean
-    @Qualifier("defaultTenant")
+    @Bean @Qualifier("defaultTenant")
     public String defaultTenant() {
         return tenant;
     }
 
-    @Autowired
-    @Qualifier("gson")
+    @Autowired @Qualifier("gson")
     public Gson gson;
 
-    @Autowired
-    @Qualifier("prettyGson")
+    @Autowired @Qualifier("prettyGson")
     public Gson prettyGson;
 
     @Override
@@ -229,7 +220,6 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean
     public MethodAuthorizationService methodAuthorizationService() {
         return new MethodAuthorizationService() {
-
             @Override
             public Boolean hasAccess(JWTAuthentication pJWTAuthentication, Method pMethod) {
                 return true;
@@ -243,10 +233,9 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
         return new SecureTestRuntimeTenantResolver(TENANT_PROJECTA);
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    @Bean @ConditionalOnMissingBean
     public IRoleCheckerService roleCheckerService() {
-        return (a, b) -> Mono.just(true);
+        return (a,b) -> Mono.just(true);
     }
 
 }

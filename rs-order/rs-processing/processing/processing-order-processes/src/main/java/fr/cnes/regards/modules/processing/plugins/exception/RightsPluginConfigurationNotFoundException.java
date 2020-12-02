@@ -20,10 +20,9 @@ package fr.cnes.regards.modules.processing.plugins.exception;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
- * TODO : Class description
+ * This exception occurs when a plugin configuration is referenced but not found.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @SuppressWarnings("serial")
 public class RightsPluginConfigurationNotFoundException extends Exception {

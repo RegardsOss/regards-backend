@@ -17,23 +17,21 @@
 */
 package fr.cnes.regards.modules.processing.service.handlers;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
+import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
-import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
-
 /**
- * TODO : Class description
+ * This class defines the event handler used for downloaded output files.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class DownloadedOutputFileEventHandler

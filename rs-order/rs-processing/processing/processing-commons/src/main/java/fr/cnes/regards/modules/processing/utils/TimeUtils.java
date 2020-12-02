@@ -23,10 +23,9 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 /**
- * TODO : Class description
+ * Varius utility functions regarding OffsetDateTime.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class TimeUtils {
 

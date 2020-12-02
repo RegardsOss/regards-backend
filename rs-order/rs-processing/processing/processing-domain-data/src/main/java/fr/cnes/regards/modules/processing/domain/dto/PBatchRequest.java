@@ -27,14 +27,14 @@ import lombok.With;
 import java.util.UUID;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines a DTO for batch requests.
  *
+ * @author gandrieu
  */
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
+
 public class PBatchRequest {
 
     private final String correlationId;

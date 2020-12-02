@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.order.test;
 
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 
 /**
  * @author oroussel

@@ -20,19 +20,15 @@ package fr.cnes.regards.modules.processing.plugins;
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import io.vavr.collection.Seq;
-
 /**
- * TODO : Class description
+ * This interface defines parameters and in/out mapping for {@link IProcessDefinition}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IProcessParametersDefinition {
 
     Seq<ExecutionParameterDescriptor> parameters();
 
-    default IOutputToInputMapper inputOutputMapper() {
-        return IOutputToInputMapper.noMapping();
-    }
+    default IOutputToInputMapper inputOutputMapper() { return IOutputToInputMapper.noMapping(); }
 
 }

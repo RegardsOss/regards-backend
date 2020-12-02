@@ -21,10 +21,9 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import lombok.Value;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.PStep}
  *
+ * @author gandrieu
  */
 @Value
 public class StepEntity {

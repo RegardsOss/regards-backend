@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.modules.order.domain.dto;
 
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.BeanUtils;
-
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
 
 /**
  * Order Dto used to avoid loading FilesTask and all files

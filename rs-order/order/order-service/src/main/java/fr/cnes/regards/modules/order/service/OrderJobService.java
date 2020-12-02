@@ -18,22 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import javax.annotation.PreDestroy;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -45,6 +29,21 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
+import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PreDestroy;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Order jobs specific behavior, like priority computation or job enqueue user business rules management

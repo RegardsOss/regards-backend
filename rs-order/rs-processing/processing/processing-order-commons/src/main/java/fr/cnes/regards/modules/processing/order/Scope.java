@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.processing.order;
 /**
  * Provides information on how many executions are needed.
  *
- * @author Guillaume Andrieu
+ * @author gandrieu
  */
 public enum Scope {
 

@@ -18,13 +18,18 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS2_IP_ID;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.DS3_IP_ID;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
+import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
+import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.test.SearchClientMock;
+import fr.cnes.regards.modules.order.test.ServiceConfiguration;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,16 +46,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
-import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.order.test.SearchClientMock;
-import fr.cnes.regards.modules.order.test.ServiceConfiguration;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
 
 /**
  * @author oroussel

@@ -20,11 +20,11 @@ package fr.cnes.regards.modules.processing.domain.parameters;
 import lombok.Value;
 import lombok.With;
 
+
 /**
- * TODO : Class description
+ * This class defined the value for an execution parameter.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value @With
 public class ExecutionStringParameterValue {

@@ -18,22 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.time.OffsetDateTime;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.persistence.EntityNotFoundException;
-
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -44,18 +28,27 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
+import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
+import java.time.OffsetDateTime;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author oroussel

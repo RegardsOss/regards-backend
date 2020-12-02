@@ -24,14 +24,13 @@ import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
-import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
@@ -185,7 +184,6 @@ public class SimpleShellProcessPluginTest {
             "tenant",
             "user@ema.il",
             processBusinessId,
-            "processName",
             OffsetDateTime.now().minusMinutes(2),
             OffsetDateTime.now().minusMinutes(1),
             0,
@@ -198,7 +196,6 @@ public class SimpleShellProcessPluginTest {
             "corr",
             batchId,
             process.getProcessId(),
-            process.getProcessName(),
             "tenant", "user", "role",
             List.of(
                 new ExecutionStringParameterValue("SIMPLE_FOO", "foo"),

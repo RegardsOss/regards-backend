@@ -20,12 +20,14 @@ package fr.cnes.regards.modules.processing.domain.handlers;
 import fr.cnes.regards.modules.processing.domain.events.IEventSender;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 
+
 /**
- * TODO : Class description
+ * This interface defines a sender for {@link PExecutionResultEvent} messages.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IExecutionResultEventSender extends IEventSender<PExecutionResultEvent> {
+
+
 
 }

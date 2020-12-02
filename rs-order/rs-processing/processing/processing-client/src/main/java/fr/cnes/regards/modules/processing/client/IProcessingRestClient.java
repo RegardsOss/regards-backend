@@ -17,20 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.client;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BATCH_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -38,12 +24,21 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 
 /**
- * TODO : Class description
+ * Rest client to access the process endpoints allowing to
+ * - search processes,
+ * - get process info,
+ * - create batches,
+ * - monitor executions.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @RestClient(name = "rs-processing", contextId = "rs-processing.rest.client")
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE,

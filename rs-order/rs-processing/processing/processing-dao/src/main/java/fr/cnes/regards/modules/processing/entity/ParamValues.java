@@ -17,18 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import lombok.Value;
 
+import java.util.List;
+
+
 /**
- * TODO : Class description
+ * This class is a database wrapper around a list of execution parameters.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
+
 public class ParamValues {
 
     List<ExecutionStringParameterValue> values;

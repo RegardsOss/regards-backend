@@ -33,8 +33,8 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 

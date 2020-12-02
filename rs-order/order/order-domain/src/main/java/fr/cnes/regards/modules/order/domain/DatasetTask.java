@@ -18,31 +18,21 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.Table;
-import javax.validation.Valid;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessBatchDescription;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import javax.persistence.*;
+import javax.validation.Valid;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of

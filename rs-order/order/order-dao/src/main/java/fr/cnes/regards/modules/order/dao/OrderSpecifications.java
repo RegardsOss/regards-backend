@@ -17,15 +17,14 @@
 */
 package fr.cnes.regards.modules.order.dao;
 
-import javax.persistence.criteria.Predicate;
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

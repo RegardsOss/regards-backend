@@ -27,10 +27,9 @@ import lombok.Value;
 import java.util.UUID;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class is a demo event when a step occurs.
  *
+ * @author gandrieu
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value

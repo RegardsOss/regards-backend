@@ -17,16 +17,15 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import reactor.core.publisher.Mono;
 
+import java.nio.file.Path;
+
 /**
- * TODO : Class description
+ * This interface defines a service contract for downloading {@link PInputFile} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IDownloadService {
 

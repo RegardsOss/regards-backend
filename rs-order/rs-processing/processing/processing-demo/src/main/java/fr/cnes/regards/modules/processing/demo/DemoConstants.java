@@ -18,10 +18,9 @@
 package fr.cnes.regards.modules.processing.demo;
 
 /**
- * TODO : Class description
+ * This interface is the demo constants.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface DemoConstants {
 

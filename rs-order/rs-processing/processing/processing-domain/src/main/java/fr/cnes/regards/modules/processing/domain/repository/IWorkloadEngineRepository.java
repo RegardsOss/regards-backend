@@ -21,10 +21,9 @@ import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import reactor.core.publisher.Mono;
 
 /**
- * TODO : Class description
+ * This interface defines a repository contract for {@link IWorkloadEngine} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IWorkloadEngineRepository {
 

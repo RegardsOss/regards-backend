@@ -17,22 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.testutils;
 
-import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.modules.processing.utils.gson.GsonProcessingTestUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.modules.processing.utils.gson.GsonProcessingTestUtils;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * TODO : Class description
+ * Base marshalling/unmarshalling test (for DTOs, etc.).
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public abstract class AbstractMarshallingTest<T> {
 
@@ -45,15 +42,14 @@ public abstract class AbstractMarshallingTest<T> {
     @Test
     public void test_toJson_fromJson() {
         Class<T> testedType = testedType();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100 ; i++) {
             T expected = randomInstance(testedType);
             String expectedJson = gson.toJson(expected);
             T actual = gson.fromJson(expectedJson, testedType);
             String actualJson = gson.toJson(actual);
             boolean equal = actualJson.equals(expectedJson);
             if (!equal) {
-                LOGGER.error("Different values for {}: \n    FROM: {}\n    TO  : {}", testedType, expectedJson,
-                             actualJson);
+                LOGGER.error("Different values for {}: \n    FROM: {}\n    TO  : {}", testedType, expectedJson, actualJson);
                 LOGGER.error("Different values for {}: \n    FROM: {}\n    TO  : {}", testedType, expected, actual);
             }
             assertThat(actualJson).isEqualTo(expectedJson);

@@ -17,11 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.demo.repository;
 
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.processing.demo.engine.DemoEngine;
 import fr.cnes.regards.modules.processing.demo.process.DemoProcess;
 import fr.cnes.regards.modules.processing.demo.process.DemoSimulatedAsyncProcessFactory;
@@ -29,14 +24,17 @@ import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 /**
- * TODO : Class description
+ * This class is the demo process repository.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class DemoProcessRepository implements IPProcessRepository {

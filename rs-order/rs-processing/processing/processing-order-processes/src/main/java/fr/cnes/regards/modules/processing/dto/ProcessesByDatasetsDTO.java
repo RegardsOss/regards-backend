@@ -19,16 +19,14 @@ package fr.cnes.regards.modules.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * This class is a DTO to be used during exchange with the client.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 public class ProcessesByDatasetsDTO {

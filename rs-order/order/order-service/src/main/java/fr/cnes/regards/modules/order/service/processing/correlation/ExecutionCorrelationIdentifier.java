@@ -23,10 +23,9 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 
 /**
- * TODO : Class description
+ * Defines information present in, and ser/deser for, a processing Execution correlation ID.
  *
  * @author Guillaume Andrieu
- *
  */
 @Value @AllArgsConstructor
 public class ExecutionCorrelationIdentifier {

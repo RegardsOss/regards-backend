@@ -17,12 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.google.gson.Gson;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,17 +34,20 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.Nullable;
 import org.springframework.util.MimeType;
-
-import com.google.gson.Gson;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * TODO : Class description
+ * GSON codec, inefficient because needs to load the whole content of
+ * a Flux in order to generate the serialization.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class GsonInefficientHttpMessageCodec {
 

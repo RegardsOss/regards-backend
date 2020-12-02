@@ -17,22 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
-import org.jeasy.random.EasyRandom;
-import org.jeasy.random.api.Randomizer;
-
 import com.google.auto.service.AutoService;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
-
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.api.Randomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO : Class description
+ * This class allows to generate random instances for {@link POutputFile.Digest}
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @AutoService(TypedRandomizer.class)
 public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutputFile.Digest> {

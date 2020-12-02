@@ -23,10 +23,9 @@ import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import reactor.core.publisher.Mono;
 
 /**
- * TODO : Class description
+ * This interface defines the signature to check role for the authenticated user against a minimum role defined for a process.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IRoleCheckerService {
 

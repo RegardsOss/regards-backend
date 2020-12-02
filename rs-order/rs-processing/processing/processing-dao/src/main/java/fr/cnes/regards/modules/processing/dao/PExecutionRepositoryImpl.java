@@ -17,18 +17,8 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -38,14 +28,21 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
- * TODO : Class description
+ * This class is a bridge between execution domain entities and database entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Component
 public class PExecutionRepositoryImpl implements IPExecutionRepository {

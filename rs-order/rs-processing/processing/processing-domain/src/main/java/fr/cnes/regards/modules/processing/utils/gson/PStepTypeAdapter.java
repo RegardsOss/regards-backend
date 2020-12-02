@@ -17,22 +17,21 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import java.time.OffsetDateTime;
-
 import com.google.auto.service.AutoService;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
-
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 
+import java.time.OffsetDateTime;
+
+
 /**
- * TODO : Class description
+ * This class is a Gson type adapter for {@link PStep}.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @AutoService(TypedGsonTypeAdapter.class)
 public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {

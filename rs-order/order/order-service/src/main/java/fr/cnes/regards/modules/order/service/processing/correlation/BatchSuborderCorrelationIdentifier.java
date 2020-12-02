@@ -25,10 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * TODO : Class description
+ * Defines information present in, and ser/deser for, a processing Batch correlation ID.
  *
  * @author Guillaume Andrieu
- *
  */
 @Value
 public class BatchSuborderCorrelationIdentifier {

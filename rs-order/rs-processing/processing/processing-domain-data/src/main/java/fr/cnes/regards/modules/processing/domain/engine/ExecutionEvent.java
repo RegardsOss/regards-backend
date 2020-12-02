@@ -30,13 +30,15 @@ import static io.vavr.control.Option.none;
 import static io.vavr.control.Option.of;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines different kinds of events occurring during an execution.
  *
+ * @author gandrieu
  */
 public abstract class ExecutionEvent {
 
+    /**
+     * A final event can not be followed by another event, it contains a final step.
+     */
     @Value
     public static class FinalEvent extends ExecutionEvent {
         PStepFinal step;
@@ -47,6 +49,9 @@ public abstract class ExecutionEvent {
         }
     }
 
+    /**
+     * An intermediary step, which must be followed by at least one other event.
+     */
     @Value
     public static class IntermediaryEvent extends ExecutionEvent {
         PStepIntermediary step;
@@ -56,6 +61,10 @@ public abstract class ExecutionEvent {
         }
     }
 
+    /**
+     * A step containing only output files, but no intermediary step, in
+     * case the execution generates output files in several internal running steps.
+     */
     @Value
     public static class OutputFileEvent extends ExecutionEvent {
         Seq<POutputFile> outputFiles;

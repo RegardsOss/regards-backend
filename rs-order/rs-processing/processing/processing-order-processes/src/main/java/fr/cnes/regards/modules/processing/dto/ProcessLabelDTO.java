@@ -25,10 +25,9 @@ import lombok.Value;
 import java.util.UUID;
 
 /**
- * TODO : Class description
+ * This class is a DTO to be used during exchange with the client.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 @AllArgsConstructor(onConstructor_={@JsonCreator})

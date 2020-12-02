@@ -17,18 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
-import java.net.URL;
-import java.util.UUID;
-
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
+import java.net.URL;
+import java.util.UUID;
+
+
 /**
- * TODO : Class description
+ * This interface defines a repository contract for {@link POutputFile} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IPOutputFilesRepository {
 

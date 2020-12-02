@@ -28,35 +28,25 @@ import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
-import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
 import fr.cnes.regards.modules.processing.entity.*;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
+import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingEncoder;
-import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
-import fr.cnes.regards.modules.processing.utils.random.RandomUtils;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
-import lombok.Getter;
-import lombok.Setter;
-import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -69,7 +59,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static java.util.Arrays.asList;
@@ -120,7 +111,6 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
                 TENANT_PROJECTA,
                 "a@a.a",
                 "EXPLOIT",
-                "processname",
                 new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
                 new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
         BatchEntity batchB = new BatchEntity(
@@ -130,7 +120,6 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
                 TENANT_PROJECTB,
                 "a@a.a",
                 "EXPLOIT",
-                "processname",
                 new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
                 new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
 

@@ -27,15 +27,22 @@ import io.vavr.control.Try;
 /**
  * This process definition delegates the setting of the size/duration forecast to the admin.
  *
- * @author Guillaume Andrieu
+ * @author gandrieu
  */
 public abstract class AbstractBaseForecastedProcessPlugin implements IProcessDefinition {
 
-    @PluginParameter(name = "sizeForecast", label = "Size forecast", description = ForecastParser.SIZE_DESCRIPTION)
+    @PluginParameter(
+            name = "sizeForecast",
+            label = "Size forecast",
+            description = ForecastParser.SIZE_DESCRIPTION
+    )
     protected String sizeForecast;
 
-    @PluginParameter(name = "durationForecast", label = "Duration forecast",
-            description = ForecastParser.DURATION_DESCRIPTION)
+    @PluginParameter(
+            name = "durationForecast",
+            label = "Duration forecast",
+            description = ForecastParser.DURATION_DESCRIPTION
+    )
     protected String durationForecast;
 
     @Override

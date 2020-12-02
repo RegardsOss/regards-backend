@@ -17,17 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
-import java.net.URL;
-
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
+import java.net.URL;
+
 /**
- * TODO : Class description
+ * This interface defines a service contract for {@link POutputFile} entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IOutputFileService {
 

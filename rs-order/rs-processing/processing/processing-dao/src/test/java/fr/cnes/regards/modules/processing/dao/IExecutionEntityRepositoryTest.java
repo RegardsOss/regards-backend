@@ -46,7 +46,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has succeeded, and so, it will not be found as timed out.
         ExecutionEntity finishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(SUCCESS)
                 .withLastUpdated(nowUtc().minusMinutes(3))
@@ -56,7 +56,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated and has short timeout, and so, it will be found as timed out.
         ExecutionEntity shortUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
                 .withLastUpdated(nowUtc().minusMinutes(4))
@@ -67,7 +67,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated but has long timeout, and so, it will not be found as timed out.
         ExecutionEntity longUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
                 .withLastUpdated(nowUtc().minusMinutes(4))
@@ -102,7 +102,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has succeeded, and so, it will not be found as timed out.
         ExecutionEntity finishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(SUCCESS)
                 .withLastUpdated(nowUtc().minusMinutes(3))
@@ -112,7 +112,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated and has short timeout, and so, it will be found as timed out.
         ExecutionEntity shortUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
                 .withLastUpdated(nowUtc().minusMinutes(4))
@@ -123,7 +123,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // This execution has not terminated but has long timeout, and so, it will not be found as timed out.
         ExecutionEntity longUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
                 .withProcessBusinessId(batch.getProcessBusinessId())
                 .withCurrentStatus(RUNNING)
                 .withLastUpdated(nowUtc().minusHours(4))
@@ -186,7 +186,7 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
                 sink.next(randomInstance(ExecutionEntity.class)
                     .withId(UUID.randomUUID())
                     .withBatchId(batch.getId()).withTenant(batch.getTenant())
-                    .withUserEmail(batch.getUserEmail()).withProcessName(batch.getProcessName())
+                    .withUserEmail(batch.getUserEmail())
                     .withProcessBusinessId(batch.getProcessBusinessId())
                     .withVersion(0).withPersisted(false).withCreated(nowUtc()).withLastUpdated(nowUtc())
                     .withCurrentStatus(randomInstance(ExecutionStatus.class)));

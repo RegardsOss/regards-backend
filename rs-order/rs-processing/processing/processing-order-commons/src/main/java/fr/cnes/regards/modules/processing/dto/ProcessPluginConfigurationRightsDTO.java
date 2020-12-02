@@ -18,16 +18,15 @@
 package fr.cnes.regards.modules.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import io.vavr.collection.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+
 /**
- * TODO : Class description
+ * This class provides an exchange format for RightsPluginConfiguration.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Value
 @AllArgsConstructor(onConstructor_ = { @JsonCreator })

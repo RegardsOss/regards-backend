@@ -17,16 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
-import java.util.UUID;
-
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
+
 /**
- * TODO : Class description
+ * This interface defines a repository contract for PBatch entities.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IPBatchRepository {
 

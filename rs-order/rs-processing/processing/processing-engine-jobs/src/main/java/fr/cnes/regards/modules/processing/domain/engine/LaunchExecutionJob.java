@@ -17,24 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import java.util.Map;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * TODO : Class description
+ * This class provides the job launching the actual execution's process' executable.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class LaunchExecutionJob extends AbstractJob<Void> {
 

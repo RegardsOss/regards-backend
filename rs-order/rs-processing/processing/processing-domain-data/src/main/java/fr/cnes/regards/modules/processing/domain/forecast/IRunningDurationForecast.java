@@ -17,15 +17,15 @@
 */
 package fr.cnes.regards.modules.processing.domain.forecast;
 
-import java.time.Duration;
-
 import io.vavr.control.Try;
 
+import java.time.Duration;
+
 /**
- * TODO : Class description
+ * This interface defines the signature for a size forecast: how to estimate the amount of disk usage
+ * a execution will generate.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public interface IRunningDurationForecast {
 
@@ -44,7 +44,6 @@ public interface IRunningDurationForecast {
     }
 
     interface Parser {
-
         Try<IRunningDurationForecast> parseRunningDurationForecast(String str);
     }
 }

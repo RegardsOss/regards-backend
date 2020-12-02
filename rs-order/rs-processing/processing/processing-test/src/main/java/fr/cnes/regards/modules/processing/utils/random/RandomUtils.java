@@ -17,24 +17,23 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
+import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
+import io.vavr.collection.List;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ServiceLoader;
 
-import org.jeasy.random.EasyRandom;
-import org.jeasy.random.EasyRandomParameters;
-
-import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
-import io.vavr.collection.List;
-
 /**
- * TODO : Class description
+ * This class provides utilities to deal with random instances of classes.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
+
 public interface RandomUtils {
 
     EasyRandom RANDOM = easyRandom();
@@ -60,9 +59,9 @@ public interface RandomUtils {
         vavrWrappersRegistry.setEasyRandom(generator);
 
         parameters.collectionSizeRange(0, 10)
-                .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
-                .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
-                .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
+            .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
+            .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
+            .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
 
         ServiceLoader<TypedRandomizer> loader = ServiceLoader.load(TypedRandomizer.class);
         loader.iterator().forEachRemaining(tr -> parameters.randomize(tr.type(), tr.randomizer(generator)));

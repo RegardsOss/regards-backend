@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
-
 /**
- * TODO : Class description
+ * This interface defines signatures for processing execution result events.
  *
  * @author Guillaume Andrieu
- *
  */
 public interface IProcessingExecutionResultEventHandler
         extends ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionResultEvent> {

@@ -17,22 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
+
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
-import reactor.core.publisher.Flux;
-
 /**
- * TODO : Class description
+ * This interface defines operations on OutputFileEntities in the database.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @InstanceEntity
 @Repository

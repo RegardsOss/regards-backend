@@ -17,45 +17,39 @@
 */
 package fr.cnes.regards.modules.processing.config;
 
-import java.util.Optional;
-import java.util.ServiceLoader;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.gson.GsonProperties;
 import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import io.vavr.gson.VavrGson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.Optional;
+import java.util.ServiceLoader;
 
 /**
- * TODO : Class description
+ * This class is the configuration for Gson.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Configuration
 public class ProcessingGsonConfiguration {
 
-    @Autowired
-    private GsonProperties properties;
-
-    @Autowired
-    private ApplicationContext applicationContext;
+    @Autowired private GsonProperties properties;
+    @Autowired private ApplicationContext applicationContext;
 
     @Bean
     public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext) {
-
-            @Override
-            public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
-                                                                 Optional.ofNullable(applicationContext));
+        return new GsonBuilderFactory(properties, applicationContext){
+            @Override public GsonBuilder newBuilder() {
+                GsonBuilder builder = GsonCustomizer.gsonBuilder(
+                        Optional.ofNullable(properties),
+                        Optional.ofNullable(applicationContext)
+                );
                 ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
                 loader.iterator().forEachRemaining(tr -> {
                     builder.registerTypeAdapter(tr.type(), tr.serializer());

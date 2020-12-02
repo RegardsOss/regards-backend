@@ -57,7 +57,6 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.text.MatchesPattern;
 import org.junit.Assert;
 import org.junit.Before;

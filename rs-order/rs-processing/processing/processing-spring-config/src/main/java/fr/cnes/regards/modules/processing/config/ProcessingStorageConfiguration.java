@@ -17,27 +17,24 @@
 */
 package fr.cnes.regards.modules.processing.config;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 /**
- * TODO : Class description
+ * This class is the configuration for storage.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 @Configuration
 public class ProcessingStorageConfiguration {
 
     @Value("${regards.processing.sharedStorage.basePath}")
     private String sharedStorageBasePath;
-
     @Value("${regards.processing.executionWorkdir.basePath}")
     private String executionWorkdirBasePath;
 

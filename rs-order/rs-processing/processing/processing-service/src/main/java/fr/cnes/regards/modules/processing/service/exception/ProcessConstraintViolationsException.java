@@ -21,10 +21,9 @@ import fr.cnes.regards.modules.processing.domain.constraints.Violation;
 import io.vavr.collection.Seq;
 
 /**
- * TODO : Class description
+ * This exception occurs when a constraint violation has been found.
  *
- * @author Guillaume Andrieu
- *
+ * @author gandrieu
  */
 public class ProcessConstraintViolationsException extends Exception {
 

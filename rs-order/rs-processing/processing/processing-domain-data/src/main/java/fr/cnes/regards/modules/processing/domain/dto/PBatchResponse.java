@@ -17,19 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.domain.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
+import lombok.With;
 
 import java.util.UUID;
 
 /**
- * TODO : Class description
- * 
- * @author Guillaume Andrieu
+ * This class defines a DTO for batch responses.
  *
+ * @author gandrieu
  */
 @Value @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
+
 public class PBatchResponse {
 
     UUID batchId;
