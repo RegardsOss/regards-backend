@@ -23,7 +23,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -41,6 +42,7 @@ import io.vavr.control.Option;
  * @author Guillaume Andrieu
  *
  */
+@Service
 public class RightsPluginConfigurationEventHandler implements IRightsPluginConfigurationEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RightsPluginConfigurationEventHandler.class);
@@ -60,7 +62,7 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
     }
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(RightsPluginConfigurationEvent.class, this);
     }
 

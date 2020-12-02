@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import org.springframework.context.ApplicationEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -31,5 +31,5 @@ import fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent;
  *
  */
 public interface IRightsPluginConfigurationEventHandler
-        extends ApplicationListener<ApplicationEvent>, IHandler<RightsPluginConfigurationEvent> {
+        extends ApplicationListener<ApplicationReadyEvent>, IHandler<RightsPluginConfigurationEvent> {
 }

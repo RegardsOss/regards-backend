@@ -30,7 +30,11 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
@@ -69,13 +73,19 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.processing.ProcessingExecutionResultEventHandler;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -96,11 +106,11 @@ public class OrderServiceIT {
     public static final UniformResourceName DS2_IP_ID = UniformResourceName
             .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATA, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
+                                                                                  "ORDER", UUID.randomUUID(), 1);
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
@@ -148,6 +158,9 @@ public class OrderServiceIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Autowired
+    private ProcessingExecutionResultEventHandler plop;
+
     @Before
     public void init() {
         clean();
@@ -179,13 +192,13 @@ public class OrderServiceIT {
     }
 
     private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-                                                                 String query) {
+            String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        item.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        item.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", filesCount);
         item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
         item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
         item.setObjectsCount(objectsCount);
@@ -202,10 +215,10 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
@@ -225,10 +238,10 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
@@ -237,8 +250,7 @@ public class OrderServiceIT {
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, null, "http://perdu.com");
         Assert.assertTrue("Label should be generated using current date (up to second)",
-                          Pattern.matches("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}",
-                                          order.getLabel()));
+                          Pattern.matches("Order of \\d{4}/\\d{2}/\\d{2} at \\d{2}:\\d{2}:\\d{2}", order.getLabel()));
     }
 
     @Test
@@ -249,10 +261,10 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
@@ -260,9 +272,10 @@ public class OrderServiceIT {
         basket.addDatasetSelection(dsSelection);
         basket = basketRepos.save(basket);
         try {
-            Order order = orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)", "http://perdu.com");
+            Order order = orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)",
+                                                   "http://perdu.com");
             Assert.fail("An exception should have been thrown as label is too long");
-        } catch(EntityInvalidException e){
+        } catch (EntityInvalidException e) {
             Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
                                 OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
         }
@@ -276,10 +289,10 @@ public class OrderServiceIT {
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 1L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
         dsSelection.setObjectsCount(1);
@@ -291,7 +304,7 @@ public class OrderServiceIT {
             // create a second time with same label: label should be already used by that owner
             orderService.createOrder(basket, "myCommand", "http://perdu2.com");
             Assert.fail("An exception should have been thrown as label is too long");
-        } catch(EntityInvalidException e){
+        } catch (EntityInvalidException e) {
             Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
                                 OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
         }
@@ -381,10 +394,10 @@ public class OrderServiceIT {
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 3_000_171L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
         dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
@@ -439,10 +452,10 @@ public class OrderServiceIT {
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 3_000_171L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
         dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
@@ -507,10 +520,10 @@ public class OrderServiceIT {
             Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
             // Check that email text has been interpreted before being sent
             SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-            Assert.assertTrue(
-                    mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
-            Assert.assertTrue(
-                    mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
             Assert.assertFalse(mailMessage.getText().contains("${order}"));
         }

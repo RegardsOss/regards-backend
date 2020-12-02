@@ -28,9 +28,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 
@@ -61,7 +61,7 @@ import io.vavr.control.Option;
  * @author Guillaume Andrieu
  *
  */
-@Component
+@Service
 public class ProcessingExecutionResultEventHandler implements IProcessingExecutionResultEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingExecutionResultEventHandler.class);
@@ -94,7 +94,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
     }
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(PExecutionResultEvent.class, this);
     }
 
