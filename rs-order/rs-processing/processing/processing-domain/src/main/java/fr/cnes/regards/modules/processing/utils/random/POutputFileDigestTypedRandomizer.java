@@ -52,7 +52,7 @@ public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutput
     public String createDigestValue(EasyRandom generator) {
         try {
             return ByteSource.wrap(generator.nextObject(String.class).getBytes()).hash(Hashing.sha256()).toString();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             LOGGER.debug("Unexpected error while creating digest", e);
             return "wups";
         }
