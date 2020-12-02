@@ -67,7 +67,7 @@ public class GsonInefficientHttpMessageCodec {
         }
     }
 
-    private static final int maxInMemorySize = 256 * 1024;
+    private static final int MAX_IN_MEMORY_SIZE = 256 * 1024;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonInefficientHttpMessageCodec.class);
 
@@ -87,7 +87,7 @@ public class GsonInefficientHttpMessageCodec {
 
     public Mono<Object> decodeToMono(Publisher<DataBuffer> inputStream, ResolvableType elementType, MimeType mimeType,
             Map<String, Object> hints) {
-        return DataBufferUtils.join(inputStream, this.maxInMemorySize)
+        return DataBufferUtils.join(inputStream, MAX_IN_MEMORY_SIZE)
                 .flatMap(dataBuffer -> Mono.justOrEmpty(decode(dataBuffer, elementType, mimeType, hints)));
     }
 
@@ -96,7 +96,7 @@ public class GsonInefficientHttpMessageCodec {
         try {
             String json = dataBuffer.toString(StandardCharsets.UTF_8);
             return gson.fromJson(json, targetType.getType());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.error(e.getMessage(), e);
             throw new DecodingException(e.getMessage());
         } finally {

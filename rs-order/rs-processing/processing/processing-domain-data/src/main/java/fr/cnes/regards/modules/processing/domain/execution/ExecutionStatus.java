@@ -51,7 +51,7 @@ public enum ExecutionStatus {
     /** Initial state, registered but not yet launched. */
     REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),;
 
-    public static final ExecutionStatus[] VALUES = values();
+    public static final ExecutionStatus[] CACHED_VALUES = values();
 
     private final Seq<ExecutionStatus> nextStates;
 
@@ -64,7 +64,7 @@ public enum ExecutionStatus {
     }
 
     public static Seq<ExecutionStatus> nonFinalStatusList() {
-        return List.of(VALUES).filter(s -> !s.isFinalStep());
+        return List.of(CACHED_VALUES).filter(s -> !s.isFinalStep());
     }
 
     public Seq<ExecutionStatus> getNextStates() {

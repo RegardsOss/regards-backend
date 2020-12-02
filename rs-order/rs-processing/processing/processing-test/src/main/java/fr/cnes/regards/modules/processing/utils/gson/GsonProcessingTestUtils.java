@@ -27,6 +27,8 @@ import com.google.gson.Gson;
  */
 public class GsonProcessingTestUtils {
 
+    private GsonProcessingTestUtils() {}
+
     public static Gson gson() {
         return ProcessingGsonUtils.gsonPretty();
     }

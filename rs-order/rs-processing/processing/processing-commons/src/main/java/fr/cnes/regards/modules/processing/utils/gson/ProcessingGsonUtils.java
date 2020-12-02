@@ -51,6 +51,8 @@ import io.vavr.gson.VavrGson;
  */
 public class ProcessingGsonUtils {
 
+    private ProcessingGsonUtils() {}
+
     public static Gson gsonPretty() {
         GsonBuilder builder = gsonBuilder();
         return builder.setPrettyPrinting().create();

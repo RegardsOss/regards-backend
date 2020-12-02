@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,8 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public class OrderProcessRepositoryImpl implements IPProcessRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderProcessRepositoryImpl.class);
 
     private final IPluginService pluginService;
 
@@ -126,7 +130,8 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         try {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class);
-        } catch (Exception e) {
+        } catch (ClassNotFoundException|RuntimeException e) {
+            LOGGER.debug("Unable to find class matching class name for plugin configuration pc={}", pc, e);
             return false;
         }
     }

@@ -32,6 +32,8 @@ public class TimeUtils {
 
     public static final ZoneId UTC = ZoneId.of("UTC");
 
+    private TimeUtils() {}
+
     public static OffsetDateTime parseUtc(String repr) {
         return OffsetDateTime.ofInstant(Instant.parse(repr), ZoneId.of("UTC"));
     }

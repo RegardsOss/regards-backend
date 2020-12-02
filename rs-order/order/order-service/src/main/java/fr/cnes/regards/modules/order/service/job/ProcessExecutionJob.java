@@ -84,7 +84,7 @@ import io.vavr.control.Try;
  */
 public class ProcessExecutionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessExecutionJob.class);
+    private static final Logger STATIC_LOGGER = LoggerFactory.getLogger(ProcessExecutionJob.class);
 
     protected final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
 
@@ -175,7 +175,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     private void sendExecRequest(PExecutionRequestEvent event) {
-        this.eventSender.sendProcessingRequest(event).onFailure(t -> LOGGER
+        this.eventSender.sendProcessingRequest(event).onFailure(t -> STATIC_LOGGER
                 .error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
     }
 

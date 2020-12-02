@@ -21,6 +21,8 @@ import static fr.cnes.regards.modules.processing.event.RightsPluginConfiguration
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,6 +58,8 @@ import reactor.core.publisher.Mono;
  */
 @Service
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigService.class);
 
     private final IPluginConfigurationRepository pluginConfigRepo;
 
@@ -191,7 +195,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
         try {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException|RuntimeException e) {
+            LOGGER.debug("Unable to find class matching class name for plugin configuration pc={}", pc, e);
             return false;
         }
     }

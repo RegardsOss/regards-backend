@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
  */
 public class LaunchExecutionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LaunchExecutionJob.class);
+    private static final Logger STATIC_LOGGER = LoggerFactory.getLogger(LaunchExecutionJob.class);
 
     public static final String EXEC_ID_PARAM = "execId";
 
@@ -55,9 +55,9 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("exec={} - LaunchExecutionJob start", execId);
+        STATIC_LOGGER.info("exec={} - LaunchExecutionJob start", execId);
         execService.runExecutable(execId)
-                .subscribe(exec -> LOGGER.info("exec={} - LaunchExecutionJob success", execId),
-                           err -> LOGGER.error("exec={} - LaunchExecutionJob failure: {}", execId, err.getMessage()));
+                .subscribe(exec -> STATIC_LOGGER.info("exec={} - LaunchExecutionJob success", execId),
+                           err -> STATIC_LOGGER.error("exec={} - LaunchExecutionJob failure: {}", execId, err.getMessage()));
     }
 }

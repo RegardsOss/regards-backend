@@ -38,7 +38,7 @@ public class Application {
     public static void main(final String[] args) {
         try {
             SpringApplication.run(Application.class, args); // NOSONAR
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.error("Going to exit", e);
             System.exit(1);
         }

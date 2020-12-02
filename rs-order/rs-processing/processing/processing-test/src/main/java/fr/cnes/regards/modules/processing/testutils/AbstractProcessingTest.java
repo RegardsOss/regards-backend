@@ -17,14 +17,13 @@
 */
 package fr.cnes.regards.modules.processing.testutils;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.URL;
+import java.io.IOException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
@@ -179,7 +178,7 @@ public class AbstractProcessingTest {
                                     + "CREATE DATABASE " + dbName + ";");
                             statement.close();
                             LOGGER.info("################## Created DB {}: {}", dbName, resultA);
-                        } catch (Exception e) {
+                        } catch (SQLException | RuntimeException e) {
                             LOGGER.error("################## Error creating DB {}: {}", dbName, e.getMessage());
                         }
                     });
@@ -263,8 +262,7 @@ public class AbstractProcessingTest {
     }
 
     private static boolean checkSocketHostPortAvailability(String host, int port) {
-        try {
-            Socket socket = new Socket();
+        try(Socket socket = new Socket()) {
             socket.setReuseAddress(true);
             SocketAddress socketAddress = new InetSocketAddress(host, port);
             try {
@@ -284,7 +282,7 @@ public class AbstractProcessingTest {
         try {
             new URL("http://" + host + ":" + port).openStream();
             return true;
-        } catch (Exception e) {
+        } catch (IOException|RuntimeException e) {
             LOGGER.info("http://{}:{} not available", host, port, e);
             return false;
         }

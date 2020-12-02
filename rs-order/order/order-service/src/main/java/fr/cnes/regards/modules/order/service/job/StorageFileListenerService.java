@@ -64,17 +64,21 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     @Override
     public void onFileStored(List<FileReferenceEventDTO> stored) {
+        // Do nothing because message is of no importance for rs-order
     }
 
     @Override
     public void onFileStoreError(List<FileReferenceEventDTO> storedError) {
+        // Do nothing because message is of no importance for rs-order
     }
 
     @Override
     public void onFileDeletedForOwner(String owner, List<FileReferenceEventDTO> deletedForThisOwner) {
+        // Do nothing because message is of no importance for rs-order
     }
 
     @Override
     public void onFileUpdated(List<FileReferenceUpdateDTO> updatedReferences) {
+        // Do nothing because message is of no importance for rs-order
     }
 }

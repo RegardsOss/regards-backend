@@ -163,7 +163,7 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
         try {
             return Files.createTempDirectory("execWorkdir");
         } catch (IOException e) {
-            throw new RuntimeException("Can not create execution workdir base directory.");
+            throw new RuntimeException("Can not create execution workdir base directory.", e);
         }
     }
 
@@ -235,7 +235,7 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
                         try {
                             auth = jwtService.parseToken(auth);
                         } catch (JwtException e) {
-                            e.printStackTrace();
+                            LOGGER.error("Failed to parse JWT token", e);
                         }
                         return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
                     } else {
