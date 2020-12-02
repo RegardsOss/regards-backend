@@ -17,45 +17,35 @@
 */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import io.vavr.collection.List;
-import org.springframework.stereotype.Component;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 public class OutputFileMapper implements DomainEntityMapper.OutputFile {
 
-    @Override public OutputFileEntity toEntity(POutputFile domain) {
-        return new OutputFileEntity(
-                domain.getId(),
-                domain.getExecId(),
-                domain.getUrl(),
-                domain.getName(),
-                domain.getChecksum().getValue(),
-                domain.getChecksum().getMethod(),
-                domain.getSize(),
-                domain.getInputCorrelationIds().asJava(),
-                domain.getCreated(),
-                domain.isDownloaded(),
-                domain.isDeleted(),
-                domain.isPersisted()
-        );
+    @Override
+    public OutputFileEntity toEntity(POutputFile domain) {
+        return new OutputFileEntity(domain.getId(), domain.getExecId(), domain.getUrl(), domain.getName(),
+                domain.getChecksum().getValue(), domain.getChecksum().getMethod(), domain.getSize(),
+                domain.getInputCorrelationIds().asJava(), domain.getCreated(), domain.isDownloaded(),
+                domain.isDeleted(), domain.isPersisted());
     }
 
-    @Override public POutputFile toDomain(OutputFileEntity entity) {
-        return new POutputFile(
-                entity.getId(),
-                entity.getExecId(),
-                entity.getName(),
-                new POutputFile.Digest(entity.getChecksumMethod(), entity.getChecksumValue()),
-                entity.getUrl(),
-                entity.getSizeInBytes(),
-                List.ofAll(entity.getInputCorrelationIds()),
-                entity.getCreated(),
-                entity.isDownloaded(),
-                entity.isDeleted(),
-                entity.isPersisted()
-        );
+    @Override
+    public POutputFile toDomain(OutputFileEntity entity) {
+        return new POutputFile(entity.getId(), entity.getExecId(), entity.getName(),
+                new POutputFile.Digest(entity.getChecksumMethod(), entity.getChecksumValue()), entity.getUrl(),
+                entity.getSizeInBytes(), List.ofAll(entity.getInputCorrelationIds()), entity.getCreated(),
+                entity.isDownloaded(), entity.isDeleted(), entity.isPersisted());
     }
 
 }

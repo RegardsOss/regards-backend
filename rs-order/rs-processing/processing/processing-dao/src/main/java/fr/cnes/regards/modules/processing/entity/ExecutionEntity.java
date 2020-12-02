@@ -27,11 +27,16 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
-
 @Table("t_execution")
 public class ExecutionEntity implements Persistable<UUID> {
 

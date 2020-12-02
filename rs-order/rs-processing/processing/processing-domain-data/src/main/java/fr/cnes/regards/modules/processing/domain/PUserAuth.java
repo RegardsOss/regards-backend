@@ -18,8 +18,13 @@
 package fr.cnes.regards.modules.processing.domain;
 
 import lombok.Value;
-import org.springframework.security.core.Authentication;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class PUserAuth {
 

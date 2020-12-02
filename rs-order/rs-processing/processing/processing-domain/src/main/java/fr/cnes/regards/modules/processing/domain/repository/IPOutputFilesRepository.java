@@ -17,14 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
+import java.net.URL;
+import java.util.UUID;
+
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
-import java.net.URL;
-import java.util.Optional;
-import java.util.UUID;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IPOutputFilesRepository {
 
     Flux<POutputFile> save(Flux<POutputFile> files);

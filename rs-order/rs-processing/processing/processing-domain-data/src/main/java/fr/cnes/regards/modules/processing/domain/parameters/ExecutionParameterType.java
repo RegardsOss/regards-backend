@@ -17,8 +17,15 @@
 */
 package fr.cnes.regards.modules.processing.domain.parameters;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public enum ExecutionParameterType {
 
-    FILE, STRING
+    FILE,
+    STRING
 
 }

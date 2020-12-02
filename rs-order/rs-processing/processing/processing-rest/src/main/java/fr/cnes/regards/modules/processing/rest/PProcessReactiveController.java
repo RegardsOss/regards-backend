@@ -22,8 +22,6 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.
 
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -38,12 +36,16 @@ import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @RequestMapping(path = PROCESS_PATH)
 public class PProcessReactiveController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PProcessReactiveController.class);
 
     @Autowired
     private IProcessService processService;

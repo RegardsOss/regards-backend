@@ -17,13 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
-import lombok.*;
-
 import java.util.List;
 
-@Value
+import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
+import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
+@Value
 public class ParamValues {
 
     List<ExecutionStringParameterValue> values;

@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.domain.repository;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import reactor.core.publisher.Mono;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IWorkloadEngineRepository {
 
     Mono<IWorkloadEngine> findByName(String name);

@@ -25,6 +25,8 @@ package fr.cnes.regards.modules.processing.order;
  *
  * This allows to know in advance how many OrderDataFile to create so that
  * the order metalink can be generated as soon as the order is accepted.
+ *
+ * @author Guillaume Andrieu
  */
 public enum Cardinality {
 

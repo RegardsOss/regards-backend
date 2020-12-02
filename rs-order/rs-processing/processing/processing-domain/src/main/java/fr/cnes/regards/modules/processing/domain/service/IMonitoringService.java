@@ -19,25 +19,26 @@
 
 package fr.cnes.regards.modules.processing.domain.service;
 
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.lang.Nullable;
-import reactor.core.publisher.Mono;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.lang.Nullable;
+
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import reactor.core.publisher.Mono;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IMonitoringService {
 
-    Mono<Page<PExecution>> getExecutionsPageForCriteria(
-        String tenant,
-        List<ExecutionStatus> status,
-        @Nullable String userEmail,
-        OffsetDateTime from,
-        OffsetDateTime to,
-        PageRequest paged
-    );
+    Mono<Page<PExecution>> getExecutionsPageForCriteria(String tenant, List<ExecutionStatus> status,
+            @Nullable String userEmail, OffsetDateTime from, OffsetDateTime to, PageRequest paged);
 
 }

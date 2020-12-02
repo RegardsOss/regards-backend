@@ -21,6 +21,12 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class PStepSequence {
 

@@ -26,8 +26,13 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @With
-
 public class PBatch {
 
     String correlationId;

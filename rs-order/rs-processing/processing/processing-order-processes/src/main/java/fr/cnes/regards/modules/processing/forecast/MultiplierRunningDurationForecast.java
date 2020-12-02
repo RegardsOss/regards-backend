@@ -22,6 +22,12 @@ import lombok.Value;
 
 import java.time.Duration;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class MultiplierRunningDurationForecast implements IRunningDurationForecast {
 

@@ -20,18 +20,23 @@ package fr.cnes.regards.modules.processing.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Configuration
 public class HttpProxyProperties {
 
     private final String host;
+
     private final Integer port;
+
     private final String noproxy;
 
-    public HttpProxyProperties(
-            @Value("${http.proxy.host:#{null}}") String host,
-            @Value("${http.proxy.port:#{null}}") Integer port,
-            @Value("${http.proxy.noproxy:#{null}}") String noproxy
-    ) {
+    public HttpProxyProperties(@Value("${http.proxy.host:#{null}}") String host,
+            @Value("${http.proxy.port:#{null}}") Integer port, @Value("${http.proxy.noproxy:#{null}}") String noproxy) {
         this.host = host;
         this.port = port;
         this.noproxy = noproxy;

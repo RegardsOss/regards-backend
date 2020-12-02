@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.domain.service;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import reactor.core.publisher.Flux;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IProcessService {
 
     Flux<PProcessDTO> findByTenant(String tenant);

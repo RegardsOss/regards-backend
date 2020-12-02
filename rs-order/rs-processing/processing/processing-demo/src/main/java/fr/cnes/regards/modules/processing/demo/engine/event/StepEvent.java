@@ -26,6 +26,12 @@ import lombok.Value;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value
 public class StepEvent implements ISubscribable {

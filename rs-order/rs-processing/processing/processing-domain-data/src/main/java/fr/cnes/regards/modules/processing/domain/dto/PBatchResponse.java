@@ -21,10 +21,15 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
-
 public class PBatchResponse {
 
     UUID batchId;

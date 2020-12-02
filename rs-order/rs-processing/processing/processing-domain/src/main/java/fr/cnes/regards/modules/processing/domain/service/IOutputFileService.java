@@ -17,13 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
+import java.net.URL;
+
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
-import java.net.URL;
-import java.util.UUID;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IOutputFileService {
 
     Flux<POutputFile> markDownloaded(List<URL> urls);

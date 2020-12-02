@@ -19,6 +19,13 @@ package fr.cnes.regards.modules.processing.plugins.exception;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
+@SuppressWarnings("serial")
 public class RightsPluginConfigurationNotFoundException extends Exception {
 
     private final PluginConfiguration pc;

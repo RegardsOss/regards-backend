@@ -17,32 +17,27 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 public abstract class AbstractWorkloadEngine implements IWorkloadEngine {
 
     private final IWorkloadEngineRepository engineRepo;
 
-    private final ISubscriber subscriber;
-
-    private final IPublisher publisher;
-
     @Autowired
-    public AbstractWorkloadEngine(
-            IWorkloadEngineRepository engineRepo,
-            ISubscriber subscriber,
-            IPublisher publisher
-    ) {
+    public AbstractWorkloadEngine(IWorkloadEngineRepository engineRepo) {
         this.engineRepo = engineRepo;
-        this.subscriber = subscriber;
-        this.publisher = publisher;
     }
 
     @PostConstruct

@@ -21,6 +21,12 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @With @Value @AllArgsConstructor
 public class SizeLimit {
 

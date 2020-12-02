@@ -24,13 +24,20 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
-
 @Table("t_batch")
 public class BatchEntity implements Persistable<UUID> {
 

@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.microservices;
 
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * Start microservice processing
- * @author oroussel
+ *
+ * @author Guillaume Andrieu
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "processing", version = "2.0.0-SNAPSHOT")

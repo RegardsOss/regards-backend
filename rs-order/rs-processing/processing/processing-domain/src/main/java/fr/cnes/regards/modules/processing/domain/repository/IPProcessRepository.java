@@ -17,14 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.domain.repository;
 
+import java.util.UUID;
+
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IPProcessRepository {
 
     Flux<PProcess> findAllByTenant(String tenant);

@@ -17,11 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
+import java.util.List;
+
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import lombok.Value;
 
-import java.util.List;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class FileParameters {
 

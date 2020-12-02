@@ -17,10 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.rest.utils;
 
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface PageUtils {
 
     String DEFAULT_PAGE = "0";
+
     String DEFAULT_SIZE = "20";
 
 }

@@ -30,10 +30,15 @@ import java.util.List;
 import java.util.UUID;
 
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
-
 @Table("t_outputfile")
 public class OutputFileEntity implements Persistable<UUID> {
 

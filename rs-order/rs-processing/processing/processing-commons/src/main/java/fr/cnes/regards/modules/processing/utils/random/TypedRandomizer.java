@@ -27,10 +27,12 @@ import org.jeasy.random.api.Randomizer;
  * order to prevent circular dependencies in maven modules.
  *
  * @param <T> the generic type
+ * @author Guillaume  Andrieu
  */
 public interface TypedRandomizer<T> {
 
     Class<T> type();
+
     Randomizer<T> randomizer(EasyRandom generator);
 
 }

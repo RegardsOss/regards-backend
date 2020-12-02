@@ -21,6 +21,12 @@ package fr.cnes.regards.modules.processing.order;
 
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @lombok.Value
 public class OrderInputFileMetadata {
 

@@ -17,7 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.config.reactive;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -28,11 +27,18 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import reactor.core.publisher.Mono;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
-
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private final AuthenticationManager authenticationManager;
@@ -52,11 +58,10 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         return Mono.defer(() -> {
             ServerHttpRequest request = swe.getRequest();
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            if ((authHeader != null) && authHeader.startsWith("Bearer ")) {
                 String authToken = authHeader.substring(7);
                 Authentication auth = new JWTAuthentication(authToken);
-                return authenticationManager.authenticate(auth)
-                        .map(SecurityContextImpl::new);
+                return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
             } else {
                 return Mono.empty();
             }

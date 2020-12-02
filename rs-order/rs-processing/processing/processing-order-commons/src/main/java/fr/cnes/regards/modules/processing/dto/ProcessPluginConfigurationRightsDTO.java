@@ -23,7 +23,12 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import io.vavr.collection.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 @AllArgsConstructor(onConstructor_ = { @JsonCreator })
 public class ProcessPluginConfigurationRightsDTO {

@@ -17,10 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.plugins;
 
-import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
+import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import io.vavr.control.Try;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IProcessForecastDefinition {
 
     Try<IResultSizeForecast> sizeForecast();

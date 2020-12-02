@@ -17,14 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
+import static org.apache.commons.io.FilenameUtils.getName;
+import static org.apache.commons.io.FilenameUtils.removeExtension;
+
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 
-import static org.apache.commons.io.FilenameUtils.getName;
-import static org.apache.commons.io.FilenameUtils.removeExtension;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IOutputToInputMapper {
 
     /**
@@ -43,7 +49,9 @@ public interface IOutputToInputMapper {
 
     /** Provides an input/output mapper that never maps to anything.
      * Some processes may not need to map outputs to inputs. */
-    static IOutputToInputMapper noMapping() { return (ctx, out) -> List.empty(); }
+    static IOutputToInputMapper noMapping() {
+        return (ctx, out) -> List.empty();
+    }
 
     /** Provides an input/output mapper which looks at the file names without extension. */
     static IOutputToInputMapper sameNameWithoutExt() {

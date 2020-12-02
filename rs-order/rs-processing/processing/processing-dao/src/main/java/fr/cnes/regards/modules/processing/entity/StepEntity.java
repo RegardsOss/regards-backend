@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.entity;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import lombok.Value;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class StepEntity {
 

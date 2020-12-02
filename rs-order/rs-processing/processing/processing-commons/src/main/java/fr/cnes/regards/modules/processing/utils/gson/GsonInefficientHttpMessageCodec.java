@@ -17,7 +17,12 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import com.google.gson.Gson;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,28 +39,33 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.lang.Nullable;
 import org.springframework.util.MimeType;
+
+import com.google.gson.Gson;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public class GsonInefficientHttpMessageCodec {
 
     public static class Co extends GsonInefficientHttpMessageCodec implements HttpMessageEncoder<Object> {
+
         public Co(Gson gson) {
             super(gson);
         }
     }
+
     public static class Dec extends GsonInefficientHttpMessageCodec implements HttpMessageDecoder<Object> {
+
         public Dec(Gson gson) {
             super(gson);
         }
     }
-
 
     private static final int maxInMemorySize = 256 * 1024;
 
@@ -81,51 +91,44 @@ public class GsonInefficientHttpMessageCodec {
                 .flatMap(dataBuffer -> Mono.justOrEmpty(decode(dataBuffer, elementType, mimeType, hints)));
     }
 
-    public Object decode(DataBuffer dataBuffer, ResolvableType targetType,
-            @Nullable MimeType mimeType, @Nullable Map<String, Object> hints) throws DecodingException {
+    public Object decode(DataBuffer dataBuffer, ResolvableType targetType, @Nullable MimeType mimeType,
+            @Nullable Map<String, Object> hints) throws DecodingException {
         try {
             String json = dataBuffer.toString(StandardCharsets.UTF_8);
             return gson.fromJson(json, targetType.getType());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new DecodingException(e.getMessage());
-        }
-        finally {
+        } finally {
             DataBufferUtils.release(dataBuffer);
         }
     }
 
-    public Flux<Object> decode(Publisher<DataBuffer> input, ResolvableType elementType,
-            @Nullable MimeType mimeType, @Nullable Map<String, Object> hints) {
+    public Flux<Object> decode(Publisher<DataBuffer> input, ResolvableType elementType, @Nullable MimeType mimeType,
+            @Nullable Map<String, Object> hints) {
         // FIXME: one day, when there are tools to do so, render this horrific method reactive
         ResolvableType listOfElementsType = ResolvableType.forClassWithGenerics(List.class, elementType);
-        return DataBufferUtils.join(input)
-                .flatMapMany(databuffer -> {
-                    List<Object> decodedList = (List<Object>)decode(databuffer, listOfElementsType, mimeType, hints);
-                    return Flux.fromIterable(decodedList);
-                });
+        return DataBufferUtils.join(input).flatMapMany(databuffer -> {
+            List<Object> decodedList = (List<Object>) decode(databuffer, listOfElementsType, mimeType, hints);
+            return Flux.fromIterable(decodedList);
+        });
     }
 
     public Flux<DataBuffer> encode(Publisher<?> inputStream, DataBufferFactory bufferFactory,
             ResolvableType elementType, MimeType mimeType, Map<String, Object> hints) {
         if (inputStream instanceof Mono) {
-            return Mono.from(inputStream)
-                    .map(value -> encodeValue(value, bufferFactory, elementType, mimeType, hints))
+            return Mono.from(inputStream).map(value -> encodeValue(value, bufferFactory, elementType, mimeType, hints))
                     .flux();
-        }
-        else {
+        } else {
             // FIXME: one day, when there are tools to do so, render this horrific method reactive
             ResolvableType listType = ResolvableType.forClassWithGenerics(List.class, elementType);
-            return Flux.from(inputStream)
-                    .collectList()
-                    .map(list -> encodeValue(list, bufferFactory, listType, mimeType, hints))
-                    .flux();
+            return Flux.from(inputStream).collectList()
+                    .map(list -> encodeValue(list, bufferFactory, listType, mimeType, hints)).flux();
         }
     }
 
-    public DataBuffer encodeValue(Object value, DataBufferFactory bufferFactory,
-            ResolvableType valueType, @Nullable MimeType mimeType, @Nullable Map<String, Object> hints) {
+    public DataBuffer encodeValue(Object value, DataBufferFactory bufferFactory, ResolvableType valueType,
+            @Nullable MimeType mimeType, @Nullable Map<String, Object> hints) {
         byte[] bytes = value instanceof String ? (((String) value).getBytes()) : gson.toJson(value).getBytes();
         DataBuffer buffer = bufferFactory.allocateBuffer(bytes.length);
         buffer.write(bytes);
@@ -133,7 +136,7 @@ public class GsonInefficientHttpMessageCodec {
     }
 
     public boolean canDecode(ResolvableType elementType, MimeType mimeType) {
-        return mimeType == null || mimeType.getType().equals("application") && mimeType.getSubtype().equals("json");
+        return (mimeType == null) || (mimeType.getType().equals("application") && mimeType.getSubtype().equals("json"));
     }
 
     public boolean canEncode(ResolvableType elementType, MimeType mimeType) {
@@ -141,7 +144,7 @@ public class GsonInefficientHttpMessageCodec {
     }
 
     public List<MediaType> getStreamingMediaTypes() {
-        return MEDIA_TYPES.stream().map(x -> (MediaType)x).collect(Collectors.toList());
+        return MEDIA_TYPES.stream().map(x -> (MediaType) x).collect(Collectors.toList());
     }
 
     public List<MimeType> getDecodableMimeTypes() {

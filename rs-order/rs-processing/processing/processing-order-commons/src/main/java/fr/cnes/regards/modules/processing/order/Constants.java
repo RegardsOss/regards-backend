@@ -17,19 +17,30 @@
 */
 package fr.cnes.regards.modules.processing.order;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface Constants {
 
     String SCOPE = "scope";
+
     String CARDINALITY = "cardinality";
+
     String DATATYPES = "datatypes";
+
     String SIZE_LIMIT_TYPE = "sizeLimitType";
+
     String SIZE_LIMIT_VALUE = "sizeLimitValue";
 
     String INTERNAL = "internal";
+
     String FEATURE_ID = "featureId";
 
     String PROCESS_INFO_TENANT_PARAM_NAME = "regards.tenant";
-    String PROCESS_INFO_ROLE_PARAM_NAME = "regards.userRole";
 
+    String PROCESS_INFO_ROLE_PARAM_NAME = "regards.userRole";
 
 }

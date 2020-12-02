@@ -28,6 +28,12 @@ import java.time.OffsetDateTime;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Data
 public abstract class PStep {
 

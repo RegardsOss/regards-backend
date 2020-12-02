@@ -17,23 +17,33 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
+import java.time.OffsetDateTime;
+
 import com.google.auto.service.AutoService;
-import com.google.gson.*;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonSerializer;
+
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 
-import java.time.OffsetDateTime;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @AutoService(TypedGsonTypeAdapter.class)
 public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {
 
-    @Override public Class<PStep> type() {
+    @Override
+    public Class<PStep> type() {
         return PStep.class;
     }
 
-    @Override public JsonDeserializer<PStep> deserializer() {
+    @Override
+    public JsonDeserializer<PStep> deserializer() {
         return (json, typeOfT, context) -> {
             ExecutionStatus status = context.deserialize(json.getAsJsonObject().get("status"), ExecutionStatus.class);
             String message = context.deserialize(json.getAsJsonObject().get("message"), String.class);
@@ -42,10 +52,9 @@ public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {
         };
     }
 
-    @Override public JsonSerializer<PStep> serializer() {
-        return (src, typeOfSrc, context) ->
-            src instanceof PStepFinal
-                ? context.serialize(src, PStepFinal.class)
+    @Override
+    public JsonSerializer<PStep> serializer() {
+        return (src, typeOfSrc, context) -> src instanceof PStepFinal ? context.serialize(src, PStepFinal.class)
                 : context.serialize(src, PStepIntermediary.class);
     }
 }

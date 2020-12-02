@@ -26,10 +26,15 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
-
 public class PBatchRequest {
 
     private final String correlationId;

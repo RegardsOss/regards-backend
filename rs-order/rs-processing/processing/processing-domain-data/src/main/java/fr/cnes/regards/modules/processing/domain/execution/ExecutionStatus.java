@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.domain.execution;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public enum ExecutionStatus {
 
     /** Final state, ended correctly */
@@ -43,15 +49,16 @@ public enum ExecutionStatus {
     PREPARE(List.of(RUNNING)),
 
     /** Initial state, registered but not yet launched. */
-    REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),
-    ;
+    REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),;
 
     public static final ExecutionStatus[] VALUES = values();
+
     private final Seq<ExecutionStatus> nextStates;
 
     ExecutionStatus(Seq<ExecutionStatus> nextStates) {
         this.nextStates = nextStates;
     }
+
     ExecutionStatus() {
         this.nextStates = List.empty();
     }

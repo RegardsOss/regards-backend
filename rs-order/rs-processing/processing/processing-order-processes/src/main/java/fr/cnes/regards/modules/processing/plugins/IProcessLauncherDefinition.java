@@ -19,6 +19,12 @@ package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IProcessLauncherDefinition {
 
     default String engineName() {

@@ -17,21 +17,31 @@
 */
 package fr.cnes.regards.modules.processing.entity.converter;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.modules.processing.entity.ParamValues;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.core.convert.converter.Converter;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @ReadingConverter
 @AllArgsConstructor
-public class JsonbToParamValuesConverter  implements Converter<Json, ParamValues> {
+public class JsonbToParamValuesConverter implements Converter<Json, ParamValues> {
 
-    @Autowired private Gson gson;
+    @Autowired
+    private final Gson gson;
 
-    @Override public ParamValues convert(Json source) {
+    @Override
+    public ParamValues convert(Json source) {
         return gson.fromJson(source.asString(), ParamValues.class);
     }
 }

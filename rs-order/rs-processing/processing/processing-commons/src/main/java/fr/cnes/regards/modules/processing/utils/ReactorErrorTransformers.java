@@ -17,15 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.utils;
 
-import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
-import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
+import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface ReactorErrorTransformers {
 
     static <K, V> Function<Context, Context> addInContext(K key, V value) {
@@ -43,9 +47,7 @@ public interface ReactorErrorTransformers {
 
     static <K, T, E extends ProcessingException> Function<Throwable, Mono<T>> errorWithContextMono(Class<K> key,
             BiFunction<K, Throwable, E> fn) {
-        return t -> Mono.subscriberContext()
-            .map(ctx -> ctx.get(key))
-            .flatMap(k -> Mono.<T>error(fn.apply(k, t)));
+        return t -> Mono.subscriberContext().map(ctx -> ctx.get(key)).flatMap(k -> Mono.<T> error(fn.apply(k, t)));
     }
 
 }

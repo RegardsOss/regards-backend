@@ -24,6 +24,12 @@ import lombok.Value;
 import java.net.URL;
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class POutputFileDTO {
 

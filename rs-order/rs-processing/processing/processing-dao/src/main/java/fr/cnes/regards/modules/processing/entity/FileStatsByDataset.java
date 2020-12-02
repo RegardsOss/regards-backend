@@ -17,11 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
-import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import lombok.*;
-
 import java.util.Map;
 
+import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
+import lombok.Value;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class FileStatsByDataset {
 

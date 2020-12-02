@@ -25,6 +25,12 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @With
 public class POutputFile {
 

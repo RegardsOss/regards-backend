@@ -24,6 +24,12 @@ import lombok.Value;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 @AllArgsConstructor(onConstructor_={@JsonCreator})
 public class ProcessLabelDTO {

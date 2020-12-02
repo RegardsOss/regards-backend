@@ -17,14 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import com.google.gson.Gson;
-import feign.RequestTemplate;
-import feign.codec.Encoder;
+import java.lang.reflect.Type;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Type;
+import com.google.gson.Gson;
 
+import feign.RequestTemplate;
+import feign.codec.Encoder;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public class GsonLoggingEncoder implements Encoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonLoggingEncoder.class);

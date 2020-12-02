@@ -17,32 +17,45 @@
 */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import fr.cnes.regards.framework.gson.adapters.*;
-import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
-import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
-import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
-import io.vavr.gson.VavrGson;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.ServiceLoader;
+
 import org.springframework.boot.actuate.beans.BeansEndpoint;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
 
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.ServiceLoader;
+import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
+import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
+import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.gson.adapters.PathAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
+import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
+import io.vavr.gson.VavrGson;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public class ProcessingGsonUtils {
 
     public static Gson gsonPretty() {
         GsonBuilder builder = gsonBuilder();
         return builder.setPrettyPrinting().create();
     }
+
     public static Gson gson() {
         GsonBuilder builder = gsonBuilder();
         return builder.create();

@@ -30,6 +30,12 @@ import lombok.Value;
 
 import java.util.UUID;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface PProcess {
 
     UUID getProcessId();

@@ -24,10 +24,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)
-
 public class ExecutionParamDTO {
 
     private final String name;

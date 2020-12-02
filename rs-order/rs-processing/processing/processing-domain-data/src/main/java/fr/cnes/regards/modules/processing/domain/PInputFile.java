@@ -25,6 +25,12 @@ import org.springframework.lang.Nullable;
 
 import java.net.URL;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @With
 public class PInputFile {
 

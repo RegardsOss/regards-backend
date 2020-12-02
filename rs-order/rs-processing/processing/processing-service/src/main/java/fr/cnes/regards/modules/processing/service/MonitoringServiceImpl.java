@@ -19,10 +19,10 @@
 
 package fr.cnes.regards.modules.processing.service;
 
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
-import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +31,19 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
+import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
 import reactor.core.publisher.Mono;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Service
 public class MonitoringServiceImpl implements IMonitoringService {
 
@@ -49,42 +56,40 @@ public class MonitoringServiceImpl implements IMonitoringService {
         this.execRepo = execRepo;
     }
 
-    public Mono<Page<PExecution>> getExecutionsPageForCriteria(
-            String tenant,
-            List<ExecutionStatus> status,
-            @Nullable String userEmail,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            PageRequest paged
-    ) {
+    @Override
+    public Mono<Page<PExecution>> getExecutionsPageForCriteria(String tenant, List<ExecutionStatus> status,
+            @Nullable String userEmail, OffsetDateTime from, OffsetDateTime to, PageRequest paged) {
         if (userEmail == null) {
             return execRepo
                     .countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status, from, to)
                     .flatMap(total -> execRepo
-                            .findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status, from, to, paged)
-                            .collectList()
-                            .map(content -> {
+                            .findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status, from,
+                                                                                                   to, paged)
+                            .collectList().map(content -> {
                                 Page<PExecution> p = new PageImpl<>(content, paged, total);
                                 return p;
-                            })
-                    )
+                            }))
                     .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
                     .doOnError(t -> LOGGER.error(t.getMessage(), t));
         } else {
             return execRepo
-                    .countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, userEmail, status, from, to)
+                    .countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                        userEmail,
+                                                                                                        status, from,
+                                                                                                        to)
                     .flatMap(total -> execRepo
-                            .findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, userEmail, status, from, to, paged)
-                            .collectList()
-                            .map(content -> {
+                            .findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                               userEmail,
+                                                                                                               status,
+                                                                                                               from, to,
+                                                                                                               paged)
+                            .collectList().map(content -> {
                                 Page<PExecution> p = new PageImpl<>(content, paged, total);
                                 return p;
-                            })
-                    )
+                            }))
                     .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
                     .doOnError(t -> LOGGER.error(t.getMessage(), t));
         }
     }
-
 
 }

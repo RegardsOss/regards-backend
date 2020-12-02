@@ -17,10 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
-import fr.cnes.regards.modules.processing.domain.PUserAuth;
-import fr.cnes.regards.modules.processing.domain.PBatch;
 import org.springframework.security.core.context.SecurityContext;
 
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IPUserAuthService {
 
     PUserAuth authFromUserEmailAndRole(String tenant, String email, String role);

@@ -24,11 +24,17 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public abstract class AbstractMapper<T> {
 
     public abstract Map<String, String> toMap(T data);
-    public abstract Option<T> fromMap(Map<String, String> map);
 
+    public abstract Option<T> fromMap(Map<String, String> map);
 
     protected final <T extends Enum<T>> Option<T> parse(Map<String, String> map, String name, Class<T> type) {
         return map.get(name).flatMap(str -> parse(type, str));
@@ -38,14 +44,13 @@ public abstract class AbstractMapper<T> {
         return Try.of(() -> Enum.valueOf(type, str)).toOption();
     }
 
-
     protected final Option<Boolean> parseBoolean(Map<String, String> map, String propName) {
         return map.get(propName).flatMap(propValue -> Try.of(() -> Boolean.parseBoolean(propValue)).toOption());
     }
 
     protected final Option<UniformResourceName> parseUrn(Map<String, String> map, String propName) {
-        return map.get(propName).flatMap(propValue ->
-                Try.of(() -> UniformResourceName.fromString(propName)).toOption());
+        return map.get(propName)
+                .flatMap(propValue -> Try.of(() -> UniformResourceName.fromString(propName)).toOption());
 
     }
 

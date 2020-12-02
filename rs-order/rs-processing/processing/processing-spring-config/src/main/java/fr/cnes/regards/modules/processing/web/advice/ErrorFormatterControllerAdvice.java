@@ -31,6 +31,12 @@ import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @ControllerAdvice
 public class ErrorFormatterControllerAdvice {
 

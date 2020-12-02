@@ -17,6 +17,12 @@
 */
 package fr.cnes.regards.modules.processing.domain.constraints;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface Violation {
 
     String getMessage();

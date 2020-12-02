@@ -36,6 +36,12 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
 @RequestMapping(path = BATCH_PATH)

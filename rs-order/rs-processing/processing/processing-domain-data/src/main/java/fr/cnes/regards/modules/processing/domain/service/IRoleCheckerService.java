@@ -22,6 +22,12 @@ package fr.cnes.regards.modules.processing.domain.service;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import reactor.core.publisher.Mono;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface IRoleCheckerService {
 
     Mono<Boolean> roleIsUnder(PUserAuth auth, String role);

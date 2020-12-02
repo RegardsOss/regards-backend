@@ -26,16 +26,28 @@ import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import fr.cnes.regards.modules.processing.entity.StepEntity;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface DomainEntityMapper<D, E> {
 
     E toEntity(D domain);
 
     D toDomain(E entity);
 
-    interface Batch extends DomainEntityMapper<PBatch, BatchEntity> {}
-    interface Execution extends DomainEntityMapper<PExecution, ExecutionEntity> {}
-    interface OutputFile extends DomainEntityMapper<POutputFile, OutputFileEntity> {}
-    interface Step extends DomainEntityMapper<PStep, StepEntity> {}
+    interface Batch extends DomainEntityMapper<PBatch, BatchEntity> {
+    }
+
+    interface Execution extends DomainEntityMapper<PExecution, ExecutionEntity> {
+    }
+
+    interface OutputFile extends DomainEntityMapper<POutputFile, OutputFileEntity> {
+    }
+
+    interface Step extends DomainEntityMapper<PStep, StepEntity> {
+    }
 
 }
-

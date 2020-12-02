@@ -17,11 +17,10 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
+import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
+
 import java.util.UUID;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,8 +29,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.processing.controller.ProcessPluginConfigController;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
@@ -49,12 +48,14 @@ import io.vavr.control.Option;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Service
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigController.class);
 
     private final IPluginConfigurationRepository pluginConfigRepo;
 
@@ -66,13 +67,9 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public ProcessPluginConfigService(
-            IPluginConfigurationRepository pluginConfigRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
-            IPExecutionRepository executionRepository,
-            IPublisher publisher,
-            IRuntimeTenantResolver runtimeTenantResolver
-    ) {
+    public ProcessPluginConfigService(IPluginConfigurationRepository pluginConfigRepo,
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IPExecutionRepository executionRepository,
+            IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
         this.pluginConfigRepo = pluginConfigRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;
@@ -127,8 +124,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     @Override
     public Mono<Boolean> canDelete(UUID processBusinessId) {
         return executionRepository
-            .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
-            .map(count -> count == 0);
+                .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
+                .map(count -> count == 0);
     }
 
     @Override
@@ -141,14 +138,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
                     rightsPluginConfigRepo.delete(rights);
                     runtimeTenantResolver.clearTenant();
                     return Mono.just(RightsPluginConfiguration.toDto(rights));
-                }
-                else {
+                } else {
                     return Mono.error(new DeleteAttemptOnUsedProcessException(processBusinessId));
                 }
-            })
-            .doOnNext(dto ->
-                    publisher.publish(new RightsPluginConfigurationEvent(DELETE, dto, null))
-            );
+            }).doOnNext(dto -> publisher.publish(new RightsPluginConfigurationEvent(DELETE, dto, null)));
         });
     }
 
@@ -203,7 +196,9 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
         }
     }
 
+    @SuppressWarnings("serial")
     public static class DeleteAttemptOnUsedProcessException extends Exception {
+
         private final UUID processBusinessID;
 
         public DeleteAttemptOnUsedProcessException(UUID processBusinessID) {

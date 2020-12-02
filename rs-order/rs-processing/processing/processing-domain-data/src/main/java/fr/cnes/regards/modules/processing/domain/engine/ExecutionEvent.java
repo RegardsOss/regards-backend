@@ -29,6 +29,12 @@ import lombok.Value;
 import static io.vavr.control.Option.none;
 import static io.vavr.control.Option.of;
 
+/**
+ * TODO : Class description
+ * 
+ * @author Guillaume Andrieu
+ *
+ */
 public abstract class ExecutionEvent {
 
     @Value

@@ -17,13 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.entity;
 
-import lombok.Value;
-
 import java.util.Arrays;
 import java.util.List;
 
-@Value
+import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
+@Value
 public class Steps {
 
     List<StepEntity> values;

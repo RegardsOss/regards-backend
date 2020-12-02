@@ -19,6 +19,12 @@ package fr.cnes.regards.modules.processing.exceptions;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public enum ProcessingExceptionType {
 
     EXECUTION_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND),
@@ -32,8 +38,7 @@ public enum ProcessingExceptionType {
     PERSIST_EXECUTION_STEP_ERROR,
     SEND_EXECUTION_RESULT_ERROR,
     NOTIFY_TIMEOUT_ERROR,
-    MISSING_EXECUTION_CONTEXT_PARAM_ERROR,
-    ;
+    MISSING_EXECUTION_CONTEXT_PARAM_ERROR,;
 
     private final HttpStatus status;
 

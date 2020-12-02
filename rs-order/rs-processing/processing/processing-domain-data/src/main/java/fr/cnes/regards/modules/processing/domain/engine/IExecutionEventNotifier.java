@@ -17,6 +17,8 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
+import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
+
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
@@ -25,28 +27,29 @@ import io.vavr.Function1;
 import io.vavr.collection.Seq;
 import reactor.core.publisher.Mono;
 
-import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
-
 /**
  * This interface is given to an IExecutable to allow the executable to notify events for its execution.
+ *
+ * @author Guillaume Andrieu
  */
 public interface IExecutionEventNotifier extends Function1<ExecutionEvent, Mono<PExecution>> {
 
     Mono<PExecution> notifyEvent(ExecutionEvent event);
 
+    @Override
     default Mono<PExecution> apply(ExecutionEvent event) {
         return notifyEvent(event);
     }
 
-    default  Mono<PExecution> notifyEvent(PStepFinal step) {
+    default Mono<PExecution> notifyEvent(PStepFinal step) {
         return apply(event(step));
     }
 
-    default  Mono<PExecution> notifyEvent(PStepIntermediary step) {
+    default Mono<PExecution> notifyEvent(PStepIntermediary step) {
         return apply(event(step));
     }
 
-    default  Mono<PExecution> notifyEvent(PStepFinal step, Seq<POutputFile> files) {
+    default Mono<PExecution> notifyEvent(PStepFinal step, Seq<POutputFile> files) {
         return apply(event(step, files));
     }
 }

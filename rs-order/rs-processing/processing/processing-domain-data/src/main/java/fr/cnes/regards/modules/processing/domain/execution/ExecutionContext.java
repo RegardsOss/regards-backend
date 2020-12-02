@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
-import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -35,6 +34,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Supplier;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExecutionContext {
 
@@ -67,6 +72,7 @@ public class ExecutionContext {
             .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '" + type.getSimpleName() + "' not found")));
     }
 
+    @SuppressWarnings("serial")
     public static class MissingExecutionContextParameterException extends ProcessingException {
         public MissingExecutionContextParameterException(String desc) {
             super(ProcessingExceptionType.MISSING_EXECUTION_CONTEXT_PARAM_ERROR, desc);

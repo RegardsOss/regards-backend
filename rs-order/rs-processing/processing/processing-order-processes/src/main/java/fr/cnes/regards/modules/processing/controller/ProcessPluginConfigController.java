@@ -52,6 +52,12 @@ import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDT
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import reactor.core.publisher.Flux;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @RestController
 @RequestMapping(path = PROCESSPLUGIN_PATH + CONFIG_SUFFIX)
 public class ProcessPluginConfigController implements IResourceController<ProcessPluginConfigurationRightsDTO> {

@@ -17,10 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.storage;
 
-import lombok.Value;
-
 import java.nio.file.Path;
 
+import lombok.Value;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class ExecutionLocalWorkdir {
 

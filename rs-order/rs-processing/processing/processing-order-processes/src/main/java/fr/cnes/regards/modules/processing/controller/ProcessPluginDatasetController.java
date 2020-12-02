@@ -17,35 +17,45 @@
 */
 package fr.cnes.regards.modules.processing.controller;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BY_DATASETS_SUFFIX;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.LINKDATASET_SUFFIX;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import io.vavr.collection.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @RestController
 @RequestMapping(path = PROCESSPLUGIN_PATH)
 public class ProcessPluginDatasetController {
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
     private final IProcessPluginConfigService rightsConfigService;
 
     @Autowired
-    public ProcessPluginDatasetController(IRuntimeTenantResolver runtimeTenantResolver,
-                                          IProcessPluginConfigService rightsConfigService) {
-        this.runtimeTenantResolver = runtimeTenantResolver;
+    public ProcessPluginDatasetController(IProcessPluginConfigService rightsConfigService) {
         this.rightsConfigService = rightsConfigService;
     }
 
@@ -59,7 +69,7 @@ public class ProcessPluginDatasetController {
     @PutMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Attach the given dataset to all the given processes", role = DefaultRole.ADMIN)
     public void attachDatasetToProcesses(@RequestBody List<UUID> processBusinessIds,
-                                         @PathVariable(DATASET_PARAM) String dataset) {
+            @PathVariable(DATASET_PARAM) String dataset) {
         rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset).block();
     }
 

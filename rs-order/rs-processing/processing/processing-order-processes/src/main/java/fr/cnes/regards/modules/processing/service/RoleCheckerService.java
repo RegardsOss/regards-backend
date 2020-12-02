@@ -19,17 +19,24 @@
 
 package fr.cnes.regards.modules.processing.service;
 
+import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Service
 public class RoleCheckerService implements IRoleCheckerService {
 
@@ -40,6 +47,7 @@ public class RoleCheckerService implements IRoleCheckerService {
         this.rolesClient = rolesClient;
     }
 
+    @Override
     public Mono<Boolean> roleIsUnder(PUserAuth auth, String role) {
         return Mono.defer(() -> {
             try {
@@ -50,8 +58,7 @@ public class RoleCheckerService implements IRoleCheckerService {
                 } else {
                     return Mono.error(new RoleCanNotBeCheckedException());
                 }
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 return Mono.error(e);
             }
         });

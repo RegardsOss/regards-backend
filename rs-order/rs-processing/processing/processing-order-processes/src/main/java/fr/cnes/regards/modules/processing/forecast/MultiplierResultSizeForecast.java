@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.forecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class MultiplierResultSizeForecast implements IResultSizeForecast {
 

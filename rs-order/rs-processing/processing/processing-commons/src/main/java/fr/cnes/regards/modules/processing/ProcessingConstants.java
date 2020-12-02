@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public interface ProcessingConstants {
 
     interface Path {
@@ -60,9 +66,11 @@ public interface ProcessingConstants {
         String CONFIG_SUFFIX = "/config";
 
         String BID_SUFFIX = "/{" + PROCESS_BUSINESS_ID_PARAM + "}";
+
         String BID_USERROLE_SUFFIX = BID_SUFFIX + "/userRole";
 
         String CONFIG_BID_SUFFIX = CONFIG_SUFFIX + BID_SUFFIX;
+
         String CONFIG_BID_USERROLE_SUFFIX = CONFIG_SUFFIX + BID_USERROLE_SUFFIX;
 
         String METADATA_SUFFIX = "/metadata";

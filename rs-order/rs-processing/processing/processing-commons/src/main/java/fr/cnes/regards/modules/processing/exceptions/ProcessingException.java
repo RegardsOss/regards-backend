@@ -17,18 +17,27 @@
 */
 package fr.cnes.regards.modules.processing.exceptions;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.UUID;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
+@SuppressWarnings("serial")
 public abstract class ProcessingException extends RuntimeException {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingException.class);
 
     protected final UUID exceptionId;
+
     protected final ProcessingExceptionType type;
+
     protected final String desc;
 
     public ProcessingException(ProcessingExceptionType type, String desc) {
@@ -43,6 +52,7 @@ public abstract class ProcessingException extends RuntimeException {
         LOGGER.error("Processing error {} cause by:", exceptionId, throwable);
     }
 
+    @Override
     public abstract String getMessage();
 
     public UUID getExceptionId() {

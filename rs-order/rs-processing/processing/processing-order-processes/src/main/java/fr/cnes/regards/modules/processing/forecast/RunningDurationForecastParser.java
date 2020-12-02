@@ -19,9 +19,13 @@ package fr.cnes.regards.modules.processing.forecast;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 public class RunningDurationForecastParser {
-
-
 
 }

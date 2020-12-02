@@ -17,10 +17,17 @@
 */
 package fr.cnes.regards.modules.processing.demo.process;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 public class DemoSimulatedAsyncProcessFactory {
 

@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.service.exception;
 import fr.cnes.regards.modules.processing.domain.constraints.Violation;
 import io.vavr.collection.Seq;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 public class ProcessConstraintViolationsException extends Exception {
 
     private final Seq<Violation> violations;

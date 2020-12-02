@@ -19,6 +19,12 @@ package fr.cnes.regards.modules.processing.domain.size;
 
 import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value
 public class FileSetStatistics {
 
