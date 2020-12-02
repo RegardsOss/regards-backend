@@ -27,10 +27,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.modules.order.service.IOrderJobService;
-import fr.cnes.regards.modules.order.service.job.parameters.*;
-import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultimap;
@@ -41,17 +37,27 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
+import fr.cnes.regards.modules.order.service.IOrderJobService;
+import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessJobInfoJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
-import org.springframework.context.ApplicationEventPublisher;
+import io.vavr.control.Option;
 
+/**
+ * Job  to ensure with storage microservice that order files are availables to download.
+ *
+ * @author Sébastien Binda
+ *
+ */
 public class StorageFilesJob extends AbstractJob<Void> {
-
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     protected IOrderDataFileService dataFileService;
@@ -93,24 +99,20 @@ public class StorageFilesJob extends AbstractJob<Void> {
      */
     private String user;
 
-
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        if (parameters.size() < 4 || parameters.size() > 5) {
+        if ((parameters.size() < 4) || (parameters.size() > 5)) {
             throw new JobParameterInvalidException(
                     "Four or five parameters are expected : 'files', 'expirationDate', 'user' and 'userRole', and optionally 'processJobInfo'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param)
-                && !SubOrderAvailabilityPeriodJobParameter.isCompatible(param)
-                && !UserJobParameter.isCompatible(param)
-                && !UserRoleJobParameter.isCompatible(param)
-                && !ProcessJobInfoJobParameter.isCompatible(param)
-            ) {
+            if (!FilesJobParameter.isCompatible(param) && !SubOrderAvailabilityPeriodJobParameter.isCompatible(param)
+                    && !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)
+                    && !ProcessJobInfoJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
                         "Please use ProcessJobInfoJobParameter, FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
                                 + "UserRoleJobParameter in place of JobParameter (these "
@@ -124,11 +126,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
                 }
             } else if (SubOrderAvailabilityPeriodJobParameter.isCompatible(param)) {
                 subOrderValidationPeriodDays = param.getValue();
-            }
-            else if (ProcessJobInfoJobParameter.isCompatible(param)) {
+            } else if (ProcessJobInfoJobParameter.isCompatible(param)) {
                 processJobInfoId = Option.some(param.getValue());
-            }
-            else if (UserJobParameter.isCompatible(param)) {
+            } else if (UserJobParameter.isCompatible(param)) {
                 user = param.getValue();
             }
         }
@@ -165,18 +165,17 @@ public class StorageFilesJob extends AbstractJob<Void> {
             subscriber.unsubscribe(this);
 
             processJobInfoId
-                // NO PROCESSING
-                .onEmpty(() ->
+                    // NO PROCESSING
+                    .onEmpty(() ->
                     // All order data files statuses are updated into database (if there is no process to launch)
-                    dataFileService.save(dataFilesMultimap.values())
-                )
-                // PROCESSING TO BE LAUNCHED
-                .peek(id -> {
-                    // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
-                    jobInfoService.enqueueJobForId(id);
-                    // Nudge the order job service to enqueue next storage files jobs.
-                    orderJobService.manageUserOrderStorageFilesJobInfos(user);
-                });
+                    dataFileService.save(dataFilesMultimap.values()))
+                    // PROCESSING TO BE LAUNCHED
+                    .peek(id -> {
+                        // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
+                        jobInfoService.enqueueJobForId(id);
+                        // Nudge the order job service to enqueue next storage files jobs.
+                        orderJobService.manageUserOrderStorageFilesJobInfos(user);
+                    });
         }
     }
 

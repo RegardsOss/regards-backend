@@ -1,6 +1,39 @@
+/*
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service.processing;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -21,42 +54,36 @@ import io.vavr.collection.HashSet;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Component
 public class ProcessingExecutionResultEventHandler implements IProcessingExecutionResultEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingExecutionResultEventHandler.class);
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final ISubscriber subscriber;
+
     private final IOrderDataFileRepository orderDataFileRepository;
+
     private final IOrderJobService orderJobService;
+
     private final IOrderDataFileService dataFileService;
+
     private final ApplicationEventPublisher applicationPublisher;
+
     private final Gson gson;
 
     @Autowired
-    public ProcessingExecutionResultEventHandler(
-            IRuntimeTenantResolver runtimeTenantResolver,
-            ISubscriber subscriber,
-            IOrderDataFileRepository orderDataFileRepository,
-            IOrderJobService orderJobService,
-            IOrderDataFileService dataFileService,
-            ApplicationEventPublisher applicationPublisher, Gson gson
-    ) {
+    public ProcessingExecutionResultEventHandler(IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber,
+            IOrderDataFileRepository orderDataFileRepository, IOrderJobService orderJobService,
+            IOrderDataFileService dataFileService, ApplicationEventPublisher applicationPublisher, Gson gson) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.orderDataFileRepository = orderDataFileRepository;
@@ -66,11 +93,13 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         this.gson = gson;
     }
 
-    @Override public void onApplicationEvent(ApplicationEvent event) {
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
         subscriber.subscribeTo(PExecutionResultEvent.class, this);
     }
 
-    @Override public void handle(String tenant, PExecutionResultEvent evt) {
+    @Override
+    public void handle(String tenant, PExecutionResultEvent evt) {
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.info("Received execution result: cid={} evt={}", evt.getExecutionCorrelationId(), evt);
 
@@ -79,7 +108,8 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
 
         String batchCorrelationId = evt.getBatchCorrelationId();
         BatchSuborderCorrelationIdentifier batchSuborderCorrId = readBatchSuborderIdentifier(batchCorrelationId);
-        ExecutionCorrelationIdentifier execCorrId = gson.fromJson(evt.getExecutionCorrelationId(), ExecutionCorrelationIdentifier.class);
+        ExecutionCorrelationIdentifier execCorrId = gson.fromJson(evt.getExecutionCorrelationId(),
+                                                                  ExecutionCorrelationIdentifier.class);
         String user = execCorrId.getUser();
 
         ExecutionStatus finalStatus = evt.getFinalStatus();
@@ -87,12 +117,10 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         if (finalStatus != ExecutionStatus.SUCCESS) {
             LOGGER.error("{} terminated with status {}", logPrefix(evt), finalStatus);
             updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
-        }
-        else if (evt.getOutputs().isEmpty()) {
+        } else if (evt.getOutputs().isEmpty()) {
             LOGGER.error("{} no output found", logPrefix(evt));
             updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
-        }
-        else {
+        } else {
             /*
              * As a reminder of what the previous steps of the process did:
              * - in OrderProcessingService, we created OrderDataFile corresponding to the output files
@@ -109,10 +137,20 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
              * each execution output provides such a list.
              */
             switch (cardinality) {
-                case ONE_PER_EXECUTION: { updatedDataFiles = dealWithSingleExecutionOutputFile(evt, batchSuborderCorrId); break; }
-                case ONE_PER_FEATURE: { updatedDataFiles = dealWithOutputFilePerFeature(evt, batchSuborderCorrId); break; }
-                case ONE_PER_INPUT_FILE: { updatedDataFiles = dealWithOutputFilePerInputFile(evt, batchSuborderCorrId); break; }
-                default: throw new NotImplementedException("New cardinality case not implemented: " + cardinality.name());
+                case ONE_PER_EXECUTION: {
+                    updatedDataFiles = dealWithSingleExecutionOutputFile(evt, batchSuborderCorrId);
+                    break;
+                }
+                case ONE_PER_FEATURE: {
+                    updatedDataFiles = dealWithOutputFilePerFeature(evt, batchSuborderCorrId);
+                    break;
+                }
+                case ONE_PER_INPUT_FILE: {
+                    updatedDataFiles = dealWithOutputFilePerInputFile(evt, batchSuborderCorrId);
+                    break;
+                }
+                default:
+                    throw new NotImplementedException("New cardinality case not implemented: " + cardinality.name());
             }
 
         }
@@ -133,24 +171,21 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      * Each output file is supposed to reference the corresponding inputCorrelationId, and
      * thus we can find the OrderDataFile which references it.
      */
-    private List<OrderDataFile> dealWithOutputFilePerInputFile(
-            PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
-    ) {
+    private List<OrderDataFile> dealWithOutputFilePerInputFile(PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
 
-        for (POutputFileDTO outputFile: outputs) {
+        for (POutputFileDTO outputFile : outputs) {
             io.vavr.collection.List<String> inputCorrelationIds = outputFile.getInputCorrelationIds();
             int inputsCidCount = inputCorrelationIds.size();
             if (inputsCidCount == 0) {
                 LOGGER.error("{} the output {} has no corresponding inputCorrelationIds, but it is supposed to have only one",
-                        logPrefix(evt), outputFile.getName());
+                             logPrefix(evt), outputFile.getName());
                 return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
-            }
-            else if (inputsCidCount != 1) {
+            } else if (inputsCidCount != 1) {
                 LOGGER.warn("{} the output {} has {} corresponding inputCorrelationIds, but it is supposed to have only one",
-                    logPrefix(evt), outputFile.getName(), inputsCidCount);
+                            logPrefix(evt), outputFile.getName(), inputsCidCount);
             }
             // In this case, the corresponding OrderDataFile URL is supposed to be exactly the input correlation ID.
             String orderDataFileUrl = inputCorrelationIds.head();
@@ -159,7 +194,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             int orderDataFileCount = orderDataFiles.size();
             if (orderDataFileCount != 1) {
                 LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
-                        logPrefix(evt), orderDataFileUrl, orderDataFileCount);
+                            logPrefix(evt), orderDataFileUrl, orderDataFileCount);
             }
             try {
                 OrderDataFile odf = orderDataFiles.get(0);
@@ -171,8 +206,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                 odf.setFilesize(outputFile.getSize());
                 updatedDataFiles.add(odf);
             } catch (URISyntaxException e) {
-                LOGGER.error("{} could not create URI from execution output URL: {}",
-                        logPrefix(evt), e.getInput(), e);
+                LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(), e);
                 return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
             }
         }
@@ -187,69 +221,63 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      * Each output file is supposed to reference one inputCorrelationId per input file, and
      * all of these input files are supposed to reference the same feature ID.
      */
-    private List<OrderDataFile> dealWithOutputFilePerFeature(
-            PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
-    ) {
+    private List<OrderDataFile> dealWithOutputFilePerFeature(PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
 
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
         AtomicBoolean error = new AtomicBoolean();
 
-        for (POutputFileDTO outputFile: outputs) {
+        for (POutputFileDTO outputFile : outputs) {
 
             if (error.get()) {
                 return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
             }
 
-            allInputCidsReferenceTheSameFeature(outputFile.getInputCorrelationIds())
-                .peek(featureIpId -> {
-                    String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, featureIpId);
-                    List<OrderDataFile> orderDataFiles = orderDataFileRepository.findAllByUrlStartingWith(orderDataFileUrl);
-                    int orderDataFileCount = orderDataFiles.size();
-                    if (orderDataFileCount != 1) {
-                        LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
+            allInputCidsReferenceTheSameFeature(outputFile.getInputCorrelationIds()).peek(featureIpId -> {
+                String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, featureIpId);
+                List<OrderDataFile> orderDataFiles = orderDataFileRepository.findAllByUrlStartingWith(orderDataFileUrl);
+                int orderDataFileCount = orderDataFiles.size();
+                if (orderDataFileCount != 1) {
+                    LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
                                 logPrefix(evt), orderDataFileUrl, orderDataFileCount);
-                    }
-                    try {
-                        OrderDataFile odf = orderDataFiles.get(0);
-                        String url = outputFile.getUrl().toString();
-                        odf.setUrl(url);
-                        odf.setState(FileState.AVAILABLE);
-                        odf.setChecksum(outputFile.getChecksumValue());
-                        odf.setFilename(outputFile.getName());
-                        odf.setFilesize(outputFile.getSize());
+                }
+                try {
+                    OrderDataFile odf = orderDataFiles.get(0);
+                    String url = outputFile.getUrl().toString();
+                    odf.setUrl(url);
+                    odf.setState(FileState.AVAILABLE);
+                    odf.setChecksum(outputFile.getChecksumValue());
+                    odf.setFilename(outputFile.getName());
+                    odf.setFilesize(outputFile.getSize());
 
-                        updatedDataFiles.add(odf);
-                    } catch (URISyntaxException e) {
-                        LOGGER.error("{} could not create URI from execution output URL: {}",
-                                logPrefix(evt), e.getInput(), e);
-                        error.set(true);
-                    }
-                })
-                .onEmpty(() -> {
-                    LOGGER.error("{} the output {} has incoherent inputCorrelationIds, referencing several features when they should reference only one",
-                            logPrefix(evt), outputFile.getName());
+                    updatedDataFiles.add(odf);
+                } catch (URISyntaxException e) {
+                    LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(),
+                                 e);
                     error.set(true);
-                });
+                }
+            }).onEmpty(() -> {
+                LOGGER.error("{} the output {} has incoherent inputCorrelationIds, referencing several features when they should reference only one",
+                             logPrefix(evt), outputFile.getName());
+                error.set(true);
+            });
         }
 
         return updatedDataFiles;
     }
-
 
     /**
      * This is the case where there should be exactly one output file.
      * Finding the corresponding OrderDataFile in the database is easy, we only need to use
      * the batchSuborderIdentifier.
      */
-    private List<OrderDataFile> dealWithSingleExecutionOutputFile(
-            PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
-    ) {
+    private List<OrderDataFile> dealWithSingleExecutionOutputFile(PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         if (outputs.size() > 1) {
-            LOGGER.warn("{} more than one output, while exactly one is expected ; ignoring all but first output", logPrefix(evt));
+            LOGGER.warn("{} more than one output, while exactly one is expected ; ignoring all but first output",
+                        logPrefix(evt));
         }
         POutputFileDTO outputFile = outputs.head();
         String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier);
@@ -257,10 +285,10 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         int orderDataFileCount = orderDataFiles.size();
         if (orderDataFileCount != 1) {
             LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
-                logPrefix(evt), orderDataFileUrl, orderDataFileCount);
+                        logPrefix(evt), orderDataFileUrl, orderDataFileCount);
         }
         try {
-            for (OrderDataFile odf: orderDataFiles) {
+            for (OrderDataFile odf : orderDataFiles) {
                 String url = outputFile.getUrl().toString();
                 odf.setUrl(url);
                 odf.setState(FileState.AVAILABLE);
@@ -270,51 +298,44 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             }
             return orderDataFiles;
         } catch (URISyntaxException e) {
-            LOGGER.error("{} could not create URI from execution output URL: {}",
-                    logPrefix(evt), e.getInput(), e);
+            LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(), e);
             return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
         }
     }
 
-    private List<OrderDataFile> setAllDataFilesInSuborderAsInError(BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
-        List<OrderDataFile> allFilesInSuborder = orderDataFileRepository.findAllByUrlStartingWith(ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier));
-        List<OrderDataFile> allInError = Stream.ofAll(allFilesInSuborder)
-                .map(file -> {
-                    file.setState(FileState.PROCESSING_ERROR);
-                    return file;
-                })
-                .collect(Collectors.toList());
+    private List<OrderDataFile> setAllDataFilesInSuborderAsInError(
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
+        List<OrderDataFile> allFilesInSuborder = orderDataFileRepository
+                .findAllByUrlStartingWith(ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier));
+        List<OrderDataFile> allInError = Stream.ofAll(allFilesInSuborder).map(file -> {
+            file.setState(FileState.PROCESSING_ERROR);
+            return file;
+        }).collect(Collectors.toList());
         return allInError;
     }
 
     private BatchSuborderCorrelationIdentifier readBatchSuborderIdentifier(String batchCorrelationId) {
-        return BatchSuborderCorrelationIdentifier.parse(batchCorrelationId)
-                .getOrElseThrow(() -> {
-                    String errMsg = String.format("Could not parse batch correlation ID: %s", batchCorrelationId);
-                    LOGGER.error(errMsg);
-                    return new IllegalArgumentException(errMsg);
-                });
+        return BatchSuborderCorrelationIdentifier.parse(batchCorrelationId).getOrElseThrow(() -> {
+            String errMsg = String.format("Could not parse batch correlation ID: %s", batchCorrelationId);
+            LOGGER.error(errMsg);
+            return new IllegalArgumentException(errMsg);
+        });
     }
 
     private OrderProcessInfo readProcessInfo(PExecutionResultEvent message) {
-        return new OrderProcessInfoMapper().fromMap(message.getProcessInfo())
-                .getOrElseThrow(() -> {
-                    String errMsg = String.format("Could not parse process info from map in message %s", message);
-                    LOGGER.error(errMsg);
-                    return new IllegalArgumentException(errMsg);
-                });
+        return new OrderProcessInfoMapper().fromMap(message.getProcessInfo()).getOrElseThrow(() -> {
+            String errMsg = String.format("Could not parse process info from map in message %s", message);
+            LOGGER.error(errMsg);
+            return new IllegalArgumentException(errMsg);
+        });
     }
-    
+
     private Option<String> allInputCidsReferenceTheSameFeature(io.vavr.collection.List<String> inputCorrelationIds) {
         String missing = "";
         HashSet<String> featureIpIds = inputCorrelationIds
-                .map(cid ->
-                        ProcessInputCorrelationIdentifier.parse(cid)
-                                .flatMap(ProcessInputCorrelationIdentifier::getFeatureIpId)
-                                .getOrElse(missing)
-                )
-                .collect(HashSet.collector())
-                .filter(s -> !missing.equals(s));
+                .map(cid -> ProcessInputCorrelationIdentifier.parse(cid)
+                        .flatMap(ProcessInputCorrelationIdentifier::getFeatureIpId).getOrElse(missing))
+                .collect(HashSet.collector()).filter(s -> !missing.equals(s));
         return featureIpIds.size() == 1 ? featureIpIds.headOption() : Option.none();
     }
 

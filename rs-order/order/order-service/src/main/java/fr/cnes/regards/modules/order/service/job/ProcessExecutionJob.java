@@ -1,18 +1,57 @@
+/*
+ * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service.job;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.dao.IBasketDatasetSelectionRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import fr.cnes.regards.modules.order.service.job.parameters.*;
+import fr.cnes.regards.modules.order.service.job.parameters.BasketDatasetSelectionJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessBatchCorrelationIdJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessDTOJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeature;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeatureJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFeatureDesc;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.TenantJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ExecutionCorrelationIdentifier;
@@ -24,31 +63,24 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.order.*;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.Scope;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * This class allows to launch the execution for a processed dataset selection.
  * <p>
  * It must be launched after all the internal input files have been set as accessible.
+ *
+ * @author Guillaume Andrieu
  */
 public class ProcessExecutionJob extends AbstractJob<Void> {
 
@@ -95,113 +127,94 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
             switch (scope) {
                 case ITEM: {
-                    HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
-                            .forEach((feature, inputs) -> {
-                                sendExecRequest(createExecRequestEvent(
-                                        gson.toJson(new ExecutionCorrelationIdentifier(user, Option.of(feature.getIpId()))),
-                                        batchResponse.getBatchId(),
-                                        createInputsForFeatureWithCorrelationId(feature, inputs)
-                                ));
-                            });
+                    HashMap.ofAll(processInputDataFiles.getFilesPerFeature()).forEach((feature, inputs) -> {
+                        sendExecRequest(createExecRequestEvent(gson
+                                .toJson(new ExecutionCorrelationIdentifier(user, Option.of(feature.getIpId()))),
+                                                               batchResponse.getBatchId(),
+                                                               createInputsForFeatureWithCorrelationId(feature,
+                                                                                                       inputs)));
+                    });
                     break;
                 }
                 case SUBORDER: {
-                    sendExecRequest(createExecRequestEvent(
-                            gson.toJson(new ExecutionCorrelationIdentifier(user, Option.none())),
-                            batchResponse.getBatchId(),
-                            createAllInputsWithCorrelationId()
-                    ));
+                    sendExecRequest(createExecRequestEvent(gson
+                            .toJson(new ExecutionCorrelationIdentifier(user, Option.none())),
+                                                           batchResponse.getBatchId(),
+                                                           createAllInputsWithCorrelationId()));
                     break;
                 }
                 default:
-                    throw new NotImplementedException("A Scope case implementation is missing in " + this.getClass().getName());
+                    throw new NotImplementedException(
+                            "A Scope case implementation is missing in " + this.getClass().getName());
             }
-        }
-        finally {
+        } finally {
             advanceCompletion();
         }
     }
 
-    private List<PInputFile> createInputsForFeatureWithCorrelationId(ProcessOutputFeatureDesc feature, java.util.List<OrderDataFile> inputs) {
+    private List<PInputFile> createInputsForFeatureWithCorrelationId(ProcessOutputFeatureDesc feature,
+            java.util.List<OrderDataFile> inputs) {
         return List.ofAll(inputs)
-            .map(orderDataFile -> createInputWithCorrelationId(
-                orderDataFile,
-                feature.getIpId(),
-                ProcessInputCorrelationIdentifier.repr(batchCorrelationId, feature.getIpId(), orderDataFile.getFilename())
-            ));
+                .map(orderDataFile -> createInputWithCorrelationId(orderDataFile, feature.getIpId(),
+                                                                   ProcessInputCorrelationIdentifier
+                                                                           .repr(batchCorrelationId, feature.getIpId(),
+                                                                                 orderDataFile.getFilename())));
     }
 
     private List<PInputFile> createAllInputsWithCorrelationId() {
-        List<Tuple2<ProcessOutputFeatureDesc, OrderDataFile>> featureAndFileTuples =
-                HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
-                .toList()
+        List<Tuple2<ProcessOutputFeatureDesc, OrderDataFile>> featureAndFileTuples = HashMap
+                .ofAll(processInputDataFiles.getFilesPerFeature()).toList()
                 .flatMap(featureDescAndDataFiles -> List.ofAll(featureDescAndDataFiles._2())
                         .map(dataFile -> Tuple.of(featureDescAndDataFiles._1, dataFile)));
         return featureAndFileTuples
-            .map(featureAndFile -> createInputWithCorrelationId(
-                    featureAndFile._2,
-                    featureAndFile._1.getIpId(),
-                    ProcessInputCorrelationIdentifier.repr(batchCorrelationId, featureAndFile._1.getIpId(), featureAndFile._2.getFilename())
-            ));
+                .map(featureAndFile -> createInputWithCorrelationId(featureAndFile._2, featureAndFile._1.getIpId(),
+                                                                    ProcessInputCorrelationIdentifier
+                                                                            .repr(batchCorrelationId,
+                                                                                  featureAndFile._1.getIpId(),
+                                                                                  featureAndFile._2.getFilename())));
     }
 
     private void sendExecRequest(PExecutionRequestEvent event) {
-        this.eventSender.sendProcessingRequest(event)
-            .onFailure(t -> LOGGER.error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
+        this.eventSender.sendProcessingRequest(event).onFailure(t -> LOGGER
+                .error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
     }
 
-    protected PBatchRequest createBatchRequest(
-            BasketDatasetSelection dsSel,
-            ProcessDatasetDescription processDatasetDescription
-    ) {
+    protected PBatchRequest createBatchRequest(BasketDatasetSelection dsSel,
+            ProcessDatasetDescription processDatasetDescription) {
         FileSetStatistics stats = createBatchStats(dsSel);
-        return new PBatchRequest(
-                batchCorrelationId.repr(),
-                processDesc.getProcessId(),
-                tenant, user, userRole,
-                HashMap.ofAll(processDatasetDescription.getParameters()),
-                HashMap.of(dsSel.getDatasetIpid(), stats)
-        );
+        return new PBatchRequest(batchCorrelationId.repr(), processDesc.getProcessId(), tenant, user, userRole,
+                HashMap.ofAll(processDatasetDescription.getParameters()), HashMap.of(dsSel.getDatasetIpid(), stats));
     }
 
     protected FileSetStatistics createBatchStats(BasketDatasetSelection dsSel) {
         Long totalInputSizes = List.ofAll(processInputDataFiles.getFilesPerFeature().values())
-                .flatMap(Function.identity())
-                .map(OrderDataFile::getFilesize)
-                .fold(0L, Long::sum);
+                .flatMap(Function.identity()).map(OrderDataFile::getFilesize).fold(0L, Long::sum);
         return new FileSetStatistics(dsSel.getDatasetIpid(), 1, totalInputSizes);
     }
 
-    protected PExecutionRequestEvent createExecRequestEvent(String correlationId, UUID batchId, List<PInputFile> inputFiles) {
+    protected PExecutionRequestEvent createExecRequestEvent(String correlationId, UUID batchId,
+            List<PInputFile> inputFiles) {
         return new PExecutionRequestEvent(correlationId, batchId, inputFiles);
     }
 
     protected PInputFile createInputWithCorrelationId(OrderDataFile df, String featureIpId, String inputCorrelationId) {
         URL fileUrl = Try.of(() -> new URL(df.getUrl())).getOrNull();
         UniformResourceName featureIdUrn = UniformResourceName.fromString(featureIpId);
-        io.vavr.collection.Map<String, String> metadataMap = mapper.toMap(new OrderInputFileMetadata(!df.isReference(), featureIdUrn));
-        return new PInputFile(
-                "", // unused parameter name
-                df.getFilename(),
-                df.getMimeType().toString(),
-                fileUrl,
-                df.getFilesize(),
-                df.getChecksum(),
-                metadataMap,
-                inputCorrelationId
-        );
+        io.vavr.collection.Map<String, String> metadataMap = mapper
+                .toMap(new OrderInputFileMetadata(!df.isReference(), featureIdUrn));
+        return new PInputFile("", // unused parameter name
+                df.getFilename(), df.getMimeType().toString(), fileUrl, df.getFilesize(), df.getChecksum(), metadataMap,
+                inputCorrelationId);
     }
 
-    protected PBatchResponse createBatch(
-            BasketDatasetSelection dsSel,
-            IProcessingRestClient processingClient
-    ) {
+    protected PBatchResponse createBatch(BasketDatasetSelection dsSel, IProcessingRestClient processingClient) {
         ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
         PBatchRequest request = createBatchRequest(dsSel, processDatasetDescription);
         ResponseEntity<PBatchResponse> batchResponse = processingClient.createBatch(request);
 
         if (!batchResponse.getStatusCode().is2xxSuccessful()) {
-            throw new CouldNotCreateBatchException(jobInfoId, dsSel.getId(), processDatasetDescription.getProcessBusinessId(), batchResponse);
+            throw new CouldNotCreateBatchException(jobInfoId, dsSel.getId(),
+                    processDatasetDescription.getProcessBusinessId(), batchResponse);
         }
 
         return batchResponse.getBody();
@@ -213,7 +226,8 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         for (JobParameter param : parameters.values()) {
             if (ProcessInputsPerFeatureJobParameter.isCompatible(param)) {
                 processInputDataFiles = param.getValue();
@@ -229,7 +243,8 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             } else if (ProcessDTOJobParameter.isCompatible(param)) {
                 processDesc = param.getValue();
                 processInfo = new OrderProcessInfoMapper().fromMap(processDesc.getProcessInfo())
-                        .getOrElseThrow(() -> new JobParameterInvalidException("Cannot find processInfo from processDesc"));
+                        .getOrElseThrow(() -> new JobParameterInvalidException(
+                                "Cannot find processInfo from processDesc"));
             } else if (ProcessBatchCorrelationIdJobParameter.isCompatible(param)) {
                 batchCorrelationId = BatchSuborderCorrelationIdentifier.parse(param.getValue())
                         .getOrElseThrow(() -> new JobParameterInvalidException("Cannot parse batchCorrelationId"));
@@ -256,14 +271,17 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     private void checkMissing(ArrayList<String> missingParams, Object field, String name) {
-        if (field == null) { missingParams.add(name); }
+        if (field == null) {
+            missingParams.add(name);
+        }
     }
 
     public static class CouldNotCreateBatchException extends RuntimeException {
-        public CouldNotCreateBatchException(UUID jobInfoId, Long dsSelId, UUID processBusinessId, ResponseEntity<PBatchResponse> batchResponse) {
-            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s",
-                    jobInfoId, dsSelId, batchResponse.getStatusCode())
-            );
+
+        public CouldNotCreateBatchException(UUID jobInfoId, Long dsSelId, UUID processBusinessId,
+                ResponseEntity<PBatchResponse> batchResponse) {
+            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s", jobInfoId, dsSelId,
+                                batchResponse.getStatusCode()));
         }
     }
 }

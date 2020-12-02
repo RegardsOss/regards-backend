@@ -16,26 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.cnes.regards.modules.order.service.processing;
+
+import org.springframework.context.ApplicationEvent;
 
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import io.vavr.collection.List;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * Used by tests to be notified that an execution result has been received and dealt with properly.
+ *
+ * @author Guillaume  Andrieu
  */
+@SuppressWarnings("serial")
 public class ExecResultHandlerResultEvent extends ApplicationEvent {
 
     private final PExecutionResultEvent resultEvent;
+
     private final List<OrderDataFile> updatedOrderDataFiles;
 
-    public ExecResultHandlerResultEvent(
-        PExecutionResultEvent resultEvent,
-        List<OrderDataFile> updatedOrderDataFiles
-    ) {
+    public ExecResultHandlerResultEvent(PExecutionResultEvent resultEvent, List<OrderDataFile> updatedOrderDataFiles) {
         super(new Object());
         this.resultEvent = resultEvent;
         this.updatedOrderDataFiles = updatedOrderDataFiles;
@@ -44,11 +45,13 @@ public class ExecResultHandlerResultEvent extends ApplicationEvent {
     public PExecutionResultEvent getResultEvent() {
         return resultEvent;
     }
+
     public List<OrderDataFile> getUpdatedOrderDataFiles() {
         return updatedOrderDataFiles;
     }
 
-    public static ExecResultHandlerResultEvent event(PExecutionResultEvent resultEvent, java.util.Collection<OrderDataFile> updatedOrderDataFiles) {
+    public static ExecResultHandlerResultEvent event(PExecutionResultEvent resultEvent,
+            java.util.Collection<OrderDataFile> updatedOrderDataFiles) {
         return new ExecResultHandlerResultEvent(resultEvent, List.ofAll(updatedOrderDataFiles));
     }
 }

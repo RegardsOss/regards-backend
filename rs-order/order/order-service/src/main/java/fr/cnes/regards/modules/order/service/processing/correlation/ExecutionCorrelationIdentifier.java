@@ -16,13 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.cnes.regards.modules.order.service.processing.correlation;
 
 import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+/**
+ * TODO : Class description
+ *
+ * @author Guillaume Andrieu
+ *
+ */
 @Value @AllArgsConstructor
 public class ExecutionCorrelationIdentifier {
 
