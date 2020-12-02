@@ -43,7 +43,7 @@ public class ProcessingRestConfiguration {
 
     @PostConstruct
     public void init() {
-
+        // nothing to do
     }
 
 }

@@ -268,8 +268,7 @@ public class AbstractProcessingTest {
     }
 
     private static boolean checkSocketHostPortAvailability(String host, int port) {
-        try {
-            Socket socket = new Socket();
+        try(Socket socket = new Socket()) {
             socket.setReuseAddress(true);
             SocketAddress socketAddress = new InetSocketAddress(host, port);
             try {

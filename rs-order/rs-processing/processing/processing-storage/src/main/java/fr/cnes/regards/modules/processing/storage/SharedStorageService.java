@@ -156,8 +156,10 @@ public class SharedStorageService implements ISharedStorageService {
     private OffsetDateTime creationTime(Path storedFilePath) {
         try {
             return fromEpochMillisUTC(storedFilePath.toFile().lastModified());
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // Really not grave if we don't have the actual date...
+            // Sonar reviewer: YES BUT SONAR COMPLAINS THAT THERE IS NO LOG, DAMMIT!
+            LOGGER.debug("Could not get the actual date", e);
             return nowUtc();
         }
     }

@@ -17,8 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.demo.process;
 
-import static fr.cnes.regards.modules.processing.demo.DemoConstants.FORCE_FAILURE;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.processing.demo.engine.event.StartWithProfileEvent;
 import fr.cnes.regards.modules.processing.demo.engine.event.StepEvent;
@@ -26,6 +24,10 @@ import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static fr.cnes.regards.modules.processing.demo.DemoConstants.FORCE_FAILURE;
 
 /**
  * TODO : Class description
@@ -34,6 +36,8 @@ import io.vavr.collection.List;
  *
  */
 public class DemoSimulatedAsyncProcess {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DemoSimulatedAsyncProcess.class);
 
     private final IPublisher publisher;
 
@@ -60,7 +64,7 @@ public class DemoSimulatedAsyncProcess {
                             PStep.success("success for profile " + profile + "..."), List.empty())));
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("Something unexpected happened during the simulation.", e);
             }
         }).start();
     }

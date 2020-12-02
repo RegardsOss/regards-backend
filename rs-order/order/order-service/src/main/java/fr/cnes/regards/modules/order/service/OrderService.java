@@ -791,16 +791,7 @@ public class OrderService implements IOrderService {
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
-                    try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                                   noProxyHosts, timeout)) {
-                        readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
-                    } catch (IOException e) {
-                        String stack = getStack(e);
-                        LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
-                        dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
-                        downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
-                        i.remove();
-                    }
+                    downloadDataFileToZip(downloadErrorFiles, externalDlErrorPrefix, zos, dataFiles, i, dataFile, timeout, dataObjectIpId);
                 } else { // Managed by Storage
                     String aip = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
@@ -862,6 +853,19 @@ public class OrderService implements IOrderService {
         orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
     }
 
+    protected void downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles, String externalDlErrorPrefix, ZipArchiveOutputStream zos, Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, int timeout, String dataObjectIpId) {
+        try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
+                                                                       noProxyHosts, timeout)) {
+            readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
+        } catch (IOException e) {
+            String stack = getStack(e);
+            LOGGER.error(String.format("%s (url : %s)", externalDlErrorPrefix, dataFile.getUrl()), e);
+            dataFile.setDownloadError(String.format("%s\n%s", externalDlErrorPrefix, stack));
+            downloadErrorFiles.add(Pair.of(dataFile, "I/O error during external download"));
+            i.remove();
+        }
+    }
+
     private String humanizeError(Optional<Response> response) {
         return response.map(r -> {
             Response.Body body = r.body();
@@ -874,7 +878,8 @@ public class OrderService implements IOrderService {
 
                     try (InputStream is = body.asInputStream()) {
                         return IOUtils.toString(is, StandardCharsets.UTF_8);
-                    } catch (IOException | NullPointerException e) {
+                    } catch (IOException e) {
+                        LOGGER.debug("I/O error ready response body", e);
                         return "Download failed due to exceeded quota";
                     }
                 default:

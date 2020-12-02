@@ -17,14 +17,13 @@
 */
 package fr.cnes.regards.modules.processing.domain.engine;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import io.vavr.control.Option;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * TODO : Class description
@@ -35,7 +34,7 @@ import reactor.core.publisher.Mono;
 @Component
 public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
 
-    private final Map<String, IWorkloadEngine> enginesByName = new HashMap<>();
+    private final Map<String, IWorkloadEngine> enginesByName = new ConcurrentHashMap<>();
 
     @Override
     public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {

@@ -51,10 +51,10 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private long filesCount = 0;
+    private final long filesCount = 0;
 
     @Column(name = "files_size")
-    private long filesSize = 0;
+    private final long filesSize = 0;
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb", name = "file_types_sizes")

@@ -25,6 +25,8 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TODO : Class description
@@ -34,6 +36,8 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
  */
 @AutoService(TypedRandomizer.class)
 public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutputFile.Digest> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(POutputFileDigestTypedRandomizer.class);
 
     @Override
     public Class<POutputFile.Digest> type() {
@@ -49,6 +53,7 @@ public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutput
         try {
             return ByteSource.wrap(generator.nextObject(String.class).getBytes()).hash(Hashing.sha256()).toString();
         } catch (Exception e) {
+            LOGGER.debug("Unexpected error while creating digest", e);
             return "wups";
         }
     }

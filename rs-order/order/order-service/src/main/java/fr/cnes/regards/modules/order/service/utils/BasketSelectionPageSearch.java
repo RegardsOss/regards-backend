@@ -72,7 +72,8 @@ public class BasketSelectionPageSearch {
 
             @Override
             public List<EntityFeature> next() {
-                List<EntityFeature> entityFeatures = searchDataObjects(dsSel, ++page);
+                ++page;
+                List<EntityFeature> entityFeatures = searchDataObjects(dsSel, page);
                 lastSearchYieldedEmpty = entityFeatures.isEmpty();
                 return entityFeatures;
             }

@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.processing.service;
 
 import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,6 +43,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class RoleCheckerService implements IRoleCheckerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoleCheckerService.class);
+
     private final IRolesClient rolesClient;
 
     @Autowired
@@ -58,7 +63,8 @@ public class RoleCheckerService implements IRoleCheckerService {
                 } else {
                     return Mono.error(new RoleCanNotBeCheckedException());
                 }
-            } catch (Exception e) {
+            } catch (EntityNotFoundException|RuntimeException e) {
+                LOGGER.debug("Unable check access role", e);
                 return Mono.error(e);
             }
         });

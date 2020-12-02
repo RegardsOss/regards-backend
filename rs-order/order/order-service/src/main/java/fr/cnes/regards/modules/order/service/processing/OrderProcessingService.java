@@ -72,6 +72,8 @@ import java.util.stream.Stream;
 @Service
 public class OrderProcessingService implements IOrderProcessingService {
 
+    private static final String OCTET_STREAM = "application/octet-stream";
+
     protected final OrderProcessInfoMapper processInfoMapper = new OrderProcessInfoMapper();
 
     protected final BasketSelectionPageSearch basketSelectionPageSearch;
@@ -250,7 +252,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                     DataType.OTHER,
                     batchSuborderIdentifier.repr(),
                     ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier),
-                    MimeType.valueOf("application/octet-stream"),
+                    MimeType.valueOf(OCTET_STREAM),
                     true,
                     true
             );
@@ -264,7 +266,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                             DataType.OTHER,
                             feature.getId().toString(),
                             ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, feature),
-                            MimeType.valueOf("application/octet-stream"),
+                            MimeType.valueOf(OCTET_STREAM),
                             true,
                             true
                     );
@@ -276,7 +278,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                         DataType.OTHER,
                                         dataFile.getFilename(),
                                         ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, feature, dataFile),
-                                        MimeType.valueOf("application/octet-stream"),
+                                        MimeType.valueOf(OCTET_STREAM),
                                         true,
                                         true
                                 );

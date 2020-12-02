@@ -18,21 +18,9 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -43,13 +31,16 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
-import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessJobInfoJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import io.vavr.control.Option;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.Semaphore;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Job  to ensure with storage microservice that order files are availables to download.
@@ -110,9 +101,15 @@ public class StorageFilesJob extends AbstractJob<Void> {
                     "Four or five parameters are expected : 'files', 'expirationDate', 'user' and 'userRole', and optionally 'processJobInfo'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !SubOrderAvailabilityPeriodJobParameter.isCompatible(param)
-                    && !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)
-                    && !ProcessJobInfoJobParameter.isCompatible(param)) {
+            boolean paramIsIncompatible =
+                Stream.<Function<JobParameter, Boolean>>of(
+                    FilesJobParameter::isCompatible,
+                    SubOrderAvailabilityPeriodJobParameter::isCompatible,
+                    UserJobParameter::isCompatible,
+                    UserRoleJobParameter::isCompatible,
+                    ProcessJobInfoJobParameter::isCompatible
+                ).noneMatch(f -> f.apply(param));
+            if (paramIsIncompatible) {
                 throw new JobParameterInvalidException(
                         "Please use ProcessJobInfoJobParameter, FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
                                 + "UserRoleJobParameter in place of JobParameter (these "
