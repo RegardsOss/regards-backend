@@ -21,6 +21,11 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 
+/**
+ * This class is for process exception occurring in the context of an execution.
+ *
+ * @author gandrieu
+ */
 public class ProcessingExecutionException extends ProcessingException {
 
     protected final PExecution exec;

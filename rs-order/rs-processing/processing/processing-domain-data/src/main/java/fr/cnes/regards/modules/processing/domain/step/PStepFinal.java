@@ -24,6 +24,13 @@ import java.time.OffsetDateTime;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.toUtc;
 
+
+/**
+ * This class defines final steps. It must be instanciated only with a final {@link ExecutionStatus},
+ * which can not be enforced by the type checker so is left to be checked in the constructor.
+ *
+ * @author gandrieu
+ */
 public class PStepFinal extends PStep {
     public PStepFinal(ExecutionStatus status, OffsetDateTime time, String message) {
         super(status, toUtc(time), message);

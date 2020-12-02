@@ -93,6 +93,11 @@ import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
+/**
+ * Base test configuration in reactive context.
+ *
+ * @author gandrieu
+ */
 @Configuration
 @EnableAutoConfiguration(exclude = {
         R2dbcMigrateAutoConfiguration.class,

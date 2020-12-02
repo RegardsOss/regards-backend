@@ -23,7 +23,8 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 
 /**
- * TODO : Class description
+ * This interface defines signatures for the companion of IOrderService dealing with
+ * dataset selections having processing.
  *
  * @author Guillaume Andrieu
  *

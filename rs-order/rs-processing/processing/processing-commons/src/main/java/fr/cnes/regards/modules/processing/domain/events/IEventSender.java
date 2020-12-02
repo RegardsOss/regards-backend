@@ -20,6 +20,13 @@ package fr.cnes.regards.modules.processing.domain.events;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import reactor.core.publisher.Mono;
 
+/**
+ * Interface defining the signature to send an event in te context of a tenant, giving back a Mono of the event.
+ *
+ * @param <M> the message type
+ *
+ * @author gandrieu
+ */
 public interface IEventSender<M extends ISubscribable> {
 
     Mono<M> send(String tenant, M message);

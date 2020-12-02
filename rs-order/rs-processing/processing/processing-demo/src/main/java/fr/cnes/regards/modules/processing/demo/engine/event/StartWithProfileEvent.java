@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.demo.engine.event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import io.vavr.collection.List;
 
+/**
+ * This class is a demo event when starting with a profile
+ * (PROFILE is the parameter of the {@link fr.cnes.regards.modules.processing.demo.process.DemoProcess}).
+ *
+ * @author gandrieu
+ */
 @lombok.Value
 public class StartWithProfileEvent implements ISubscribable {
     String profile;

@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.processing.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * This class reads http proxy configuration.
+ *
+ * @author gandrieu
+ */
 @Configuration
 public class HttpProxyProperties {
 

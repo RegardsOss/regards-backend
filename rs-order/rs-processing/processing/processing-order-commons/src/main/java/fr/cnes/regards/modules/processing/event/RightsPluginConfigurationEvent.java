@@ -23,6 +23,11 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 
+/**
+ * This class defines an event to be sent to rs-order when a RightsPluginConfiguration is modified.
+ *
+ * @author gandrieu
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @lombok.Value
 public class RightsPluginConfigurationEvent implements ISubscribable {

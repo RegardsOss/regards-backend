@@ -33,6 +33,11 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class implements is a bridge between batch domain entities and database entities.
+ *
+ * @author gandrieu
+ */
 @Component
 public class PBatchRepositoryImpl implements IPBatchRepository {
 

@@ -34,6 +34,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+/**
+ * This class is the implementation for the {@link IBatchService} interface.
+ *
+ * @author gandrieu
+ */
 @Service
 public class BatchServiceImpl implements IBatchService {
 
@@ -64,7 +69,6 @@ public class BatchServiceImpl implements IBatchService {
             data.getCorrelationId(),
             UUID.randomUUID(),
             process.getProcessId(),
-            process.getProcessName(),
             data.getTenant(),
             data.getUser(),
             data.getUserRole(),

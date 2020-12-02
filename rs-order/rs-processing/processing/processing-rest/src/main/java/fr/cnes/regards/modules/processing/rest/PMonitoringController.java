@@ -17,7 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -29,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -38,13 +36,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -53,7 +49,11 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITO
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
 import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_PAGE;
 import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SIZE;
-
+/**
+ * This class defines REST endpoints to deal with monitoring in servlet application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
 @RequestMapping(path = MONITORING_EXECUTIONS_PATH)

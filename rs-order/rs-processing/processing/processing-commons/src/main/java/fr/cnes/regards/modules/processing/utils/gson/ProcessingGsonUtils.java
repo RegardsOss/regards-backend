@@ -37,6 +37,11 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ServiceLoader;
 
+/**
+ * Gson builder with type adapters.
+ *
+ * @author gandrieu
+ */
 public class ProcessingGsonUtils {
 
     public static Gson gsonPretty() {

@@ -28,6 +28,11 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * This class defines an event sent by the client to start an execution.
+ *
+ * @author gandrieu
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value @With
 public class PExecutionRequestEvent implements ISubscribable {

@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEvent;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -34,13 +35,17 @@ import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDT
 import fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import org.springframework.stereotype.Component;
 
 /**
- * TODO : Class description
+ * This class deals with events sent by rs-processing when the rights of usage on a process
+ * have changed. This allows to clean up datasets selections which use a process that
+ * would not be usable anymore on the dataset.
  *
  * @author Guillaume Andrieu
  *
  */
+@Component
 public class RightsPluginConfigurationEventHandler implements IRightsPluginConfigurationEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RightsPluginConfigurationEventHandler.class);
@@ -60,7 +65,7 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
     }
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(RightsPluginConfigurationEvent.class, this);
     }
 

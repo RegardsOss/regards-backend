@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.domain.execution;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 
+/**
+ * This enum lists all the possible execution statuses, and for each one, their possible following steps,
+ * making it a definition of a state machine.
+ *
+ * @author gandrieu
+ */
 public enum ExecutionStatus {
 
     /** Final state, ended correctly */

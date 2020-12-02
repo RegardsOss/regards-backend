@@ -37,6 +37,8 @@ import java.util.UUID;
  *
  * It allows to determine that a given process is usable by a given user role,
  * and for a given list of datasets.
+ *
+ * @author gandrieu
  */
 @Data @NoArgsConstructor @AllArgsConstructor
 @TypeDef(

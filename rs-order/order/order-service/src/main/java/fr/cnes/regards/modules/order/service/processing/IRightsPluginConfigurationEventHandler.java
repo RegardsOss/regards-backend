@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 
@@ -25,11 +26,12 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent;
 
 /**
- * TODO : Class description
+ * This interface defines signatures to deal with events sent by rs-processing when the rights of usage on a process
+ * have changed.
  *
  * @author Guillaume Andrieu
  *
  */
 public interface IRightsPluginConfigurationEventHandler
-        extends ApplicationListener<ApplicationEvent>, IHandler<RightsPluginConfigurationEvent> {
+        extends ApplicationListener<ApplicationReadyEvent>, IHandler<RightsPluginConfigurationEvent> {
 }

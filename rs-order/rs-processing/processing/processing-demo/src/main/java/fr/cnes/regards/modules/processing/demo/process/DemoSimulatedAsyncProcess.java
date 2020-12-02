@@ -27,6 +27,11 @@ import io.vavr.collection.List;
 
 import static fr.cnes.regards.modules.processing.demo.DemoConstants.FORCE_FAILURE;
 
+/**
+ * This class is the demo async launch of a process.
+ *
+ * @author gandrieu
+ */
 public class DemoSimulatedAsyncProcess {
 
     private final IPublisher publisher;

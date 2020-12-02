@@ -185,7 +185,6 @@ public class SimpleShellProcessPluginTest {
             "tenant",
             "user@ema.il",
             processBusinessId,
-            "processName",
             OffsetDateTime.now().minusMinutes(2),
             OffsetDateTime.now().minusMinutes(1),
             0,
@@ -198,7 +197,6 @@ public class SimpleShellProcessPluginTest {
             "corr",
             batchId,
             process.getProcessId(),
-            process.getProcessName(),
             "tenant", "user", "role",
             List.of(
                 new ExecutionStringParameterValue("SIMPLE_FOO", "foo"),

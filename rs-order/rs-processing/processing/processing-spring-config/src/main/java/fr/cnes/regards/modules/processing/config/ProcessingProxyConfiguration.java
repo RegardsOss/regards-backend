@@ -28,6 +28,11 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.stream.Stream;
 
+/**
+ * This class is the configuration for proxy.
+ *
+ * @author gandrieu
+ */
 @Configuration
 public class ProcessingProxyConfiguration {
 

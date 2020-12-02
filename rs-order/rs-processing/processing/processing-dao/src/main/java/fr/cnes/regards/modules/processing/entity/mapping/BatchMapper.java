@@ -25,6 +25,11 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class define a mapper between domain and database entities for Batch
+ *
+ * @author gandrieu
+ */
 @Component
 public class BatchMapper implements DomainEntityMapper.Batch {
 
@@ -37,7 +42,6 @@ public class BatchMapper implements DomainEntityMapper.Batch {
                 batch.getTenant(),
                 batch.getUser(),
                 batch.getUserRole(),
-                batch.getProcessName(),
                 new ParamValues(batch.getUserSuppliedParameters().toJavaList()),
                 new FileStatsByDataset(batch.getFilesetsByDataset().toJavaMap()),
                 batch.isPersisted()
@@ -50,7 +54,6 @@ public class BatchMapper implements DomainEntityMapper.Batch {
                 entity.getCorrelationId(),
                 entity.getId(),
                 entity.getProcessBusinessId(),
-                entity.getProcessName(),
                 entity.getTenant(),
                 entity.getUserEmail(),
                 entity.getUserRole(),

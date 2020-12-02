@@ -21,10 +21,10 @@ package fr.cnes.regards.modules.order.service.job.parameters;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
- * TODO : Class description
+ * This class is a Job Parameter used by {@link fr.cnes.regards.modules.order.service.job.ProcessExecutionJob},
+ * referring to {@link fr.cnes.regards.modules.order.domain.OrderDataFile} ids.
  *
  * @author Guillaume Andrieu
- *
  */
 public class ProcessOutputFilesJobParameter extends JobParameter {
 

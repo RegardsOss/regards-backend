@@ -28,6 +28,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This interface defines operations on OutputFileEntities in the database.
+ *
+ * @author gandrieu
+ */
 @InstanceEntity
 @Repository
 public interface IOutputFileEntityRepository extends ReactiveCrudRepository<OutputFileEntity, UUID> {

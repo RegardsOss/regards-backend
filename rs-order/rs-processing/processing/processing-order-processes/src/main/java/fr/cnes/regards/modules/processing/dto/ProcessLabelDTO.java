@@ -24,6 +24,11 @@ import lombok.Value;
 
 import java.util.UUID;
 
+/**
+ * This class is a DTO to be used during exchange with the client.
+ *
+ * @author gandrieu
+ */
 @Value
 @AllArgsConstructor(onConstructor_={@JsonCreator})
 public class ProcessLabelDTO {

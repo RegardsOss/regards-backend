@@ -41,6 +41,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * This class is a bridge between execution domain entities and database entities.
+ *
+ * @author gandrieu
+ */
 @Component
 public class PExecutionRepositoryImpl implements IPExecutionRepository {
 

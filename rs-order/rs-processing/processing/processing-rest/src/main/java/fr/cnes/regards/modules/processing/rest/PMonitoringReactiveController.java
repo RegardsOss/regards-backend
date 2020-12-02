@@ -43,7 +43,11 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITO
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.*;
 import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_PAGE;
 import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SIZE;
-
+/**
+ * This class defines REST endpoints to deal with monitoring in reactive application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @RequestMapping(path = MONITORING_EXECUTIONS_PATH)

@@ -17,8 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.utils.random;
 
-import fr.cnes.regards.modules.processing.utils.random.TypedRandomizer;
-import fr.cnes.regards.modules.processing.utils.random.VavrWrappersRegistry;
 import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
 import io.vavr.collection.List;
 import org.jeasy.random.EasyRandom;
@@ -30,6 +28,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ServiceLoader;
 
+/**
+ * This class provides utilities to deal with random instances of classes.
+ *
+ * @author gandrieu
+ */
 public interface RandomUtils {
 
     EasyRandom RANDOM = easyRandom();

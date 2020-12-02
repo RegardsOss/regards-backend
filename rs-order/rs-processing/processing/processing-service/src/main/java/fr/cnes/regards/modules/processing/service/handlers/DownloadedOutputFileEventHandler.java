@@ -28,6 +28,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class defines the event handler used for downloaded output files.
+ *
+ * @author gandrieu
+ */
 @Component
 public class DownloadedOutputFileEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<DownloadedOutputFilesEvent> {

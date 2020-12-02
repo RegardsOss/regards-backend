@@ -29,6 +29,11 @@ import reactor.core.publisher.Flux;
 import java.net.URL;
 import java.util.UUID;
 
+/**
+ * This class implements is a bridge between batch domain entities and database entities.
+ *
+ * @author gandrieu
+ */
 @Component
 public class POutputFileRepositoryImpl implements IPOutputFilesRepository {
 

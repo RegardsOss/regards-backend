@@ -26,6 +26,12 @@ import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import fr.cnes.regards.modules.processing.entity.StepEntity;
 
+/**
+ * This interface defines generic mapper signatures
+ *
+ * @author gandrieu
+ */
+
 public interface DomainEntityMapper<D, E> {
 
     E toEntity(D domain);

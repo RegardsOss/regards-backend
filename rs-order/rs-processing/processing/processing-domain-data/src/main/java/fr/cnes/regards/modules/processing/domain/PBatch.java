@@ -26,17 +26,31 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * This class defines a batch of executions for a process.
+ *
+ * A batch is a logical group of executions, all belonging to the same "group",
+ * whatever that means in context of the client. Once a batch is created though,
+ * there is no limit on how many executions can be created within this batch.
+ * A batch may perfectly have only one execution.
+ *
+ * A batch is given the parameter values to use for the process' parameters.
+ *
+ * A batch is immutable.
+ *
+ * @author gandrieu
+ */
 @Value @With
-
 public class PBatch {
 
+    /** The batch correlation ID, provided by the client and given back on each execution result. */
     String correlationId;
 
+    /** The batch ID. */
     UUID id;
 
+    /** The process ID. */
     UUID processBusinessId;
-
-    String processName;
 
     String tenant;
 
@@ -48,6 +62,9 @@ public class PBatch {
 
     Map<String, FileSetStatistics> filesetsByDataset;
 
+    /** This information leaks from the database but needs to be kept in the domain.
+     * It allows the database layer to know if it must CREATE or UPDATE the database
+     * for this instance. */
     transient boolean persisted;
 
     public PBatch asNew() { return this.withId(UUID.randomUUID()).withPersisted(false); }

@@ -23,6 +23,16 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 
+
+/**
+ * This interface defines an engine: something that takes a context and returns a running execution.
+ *
+ * The engine may perform the execution's executable asynchronously, saving some state about
+ * the execution, etc., but ultimately it is responsible for launching the process's
+ * executable for the given context.
+ *
+ * @author gandrieu
+ */
 public interface IWorkloadEngine {
 
     String name();

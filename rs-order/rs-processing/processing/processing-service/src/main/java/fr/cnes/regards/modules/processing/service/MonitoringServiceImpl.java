@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.processing.service;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
+import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,11 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * This class is the implementation for the {@link IMonitoringService} interface.
+ *
+ * @author gandrieu
+ */
 @Service
 public class MonitoringServiceImpl implements IMonitoringService {
 

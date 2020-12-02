@@ -26,6 +26,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+/**
+ * This class is the auth manager config for reactive application.
+ *
+ * @author gandrieu
+ */
 @Component
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 

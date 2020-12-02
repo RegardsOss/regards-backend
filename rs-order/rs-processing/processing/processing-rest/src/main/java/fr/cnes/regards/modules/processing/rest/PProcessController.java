@@ -36,7 +36,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
-
+/**
+ * This class defines REST endpoints to deal with processes in servlet application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
 @RequestMapping(path = PROCESS_PATH)

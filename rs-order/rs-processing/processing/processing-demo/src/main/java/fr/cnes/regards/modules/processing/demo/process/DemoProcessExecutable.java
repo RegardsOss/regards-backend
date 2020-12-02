@@ -24,6 +24,11 @@ import reactor.core.publisher.Mono;
 
 import static fr.cnes.regards.modules.processing.demo.DemoConstants.*;
 
+/**
+ * This class is the demo executable.
+ *
+ * @author gandrieu
+ */
 public class DemoProcessExecutable implements IExecutable {
 
     private final DemoSimulatedAsyncProcessFactory asyncProcessFactory;

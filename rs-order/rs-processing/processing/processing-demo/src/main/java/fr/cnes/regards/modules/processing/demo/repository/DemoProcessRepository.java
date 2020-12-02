@@ -31,6 +31,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+/**
+ * This class is the demo process repository.
+ *
+ * @author gandrieu
+ */
 @Component
 public class DemoProcessRepository implements IPProcessRepository {
 

@@ -22,9 +22,14 @@ import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
 import java.net.URL;
-import java.util.Optional;
 import java.util.UUID;
 
+
+/**
+ * This interface defines a repository contract for {@link POutputFile} entities.
+ *
+ * @author gandrieu
+ */
 public interface IPOutputFilesRepository {
 
     Flux<POutputFile> save(Flux<POutputFile> files);

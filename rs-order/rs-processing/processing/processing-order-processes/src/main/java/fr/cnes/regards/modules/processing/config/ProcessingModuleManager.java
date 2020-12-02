@@ -33,6 +33,11 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * This class is the module manager for the processing module when used in REGARDS in conjunction with rs-order.
+ *
+ * @author gandrieu
+ */
 @Component
 public class ProcessingModuleManager extends AbstractModuleManager<Void> {
 

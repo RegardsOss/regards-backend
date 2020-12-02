@@ -55,6 +55,11 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.fromEpochMillis
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 import static java.nio.file.Files.*;
 
+/**
+ * This class is the implementation for {@link ISharedStorageService}.
+ *
+ * @author gandrieu
+ */
 @Service
 public class SharedStorageService implements ISharedStorageService {
 

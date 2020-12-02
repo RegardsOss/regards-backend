@@ -24,12 +24,17 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import reactor.core.publisher.Mono;
 
+/**
+ * This interface defines how to check for constraints attached to a process.
+ *
+ * @author gandrieu
+ */
 public interface ConstraintChecker<T> {
 
     Mono<Seq<Violation>> validate(T value);
 
     default ConstraintChecker<T> and(ConstraintChecker<T> other) {
-        return t -> validate(t).flatMap(vs -> other.validate(t).map(os -> vs.appendAll(os)));
+        return t -> validate(t).flatMap(vs -> other.validate(t).map(vs::appendAll));
     }
 
 
@@ -40,7 +45,7 @@ public interface ConstraintChecker<T> {
     }
 
     static <T> Mono<Seq<T>> fromValue(Value<T> v) {
-        return v.map(x -> Mono.<Seq<T>>just(List.of(x))).getOrElse(() -> Mono.empty());
+        return v.map(x -> Mono.<Seq<T>>just(List.of(x))).getOrElse(Mono::empty);
     }
 
     static <T> ConstraintChecker<T> noViolation() {

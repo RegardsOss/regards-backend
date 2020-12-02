@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.processing;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
 
+/**
+ * Various constants (paths, parameter names, etc.) used in different modules.
+ *
+ * @author gandrieu
+ */
 public interface ProcessingConstants {
 
     interface Path {

@@ -17,6 +17,13 @@
 */
 package fr.cnes.regards.modules.processing.domain.constraints;
 
+
+/**
+ * This interface defines the operations needed for a violation of constraints
+ * in te context of a {@link ConstraintChecker} given by a process.
+ *
+ * @author gandrieu
+ */
 public interface Violation {
 
     String getMessage();

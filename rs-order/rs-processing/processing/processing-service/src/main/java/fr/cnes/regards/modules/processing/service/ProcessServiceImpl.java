@@ -19,11 +19,16 @@ package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-
+/**
+ * This class is the implementation for the {@link IProcessService} interface.
+ *
+ * @author gandrieu
+ */
 @Service
 public class ProcessServiceImpl implements IProcessService {
 

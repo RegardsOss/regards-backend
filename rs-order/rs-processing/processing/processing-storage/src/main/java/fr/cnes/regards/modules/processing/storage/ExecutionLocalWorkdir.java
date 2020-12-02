@@ -21,6 +21,11 @@ import lombok.Value;
 
 import java.nio.file.Path;
 
+/**
+ * This class defines a local working directory, with "input" and "output" subfolders.
+ *
+ * @author gandrieu
+ */
 @Value
 public class ExecutionLocalWorkdir {
 

@@ -17,6 +17,11 @@
 */
 package fr.cnes.regards.modules.processing.demo;
 
+/**
+ * This interface is the demo constants.
+ *
+ * @author gandrieu
+ */
 public interface DemoConstants {
 
     String PROFILE = "profile";

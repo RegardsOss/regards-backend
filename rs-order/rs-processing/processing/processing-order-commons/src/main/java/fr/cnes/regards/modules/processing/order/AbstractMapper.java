@@ -24,6 +24,13 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 
+/**
+ * This class provides abstract mapping capabilities between {@code Map<String,String>} and the generic type parameter.
+ *
+ * @param <T> the generic type parameter converted to/from a map
+ *
+ * @author gandrieu
+ */
 public abstract class AbstractMapper<T> {
 
     public abstract Map<String, String> toMap(T data);

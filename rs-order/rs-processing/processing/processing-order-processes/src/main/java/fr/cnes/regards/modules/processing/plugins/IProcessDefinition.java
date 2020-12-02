@@ -22,6 +22,12 @@ import fr.cnes.regards.framework.urn.DataType;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 
+/**
+ * This interface is an aggregation of interfaces defining processes in the context of rs-order, to be mapped
+ * onto the {@link fr.cnes.regards.modules.processing.domain.PProcess} interface.
+ *
+ * @author gandrieu
+ */
 @PluginInterface(description = "Defines the quotas, rights, parameters and launching properties for a Process")
 public interface IProcessDefinition extends IProcessCheckerDefinition,
     IProcessParametersDefinition,

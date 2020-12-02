@@ -32,6 +32,13 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static io.vavr.Predicates.not;
 
+/**
+ * This class is a parser for forecasts.
+ *
+ * See {@link #SIZE_DESCRIPTION} and {@link #DURATION_DESCRIPTION} for details.
+ *
+ * @author gandrieu
+ */
 public class ForecastParser implements IResultSizeForecast.Parser, IRunningDurationForecast.Parser {
 
     public static final ForecastParser INSTANCE = new ForecastParser();

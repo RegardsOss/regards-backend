@@ -31,6 +31,15 @@ import org.springframework.web.bind.annotation.*;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 
+/**
+ * Rest client to access the process endpoints allowing to
+ * - search processes,
+ * - get process info,
+ * - create batches,
+ * - monitor executions.
+ *
+ * @author gandrieu
+ */
 @RestClient(name = "rs-processing", contextId = "rs-processing.rest.client")
 @RequestMapping(
         produces = MediaType.APPLICATION_JSON_VALUE,

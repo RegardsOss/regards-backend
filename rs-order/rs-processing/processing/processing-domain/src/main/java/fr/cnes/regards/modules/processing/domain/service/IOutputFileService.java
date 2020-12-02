@@ -22,8 +22,12 @@ import io.vavr.collection.List;
 import reactor.core.publisher.Flux;
 
 import java.net.URL;
-import java.util.UUID;
 
+/**
+ * This interface defines a service contract for {@link POutputFile} entities.
+ *
+ * @author gandrieu
+ */
 public interface IOutputFileService {
 
     Flux<POutputFile> markDownloaded(List<URL> urls);

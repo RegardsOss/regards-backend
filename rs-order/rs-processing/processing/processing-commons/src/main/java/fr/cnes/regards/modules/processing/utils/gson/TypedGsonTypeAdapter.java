@@ -26,6 +26,8 @@ import com.google.gson.JsonSerializer;
  * by ProcessingGsonUtils.
  *
  * @param <T> the generic type
+ *
+ * @author gandrieu
  */
 public interface TypedGsonTypeAdapter<T> {
 

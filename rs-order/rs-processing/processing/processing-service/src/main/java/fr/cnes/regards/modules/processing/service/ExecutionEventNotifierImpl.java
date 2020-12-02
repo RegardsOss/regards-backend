@@ -19,16 +19,15 @@ package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
-import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.dto.POutputFileDTO;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
-import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
-import fr.cnes.regards.modules.processing.domain.dto.POutputFileDTO;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
+import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
+import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
-import fr.cnes.regards.modules.processing.domain.handlers.IExecutionResultEventSender;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
@@ -44,7 +43,11 @@ import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExec
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_EXECUTION_STEP_ERROR;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.PERSIST_OUTPUT_FILES_ERROR;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
-
+/**
+ * This class is the implementation for the {@link IExecutionEventNotifier} interface.
+ *
+ * @author gandrieu
+ */
 public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionEventNotifierImpl.class);

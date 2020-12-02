@@ -36,6 +36,11 @@ import fr.cnes.regards.modules.processing.domain.dto.PBatchResponse;
 import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 
+/**
+ * This class defines REST endpoints to deal with batches in servlet application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
 @RequestMapping(path = BATCH_PATH)

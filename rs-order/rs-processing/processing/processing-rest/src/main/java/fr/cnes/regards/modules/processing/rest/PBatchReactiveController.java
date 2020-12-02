@@ -33,6 +33,11 @@ import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import reactor.core.publisher.Mono;
 
+/**
+ * This class defines REST endpoints to deal with batches in reactive application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @RequestMapping(path = BATCH_PATH)

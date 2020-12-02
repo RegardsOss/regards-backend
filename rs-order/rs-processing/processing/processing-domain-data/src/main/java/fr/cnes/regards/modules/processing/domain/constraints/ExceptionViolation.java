@@ -19,6 +19,12 @@ package fr.cnes.regards.modules.processing.domain.constraints;
 
 import lombok.Value;
 
+
+/**
+ * This class defines an exception as a violation in the context of constraint checking.
+ *
+ * @author gandrieu
+ */
 @Value
 public class ExceptionViolation extends Exception implements Violation {
 

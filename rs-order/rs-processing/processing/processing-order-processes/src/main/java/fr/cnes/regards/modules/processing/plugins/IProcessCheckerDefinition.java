@@ -21,6 +21,11 @@ import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 
+/**
+ * This interface defines checkers for {@link IProcessDefinition}.
+ *
+ * @author gandrieu
+ */
 public interface IProcessCheckerDefinition {
 
     default ConstraintChecker<PBatch> batchChecker() {

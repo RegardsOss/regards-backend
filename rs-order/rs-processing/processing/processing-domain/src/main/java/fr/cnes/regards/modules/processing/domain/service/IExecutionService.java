@@ -24,6 +24,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+/**
+ * This interface defines a service contract for {@link PExecution} entities.
+ *
+ * @author gandrieu
+ */
 public interface IExecutionService {
 
     Mono<PExecution> launchExecution(PExecutionRequestEvent request);
@@ -34,7 +39,8 @@ public interface IExecutionService {
 
     default Mono<PExecution> runExecutable(UUID execId) {
         return createContext(execId)
-                .flatMap(ctx -> ctx.getProcess().getEngine().run(ctx));
+                .flatMap(ctx -> ctx.getProcess().getExecutable().execute(ctx))
+                .map(ExecutionContext::getExec);
     }
 
 }

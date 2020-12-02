@@ -24,7 +24,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
-
+/**
+ * This class is the HttpMessageCodecs config for reactive application.
+ * @author gandrieu
+ */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 public class ProcessingServerJsonConfiguration implements WebFluxConfigurer {

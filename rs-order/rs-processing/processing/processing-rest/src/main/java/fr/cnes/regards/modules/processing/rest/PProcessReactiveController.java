@@ -37,7 +37,11 @@ import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
+/**
+ * This class defines REST endpoints to deal with processes in reactive application.
+ *
+ * @author gandrieu
+ */
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @RequestMapping(path = PROCESS_PATH)

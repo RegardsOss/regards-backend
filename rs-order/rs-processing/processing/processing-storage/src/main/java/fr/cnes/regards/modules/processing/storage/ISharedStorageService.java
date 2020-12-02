@@ -26,6 +26,8 @@ import reactor.core.publisher.Mono;
 /**
  * This service allows to share execution results by moving them to a shared
  * folder, accessible from the caller.
+ *
+ * @author gandrieu
  */
 public interface ISharedStorageService {
 

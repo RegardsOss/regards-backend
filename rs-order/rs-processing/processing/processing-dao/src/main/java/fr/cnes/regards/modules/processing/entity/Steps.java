@@ -22,6 +22,13 @@ import lombok.Value;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * This class is a database wrapper around a list of steps.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
+ *
+ * @author gandrieu
+ */
 @Value
 
 public class Steps {

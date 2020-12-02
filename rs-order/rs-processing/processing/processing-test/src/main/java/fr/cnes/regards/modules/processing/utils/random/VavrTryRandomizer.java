@@ -21,6 +21,11 @@ import io.vavr.control.Try;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.AbstractRandomizer;
 
+/**
+ * This class provides random generation for vavr Try.
+ *
+ * @author gandrieu
+ */
 public class VavrTryRandomizer<T> extends AbstractRandomizer<Try<T>> {
 
     private Randomizer<Boolean> booleanRandomizer;

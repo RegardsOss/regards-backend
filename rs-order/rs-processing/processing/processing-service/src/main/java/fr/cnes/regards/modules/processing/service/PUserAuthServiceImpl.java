@@ -23,10 +23,15 @@ import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
+import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
-
+/**
+ * This class is the implementation for the {@link IPUserAuthService} interface.
+ *
+ * @author gandrieu
+ */
 @Component
 public class PUserAuthServiceImpl implements IPUserAuthService {
 

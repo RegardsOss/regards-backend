@@ -65,7 +65,6 @@ public class PExecutionTest extends AbstractMarshallingTest<PExecution> {
                 "tenant",
                 "user@regards.fr",
                 UUID.randomUUID(),
-                "nameOfTheProcess",
                 registered,
                 lastUpdate,
                 3,

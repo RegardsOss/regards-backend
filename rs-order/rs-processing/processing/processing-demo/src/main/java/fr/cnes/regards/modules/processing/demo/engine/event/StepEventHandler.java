@@ -29,6 +29,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * This class is a demo event handler.
+ *
+ * @author gandrieu
+ */
 @Component
 public class StepEventHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<StepEvent> {
 

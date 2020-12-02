@@ -24,6 +24,16 @@ import reactor.core.publisher.Mono;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * This interface defines an executable which is a function taking a context
+ * and returning an updated context.
+ *
+ * Executables can be chained using {@link #andThen(IExecutable)}.
+ *
+ * This interface also defines several basic constructors for executables.
+ *
+ * @author gandrieu
+ */
 public interface IExecutable {
 
     /**

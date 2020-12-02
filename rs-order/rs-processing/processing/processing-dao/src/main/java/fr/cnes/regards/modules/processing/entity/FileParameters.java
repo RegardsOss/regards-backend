@@ -22,6 +22,12 @@ import lombok.Value;
 
 import java.util.List;
 
+/**
+ * This class is a database wrapper around a list of input files.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
+ *
+ * @author gandrieu
+ */
 @Value
 public class FileParameters {
 

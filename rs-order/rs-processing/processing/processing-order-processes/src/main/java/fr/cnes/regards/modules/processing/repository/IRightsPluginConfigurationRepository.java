@@ -29,6 +29,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This interface is a {@link JpaRepository} for {@link RightsPluginConfiguration}.
+ *
+ * @author gandrieu
+ */
 @Repository
 public interface IRightsPluginConfigurationRepository extends JpaRepository<RightsPluginConfiguration, Long> {
 

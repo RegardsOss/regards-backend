@@ -28,7 +28,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-
+/**
+ * This class is the "@EnableXXX" config for reactive application.
+ * @author gandrieu
+ */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 

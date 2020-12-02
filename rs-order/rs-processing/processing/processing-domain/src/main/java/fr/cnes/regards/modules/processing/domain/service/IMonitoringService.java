@@ -29,6 +29,11 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * This interface defines a service contract for monitoring {@link PExecution} entities.
+ *
+ * @author gandrieu
+ */
 public interface IMonitoringService {
 
     Mono<Page<PExecution>> getExecutionsPageForCriteria(

@@ -36,7 +36,9 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import reactor.core.publisher.Flux;
 
 /**
- * TODO : Class description
+ * This class is a helper to query ES in OrderService and OrderProcessingService.
+ * Its logic used to reside entirely within OrderService, but has been taken out to be
+ * used also in case of dataset selections with processsing.
  *
  * @author Guillaume Andrieu
  *

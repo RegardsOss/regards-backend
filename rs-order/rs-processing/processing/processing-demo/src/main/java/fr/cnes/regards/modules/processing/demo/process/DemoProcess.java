@@ -36,7 +36,11 @@ import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.demo.DemoConstants.PROFILE;
 import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType.STRING;
-
+/**
+ * This class is a demo process.
+ *
+ * @author gandrieu
+ */
 public class DemoProcess implements PProcess {
 
     private final IWorkloadEngine engine;

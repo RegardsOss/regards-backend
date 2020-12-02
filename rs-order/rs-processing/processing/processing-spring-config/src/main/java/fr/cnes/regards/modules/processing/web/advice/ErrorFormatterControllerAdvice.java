@@ -30,7 +30,11 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
-
+/**
+ * This class is the configuration for error formatting in the http layer.
+ *
+ * @author gandrieu
+ */
 @ControllerAdvice
 public class ErrorFormatterControllerAdvice {
 

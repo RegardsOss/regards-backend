@@ -38,7 +38,11 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.UUID;
-
+/**
+ * This class is the implementation for the {@link IExecutionService} interface.
+ *
+ * @author gandrieu
+ */
 @Service
 public class ExecutionServiceImpl implements IExecutionService {
 
@@ -120,8 +124,7 @@ public class ExecutionServiceImpl implements IExecutionService {
             request.getInputFiles(),
             batch.getTenant(),
             batch.getUser(),
-            batch.getProcessBusinessId(),
-            batch.getProcessName()
+            batch.getProcessBusinessId()
         );
     }
 

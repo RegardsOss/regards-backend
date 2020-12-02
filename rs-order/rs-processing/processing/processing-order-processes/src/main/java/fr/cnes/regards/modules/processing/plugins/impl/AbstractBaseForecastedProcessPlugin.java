@@ -26,6 +26,8 @@ import io.vavr.control.Try;
 
 /**
  * This process definition delegates the setting of the size/duration forecast to the admin.
+ *
+ * @author gandrieu
  */
 public abstract class AbstractBaseForecastedProcessPlugin implements IProcessDefinition {
 

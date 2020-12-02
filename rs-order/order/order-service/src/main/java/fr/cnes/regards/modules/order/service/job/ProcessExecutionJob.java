@@ -78,7 +78,8 @@ import io.vavr.control.Try;
 /**
  * This class allows to launch the execution for a processed dataset selection.
  * <p>
- * It must be launched after all the internal input files have been set as accessible.
+ * It must be launched after all the internal input files have been set as accessible,
+ * and thus is launched by the {@link StorageFilesJob} at the end of its execution.
  *
  * @author Guillaume Andrieu
  */

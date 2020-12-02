@@ -22,6 +22,13 @@ import lombok.*;
 
 import java.util.Map;
 
+
+/**
+ * This class is a database wrapper around a map of {@link FileSetStatistics}.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
+ *
+ * @author gandrieu
+ */
 @Value
 public class FileStatsByDataset {
 

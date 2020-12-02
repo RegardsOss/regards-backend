@@ -22,6 +22,11 @@ package fr.cnes.regards.modules.order.service.job.parameters;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 
+/**
+ * This class is a Job Parameter used by {@link fr.cnes.regards.modules.order.service.job.ProcessExecutionJob}.
+ *
+ * @author Guillaume Andrieu
+ */
 public class BasketDatasetSelectionJobParameter extends JobParameter {
 
     public static final String NAME = "dsSel";

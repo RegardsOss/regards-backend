@@ -30,6 +30,11 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+/**
+ * This class defines the handler for execution request events.
+ *
+ * @author gandrieu
+ */
 @Component
 public class ExecutionRequestEventHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionRequestEvent> {

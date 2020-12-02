@@ -26,6 +26,12 @@ import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 
 import java.time.OffsetDateTime;
 
+
+/**
+ * This class is a Gson type adapter for {@link PStep}.
+ *
+ * @author gandrieu
+ */
 @AutoService(TypedGsonTypeAdapter.class)
 public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {
 

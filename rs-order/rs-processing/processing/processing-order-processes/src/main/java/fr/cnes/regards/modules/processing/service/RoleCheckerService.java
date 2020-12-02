@@ -30,6 +30,11 @@ import reactor.core.publisher.Mono;
 
 import static fr.cnes.regards.framework.security.utils.HttpConstants.BEARER;
 
+/**
+ * This class is the implementation for {@link IRoleCheckerService} in the context or rs-order.
+ *
+ * @author gandrieu
+ */
 @Service
 public class RoleCheckerService implements IRoleCheckerService {
 

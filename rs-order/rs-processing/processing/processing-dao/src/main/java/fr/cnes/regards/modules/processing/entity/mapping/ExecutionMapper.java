@@ -32,6 +32,12 @@ import java.time.Duration;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.REGISTERED;
 
+/**
+ * This class define a mapper between domain and database entities for Executions
+ *
+ * @author gandrieu
+ */
+
 @Component
 public class ExecutionMapper implements DomainEntityMapper.Execution {
 
@@ -54,7 +60,6 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
                 exec.getTenant(),
                 exec.getUserName(),
                 exec.getProcessBusinessId(),
-                exec.getProcessName(),
                 exec.getExecutionCorrelationId(),
                 exec.getBatchCorrelationId(),
                 exec.getCreated(),
@@ -77,7 +82,6 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
                 entity.getTenant(),
                 entity.getUserEmail(),
                 entity.getProcessBusinessId(),
-                entity.getProcessName(),
                 entity.getCreated(),
                 entity.getLastUpdated(),
                 entity.getVersion(),

@@ -25,6 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 
+/**
+ * This class define a Gson converter for {@link Steps}
+ *
+ * @author gandrieu
+ */
 @WritingConverter
 @AllArgsConstructor
 public class StepsToJsonbConverter implements Converter<Steps, Json> {

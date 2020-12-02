@@ -28,7 +28,10 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
-
+/**
+ * This class is the SecurityWebFilterChain config for reactive application.
+ * @author gandrieu
+ */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 

@@ -26,6 +26,11 @@ import org.slf4j.LoggerFactory;
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Base marshalling/unmarshalling test (for DTOs, etc.).
+ *
+ * @author gandrieu
+ */
 public abstract class AbstractMarshallingTest<T> {
 
     public abstract Class<T> testedType();

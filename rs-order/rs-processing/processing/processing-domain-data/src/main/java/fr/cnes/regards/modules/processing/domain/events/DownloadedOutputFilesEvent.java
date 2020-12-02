@@ -28,6 +28,12 @@ import lombok.With;
 import java.net.URL;
 import java.util.UUID;
 
+/**
+ * This class defines an event received when an output file has been
+ * downloaded and can thus be deleted.
+ *
+ * @author gandrieu
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value @With
 public class DownloadedOutputFilesEvent implements ISubscribable {

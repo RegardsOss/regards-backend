@@ -23,6 +23,12 @@ import lombok.Value;
 
 import java.util.UUID;
 
+
+/**
+ * This class defines a DTO for monitoring executions.
+ *
+ * @author gandrieu
+ */
 @Value
 public class ExecutionBatchMonitoringDTO {
 

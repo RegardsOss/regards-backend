@@ -19,6 +19,11 @@ package fr.cnes.regards.modules.processing.exceptions;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * List of the different possible types of error.
+ *
+ * @author gandrieu
+ */
 public enum ProcessingExceptionType {
 
     EXECUTION_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND),
@@ -35,6 +40,7 @@ public enum ProcessingExceptionType {
     MISSING_EXECUTION_CONTEXT_PARAM_ERROR,
     ;
 
+    /** In case the error is used in an http request, this tells which http status to set for the response. */
     private final HttpStatus status;
 
     ProcessingExceptionType(HttpStatus status) {

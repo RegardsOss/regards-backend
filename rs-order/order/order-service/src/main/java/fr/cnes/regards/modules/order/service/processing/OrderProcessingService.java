@@ -64,7 +64,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * TODO : Class description
+ * Complement to OrderService when dealing with dataset selections having processing.
  *
  * @author Guillaume Andrieu
  *

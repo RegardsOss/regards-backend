@@ -53,6 +53,11 @@ import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
+/**
+ * Spring configuration for the r2dbc database driver.
+ *
+ * @author gandrieu
+ */
 @Configuration
 @EnableR2dbcRepositories(basePackageClasses = {
         IBatchEntityRepository.class,

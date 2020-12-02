@@ -29,6 +29,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * This class provides the job launching the actual execution's process' executable.
+ *
+ * @author gandrieu
+ */
 public class LaunchExecutionJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LaunchExecutionJob.class);

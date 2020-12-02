@@ -22,13 +22,19 @@ import io.vavr.control.Option;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class provides a basic workload engine repository based on a map in local memory.
+ * There should not be any need for another implementation.
+ *
+ * @author gandrieu
+ */
 @Component
 public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
 
-    private final Map<String, IWorkloadEngine> enginesByName = new HashMap<>();
+    private final Map<String, IWorkloadEngine> enginesByName = new ConcurrentHashMap<>();
 
     @Override public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {
         String name = engine.name();

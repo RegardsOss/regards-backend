@@ -29,7 +29,10 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
+/**
+ * This class is the SecurityContext config for reactive application.
+ * @author gandrieu
+ */
 @Component
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 

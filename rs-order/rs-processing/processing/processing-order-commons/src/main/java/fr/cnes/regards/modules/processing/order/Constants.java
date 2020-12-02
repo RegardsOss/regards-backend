@@ -17,6 +17,11 @@
 */
 package fr.cnes.regards.modules.processing.order;
 
+/**
+ * This class defines various constants.
+ *
+ * @author gandrieu
+ */
 public interface Constants {
 
     String SCOPE = "scope";

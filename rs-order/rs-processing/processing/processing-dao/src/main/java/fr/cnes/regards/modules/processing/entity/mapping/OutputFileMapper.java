@@ -22,6 +22,12 @@ import fr.cnes.regards.modules.processing.entity.OutputFileEntity;
 import io.vavr.collection.List;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class define a mapper between domain and database entities for OutputFiles
+ *
+ * @author gandrieu
+ */
+
 @Component
 public class OutputFileMapper implements DomainEntityMapper.OutputFile {
 

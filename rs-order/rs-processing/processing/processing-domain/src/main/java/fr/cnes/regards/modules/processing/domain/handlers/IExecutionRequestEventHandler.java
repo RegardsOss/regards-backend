@@ -20,6 +20,12 @@ package fr.cnes.regards.modules.processing.domain.handlers;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 
+
+/**
+ * This interface defines a handler for {@link PExecutionRequestEvent}.
+ *
+ * @author gandrieu
+ */
 public interface IExecutionRequestEventHandler extends IHandler<PExecutionRequestEvent> {
 
 }

@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.order.service.job.parameters;
 
-import java.util.UUID;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
+import java.util.UUID;
+
 /**
- * TODO : Class description
+ * This class is a Job Parameter used by {@link fr.cnes.regards.modules.order.service.job.StorageFilesJob}.
  *
  * @author Guillaume Andrieu
- *
  */
 public class ProcessJobInfoJobParameter extends JobParameter {
 

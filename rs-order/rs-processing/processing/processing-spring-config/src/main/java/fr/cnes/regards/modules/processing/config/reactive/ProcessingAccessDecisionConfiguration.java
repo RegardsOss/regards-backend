@@ -33,6 +33,10 @@ import org.springframework.security.access.vote.AffirmativeBased;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is the AccessDecisionManager config for reactive application.
+ * @author gandrieu
+ */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 

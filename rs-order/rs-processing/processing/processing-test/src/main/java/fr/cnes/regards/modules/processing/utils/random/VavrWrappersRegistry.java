@@ -34,6 +34,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * This class provides random generation for vavr collection wrappers.
+ *
+ * @author gandrieu
+ */
 public class VavrWrappersRegistry implements RandomizerRegistry {
     private VavrRandomizerFactory factory;
     private EasyRandomParameters easyRandomParameters;

@@ -26,6 +26,11 @@ import io.vavr.control.Option;
 import static fr.cnes.regards.modules.processing.order.Constants.FEATURE_ID;
 import static fr.cnes.regards.modules.processing.order.Constants.INTERNAL;
 
+/**
+ * This class is a mapper for {@link OrderInputFileMetadata}.
+ *
+ * @author gandrieu
+ */
 public class OrderInputFileMetadataMapper extends AbstractMapper<OrderInputFileMetadata> {
 
     public Map<String, String> toMap(OrderInputFileMetadata params) {

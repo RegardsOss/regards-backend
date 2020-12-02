@@ -118,7 +118,6 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
                 TENANT_PROJECTA,
                 "a@a.a",
                 "EXPLOIT",
-                "processname",
                 new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
                 new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
         BatchEntity batchB = new BatchEntity(
@@ -128,7 +127,6 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
                 TENANT_PROJECTB,
                 "a@a.a",
                 "EXPLOIT",
-                "processname",
                 new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
                 new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
 

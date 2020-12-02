@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.processing.domain.service;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import reactor.core.publisher.Flux;
 
+/**
+ * This interface defines a service contract for {@link PProcessDTO} entities.
+ *
+ * @author gandrieu
+ */
 public interface IProcessService {
 
     Flux<PProcessDTO> findByTenant(String tenant);

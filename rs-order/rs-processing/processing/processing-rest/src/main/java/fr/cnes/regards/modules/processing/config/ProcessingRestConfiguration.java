@@ -27,6 +27,11 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * This class is the configuration for the REST layer.
+ *
+ * @author gandrieu
+ */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @EnableWebFlux
@@ -36,10 +41,5 @@ import javax.annotation.PostConstruct;
     PMonitoringReactiveController.class
 })
 public class ProcessingRestConfiguration {
-
-    @PostConstruct
-    public void init() {
-
-    }
 
 }

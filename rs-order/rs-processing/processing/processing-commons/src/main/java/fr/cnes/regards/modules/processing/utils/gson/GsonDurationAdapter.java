@@ -26,6 +26,8 @@ import java.time.Duration;
 
 /**
  * A duration is represented by the number of nanoseconds in it (most precise possible form, albeit a bit longer).
+ *
+ * @author gandrieu
  */
 public class GsonDurationAdapter  extends TypeAdapter<Duration> {
 

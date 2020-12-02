@@ -18,6 +18,11 @@
 package fr.cnes.regards.modules.processing.rest.utils;
 
 
+/**
+ * This constants interface defines a few constants to deal with pagination.
+ *
+ * @author gandrieu
+ */
 public interface PageUtils {
 
     String DEFAULT_PAGE = "0";

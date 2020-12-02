@@ -22,6 +22,11 @@ import fr.cnes.regards.modules.processing.domain.PInputFile;
 import io.vavr.collection.Seq;
 import reactor.core.publisher.Mono;
 
+/**
+ * This interface defines signatures for dealing with {@link ExecutionLocalWorkdir}.
+ *
+ * @author gandrieu
+ */
 public interface IExecutionLocalWorkdirService {
 
     Mono<ExecutionLocalWorkdir> makeWorkdir(PExecution exec);

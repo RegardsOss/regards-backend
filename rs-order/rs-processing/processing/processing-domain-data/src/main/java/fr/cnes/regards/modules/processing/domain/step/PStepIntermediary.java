@@ -24,6 +24,13 @@ import java.time.OffsetDateTime;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.toUtc;
 
+
+/**
+ * This class defines intermediary steps, using an intermediary {@link ExecutionStatus}, which can not
+ * be checked by the type checker so is left at construction's time.
+ *
+ * @author gandrieu
+ */
 public class PStepIntermediary extends PStep {
     public PStepIntermediary(ExecutionStatus status, OffsetDateTime time, String message) {
         super(status, toUtc(time), message);

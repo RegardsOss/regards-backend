@@ -50,6 +50,11 @@ import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionT
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.INTERNAL_DOWNLOAD_ERROR;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
 
+/**
+ * This class provides implementations for downloading files from storage or through a proxy.
+ *
+ * @author gandrieu
+ */
 @Service
 public class DownloadService implements IDownloadService {
 

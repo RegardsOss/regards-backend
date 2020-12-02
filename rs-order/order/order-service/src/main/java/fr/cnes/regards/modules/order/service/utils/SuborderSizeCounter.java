@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
- * TODO : Class description
+ * This class contains the data necessary to determine if a suborder gets too big or not.
  *
  * @author Guillaume Andrieu
  *

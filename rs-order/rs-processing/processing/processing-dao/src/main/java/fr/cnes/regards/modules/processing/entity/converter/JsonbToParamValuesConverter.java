@@ -25,6 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.core.convert.converter.Converter;
 
+
+/**
+ * This class define a Gson converter for {@link ParamValues}
+ *
+ * @author gandrieu
+ */
 @ReadingConverter
 @AllArgsConstructor
 public class JsonbToParamValuesConverter  implements Converter<Json, ParamValues> {

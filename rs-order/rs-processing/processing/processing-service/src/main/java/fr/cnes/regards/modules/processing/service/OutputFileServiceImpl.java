@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesRepository;
+import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
 import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.List;
@@ -29,7 +30,11 @@ import reactor.core.publisher.Flux;
 
 import java.net.URL;
 import java.util.UUID;
-
+/**
+ * This class is the implementation for the {@link IOutputFileService} interface.
+ *
+ * @author gandrieu
+ */
 @Service
 public class OutputFileServiceImpl implements IOutputFileService {
 

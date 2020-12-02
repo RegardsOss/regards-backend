@@ -21,6 +21,11 @@ import io.vavr.control.Option;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.AbstractRandomizer;
 
+/**
+ * This class provides random generation for vavr Option.
+ *
+ * @author gandrieu
+ */
 public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
 
     private Randomizer<Boolean> booleanRandomizer;

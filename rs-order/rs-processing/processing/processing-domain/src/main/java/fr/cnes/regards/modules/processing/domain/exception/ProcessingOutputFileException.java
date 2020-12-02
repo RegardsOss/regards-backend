@@ -21,6 +21,11 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 
+/**
+ * This class is for exception occurring in the context of an output file.
+ *
+ * @author gandrieu
+ */
 public class ProcessingOutputFileException extends ProcessingException {
 
     protected final POutputFile outFile;

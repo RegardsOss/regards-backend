@@ -6,7 +6,6 @@ CREATE TABLE t_batch (
     tenant              varchar(255) NOT NULL,
     user_email          varchar(255) NOT NULL,
     user_role           varchar(255) NOT NULL,
-    process_name        varchar(255) NOT NULL,
     correlation_id      text         NOT NULL,
     filesets            jsonb        NOT NULL,
     parameters          jsonb        NOT NULL,
@@ -15,7 +14,6 @@ CREATE TABLE t_batch (
 CREATE INDEX ON t_batch (tenant);
 CREATE INDEX ON t_batch (user_role);
 CREATE INDEX ON t_batch (process_business_id);
-CREATE INDEX ON t_batch (process_name);
 
 ---------------------
 -- EXECUTIONS
@@ -28,7 +26,6 @@ CREATE TABLE t_execution (
     batch_id             uuid         NOT NULL,
     process_business_id  uuid         NOT NULL,
     current_status       varchar(10)  NOT NULL,
-    process_name         varchar(255) NOT NULL,
     tenant               varchar(255) NOT NULL,
     user_email           varchar(255) NOT NULL,
     correlation_id       text         NOT NULL,

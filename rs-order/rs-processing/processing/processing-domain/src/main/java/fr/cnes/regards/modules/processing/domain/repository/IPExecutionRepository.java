@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.processing.domain.repository;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Seq;
-import io.vavr.control.Option;
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,6 +28,12 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+
+/**
+ * This interface defines a repository contract for {@link PExecution} entities.
+ *
+ * @author gandrieu
+ */
 public interface IPExecutionRepository {
 
     Mono<PExecution> create(PExecution execution);

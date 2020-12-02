@@ -9,6 +9,11 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
+/**
+ * This class is the configuration for SpringDoc.
+ *
+ * @author gandrieu
+ */
 @Configuration
 public class ProcessingSpringDocConfiguration {
 

@@ -18,7 +18,11 @@
 package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-
+/**
+ * This interface defines engine/executable for {@link IProcessDefinition}.
+ *
+ * @author gandrieu
+ */
 public interface IProcessLauncherDefinition {
 
     default String engineName() {

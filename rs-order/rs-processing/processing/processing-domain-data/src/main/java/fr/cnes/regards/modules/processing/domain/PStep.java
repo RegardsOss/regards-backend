@@ -28,6 +28,14 @@ import java.time.OffsetDateTime;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
+
+/**
+ * This class defines an abstract step. Subclasses are {@link PStepFinal} and {@link PStepIntermediary}.
+ *
+ * A step is immutable.
+ *
+ * @author gandrieu
+ */
 @Data
 public abstract class PStep {
 

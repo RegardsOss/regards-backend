@@ -21,6 +21,11 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class is the demo of asyn process factory.
+ *
+ * @author gandrieu
+ */
 @Component
 public class DemoSimulatedAsyncProcessFactory {
 

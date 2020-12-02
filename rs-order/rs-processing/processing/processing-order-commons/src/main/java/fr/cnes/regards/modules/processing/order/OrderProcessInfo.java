@@ -23,6 +23,12 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 
+
+/**
+ * This class defines how to interpret process info map for rs-order usage of processing.
+ *
+ * @author gandrieu
+ */
 @With @Value @AllArgsConstructor
 public class OrderProcessInfo {
 

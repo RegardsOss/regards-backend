@@ -26,6 +26,11 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * This class defines a DTO for batch requests.
+ *
+ * @author gandrieu
+ */
 @Data @With
 @AllArgsConstructor
 @Builder(toBuilder = true)

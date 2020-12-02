@@ -29,6 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 
+/**
+ * This class is a base abstract class for process plugins which interact with the
+ * storage to store input/output files.
+ *
+ * @author gandrieu
+ */
 public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends AbstractBaseForecastedProcessPlugin {
 
     @Autowired

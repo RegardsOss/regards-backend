@@ -37,6 +37,12 @@ import java.util.stream.Collectors;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.METADATA_SUFFIX;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
 
+/**
+ * This class is the controller to create {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}
+ * out of {@link PluginMetaData} found in the classpath corresponding to processes.
+ *
+ * @author gandrieu
+ */
 @RestController
 @RequestMapping(path = PROCESSPLUGIN_PATH + METADATA_SUFFIX)
 public class ProcessPluginMetadataController {

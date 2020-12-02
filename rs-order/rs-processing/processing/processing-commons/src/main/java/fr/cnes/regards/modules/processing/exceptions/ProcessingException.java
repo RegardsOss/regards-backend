@@ -23,6 +23,11 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.function.Predicate;
 
+/**
+ * Generic processing exception, with a specific ID transmitted to the client.
+ *
+ * @author gandrieu
+ */
 public abstract class ProcessingException extends RuntimeException {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingException.class);

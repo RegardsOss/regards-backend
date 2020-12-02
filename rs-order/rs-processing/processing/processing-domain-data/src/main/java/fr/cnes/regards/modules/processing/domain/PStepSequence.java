@@ -21,6 +21,13 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import lombok.Value;
 
+/**
+ * This class represents a sequence of steps.
+ *
+ * A step sequence is immutable.
+ *
+ * @author gandrieu
+ */
 @Value
 public class PStepSequence {
 

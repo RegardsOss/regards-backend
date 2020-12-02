@@ -25,6 +25,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
+
+/**
+ * This interface defines a repository contract for {@link PProcess} entities.
+ *
+ * @author gandrieu
+ */
 public interface IPProcessRepository {
 
     Flux<PProcess> findAllByTenant(String tenant);

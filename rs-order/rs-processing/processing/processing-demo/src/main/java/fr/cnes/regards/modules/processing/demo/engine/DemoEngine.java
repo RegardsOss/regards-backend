@@ -27,6 +27,8 @@ import reactor.core.publisher.Mono;
 
 /**
  * Delegate the processing to someone else, just communicating with it through amqp.
+ *
+ * @author gandrieu
  */
 @Component
 public class DemoEngine implements IWorkloadEngine {

@@ -31,6 +31,11 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
+/**
+ * This class is the configuration for Gson.
+ *
+ * @author gandrieu
+ */
 @Configuration
 public class ProcessingGsonConfiguration {
 

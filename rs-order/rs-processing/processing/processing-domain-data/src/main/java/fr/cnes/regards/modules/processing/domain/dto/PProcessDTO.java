@@ -23,7 +23,11 @@ import io.vavr.collection.Map;
 import lombok.*;
 
 import java.util.UUID;
-
+/**
+ * This class defines a DTO for processes.
+ *
+ * @author gandrieu
+ */
 @Value
 public class PProcessDTO {
 

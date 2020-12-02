@@ -31,6 +31,11 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This interface defines operations on ExecutionEntities in the database.
+ *
+ * @author gandrieu
+ */
 @InstanceEntity
 @Repository
 public interface IExecutionEntityRepository

@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import io.vavr.control.Try;
 
 /**
- * TODO : Class description
+ * Wrapper around {@link IPublisher}, used in  to be able to modify the sending behaviour during tests.
  *
  * @author Guillaume Andrieu
  *

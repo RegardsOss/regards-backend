@@ -34,6 +34,12 @@ import java.util.UUID;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
 
+/**
+ * This class is the controller for manipulating {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}
+ * links to datasets.
+ *
+ * @author gandrieu
+ */
 @RestController
 @RequestMapping(path = PROCESSPLUGIN_PATH)
 public class ProcessPluginDatasetController {

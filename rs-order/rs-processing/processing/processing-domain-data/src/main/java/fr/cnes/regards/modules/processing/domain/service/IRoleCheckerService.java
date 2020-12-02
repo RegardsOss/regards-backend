@@ -22,6 +22,11 @@ package fr.cnes.regards.modules.processing.domain.service;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import reactor.core.publisher.Mono;
 
+/**
+ * This interface defines the signature to check role for the authenticated user against a minimum role defined for a process.
+ *
+ * @author gandrieu
+ */
 public interface IRoleCheckerService {
 
     Mono<Boolean> roleIsUnder(PUserAuth auth, String role);

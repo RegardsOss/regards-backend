@@ -26,6 +26,13 @@ import reactor.util.context.Context;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Various utility functions regarding Reactor context to pass context information
+ * (current tenant, user, role, batch, execution, etc.)
+ * in the context instead of having to propagate the content in functions signatures.
+ *
+ * @author gandrieu
+ */
 public interface ReactorErrorTransformers {
 
     static <K, V> Function<Context, Context> addInContext(K key, V value) {

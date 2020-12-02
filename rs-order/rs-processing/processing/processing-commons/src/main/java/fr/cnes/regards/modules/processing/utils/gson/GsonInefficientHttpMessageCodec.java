@@ -43,6 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * GSON codec, inefficient because needs to load the whole content of
+ * a Flux in order to generate the serialization.
+ *
+ * @author gandrieu
+ */
 public class GsonInefficientHttpMessageCodec {
 
     public static class Co extends GsonInefficientHttpMessageCodec implements HttpMessageEncoder<Object> {

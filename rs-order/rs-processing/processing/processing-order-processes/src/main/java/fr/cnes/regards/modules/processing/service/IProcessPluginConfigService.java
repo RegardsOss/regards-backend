@@ -26,6 +26,11 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * This interface defines signatures to interact with {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}.
+ *
+ * @author gandrieu
+ */
 public interface IProcessPluginConfigService {
 
     Flux<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs();

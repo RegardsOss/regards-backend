@@ -25,6 +25,11 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 
+/**
+ * This class is a logging encoder used only in tests.
+ *
+ * @author gandrieu
+ */
 public class GsonLoggingEncoder implements Encoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonLoggingEncoder.class);

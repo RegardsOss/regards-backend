@@ -35,6 +35,15 @@ import javax.annotation.PostConstruct;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
+/**
+ * This class defines a worload engine based on REGARDS Jobs mechanism.
+ *
+ * In order to launch an execution, the engine creation a {@link JobInfo} referencing
+ * a {@link LaunchExecutionJob}. The actual execution (calling the process' executable on the
+ * execution parameters) will be done by this job.
+ *
+ * @author gandrieu
+ */
 @Component
 public class JobWorkloadEngine implements IWorkloadEngine {
 

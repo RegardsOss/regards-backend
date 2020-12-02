@@ -21,6 +21,11 @@ import io.vavr.control.Either;
 import org.jeasy.random.api.Randomizer;
 import org.jeasy.random.randomizers.AbstractRandomizer;
 
+/**
+ * This class provides random generation for vavr Either.
+ *
+ * @author gandrieu
+ */
 public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>> {
 
     private Randomizer<Boolean> booleanRandomizer;

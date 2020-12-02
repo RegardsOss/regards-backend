@@ -22,6 +22,11 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Path;
 
+/**
+ * This interface defines a service contract for downloading {@link PInputFile} entities.
+ *
+ * @author gandrieu
+ */
 public interface IDownloadService {
 
     Mono<Path> download(PInputFile file, Path dest);

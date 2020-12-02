@@ -31,6 +31,11 @@ import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExec
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.SEND_EXECUTION_RESULT_ERROR;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
 
+/**
+ * This class defines the sender for execution result events.
+ *
+ * @author gandrieu
+ */
 @Component
 public class ExecutionResultEventSender implements IExecutionResultEventSender {
 

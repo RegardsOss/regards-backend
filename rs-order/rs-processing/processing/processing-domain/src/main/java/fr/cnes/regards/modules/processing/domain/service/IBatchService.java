@@ -17,11 +17,16 @@
 */
 package fr.cnes.regards.modules.processing.domain.service;
 
-import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
 import reactor.core.publisher.Mono;
 
+/**
+ * This interface defines a service contract for {@link PBatch} entities.
+ *
+ * @author gandrieu
+ */
 public interface IBatchService {
 
     Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data);

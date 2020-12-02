@@ -23,7 +23,11 @@ import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.api.Randomizer;
-
+/**
+ * This class allows to generate random instances for {@link PStep}
+ *
+ * @author gandrieu
+ */
 @AutoService(TypedRandomizer.class)
 public class PStepTypedRandomizer implements TypedRandomizer<PStep> {
     @Override public Class<PStep> type() {

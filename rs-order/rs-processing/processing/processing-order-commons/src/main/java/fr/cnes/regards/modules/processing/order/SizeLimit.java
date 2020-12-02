@@ -21,6 +21,11 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 
+/**
+ * This class defines the size limits for a process execution, appearing in {@link OrderProcessInfo}.
+ *
+ * @author gandrieu
+ */
 @With @Value @AllArgsConstructor
 public class SizeLimit {
 

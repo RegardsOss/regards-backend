@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.processing.entity.converter;
 import com.google.gson.Gson;
 import io.vavr.collection.List;
 
+/**
+ * This class defines custom converters for Gson.
+ *
+ * @author gandrieu
+ */
 public class DaoCustomConverters {
 
     public static java.util.List<Object> getCustomConverters(Gson gson) {

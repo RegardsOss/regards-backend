@@ -51,6 +51,11 @@ import reactor.core.publisher.Mono;
 
 import static fr.cnes.regards.modules.processing.event.RightsPluginConfigurationEvent.Type.DELETE;
 
+/**
+ * This class is the implementation for {@link IProcessPluginConfigService}.
+ *
+ * @author gandrieu
+ */
 @Service
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
 

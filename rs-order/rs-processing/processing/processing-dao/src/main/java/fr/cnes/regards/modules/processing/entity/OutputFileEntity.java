@@ -29,7 +29,11 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.POutputFile}
+ *
+ * @author gandrieu
+ */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor

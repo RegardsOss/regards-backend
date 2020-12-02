@@ -19,6 +19,12 @@ package fr.cnes.regards.modules.processing.domain.forecast;
 
 import io.vavr.control.Try;
 
+/**
+ * This interface defines the signature for a size forecast: how to estimate the amount of disk usage
+ * a execution will generate.
+ *
+ * @author gandrieu
+ */
 public interface IResultSizeForecast {
 
     long expectedResultSizeInBytes(long inputSizeInBytes);

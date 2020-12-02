@@ -22,6 +22,11 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
+/**
+ * Varius utility functions regarding OffsetDateTime.
+ *
+ * @author gandrieu
+ */
 public class TimeUtils {
 
     public static final ZoneId UTC = ZoneId.of("UTC");

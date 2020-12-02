@@ -23,7 +23,11 @@ import lombok.Value;
 
 import java.net.URL;
 import java.util.UUID;
-
+/**
+ * This class defines a DTO for execution output files.
+ *
+ * @author gandrieu
+ */
 @Value
 public class POutputFileDTO {
 

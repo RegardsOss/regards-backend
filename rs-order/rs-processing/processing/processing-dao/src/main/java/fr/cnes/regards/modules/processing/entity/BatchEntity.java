@@ -26,6 +26,11 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
+/**
+ * This class is the database entity corresponding to {@link fr.cnes.regards.modules.processing.domain.PBatch}
+ *
+ * @author gandrieu
+ */
 @Data @With
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -51,9 +56,6 @@ public class BatchEntity implements Persistable<UUID> {
 
     @Column("user_role") @NonNull
     private String userRole;
-
-    @Column("process_name") @NonNull
-    private String processName;
 
     @Column("parameters") @NonNull
     private ParamValues parameters;

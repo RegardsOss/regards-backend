@@ -25,6 +25,12 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
+/**
+ * This class define a mapper between domain and database entities for Steps
+ *
+ * @author gandrieu
+ */
+
 @Component
 public class StepMapper implements DomainEntityMapper.Step {
 

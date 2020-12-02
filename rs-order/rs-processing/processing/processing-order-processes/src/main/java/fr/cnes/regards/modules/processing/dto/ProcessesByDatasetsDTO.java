@@ -24,6 +24,11 @@ import io.vavr.collection.Map;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+/**
+ * This class is a DTO to be used during exchange with the client.
+ *
+ * @author gandrieu
+ */
 @Value
 public class ProcessesByDatasetsDTO {
 

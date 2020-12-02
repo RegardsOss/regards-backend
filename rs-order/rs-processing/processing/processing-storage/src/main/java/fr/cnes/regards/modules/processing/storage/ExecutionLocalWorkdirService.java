@@ -38,6 +38,11 @@ import java.nio.file.Path;
 import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.WORKDIR_CREATION_ERROR;
 
+/**
+ * This class is the implementation for {@link IExecutionLocalWorkdirService}.
+ *
+ * @author gandrieu
+ */
 @Service
 public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirService {
 

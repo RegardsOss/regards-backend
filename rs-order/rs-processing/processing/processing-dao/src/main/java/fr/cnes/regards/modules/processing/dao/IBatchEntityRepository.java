@@ -24,6 +24,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
+/**
+ * This interface defines operations on BatchEntities in the database.
+ *
+ * @author gandrieu
+ */
 @InstanceEntity
 @Repository
 public interface IBatchEntityRepository extends ReactiveCrudRepository<BatchEntity, UUID> {

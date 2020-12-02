@@ -26,6 +26,11 @@ import org.jeasy.random.api.Randomizer;
 
 import java.io.IOException;
 
+/**
+ * This class allows to generate random instances for {@link POutputFile.Digest}
+ *
+ * @author gandrieu
+ */
 @AutoService(TypedRandomizer.class)
 public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutputFile.Digest> {
     @Override public Class<POutputFile.Digest> type() {

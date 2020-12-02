@@ -28,6 +28,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -56,10 +57,11 @@ import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 
 /**
- * TODO : Class description
+ * When rs-process has finished an execution, it sends a PExecutionResultEvent.
+ * This class handles these events, setting the corresponding output OrderDataFiles as
+ * available for download in case of success.
  *
  * @author Guillaume Andrieu
- *
  */
 @Component
 public class ProcessingExecutionResultEventHandler implements IProcessingExecutionResultEventHandler {
@@ -94,7 +96,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
     }
 
     @Override
-    public void onApplicationEvent(ApplicationEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(PExecutionResultEvent.class, this);
     }
 
@@ -121,7 +123,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             LOGGER.error("{} no output found", logPrefix(evt));
             updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
         } else {
-            /*
+            /*ProcessingExecu
              * As a reminder of what the previous steps of the process did:
              * - in OrderProcessingService, we created OrderDataFile corresponding to the output files
              *   and we gave a temporary URL for these files with the following pattern as defined in

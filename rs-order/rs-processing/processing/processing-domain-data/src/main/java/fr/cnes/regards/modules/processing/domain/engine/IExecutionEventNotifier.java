@@ -29,6 +29,8 @@ import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.ev
 
 /**
  * This interface is given to an IExecutable to allow the executable to notify events for its execution.
+ *
+ * @author gandrieu 
  */
 public interface IExecutionEventNotifier extends Function1<ExecutionEvent, Mono<PExecution>> {
 

@@ -56,6 +56,11 @@ import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.ev
 import static fr.cnes.regards.modules.processing.domain.engine.IExecutable.sendEvent;
 import static io.vavr.collection.List.ofAll;
 
+/**
+ * This class is a sample plugin launching a shell script.
+ *
+ * @author gandrieu
+ */
 @Plugin(
         id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN,
         version = "1.0.0-SNAPSHOT",

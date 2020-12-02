@@ -27,6 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import static fr.cnes.regards.modules.processing.order.Constants.*;
 
+/**
+ * This class is a mapper for {@link OrderProcessInfo}.
+ *
+ * @author gandrieu
+ */
 public class OrderProcessInfoMapper extends AbstractMapper<OrderProcessInfo> {
 
     public Map<String, String> toMap(OrderProcessInfo params) {

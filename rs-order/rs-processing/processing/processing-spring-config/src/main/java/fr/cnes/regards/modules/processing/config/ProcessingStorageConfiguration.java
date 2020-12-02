@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+/**
+ * This class is the configuration for storage.
+ *
+ * @author gandrieu
+ */
 @Configuration
 public class ProcessingStorageConfiguration {
 

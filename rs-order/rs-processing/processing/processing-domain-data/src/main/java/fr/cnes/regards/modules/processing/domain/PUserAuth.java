@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.processing.domain;
 import lombok.Value;
 import org.springframework.security.core.Authentication;
 
+/**
+ * This class represents an authenticated user creating a batch or launching an execution.
+ *
+ * @author gandrieu
+ */
 @Value
 public class PUserAuth {
 

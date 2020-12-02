@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import io.vavr.control.Try;
 
 /**
- * TODO : Class description
+ * This interface defines signatures for a wrapper around {@link IPublisher},
+ * used in  to be able to modify the sending behaviour during tests.
  *
  * @author Guillaume Andrieu
  *

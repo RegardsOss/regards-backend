@@ -21,6 +21,12 @@ import io.vavr.control.Try;
 
 import java.time.Duration;
 
+/**
+ * This interface defines the signature for a size forecast: how to estimate the amount of disk usage
+ * a execution will generate.
+ *
+ * @author gandrieu
+ */
 public interface IRunningDurationForecast {
 
     Duration expectedRunningDurationInBytes(long inputSizeInBytes);

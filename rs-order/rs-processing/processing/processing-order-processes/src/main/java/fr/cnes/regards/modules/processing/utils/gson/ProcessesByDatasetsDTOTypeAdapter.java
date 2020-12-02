@@ -32,6 +32,11 @@ import io.vavr.collection.Map;
 
 import java.time.OffsetDateTime;
 
+/**
+ * This class is a type adapter for {@link ProcessesByDatasetsDTO}.
+ *
+ * @author gandrieu
+ */
 @AutoService(TypedGsonTypeAdapter.class)
 public class ProcessesByDatasetsDTOTypeAdapter implements TypedGsonTypeAdapter<ProcessesByDatasetsDTO> {
 

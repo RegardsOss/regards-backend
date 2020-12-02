@@ -33,6 +33,11 @@ import java.lang.reflect.Type;
 
 import static feign.Util.ensureClosed;
 
+/**
+ * This class is a looging decoder used only in tests.
+ *
+ * @author gandrieu
+ */
 public class GsonLoggingDecoder implements Decoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonLoggingDecoder.class);

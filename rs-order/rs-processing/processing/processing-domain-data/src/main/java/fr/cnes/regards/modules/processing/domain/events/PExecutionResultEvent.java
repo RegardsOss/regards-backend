@@ -30,6 +30,11 @@ import lombok.With;
 
 import java.util.UUID;
 
+/**
+ * This class defines an event sent by processing to the client when an execution has finished.
+ *
+ * @author gandrieu
+ */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 @Value @With
 public class PExecutionResultEvent implements ISubscribable {

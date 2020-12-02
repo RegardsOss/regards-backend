@@ -24,10 +24,9 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 
 /**
- * TODO : Class description
+ * Auto configuration for the Order services.
  *
- * @author Guillaume Andrieu
- *
+ * @author Arnaud Bos
  */
 @Configuration
 @AutoConfigureBefore(GsonAutoConfiguration.class)

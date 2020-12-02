@@ -22,6 +22,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Base test application in reactive context.
+ *
+ * @author gandrieu
+ */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "processing-test", version = "2.0.0-SNAPSHOT")
 public class TestReactiveApplication {

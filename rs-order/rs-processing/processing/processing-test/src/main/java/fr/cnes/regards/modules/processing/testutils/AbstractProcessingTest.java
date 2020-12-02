@@ -58,6 +58,11 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Random;
 
+/**
+ * This class is a test base class in reactive context.
+ *
+ * @author gandrieu
+ */
 @RunWith(SpringRunner.class)
 
 @SpringBootTest(

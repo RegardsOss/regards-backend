@@ -22,6 +22,13 @@ import lombok.*;
 
 import java.util.List;
 
+
+/**
+ * This class is a database wrapper around a list of execution parameters.
+ * (Useful for easy jsonb conversion without having to deal with generic parameters.)
+ *
+ * @author gandrieu
+ */
 @Value
 
 public class ParamValues {
