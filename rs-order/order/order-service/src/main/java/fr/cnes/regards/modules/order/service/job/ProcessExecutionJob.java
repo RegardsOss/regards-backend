@@ -276,6 +276,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         }
     }
 
+    @SuppressWarnings("serial")
     public static class CouldNotCreateBatchException extends RuntimeException {
 
         public CouldNotCreateBatchException(UUID jobInfoId, Long dsSelId, UUID processBusinessId,
