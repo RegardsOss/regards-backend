@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.order.service.IDatasetTaskService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.JwtException;
 
 /**
  * @author oroussel
@@ -129,8 +129,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
      * Above controller endpoints are duplicated to fit security single endpoint policy.
      * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
      */
-    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId,
-            String token, HttpServletResponse response) throws NoSuchElementException {
+    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId, String token,
+            HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;
@@ -141,7 +141,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
             dataFile = dataFileService.load(dataFileId);
-        } catch (InvalidJwtException | MalformedJwtException e) {
+        } catch (JwtException | InvalidJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
