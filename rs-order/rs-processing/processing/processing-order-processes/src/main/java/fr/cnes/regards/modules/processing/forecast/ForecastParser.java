@@ -79,7 +79,7 @@ public class ForecastParser implements IResultSizeForecast.Parser, IRunningDurat
             + " The letter is the unit: 'b' for byte, 'k' for kilobytes, 'm' for megabytes, 'g' for gigabytes."
             + " If the value starts with '*', it will be a multiplier per megabyte of input data."
             + " For instance: '1g' means the result expected size is 1 gigabyte, no matter the input size."
-            + " Whereas '*2.5k' means that for every megabyte in input, there wille be 2.5 kilobytes of"
+            + " Whereas '*2.5' means that for every megabyte in input, there will be 2.5 megabytes of"
             + " data in the output.";
 
     private static final Pattern SIZE_FORECAST_REGEXP =

@@ -46,6 +46,8 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 @Component
 public class JobWorkloadEngine implements IWorkloadEngine {
 
+    public static final String NAME = "JOBS";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobWorkloadEngine.class);
 
     private final IJobInfoService jobInfoService;
@@ -60,7 +62,7 @@ public class JobWorkloadEngine implements IWorkloadEngine {
 
     @Override
     public String name() {
-        return "JOB";
+        return NAME;
     }
 
     @Override

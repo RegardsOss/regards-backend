@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
+import fr.cnes.regards.modules.processing.domain.engine.JobWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
@@ -97,7 +98,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     }
 
     @Override public String engineName() {
-        return "JOBS";
+        return JobWorkloadEngine.NAME;
     }
 
     @Override public Seq<ExecutionParameterDescriptor> parameters() {

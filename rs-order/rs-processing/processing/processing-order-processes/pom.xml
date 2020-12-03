@@ -137,6 +137,10 @@
             <artifactId>r2dbc-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-engine-jobs</artifactId>
+        </dependency>
 
     </dependencies>
 
