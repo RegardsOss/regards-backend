@@ -85,6 +85,16 @@ public class StorageLocationController implements IResourceController<StorageLoc
     public static final String DOWN_PATH = ID_PATH + "/down";
 
     public static final String RESET_PARAM = "reset";
+    public static final String METHOD_DELETE_FILES = "deleteFiles";
+    public static final String METHOD_INCREASE_STORAGE_LOCATION_PRIORITY = "increaseStorageLocationPriority";
+    public static final String METHOD_DECREASE_STORAGE_LOCATION_PRIORITY = "decreaseStorageLocationPriority";
+    public static final String METHOD_UPDATE_LOCATION_CONFIGURATION = "updateLocationConfiguration";
+    public static final String METHOD_CONFIGURE_LOCATION = "configureLocation";
+    public static final String METHOD_DELETE = "delete";
+    public static final String METHOD_COPY_FILES = "copyFiles";
+    public static final String METHOD_COPY = "copy";
+    public static final String METHOD_DOWN = "down";
+    public static final String METHOD_UP = "up";
 
     @Autowired
     private StorageLocationService service;
@@ -291,7 +301,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
             return resource;
         }
         if ((location.getName() != null) && location.getName().equals(CacheService.CACHE_NAME)) {
-            resourceService.addLink(resource, this.getClass(), "deleteFiles", LinkRelation.of("deleteFiles"),
+            resourceService.addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
             return resource;
@@ -300,31 +310,31 @@ public class StorageLocationController implements IResourceController<StorageLoc
                 : StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
             if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
-                resourceService.addLink(resource, this.getClass(), "increaseStorageLocationPriority",
-                                        LinkRelation.of("up"),
+                resourceService.addLink(resource, this.getClass(), METHOD_INCREASE_STORAGE_LOCATION_PRIORITY,
+                                        LinkRelation.of(METHOD_UP),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
             if (!location.getConfiguration().getPriority().equals(storageLocationConfigurationService
                     .getLowestPriority(location.getConfiguration().getStorageType()))) {
-                resourceService.addLink(resource, this.getClass(), "decreaseStorageLocationPriority",
-                                        LinkRelation.of("down"),
+                resourceService.addLink(resource, this.getClass(), METHOD_DECREASE_STORAGE_LOCATION_PRIORITY,
+                                        LinkRelation.of(METHOD_DOWN),
                                         MethodParamFactory.build(String.class, location.getName()));
             }
-            resourceService.addLink(resource, this.getClass(), "copyFiles", LinkRelation.of("copy"),
+            resourceService.addLink(resource, this.getClass(), METHOD_COPY_FILES, LinkRelation.of(METHOD_COPY),
                                     MethodParamFactory.build(CopyFilesParametersDTO.class));
-            resourceService.addLink(resource, this.getClass(), "deleteFiles", LinkRelation.of("deleteFiles"),
+            resourceService.addLink(resource, this.getClass(), METHOD_DELETE_FILES, LinkRelation.of(METHOD_DELETE_FILES),
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
         }
         // If storage location is configured so delete & edit End-point is also available
         if ((location.getConfiguration() != null) && (location.getConfiguration().getId() != null)) {
-            resourceService.addLink(resource, this.getClass(), "updateLocationConfiguration", LinkRels.UPDATE,
+            resourceService.addLink(resource, this.getClass(), METHOD_UPDATE_LOCATION_CONFIGURATION, LinkRels.UPDATE,
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(StorageLocationDTO.class));
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+            resourceService.addLink(resource, this.getClass(), METHOD_DELETE, LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, location.getName()));
         } else {
-            resourceService.addLink(resource, this.getClass(), "configureLocation", LinkRels.UPDATE,
+            resourceService.addLink(resource, this.getClass(), METHOD_CONFIGURE_LOCATION, LinkRels.UPDATE,
                                     MethodParamFactory.build(StorageLocationDTO.class));
         }
         return resource;

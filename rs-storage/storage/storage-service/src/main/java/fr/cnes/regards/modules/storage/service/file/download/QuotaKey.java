@@ -26,8 +26,12 @@ public final class QuotaKey {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         QuotaKey quotaKey = (QuotaKey) o;
         return Objects.equals(tenant, quotaKey.tenant) &&
             Objects.equals(userEmail, quotaKey.userEmail);

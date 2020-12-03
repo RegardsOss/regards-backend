@@ -36,6 +36,11 @@ import java.util.Optional;
 @Repository
 public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
+    public static final String INSTANCE = "instance";
+    public static final String EMAIL = "email";
+    public static final String COUNTER = "counter";
+    public static final String GAUGE = "gauge";
+    public static final String EXPIRY = "expiry";
     @Autowired
     private IDefaultDownloadQuotaLimitsEntityRepository delegateDefaultQuotaLimitsRepo;
 
@@ -124,17 +129,17 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
                 " DO UPDATE " +
                 " SET counter  = c.counter + EXCLUDED.counter " +
                 " RETURNING *", UserDownloadQuotaEntity.class)
-            .setParameter("instance", instanceId)
-            .setParameter("email", email)
-            .setParameter("counter", diff)
+            .setParameter(INSTANCE, instanceId)
+            .setParameter(EMAIL, email)
+            .setParameter(COUNTER, diff)
             .getSingleResult();
 
         UserDownloadQuotaEntity entity = (UserDownloadQuotaEntity) entityManager.createNativeQuery(
             "SELECT * FROM {h-schema}t_user_download_quota_counter " +
                 " WHERE instance_id  = :instance " +
                 "   AND email        = :email", UserDownloadQuotaEntity.class)
-            .setParameter("instance", instanceId)
-            .setParameter("email", email)
+            .setParameter(INSTANCE, instanceId)
+            .setParameter(EMAIL, email)
             .getSingleResult();
 
         return mapper.toDomain(entity);
@@ -151,18 +156,18 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
                 " SET gauge  = r.gauge + EXCLUDED.gauge " +
                 "   , expiry = EXCLUDED.expiry " +
                 " RETURNING *", UserDownloadRateEntity.class)
-            .setParameter("instance", instanceId)
-            .setParameter("email", email)
-            .setParameter("gauge", diff)
-            .setParameter("expiry", expiry)
+            .setParameter(INSTANCE, instanceId)
+            .setParameter(EMAIL, email)
+            .setParameter(GAUGE, diff)
+            .setParameter(EXPIRY, expiry)
             .getSingleResult();
 
         UserDownloadRateEntity entity = (UserDownloadRateEntity) entityManager.createNativeQuery(
             "SELECT * FROM {h-schema}t_user_download_rate_gauge " +
                 " WHERE instance_id  = :instance " +
                 "   AND email        = :email", UserDownloadRateEntity.class)
-            .setParameter("instance", instanceId)
-            .setParameter("email", email)
+            .setParameter(INSTANCE, instanceId)
+            .setParameter(EMAIL, email)
             .getSingleResult();
 
         return mapper.toDomain(entity);

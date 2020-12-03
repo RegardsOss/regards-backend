@@ -103,8 +103,12 @@ public class UserDownloadQuotaEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserDownloadQuotaEntity that = (UserDownloadQuotaEntity) o;
         return Objects.equals(id, that.id) &&
             Objects.equals(instance, that.instance) &&

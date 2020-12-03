@@ -169,14 +169,17 @@ public class FileStorageRequestDTO {
 
     @Override
     public String toString() {
-        return "FileStorageRequestDTO [" + (fileName != null ? "fileName=" + fileName + ", " : "")
-                + (checksum != null ? "checksum=" + checksum + ", " : "")
-                + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
-                + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
-                + (owner != null ? "owner=" + owner + ", " : "") + (type != null ? "type=" + type + ", " : "")
-                + (originUrl != null ? "originUrl=" + originUrl + ", " : "")
-                + (storage != null ? "storage=" + storage + ", " : "")
-                + (subDirectory != null ? "subDirectory=" + subDirectory : "") + "]";
+        return "FileStorageRequestDTO ["
+            + (fileName != null ? "fileName=" + fileName + ", " : "")
+            + (checksum != null ? "checksum=" + checksum + ", " : "")
+            + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
+            + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
+            + (owner != null ? "owner=" + owner + ", " : "")
+            + (type != null ? "type=" + type + ", " : "")
+            + (originUrl != null ? "originUrl=" + originUrl + ", " : "")
+            + (storage != null ? "storage=" + storage + ", " : "")
+            + (subDirectory != null ? "subDirectory=" + subDirectory : "")
+            + "]";
     }
 
 }

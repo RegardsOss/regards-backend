@@ -176,7 +176,9 @@ public class QuotaManagerImpl implements IQuotaManager {
     // public just to let Spring do its proxy-thing without messing up my transactions
     public void syncGauges(String tenant) {
         // create critical section, just in case because logic not thread-safe
-        while(!inSync.compareAndSet(false, true));
+        while(!inSync.compareAndSet(false, true)) {
+            // wait until we get the lock
+        };
 
         try {
             // sync will start, diffsAcc should be initialized if not found

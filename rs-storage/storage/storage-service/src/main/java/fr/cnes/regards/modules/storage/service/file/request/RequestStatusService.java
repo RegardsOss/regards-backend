@@ -71,6 +71,7 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 public class RequestStatusService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestStatusService.class);
+    public static final String TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES = "Request has been manually canceled. %s";
 
     @Autowired
     private IFileDeletetionRequestRepository deletionReqRepo;
@@ -233,7 +234,7 @@ public class RequestStatusService {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
             storageReqRepo.updateError(
-                                       FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                       FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
                                                                               OffsetDateTime.now().toString()),
                                        r.getId());
         }
@@ -249,7 +250,7 @@ public class RequestStatusService {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
             deletionReqRepo.updateError(
-                                        FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                        FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
                                                                                OffsetDateTime.now().toString()),
                                         r.getId());
         }
@@ -260,7 +261,7 @@ public class RequestStatusService {
     public void stopCopyRequests() {
         Page<FileCopyRequest> pendings = copyReqRepo.findByStatus(FileRequestStatus.PENDING, PageRequest.of(0, 10_000));
         for (FileCopyRequest r : pendings) {
-            copyReqRepo.updateError(FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+            copyReqRepo.updateError(FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
                                                                            OffsetDateTime.now().toString()),
                                     r.getId());
         }
@@ -276,7 +277,7 @@ public class RequestStatusService {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
             cacheReqRepo.updateError(
-                                     FileRequestStatus.ERROR, String.format("Request has been manually canceled. %s",
+                                     FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
                                                                             OffsetDateTime.now().toString()),
                                      r.getId());
         }

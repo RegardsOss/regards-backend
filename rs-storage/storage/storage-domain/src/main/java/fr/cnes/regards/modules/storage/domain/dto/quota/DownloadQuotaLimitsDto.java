@@ -50,8 +50,12 @@ public class DownloadQuotaLimitsDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DownloadQuotaLimitsDto that = (DownloadQuotaLimitsDto) o;
         return Objects.equals(email, that.email) &&
             Objects.equals(maxQuota, that.maxQuota) &&

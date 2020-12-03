@@ -22,7 +22,7 @@ import java.util.Objects;
 
 public class UserQuotaAggregate {
 
-    private Long counter;
+    private final Long counter;
 
     public UserQuotaAggregate(Long counter) {
         this.counter = counter;
@@ -34,8 +34,12 @@ public class UserQuotaAggregate {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserQuotaAggregate userGauge = (UserQuotaAggregate) o;
         return Objects.equals(counter, userGauge.counter);
     }

@@ -9,7 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 public class QuotaConfiguration {
 
     @Configuration
-    public class QuotaManagerConfiguration {
+    public static class QuotaManagerConfiguration {
 
         public static final String RATE_EXPIRATION_TICKING_SCHEDULER = "rateExpirationTickingScheduler";
         public static final String SYNC_TICKING_SCHEDULER = "syncTickingScheduler";
@@ -29,7 +29,7 @@ public class QuotaConfiguration {
     }
 
     @Configuration
-    public class QuotaExceededReporterConfiguration {
+    public static class QuotaExceededReporterConfiguration {
 
         public static final String REPORT_TICKING_SCHEDULER = "reportTickingScheduler";
 

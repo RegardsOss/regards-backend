@@ -173,14 +173,19 @@ public class FileReferenceRequestDTO {
 
     @Override
     public String toString() {
-        return "FileReferenceRequestDTO [" + (fileName != null ? "fileName=" + fileName + ", " : "")
-                + (checksum != null ? "checksum=" + checksum + ", " : "")
-                + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
-                + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
-                + (fileSize != null ? "fileSize=" + fileSize + ", " : "")
-                + (height != null ? "height=" + height + ", " : "") + (width != null ? "width=" + width + ", " : "")
-                + (owner != null ? "owner=" + owner + ", " : "") + (storage != null ? "storage=" + storage + ", " : "")
-                + (url != null ? "url=" + url + ", " : "") + (type != null ? "type=" + type : "") + "]";
+        return "FileReferenceRequestDTO ["
+            + (fileName != null ? "fileName=" + fileName + ", " : "")
+            + (checksum != null ? "checksum=" + checksum + ", " : "")
+            + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
+            + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
+            + (fileSize != null ? "fileSize=" + fileSize + ", " : "")
+            + (height != null ? "height=" + height + ", " : "")
+            + (width != null ? "width=" + width + ", " : "")
+            + (owner != null ? "owner=" + owner + ", " : "")
+            + (storage != null ? "storage=" + storage + ", " : "")
+            + (url != null ? "url=" + url + ", " : "")
+            + (type != null ? "type=" + type : "")
+            + "]";
     }
 
 }

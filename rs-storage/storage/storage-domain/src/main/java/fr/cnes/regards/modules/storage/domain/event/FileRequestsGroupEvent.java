@@ -162,9 +162,12 @@ public class FileRequestsGroupEvent implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileRequestEvent [" + (groupId != null ? "groupId=" + groupId + ", " : "")
-                + (state != null ? "state=" + state + ", " : "") + (type != null ? "type=" + type + ", " : "")
-                + (errors != null ? "errors=" + errors : "") + "]";
+        return "FileRequestEvent ["
+            + (groupId != null ? "groupId=" + groupId + ", " : "")
+            + (state != null ? "state=" + state + ", " : "")
+            + (type != null ? "type=" + type + ", " : "")
+            + (errors != null ? "errors=" + errors : "")
+            + "]";
     }
 
 }

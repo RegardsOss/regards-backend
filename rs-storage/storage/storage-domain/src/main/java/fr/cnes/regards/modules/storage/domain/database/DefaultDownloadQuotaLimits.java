@@ -41,8 +41,12 @@ public class DefaultDownloadQuotaLimits {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DefaultDownloadQuotaLimits that = (DefaultDownloadQuotaLimits) o;
         return Objects.equals(maxQuota, that.maxQuota) &&
             Objects.equals(rateLimit, that.rateLimit);

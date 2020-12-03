@@ -22,7 +22,7 @@ import java.util.Objects;
 
 public class UserRateAggregate {
 
-    private Long gauge;
+    private final Long gauge;
 
     public UserRateAggregate(Long gauge) {
         this.gauge = gauge;
@@ -34,8 +34,12 @@ public class UserRateAggregate {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         UserRateAggregate userGauge = (UserRateAggregate) o;
         return Objects.equals(gauge, userGauge.gauge);
     }
