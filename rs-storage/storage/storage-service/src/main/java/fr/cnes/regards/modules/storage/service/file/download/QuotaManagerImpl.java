@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,7 +78,7 @@ public class QuotaManagerImpl implements IQuotaManager {
     // not final because tests use the setter to assert
     // not volatile because under normal conditions (i.e. not tests) this field is never reassigned
     private Map<String, Cache<String, UserDiffs>> userDiffsByTenant=
-        new HashMap<>();
+        new ConcurrentHashMap<>();
 
     // not final because tests use the setter to assert
     // not volatile because under normal conditions (i.e. not tests) this field is never reassigned
@@ -116,11 +117,7 @@ public class QuotaManagerImpl implements IQuotaManager {
         // init diffs and diffsAcc by tenant
         tenantResolver.getAllActiveTenants()
             .forEach(tenant -> {
-                userDiffsByTenant.put(tenant, Caffeine.newBuilder()
-                    .expireAfterAccess(30, TimeUnit.MINUTES)
-                    .maximumSize(10_000)
-                    .build()
-                );
+                getUserDiffsCache(tenant);
                 diffsAccumulatorByTenant.put(tenant, new java.util.HashMap<>());
             })
         ;
@@ -186,7 +183,7 @@ public class QuotaManagerImpl implements IQuotaManager {
                 new java.util.HashMap<>());
 
             // swap current instance diff counters for tenant users to 0 and get previous value
-            ConcurrentMap<String, UserDiffs> userDiffs = userDiffsByTenant.get(tenant).asMap();
+            ConcurrentMap<String, UserDiffs> userDiffs = getUserDiffsCache(tenant).asMap();
             Map<String, UserDiffs> currentSync = new HashMap<>();
             userDiffs.replaceAll((q, ud) -> {
                 currentSync.put(q, ud);
@@ -223,6 +220,14 @@ public class QuotaManagerImpl implements IQuotaManager {
         }
     }
 
+    private Cache<String, UserDiffs> getUserDiffsCache(String tenant) {
+        return userDiffsByTenant.computeIfAbsent(tenant, t -> Caffeine.newBuilder()
+            .expireAfterAccess(30, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build()
+        );
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<String, UserDiffs> flushSyncAndRefreshQuotas(Map<String, DiffSync> diffSyncs) {
         Map<String, UserDiffs> result = new HashMap<>();
@@ -250,7 +255,7 @@ public class QuotaManagerImpl implements IQuotaManager {
 
         runtimeTenantResolver.forceTenant(tenant);
 
-        Cache<String, UserDiffs> gaugeSyncs = userDiffsByTenant.get(tenant);
+        Cache<String, UserDiffs> gaugeSyncs = getUserDiffsCache(tenant);
         UserDiffs diffs = gaugeSyncs.get(email, ignored -> {
             // create its current instance quota/rate if not exist (diff = 0L so operation is idempotent and thus CAS-loop safe)
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, 0L);
@@ -283,7 +288,7 @@ public class QuotaManagerImpl implements IQuotaManager {
     public void increment(DownloadQuotaLimits quota) {
         String email = quota.getEmail();
 
-        Cache<String, UserDiffs> userDiffs = userDiffsByTenant.get(quota.getTenant());
+        Cache<String, UserDiffs> userDiffs = getUserDiffsCache(quota.getTenant());
         if (userDiffs.getIfPresent(email) == null) {
             throw new IllegalStateException("Cannot incr before get");
         }
@@ -302,7 +307,7 @@ public class QuotaManagerImpl implements IQuotaManager {
     public void decrement(DownloadQuotaLimits quota) {
         String email = quota.getEmail();
 
-        Cache<String, UserDiffs> userDiffs = userDiffsByTenant.get(quota.getTenant());
+        Cache<String, UserDiffs> userDiffs = getUserDiffsCache(quota.getTenant());
         if (userDiffs.getIfPresent(email) == null) {
             throw new IllegalStateException("Cannot decr before get");
         }

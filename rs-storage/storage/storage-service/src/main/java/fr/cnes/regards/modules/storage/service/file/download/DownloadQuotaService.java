@@ -393,7 +393,12 @@ public class DownloadQuotaService<T>
     }
 
     private DefaultDownloadQuotaLimits getDefaultLimits() {
-        return defaultLimits.get().get(runtimeTenantResolver.getTenant()).get();
+        return defaultLimits.updateAndGet(m ->
+            m.computeIfAbsent(
+                runtimeTenantResolver.getTenant(),
+                t -> self.initDefaultLimits()
+            )._2
+        ).get(runtimeTenantResolver.getTenant()).get();
     }
 
     public static abstract class ListUserQuotaLimitsResultException extends Exception {
