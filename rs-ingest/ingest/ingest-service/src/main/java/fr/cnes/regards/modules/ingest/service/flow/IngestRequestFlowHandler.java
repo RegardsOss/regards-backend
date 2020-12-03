@@ -69,4 +69,9 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
         return confProperties.getMaxBulkSize();
     }
 
+    @Override
+    public long getReceiveTimeout() {
+        return confProperties.getBatchReceiveTimeout();
+    }
+
 }
