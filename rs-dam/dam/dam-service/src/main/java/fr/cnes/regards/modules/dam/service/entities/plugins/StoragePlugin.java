@@ -138,7 +138,7 @@ public class StoragePlugin implements IStorageService {
         return FileStorageRequestDTO.build(file.getFilename(), file.getChecksum(), file.getDigestAlgorithm(),
                                            file.getMimeType().toString(), urn.toString(),
                                            String.format(URI_TEMPLATE, file.getUri(),
-                                                         this.rtTenantResolver.getTenant().toString()),
+                                                         this.tenantResolver.getTenant().toString()),
                                            this.storage, Optional.ofNullable(this.storageSubDirectory));
     }
 
