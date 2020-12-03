@@ -8,6 +8,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class QuotaConfiguration {
 
+    private QuotaConfiguration() {}
+
     @Configuration
     public static class QuotaManagerConfiguration {
 

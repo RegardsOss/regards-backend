@@ -437,7 +437,9 @@ public class DownloadQuotaService<T>
         public abstract Seq<Throwable> causes();
 
         public ListUserQuotaLimitsResultException compose(ListUserQuotaLimitsResultException other) {
-            if (other == null) { return this; }
+            if (other == null) {
+                return this;
+            }
             return new Multiple(this.causes().appendAll(other.causes()));
         }
 
