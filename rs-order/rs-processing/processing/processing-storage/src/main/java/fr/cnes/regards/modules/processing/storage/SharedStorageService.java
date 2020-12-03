@@ -165,8 +165,9 @@ public class SharedStorageService implements ISharedStorageService {
         try {
             return fromEpochMillisUTC(storedFilePath.toFile().lastModified());
         }
-        catch(Exception e) {
+        catch(RuntimeException e) {
             // Really not grave if we don't have the actual date...
+            LOGGER.debug("Could not get the actual date", e);
             return nowUtc();
         }
     }

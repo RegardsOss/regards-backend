@@ -293,7 +293,7 @@ public class AbstractProcessingTest {
             } finally {
                 socket.close();
             }
-        } catch (Exception e) {
+        } catch (IOException|RuntimeException e) {
             LOGGER.info("{}:{} not available", host, port, e);
             return false;
         }
