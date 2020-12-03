@@ -39,6 +39,7 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionNotificationPublisher.class);
 
     private static final String KEY_SEPARATOR = "#";
+    public static final String SESSION_TRACKED_ELEMENT_TEMPLATE = "Session tracked element {} = {}";
 
     @Value("${spring.application.name}")
     private String monitoringStep;
@@ -66,7 +67,7 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
         // Cache
         String key = getCacheKey(sessionOwner, session, property, notifState);
         notifCache.merge(key, value, Long::sum);
-        LOGGER.trace("Session tracked element {} = {}", key, notifCache.get(key));
+        LOGGER.trace(SESSION_TRACKED_ELEMENT_TEMPLATE, key, notifCache.get(key));
     }
 
     @Override
@@ -82,9 +83,9 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
         notifCache.merge(key, -value, Long::sum);
         if (notifCache.get(key) < 0) {
             // Value may be negative after restart!
-            LOGGER.warn("Session tracked element {} = {}", key, notifCache.get(key));
+            LOGGER.warn(SESSION_TRACKED_ELEMENT_TEMPLATE, key, notifCache.get(key));
         } else {
-            LOGGER.trace("Session tracked element {} = {}", key, notifCache.get(key));
+            LOGGER.trace(SESSION_TRACKED_ELEMENT_TEMPLATE, key, notifCache.get(key));
         }
     }
 
@@ -99,7 +100,7 @@ public class SessionNotificationPublisher implements ISessionNotificationClient 
         // Cache
         String key = getCacheKey(sessionOwner, session, property, notifState);
         stateCache.put(key, notifCache.get(key) + value);
-        LOGGER.trace("Session tracked element {} = {}", key, stateCache.get(key));
+        LOGGER.trace(SESSION_TRACKED_ELEMENT_TEMPLATE, key, stateCache.get(key));
     }
 
     private String getCacheKey(String sessionOwner, String session, String property,
