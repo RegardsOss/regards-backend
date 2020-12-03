@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterio
  */
 public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
 
-    private IEsRepository esRepo;
+    private final IEsRepository esRepo;
 
     public VersioningSearchVisitor(IEsRepository esRepo) {
         this.esRepo = esRepo;

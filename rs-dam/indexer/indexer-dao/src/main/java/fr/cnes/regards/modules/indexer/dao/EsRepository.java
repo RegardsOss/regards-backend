@@ -209,6 +209,17 @@ import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 @Repository
 public class EsRepository implements IEsRepository {
 
+    public static final String TOTAL_PREFIX = "total_";
+    public static final String REF_FILES_COUNT_SUFFIX = "_ref_files_count";
+    public static final String REF_FILES_SIZE_SUFFIX = "_ref_files_size";
+    public static final String REF_SUFFIX = "_ref";
+    public static final String NOT_REF_FILES_COUNT_SUFFIX = "_!ref_files_count";
+    public static final String NOT_REF_FILES_SIZE_SUFFIX = "_!ref_files_size";
+    public static final String NOT_REF_SUFFIX = "_!ref";
+    public static final String FEATURE_FILES_PREFIX = "feature.files.";
+    public static final String FILESIZE_SUFFIX = ".filesize";
+    public static final String REFERENCE_SUFFIX = ".reference";
+
     /**
      * Utility class to create a quadruple key used by loading cache mechanism (yes, it's a lazy how to)
      */
@@ -325,7 +336,7 @@ public class EsRepository implements IEsRepository {
     private final Gson gson;
 
     @Autowired
-    private AttrDescToJsonMapping toMapping;
+    private final AttrDescToJsonMapping toMapping;
 
     private RequestOptions options = RequestOptions.DEFAULT;
 
@@ -2077,13 +2088,13 @@ public class EsRepository implements IEsRepository {
 
                 // ref
                 // ref:count
-                String refCountName = "total_" + fileType + "_ref_files_count";
+                String refCountName = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
                 ValueCount refValueCount = ((Filter) aggs.get(refCountName)).getAggregations().get(refCountName);
                 // ref:size
-                String refSumName = "total_" + fileType + "_ref_files_size";
+                String refSumName = TOTAL_PREFIX + fileType + REF_FILES_SIZE_SUFFIX;
                 Sum refSum = ((Filter) aggs.get(refSumName)).getAggregations().get(refSumName);
                 // ref:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType + "_ref", (k, fs) -> {
+                summary.getFileTypesSummaryMap().compute(fileType + REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
                     }
@@ -2093,14 +2104,14 @@ public class EsRepository implements IEsRepository {
 
                 // !ref
                 // !ref:count
-                String notRefCountName = "total_" + fileType + "_!ref_files_count";
+                String notRefCountName = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
                 ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations()
                         .get(notRefCountName);
                 // !ref:size
-                String notRefSumName = "total_" + fileType + "_!ref_files_size";
+                String notRefSumName = TOTAL_PREFIX + fileType + NOT_REF_FILES_SIZE_SUFFIX;
                 Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations().get(notRefSumName);
                 // !ref:expose details in summary
-                summary.getFileTypesSummaryMap().compute(fileType + "_!ref", (k, fs) -> {
+                summary.getFileTypesSummaryMap().compute(fileType + NOT_REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
                     }
@@ -2137,30 +2148,30 @@ public class EsRepository implements IEsRepository {
                                                      new DocFilesSubSummary(Arrays.stream(fileTypes)
                                                                                     .flatMap(ft -> Stream.of(ft,
                                                                                                              ft
-                                                                                                                     + "_ref",
+                                                                                                                     + REF_SUFFIX,
                                                                                                              ft
-                                                                                                                     + "_!ref"))
+                                                                                                                     + NOT_REF_SUFFIX))
                                                                                     .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
-                    ValueCount refValueCount = ((Filter) discAggs.get(fileType + "_ref_files_count")).getAggregations()
-                            .get(fileType + "_ref_files_count");
-                    Sum refSum = ((Filter) discAggs.get(fileType + "_ref_files_size")).getAggregations()
-                            .get(fileType + "_ref_files_size");
+                    ValueCount refValueCount = ((Filter) discAggs.get(fileType + REF_FILES_COUNT_SUFFIX)).getAggregations()
+                            .get(fileType + REF_FILES_COUNT_SUFFIX);
+                    Sum refSum = ((Filter) discAggs.get(fileType + REF_FILES_SIZE_SUFFIX)).getAggregations()
+                            .get(fileType + REF_FILES_SIZE_SUFFIX);
 
-                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_ref");
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
                     refFilesSummary.addFilesCount(refValueCount.getValue());
                     refFilesSummary.addFilesSize((long) refSum.getValue());
 
-                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + "_!ref_files_count"))
-                            .getAggregations().get(fileType + "_!ref_files_count");
-                    Sum notRefSum = ((Filter) discAggs.get(fileType + "_!ref_files_size")).getAggregations()
-                            .get(fileType + "_!ref_files_size");
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                    Sum notRefSum = ((Filter) discAggs.get(fileType + NOT_REF_FILES_SIZE_SUFFIX)).getAggregations()
+                            .get(fileType + NOT_REF_FILES_SIZE_SUFFIX);
 
-                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_!ref");
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + NOT_REF_SUFFIX);
                     notRefFilesSummary.addFilesCount(notRefValueCount.getValue());
                     notRefFilesSummary.addFilesSize((long) notRefSum.getValue());
 
@@ -2186,12 +2197,12 @@ public class EsRepository implements IEsRepository {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            String fileSizeField = "feature.files." + fileType + ".filesize";
-            String fileReferenceField = "feature.files." + fileType + ".reference";
+            String fileSizeField = FEATURE_FILES_PREFIX + fileType + FILESIZE_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
 
             // file count
-            String refCount = "total_" + fileType + "_ref_files_count";
-            String notRefCount = "total_" + fileType + "_!ref_files_count";
+            String refCount = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCount = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
 
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
@@ -2203,8 +2214,8 @@ public class EsRepository implements IEsRepository {
                     .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
 
             // file size sum
-            String refSum = "total_" + fileType + "_ref_files_size";
-            String notRefSum = "total_" + fileType + "_!ref_files_size";
+            String refSum = TOTAL_PREFIX + fileType + REF_FILES_SIZE_SUFFIX;
+            String notRefSum = TOTAL_PREFIX + fileType + NOT_REF_FILES_SIZE_SUFFIX;
 
             FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
                     .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
@@ -2233,12 +2244,12 @@ public class EsRepository implements IEsRepository {
         }
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            String fileSizeField = "feature.files." + fileType + ".filesize";
-            String fileReferenceField = "feature.files." + fileType + ".reference";
+            String fileSizeField = FEATURE_FILES_PREFIX + fileType + FILESIZE_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
 
             // file count
-            String refCount = fileType + "_ref_files_count";
-            String notRefCount = fileType + "_!ref_files_count";
+            String refCount = fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCount = fileType + NOT_REF_FILES_COUNT_SUFFIX;
 
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
@@ -2250,8 +2261,8 @@ public class EsRepository implements IEsRepository {
                     .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
 
             // file size sum
-            String refSum = fileType + "_ref_files_size";
-            String notRefSum = fileType + "_!ref_files_size";
+            String refSum = fileType + REF_FILES_SIZE_SUFFIX;
+            String notRefSum = fileType + NOT_REF_FILES_SIZE_SUFFIX;
 
             FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
                     .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
@@ -2290,9 +2301,9 @@ public class EsRepository implements IEsRepository {
             Aggregations aggs = response.getAggregations();
             for (String fileType : fileTypes) {
                 // ref
-                Cardinality refCardinality = ((Filter) aggs.get("total_" + fileType + "_ref_files_count"))
-                        .getAggregations().get("total_" + fileType + "_ref_files_count");
-                summary.getFileTypesSummaryMap().compute(fileType + "_ref", (k, fs) -> {
+                Cardinality refCardinality = ((Filter) aggs.get(TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX))
+                        .getAggregations().get(TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX);
+                summary.getFileTypesSummaryMap().compute(fileType + REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(refCardinality.getValue(), 0);
                     }
@@ -2300,9 +2311,9 @@ public class EsRepository implements IEsRepository {
                 });
 
                 // !ref
-                Cardinality notRefCardinality = ((Filter) aggs.get("total_" + fileType + "_!ref_files_count"))
-                        .getAggregations().get("total_" + fileType + "_!ref_files_count");
-                summary.getFileTypesSummaryMap().compute(fileType + "_!ref", (k, fs) -> {
+                Cardinality notRefCardinality = ((Filter) aggs.get(TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                        .getAggregations().get(TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                summary.getFileTypesSummaryMap().compute(fileType + NOT_REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(notRefCardinality.getValue(), 0);
                     }
@@ -2333,24 +2344,24 @@ public class EsRepository implements IEsRepository {
                                                      new DocFilesSubSummary(Arrays.stream(fileTypes)
                                                                                     .flatMap(ft -> Stream.of(ft,
                                                                                                              ft
-                                                                                                                     + "_ref",
+                                                                                                                     + REF_SUFFIX,
                                                                                                              ft
-                                                                                                                     + "_!ref"))
+                                                                                                                     + NOT_REF_SUFFIX))
                                                                                     .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
-                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + "_ref_files_count"))
-                            .getAggregations().get(fileType + "_ref_files_count");
-                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + "_!ref_files_count"))
-                            .getAggregations().get(fileType + "_!ref_files_count");
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + REF_FILES_COUNT_SUFFIX);
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
 
-                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_ref");
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
                     refFilesSummary.addFilesCount(refCardinality.getValue());
 
-                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + "_!ref");
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + NOT_REF_SUFFIX);
                     notRefFilesSummary.addFilesCount(notRefCardinality.getValue());
 
                     FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
@@ -2377,12 +2388,12 @@ public class EsRepository implements IEsRepository {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
-            String fileReferenceField = "feature.files." + fileType + ".reference";
+            String fileUriField = FEATURE_FILES_PREFIX + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
 
             // file cardinality
-            String refCardinality = "total_" + fileType + "_ref_files_count";
-            String notRefCardinality = "total_" + fileType + "_!ref_files_count";
+            String refCardinality = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCardinality = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
 
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
@@ -2411,12 +2422,12 @@ public class EsRepository implements IEsRepository {
 
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            String fileUriField = "feature.files." + fileType + ".uri" + KEYWORD_SUFFIX;
-            String fileReferenceField = "feature.files." + fileType + ".reference";
+            String fileUriField = FEATURE_FILES_PREFIX + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
 
             // file cardinality
-            String refCardinality = fileType + "_ref_files_count";
-            String notRefCardinality = fileType + "_!ref_files_count";
+            String refCardinality = fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCardinality = fileType + NOT_REF_FILES_COUNT_SUFFIX;
 
             TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
             TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);

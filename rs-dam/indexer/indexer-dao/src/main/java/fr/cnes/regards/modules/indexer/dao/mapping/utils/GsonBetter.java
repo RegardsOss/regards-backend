@@ -4,6 +4,8 @@ import com.google.gson.*;
 
 public class GsonBetter {
 
+    private GsonBetter() {}
+
     public static JsonPrimitive str(String str) { return new JsonPrimitive(str); }
     public static JsonPrimitive num(int i) { return new JsonPrimitive(i); }
     public static JsonPrimitive num(double d) { return new JsonPrimitive(d); }
@@ -11,7 +13,9 @@ public class GsonBetter {
 
     public static JsonArray array(JsonElement... elements) {
         JsonArray arr = new JsonArray();
-        for (JsonElement el : elements) { arr.add(el); }
+        for (JsonElement el : elements) {
+            arr.add(el);
+        }
         return arr;
     }
 
@@ -32,7 +36,9 @@ public class GsonBetter {
 
     public static JsonObject object(KV... keyValues) {
         JsonObject obj = new JsonObject();
-        for (KV kv : keyValues) { obj.add(kv.key, kv.value); }
+        for (KV kv : keyValues) {
+            obj.add(kv.key, kv.value);
+        }
         return obj;
     }
     // Shortcuts when there is only one KV pair
