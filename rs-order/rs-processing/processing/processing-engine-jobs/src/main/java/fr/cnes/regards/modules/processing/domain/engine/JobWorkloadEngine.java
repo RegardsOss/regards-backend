@@ -77,7 +77,7 @@ public class JobWorkloadEngine implements IWorkloadEngine {
                     context.getBatch().getUser(), LaunchExecutionJob.class.getName());
 
             jobInfo.setExpirationDate(nowUtc().plus(context.getExec().getExpectedDuration()));
-            JobInfo pendingJob = jobInfoService.createAsPending(jobInfo);
+            JobInfo pendingJob = jobInfoService.createAsQueued(jobInfo);
 
             LOGGER.info("batch={} exec={} - Job created with ID {}", context.getBatch().getId(),
                         context.getExec().getId(), pendingJob.getId());

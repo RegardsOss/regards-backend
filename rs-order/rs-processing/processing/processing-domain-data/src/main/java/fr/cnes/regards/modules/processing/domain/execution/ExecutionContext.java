@@ -59,9 +59,9 @@ public class ExecutionContext {
         this(exec, batch, process, notifierFor, HashMap.empty());
     }
 
-    public Mono<ExecutionContext> sendEvent(Supplier<ExecutionEvent> event) {
+    public Mono<ExecutionContext> sendEvent(ExecutionEvent event) {
         return getEventNotifier()
-                .notifyEvent(event.get())
+                .notifyEvent(event)
                 .map(this::withExec);
     }
 

@@ -22,7 +22,6 @@ import io.vavr.Function2;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * This interface defines an executable which is a function taking a context
@@ -51,12 +50,12 @@ public interface IExecutable {
         return fn::apply;
     }
 
-    static IExecutable sendEvent(Supplier<ExecutionEvent> event) {
-        return context -> context.sendEvent(event).log();
+    static IExecutable sendEvent(Function<ExecutionContext, ExecutionEvent> eventFn) {
+        return context -> context.sendEvent(eventFn.apply(context)).log();
     }
 
     static IExecutable sendEvent(ExecutionEvent event) {
-        return context -> context.sendEvent(() -> event);
+        return sendEvent(ctx -> event);
     }
 
     /**

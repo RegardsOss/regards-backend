@@ -37,7 +37,6 @@ import fr.cnes.regards.modules.processing.order.*;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function2;
 import io.vavr.Tuple;
-import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +46,12 @@ import reactor.core.publisher.MonoSink;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static fr.cnes.regards.modules.processing.domain.PStep.failure;
-import static fr.cnes.regards.modules.processing.domain.PStep.running;
+import static fr.cnes.regards.modules.processing.domain.PStep.*;
 import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
 import static fr.cnes.regards.modules.processing.domain.engine.IExecutable.sendEvent;
 import static io.vavr.collection.List.ofAll;
@@ -114,23 +114,23 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
     @Override public IExecutable executable() {
         return sendEvent(prepareEvent())
-            .andThen(prepareWorkdir())
-            .andThen(sendEvent(runningEvent()))
-            .andThen(new SimpleShellProcessExecutable())
-            .andThen(storeOutputFiles())
+            .andThen(prepareWorkdir()
+                .andThen(sendEvent(runningEvent())
+                    .andThen(new SimpleShellProcessExecutable()
+                        .andThen(storeOutputFiles()))))
             .onError(failureEvent());
     }
 
     protected Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
-        return (ctx, t) -> ctx.sendEvent(() -> event(failure(t.getMessage())));
+        return (ctx, t) -> ctx.sendEvent(event(failure(t.getMessage())));
     }
 
-    protected Supplier<ExecutionEvent> runningEvent() {
-        return () -> event(running("Launch script"));
+    protected Function<ExecutionContext, ExecutionEvent> runningEvent() {
+        return ctx -> event(running(String.format("Launch script %s | execId=%s", shellScriptName, ctx.getExec().getId())));
     }
 
-    protected Supplier<ExecutionEvent> prepareEvent() {
-        return () -> event(PStep.prepare("Load input file to workdir"));
+    protected Function<ExecutionContext, ExecutionEvent> prepareEvent() {
+        return ctx -> event(prepare(String.format("Load input files into workdir | execId=" + ctx.getExec().getId())));
     }
 
     protected <T> io.vavr.collection.List<T> empty() {
@@ -177,7 +177,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
         @Override public void onStdout(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
-            LOGGER.info("batch={} exec={} process={} : {}",
+            LOGGER.info("batch={} exec={} process={} :\n{}",
                 ctx.getBatch().getId(),
                 ctx.getExec().getId(),
                 shellScriptName,
@@ -186,7 +186,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         }
         @Override public void onStderr(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
-            LOGGER.error("batch={} exec={} process={} : {}",
+            LOGGER.error("batch={} exec={} process={} :\n{}",
                 ctx.getBatch().getId(),
                 ctx.getExec().getId(),
                 shellScriptName,
@@ -210,24 +210,23 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         }
 
         public Mono<? extends ExecutionContext> executeInWorkdir(ExecutionContext ctx, ExecutionLocalWorkdir workdir) {
-            NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
-            pb.environment().putAll(ctx.getBatch().getUserSuppliedParameters()
-                                            .toJavaMap(v -> Tuple.of(v.getName(), v.getValue())));
-            AtomicReference<NuProcess> nuProcessRef = new AtomicReference<>();
+            Map<String, String> envVarsMap = ctx
+                    .getBatch()
+                    .getUserSuppliedParameters()
+                    .toJavaMap(v -> Tuple.of(v.getName(), v.getValue()));
 
-            IExecutionEventNotifier eventNotifier = ctx.getEventNotifier();
+            NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
+            pb.environment().putAll(envVarsMap);
 
             return Mono.create(sink -> {
                 try {
                     ShellScriptNuProcessHandler handler = new ShellScriptNuProcessHandler(ctx, sink);
                     pb.setProcessListener(handler);
                     pb.setCwd(workdir.getBasePath());
-
-                    NuProcess process = pb.start();
-                    nuProcessRef.set(process);
+                    pb.start();
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
-                    eventNotifier.apply(event(failure(e.getMessage())));
+                    sink.error(e);
                 }
             });
         }

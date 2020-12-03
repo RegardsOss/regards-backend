@@ -60,7 +60,7 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
 
     private final IPProcessRepository processRepo;
 
-    private final PExecution execution;
+    private PExecution execution;
 
     public ExecutionEventNotifierImpl(IPExecutionRepository execRepo, IPOutputFilesRepository outputFilesRepo,
             IExecutionResultEventSender execResultSender, IPProcessRepository processRepo, PExecution execution) {
@@ -73,8 +73,11 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
 
     @Override
     public Mono<PExecution> notifyEvent(ExecutionEvent event) {
-        return registerOutputFiles(execution, event.outputFiles()).flatMap(exec -> registerStep(event, exec))
-                .flatMap(exec -> sendResult(event, exec)).subscriberContext(addInContext(PExecution.class, execution));
+        return execRepo.findById(execution.getId())
+                .flatMap(exec -> registerOutputFiles(execution, event.outputFiles()))
+                .flatMap(exec -> registerStep(event, exec))
+                .flatMap(exec -> sendResult(event, exec))
+                .subscriberContext(addInContext(PExecution.class, execution));
     }
 
     private Mono<PExecution> sendResult(ExecutionEvent event, PExecution exec) {
@@ -90,11 +93,17 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
             UUID processBusinessId = exec.getProcessBusinessId();
             return processRepo.findByTenantAndProcessBusinessID(exec.getTenant(), processBusinessId)
                     .flatMap(process -> {
-                        PExecutionResultEvent resultEvent = new PExecutionResultEvent(exec.getId(),
-                                exec.getExecutionCorrelationId(), exec.getBatchId(), exec.getBatchCorrelationId(),
-                                processBusinessId, process.getProcessInfo(), event.getStep().getStatus(),
+                        PExecutionResultEvent resultEvent = new PExecutionResultEvent(
+                                exec.getId(),
+                                exec.getExecutionCorrelationId(),
+                                exec.getBatchId(),
+                                exec.getBatchCorrelationId(),
+                                processBusinessId,
+                                process.getProcessInfo(),
+                                event.getStep().getStatus(),
                                 event.getOutputFiles().map(POutputFileDTO::toDto),
-                                List.of(event.getStep().getMessage()));
+                                List.of(event.getStep().getMessage())
+                        );
                         return execResultSender.send(exec.getTenant(), resultEvent).map(x -> exec);
                     });
         } else {
@@ -106,9 +115,13 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
         if (outputFiles.isEmpty()) {
             return Mono.just(exec);
         } else {
-            return outputFilesRepo.save(Flux.fromIterable(outputFiles)).last().map(x -> exec)
-                    .onErrorMap(mustWrap(), t -> new PersistOutputFilesException(exec,
-                            "Persisting output file failed: " + t.getMessage(), t));
+            return outputFilesRepo.save(Flux.fromIterable(outputFiles))
+                .last()
+                .map(x -> exec)
+                .onErrorMap(
+                    mustWrap(),
+                    t -> new PersistOutputFilesException(exec, "Persisting output file failed: " + t.getMessage(), t)
+                );
         }
     }
 
@@ -129,14 +142,12 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
     }
 
     public static class PersistOutputFilesException extends ProcessingExecutionException {
-
         public PersistOutputFilesException(PExecution exec, String message, Throwable throwable) {
             super(PERSIST_OUTPUT_FILES_ERROR, exec, message, throwable);
         }
     }
 
     public static class PersistExecutionStepException extends ProcessingExecutionException {
-
         public PersistExecutionStepException(PExecution exec, String message, Throwable throwable) {
             super(PERSIST_EXECUTION_STEP_ERROR, exec, message, throwable);
         }

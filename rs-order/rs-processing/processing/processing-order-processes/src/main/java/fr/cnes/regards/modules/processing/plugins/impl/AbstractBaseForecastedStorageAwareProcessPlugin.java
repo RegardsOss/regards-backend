@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
@@ -62,7 +63,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
             PExecution exec = context.getExec();
             return context.getParam(ExecutionLocalWorkdir.class)
                 .flatMap(wd -> storageService.storeResult(context, wd))
-                .flatMap(out -> context.sendEvent(() -> event(out)))
+                .flatMap(out -> context.sendEvent(event(PStep.success(""), out)))
                 .subscriberContext(addInContext(PExecution.class, exec));
         };
     }
