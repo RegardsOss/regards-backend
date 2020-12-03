@@ -26,30 +26,34 @@ import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
-import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
-import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.storage.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.cnes.regards.modules.processing.utils.OrderInputFileMetadataUtils.inputMetadataAsMap;
@@ -57,9 +61,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-public class SimpleShellProcessPluginTest {
+public class SimpleShellProcessManyToOnePluginTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessPluginTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessManyToOnePluginTest.class);
 
     @Test
     public void runSimpleScript() throws Exception {
@@ -70,13 +74,17 @@ public class SimpleShellProcessPluginTest {
         Path tempStorageBase = Files.createTempDirectory("storage");
         ExecutionLocalWorkdir workdir = new ExecutionLocalWorkdir(tempWorkdirBase);
 
-        IExecutionLocalWorkdirService workdirService = Mockito.mock(IExecutionLocalWorkdirService.class);
-        ISharedStorageService storageService = Mockito.mock(ISharedStorageService.class);
+        IDownloadService downloadService = (file, dest) -> Mono.fromCallable(() -> {
+            FileUtils.copyFile(new File(file.getUrl().toURI().toString().replace("file:", "")), dest.toFile());
+            return dest;
+        });
+        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
+        ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
 
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessPlugin shellProcessPlugin = makePlugin();
+        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin).block();
@@ -94,19 +102,24 @@ public class SimpleShellProcessPluginTest {
                     .map(exec::withSteps)
         );
 
+        CountDownLatch latch = new CountDownLatch(1);
         IExecutable executable = shellProcessPlugin.executable();
-        executable.execute(ctx).subscribe(
-            c -> LOGGER.info("Success: {}", c),
-            e -> LOGGER.error("Failure", e)
-        );
+        executable.execute(ctx)
+            .subscribeOn(Schedulers.immediate())
+            .subscribe(
+                c -> LOGGER.info("Success: {}", c),
+                e -> LOGGER.error("Failure", e),
+                latch::countDown
+            );
 
+        latch.await(1, TimeUnit.MINUTES);
         LOGGER.info("Steps during execution: {}", steps.get());
     }
 
     @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
         UUID bid = UUID.randomUUID();
         PluginConfiguration pc = new PluginConfiguration("label",
-                                                            SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN);
+                                                            SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN);
         pc.setBusinessId(bid.toString());
 
         return new RightsPluginConfiguration(
@@ -159,14 +172,18 @@ public class SimpleShellProcessPluginTest {
         };
     }
 
-    private SimpleShellProcessPlugin makePlugin() {
-        SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin();
+    private SimpleShellProcessOneToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
+        SimpleShellProcessOneToOnePlugin shellProcessPlugin = new SimpleShellProcessOneToOnePlugin();
+
+        shellProcessPlugin.setWorkdirService(workdirService);
+        shellProcessPlugin.setStorageService(storageService);
+
         // TODO: try removing these two setters to fix a cast exception
         shellProcessPlugin.setDurationForecast("10min");
         shellProcessPlugin.setSizeForecast("*1");
 
-        shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/simpleScript.sh").toFile().getAbsolutePath());
-        shellProcessPlugin.setEnvVariableNames(List.of("SIMPLE_FOO", "SIMPLE_BAR").toJavaList());
+        shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/tarInputs.sh").toFile().getAbsolutePath());
+        shellProcessPlugin.setEnvVariableNames(List.of("OUTPUT_NAME").toJavaList());
 
         return shellProcessPlugin;
 
@@ -198,8 +215,7 @@ public class SimpleShellProcessPluginTest {
             process.getProcessId(),
             "tenant", "user", "role",
             List.of(
-                new ExecutionStringParameterValue("SIMPLE_FOO", "foo"),
-                new ExecutionStringParameterValue("SIMPLE_BAR", "bar")
+                new ExecutionStringParameterValue("OUTPUT_NAME", "tarred_file")
             ),
             HashMap.empty(),
             true

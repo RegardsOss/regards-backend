@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
 import io.vavr.collection.Map;
@@ -148,6 +149,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     }
 
     public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef) {
+        OrderProcessInfoMapper mapper = new OrderProcessInfoMapper();
         return Mono.defer(() -> tryToMono(processDef.sizeForecast())
             .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
                 .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName())
@@ -156,7 +158,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
                         return new PProcess.ConcretePProcess(
                                 UUID.fromString(pc.getBusinessId()),
                                 pc.getLabel(),
-                                addTenantRole(processDef.processInfo(), rpc.getTenant(), rpc.getRole()),
+                                addTenantRole(mapper.toMap(processDef.processInfo()), rpc.getTenant(), rpc.getRole()),
                                 pc.isActive(),
                                 processDef.batchChecker(),
                                 processDef.executionChecker(),

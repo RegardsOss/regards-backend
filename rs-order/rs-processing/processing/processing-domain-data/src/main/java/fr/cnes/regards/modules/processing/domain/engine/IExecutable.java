@@ -52,7 +52,7 @@ public interface IExecutable {
     }
 
     static IExecutable sendEvent(Supplier<ExecutionEvent> event) {
-        return context -> context.sendEvent(event);
+        return context -> context.sendEvent(event).log();
     }
 
     static IExecutable sendEvent(ExecutionEvent event) {

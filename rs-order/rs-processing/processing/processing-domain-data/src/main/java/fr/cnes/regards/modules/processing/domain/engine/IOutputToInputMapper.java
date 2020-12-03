@@ -57,6 +57,14 @@ public interface IOutputToInputMapper {
         return (ctx, out) -> List.empty();
     }
 
+
+    /** Provides an input/output mapper that always maps to everything.
+     * Some processes take all inputs and generate outputs from all of them. */
+    static IOutputToInputMapper allMappings() {
+        return (ctx, out) -> List.ofAll(ctx.getExec().getInputFiles());
+    }
+
+
     /** Provides an input/output mapper which looks at the file names without extension. */
     static IOutputToInputMapper sameNameWithoutExt() {
         return (ctx, out) -> {

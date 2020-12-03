@@ -18,6 +18,7 @@
 package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
 import io.vavr.collection.Map;
 
 /**
@@ -33,6 +34,6 @@ public interface IProcessDefinition extends IProcessCheckerDefinition,
     IProcessForecastDefinition
 {
 
-    Map<String, String> processInfo();
+    OrderProcessInfo processInfo();
 
 }

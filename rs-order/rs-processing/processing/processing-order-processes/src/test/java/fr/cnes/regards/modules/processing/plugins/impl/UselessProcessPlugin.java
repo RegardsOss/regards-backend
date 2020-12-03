@@ -18,10 +18,15 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
@@ -40,8 +45,13 @@ import reactor.core.publisher.Mono;
         url = "https://github.com/RegardsOss")
 public class UselessProcessPlugin implements IProcessDefinition {
 
-    @Override public Map<String, String> processInfo() {
-        return HashMap.empty();
+    @Override public OrderProcessInfo processInfo() {
+        return new OrderProcessInfo(
+            Scope.ITEM,
+            Cardinality.ONE_PER_INPUT_FILE,
+            List.of(DataType.RAWDATA),
+            new SizeLimit(SizeLimit.Type.FILES, 0L)
+        );
     }
 
     @Override public Try<IResultSizeForecast> sizeForecast() {

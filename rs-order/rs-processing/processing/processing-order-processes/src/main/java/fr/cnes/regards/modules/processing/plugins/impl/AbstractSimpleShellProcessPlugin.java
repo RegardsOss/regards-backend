@@ -61,47 +61,16 @@ import static io.vavr.collection.List.ofAll;
  *
  * @author gandrieu
  */
-@Plugin(
-        id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN,
-        version = "1.0.0-SNAPSHOT",
-        description = "Launch a shell script",
-        author = "REGARDS Team",
-        contact = "regards@c-s.fr",
-        license = "GPLv3",
-        owner = "CSSI",
-        url = "https://github.com/RegardsOss",
-        markdown =
-            "This plugin provides a fully customizable way to launch shell scripts.\n" +
-            "\n" +
-            "However, the shell scripts must conform to the following conventions:\n" +
-            "\n" +
-            "- the script must be executable and available in the PATH of the rs-processing instance,\n" +
-            "  or be given as an absolute path (in which case the full path must be accessible by the\n" +
-            "  java process launching rs-processing)\n" +
-            "- the script is invoked directly, with no command line arguments\n" +
-            "- all script parameters are set through environment variables, whose names are defined\n" +
-            "  in the plugin configuration, and set once and for all at the batch creation\n" +
-            "- the script is executed from a specific workdir for each execution, containing:\n" +
-            "    + an `input` folder with all the input files for the execution\n" +
-            "    + an empty `output` folder where the script must create all the output files\n" +
-            "- the script terminates with code 0 in case of success, any other code in case of failure\n" +
-            "- the script does not use the standard input\n" +
-            "- the script outputs its logs in the standard output\n" +
-            "- if the script uses executables, they must be installed, reachable and executable by the process" +
-            "  launching the rs-processing instance."
-)
-public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
+public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessPlugin.class);
-
-    public static final String SIMPLE_SHELL_PROCESS_PLUGIN = "SimpleShellProcessPlugin";
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSimpleShellProcessPlugin.class);
 
     @PluginParameter(
             name = "shellScript",
             label = "Shell script name or absolute path",
             description = "The script must be executable and reachable by rs-processing."
     )
-    private String shellScriptName;
+    protected String shellScriptName;
 
     @PluginParameter(
             name = "envVarNames",
@@ -109,7 +78,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             description = "List of the names of the environment variables needed to be set by the user when creating the batch.",
             optional = true
     )
-    private List<String> envVariableNames;
+    protected List<String> envVariableNames;
 
     public void setShellScriptName(String shellScriptName) {
         this.shellScriptName = shellScriptName;
@@ -118,7 +87,6 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     public void setEnvVariableNames(List<String> envVariableNames) {
         this.envVariableNames = envVariableNames;
     }
-
 
     @Override public ConstraintChecker<PBatch> batchChecker() {
         return ConstraintChecker.noViolation();
@@ -144,16 +112,6 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             ));
     }
 
-    @Override public Map<String, String> processInfo() {
-        OrderProcessInfo pi = new OrderProcessInfo(
-            Scope.ITEM,
-            Cardinality.ONE_PER_INPUT_FILE,
-            io.vavr.collection.List.of(DataType.RAWDATA),
-            new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L)
-        );
-        return new OrderProcessInfoMapper().toMap(pi);
-    }
-
     @Override public IExecutable executable() {
         return sendEvent(prepareEvent())
             .andThen(prepareWorkdir())
@@ -163,28 +121,26 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             .onError(failureEvent());
     }
 
-    private Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
+    protected Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
         return (ctx, t) -> ctx.sendEvent(() -> event(failure(t.getMessage())));
     }
 
-    private Supplier<ExecutionEvent> runningEvent() {
+    protected Supplier<ExecutionEvent> runningEvent() {
         return () -> event(running("Launch script"));
     }
 
-    private Supplier<ExecutionEvent> prepareEvent() {
+    protected Supplier<ExecutionEvent> prepareEvent() {
         return () -> event(PStep.prepare("Load input file to workdir"));
     }
 
-    private <T> io.vavr.collection.List<T> empty() {
+    protected <T> io.vavr.collection.List<T> empty() {
         return io.vavr.collection.List.empty();
     }
 
-
-
     class ShellScriptNuProcessHandler extends NuAbstractProcessHandler {
 
-        private final ExecutionContext ctx;
-        private final MonoSink<ExecutionContext> sink;
+        protected final ExecutionContext ctx;
+        protected final MonoSink<ExecutionContext> sink;
 
         ShellScriptNuProcessHandler(
                 ExecutionContext ctx,
@@ -199,7 +155,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             else { this.onFailure(i); }
         }
 
-        private void onFailure(int i) {
+        protected void onFailure(int i) {
             String message = String.format(
                 "correlationId=%s exec=%s process=%s : Exited with status code %d",
                     ctx.getBatch().getCorrelationId(),
@@ -210,7 +166,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             sink.error(new SimpleShellProcessExecutionException(message));
         }
 
-        private void onSuccess() {
+        protected void onSuccess() {
             LOGGER.info("batch={} exec={} process={} : Exited with status code 0",
                 ctx.getBatch().getId(),
                 ctx.getExec().getId(),
@@ -237,7 +193,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
                 msg
             );
         }
-        private String readBytesToString(ByteBuffer byteBuffer) {
+        protected String readBytesToString(ByteBuffer byteBuffer) {
             byte[] bytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(bytes);
             return new String(bytes);
@@ -248,7 +204,8 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
         @Override
         public Mono<ExecutionContext> execute(ExecutionContext ctx) {
-            return getWorkdirService().makeWorkdir(ctx.getExec())
+            return getWorkdirService()
+                .makeWorkdir(ctx.getExec())
                 .flatMap(workdir -> executeInWorkdir(ctx, workdir));
         }
 

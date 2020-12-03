@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.Seq;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Mono;
 
 import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
@@ -50,11 +51,11 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
             return workdirService.makeWorkdir(exec)
                 .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
                 .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
-                .subscriberContext(addInContext(PExecution.class, exec));
+                .subscriberContext(addInContext(PExecution.class, exec))
+                .switchIfEmpty(Mono.just(context))
+                .log();
         };
     }
-
-
 
     public IExecutable storeOutputFiles() {
         return context -> {
