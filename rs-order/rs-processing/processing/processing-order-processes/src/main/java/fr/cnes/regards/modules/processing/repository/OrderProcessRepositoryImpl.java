@@ -129,7 +129,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     private boolean eligibleClass(PluginConfiguration pc) {
         try {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
-            return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class);
+            return IProcessDefinition.class.isAssignableFrom(Class.forName(pluginClassName));
         } catch (ClassNotFoundException | RuntimeException e) {
             LOGGER.debug("Unable to find class matching class name for plugin configuration pc={}", pc, e);
             return false;

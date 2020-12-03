@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.urn.DataType;
@@ -51,8 +52,13 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -114,40 +120,48 @@ public class OrderProcessingService implements IOrderProcessingService {
             String user,
             String userRole,
             OrderCounts orderCounts
-    ) {
+    ) throws ModuleException {
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel);
 
         ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDescription();
         UUID processBusinessId = processDatasetDesc.getProcessBusinessId();
         String processIdStr = processBusinessId.toString();
-        PProcessDTO processDto = processingClient.findByUuid(processIdStr).getBody();
-
-        OrderProcessInfo orderProcessInfo = processInfoMapper.fromMap(processDto.getProcessInfo())
-                .getOrElseThrow(() -> new UnparsableProcessInfoException(
-                        String.format("Unparsable process infos: order=%s user=%s dsSel=%s processDto=%s",
-                                order.getId(), user, dsSel.getId(), processDto)));
-
-        List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
-
-        AtomicLong suborderCount = new AtomicLong(1);
-
-        OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
-                .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
-                .flatMap(featureGroup -> hasRequiredFilesInStorage(featureGroup)
-                        ? manageFeaturesWithFilesInStorage(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
-                        : manageFeaturesWithOnlyExternalFiles(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
-                )
-                .doOnNext(dsTask::addReliantTask)
-                .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
-                .reduce(OrderCounts.initial(), OrderCounts::add)
-                .block();
-
-        if (!dsTask.getReliantTasks().isEmpty()) {
-            order.addDatasetOrderTask(dsTask);
+        try {
+            ResponseEntity<PProcessDTO> response = processingClient.findByUuid(processIdStr);
+            if (response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+                PProcessDTO processDto = response.getBody();
+                OrderProcessInfo orderProcessInfo = processInfoMapper.fromMap(processDto.getProcessInfo())
+                        .getOrElseThrow(() -> new UnparsableProcessInfoException(
+                                String.format("Unparsable process infos: order=%s user=%s dsSel=%s processDto=%s",
+                                        order.getLabel(), user, dsSel.getId(), processDto)));
+        
+                List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
+        
+                AtomicLong suborderCount = new AtomicLong(1);
+        
+                OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
+                        .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
+                        .flatMap(featureGroup -> hasRequiredFilesInStorage(featureGroup)
+                                ? manageFeaturesWithFilesInStorage(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
+                                : manageFeaturesWithOnlyExternalFiles(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
+                        )
+                        .doOnNext(dsTask::addReliantTask)
+                        .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
+                        .reduce(OrderCounts.initial(), OrderCounts::add)
+                        .block();
+        
+                if (!dsTask.getReliantTasks().isEmpty()) {
+                    order.addDatasetOrderTask(dsTask);
+                }
+                
+                return OrderCounts.add(orderCounts, result);
+            } else {
+                throw new ModuleException("Error retrieving  process infor for id " + processIdStr) ;
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            throw new ModuleException(e.getMessage());
         }
-
-        return OrderCounts.add(orderCounts, result);
     }
 
     protected Publisher<FilesTask> manageFeaturesWithOnlyExternalFiles(
