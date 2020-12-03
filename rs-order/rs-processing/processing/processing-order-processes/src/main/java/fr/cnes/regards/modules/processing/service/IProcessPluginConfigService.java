@@ -17,14 +17,14 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.UUID;
+import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
 
 /**
  * This interface defines signatures to interact with {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}.
@@ -33,23 +33,23 @@ import java.util.UUID;
  */
 public interface IProcessPluginConfigService {
 
-    Flux<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs();
+    Collection<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs();
 
-    Mono<ProcessPluginConfigurationRightsDTO> findByBusinessId(UUID processBusinessId);
+    ProcessPluginConfigurationRightsDTO findByBusinessId(UUID processBusinessId);
 
-    Mono<ProcessPluginConfigurationRightsDTO> update(String tenant, UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto);
+    ProcessPluginConfigurationRightsDTO update(UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto);
 
-    Mono<ProcessPluginConfigurationRightsDTO> create(String tenant, ProcessPluginConfigurationRightsDTO rightsDto);
+    ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto);
 
-    Mono<Boolean> canDelete(UUID processBusinessId);
+    Boolean canDelete(UUID processBusinessId);
 
-    Mono<ProcessPluginConfigurationRightsDTO> delete(UUID processBusinessId, String tenant);
+    ProcessPluginConfigurationRightsDTO delete(UUID processBusinessId) throws DeleteAttemptOnUsedProcessException;
 
-    Mono<Void> putDatasetLinkedProcesses(List<UUID> processBusinessIds, String dataset);
+    void putDatasetLinkedProcesses(List<UUID> processBusinessIds, String dataset);
 
-    Flux<ProcessLabelDTO> getDatasetLinkedProcesses(String dataset);
+    Collection<ProcessLabelDTO> getDatasetLinkedProcesses(String dataset);
 
-    Mono<ProcessesByDatasetsDTO> findProcessesByDatasets(List<String> datasets);
+    ProcessesByDatasetsDTO findProcessesByDatasets(List<String> datasets);
 
-    Mono<Void> attachRoleToProcess(UUID processBusinessId, String userRole);
+    void attachRoleToProcess(UUID processBusinessId, String userRole);
 }

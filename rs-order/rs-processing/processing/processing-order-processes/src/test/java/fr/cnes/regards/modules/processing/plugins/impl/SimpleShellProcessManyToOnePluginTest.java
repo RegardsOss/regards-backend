@@ -17,33 +17,10 @@
 */
 package fr.cnes.regards.modules.processing.plugins.impl;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.processing.domain.*;
-import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
-import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
-import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
-import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
-import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
-import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
-import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
-import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.storage.*;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.List;
-import io.vavr.collection.Seq;
-import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
+import static fr.cnes.regards.modules.processing.utils.OrderInputFileMetadataUtils.inputMetadataAsMap;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -56,10 +33,43 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static fr.cnes.regards.modules.processing.utils.OrderInputFileMetadataUtils.inputMetadataAsMap;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import org.apache.commons.io.FileUtils;
+import org.jetbrains.annotations.NotNull;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.PProcess;
+import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
+import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
+import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
+import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
+import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
+import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
+import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
+import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
+import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
+import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
+import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
+import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
+import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.storage.SharedStorageService;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.List;
+import io.vavr.collection.Seq;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class SimpleShellProcessManyToOnePluginTest {
 
@@ -78,7 +88,8 @@ public class SimpleShellProcessManyToOnePluginTest {
             FileUtils.copyFile(new File(file.getUrl().toURI().toString().replace("file:", "")), dest.toFile());
             return dest;
         });
-        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
+        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase,
+                downloadService);
         ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
 
         IWorkloadEngine engine = makeEngine();
@@ -87,48 +98,32 @@ public class SimpleShellProcessManyToOnePluginTest {
         SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
-        PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin).block();
+        PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
         PBatch batch = makeBatch(batchId, process);
         PExecution exec = makeExec(execId, batchId, batch.getProcessBusinessId());
         AtomicReference<Seq<PStep>> steps = new AtomicReference<>(List.empty());
 
-
-        ExecutionContext ctx = new ExecutionContext(
-                exec,
-                batch,
-                process,
-                s ->  Mono
-                    .fromCallable(() -> steps.getAndUpdate(ss -> s.step().map(ss::append).getOrElse(ss)))
-                    .map(exec::withSteps)
-        );
+        ExecutionContext ctx = new ExecutionContext(exec, batch, process,
+                s -> Mono.fromCallable(() -> steps.getAndUpdate(ss -> s.step().map(ss::append).getOrElse(ss)))
+                        .map(exec::withSteps));
 
         CountDownLatch latch = new CountDownLatch(1);
         IExecutable executable = shellProcessPlugin.executable();
-        executable.execute(ctx)
-            .subscribeOn(Schedulers.immediate())
-            .subscribe(
-                c -> LOGGER.info("Success: {}", c),
-                e -> LOGGER.error("Failure", e),
-                latch::countDown
-            );
+        executable.execute(ctx).subscribeOn(Schedulers.immediate())
+                .subscribe(c -> LOGGER.info("Success: {}", c), e -> LOGGER.error("Failure", e), latch::countDown);
 
         latch.await(1, TimeUnit.MINUTES);
         LOGGER.info("Steps during execution: {}", steps.get());
     }
 
-    @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
+    @NotNull
+    public RightsPluginConfiguration makeRightsPluginConfig() {
         UUID bid = UUID.randomUUID();
         PluginConfiguration pc = new PluginConfiguration("label",
-                                                            SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN);
+                SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN);
         pc.setBusinessId(bid.toString());
 
-        return new RightsPluginConfiguration(
-                1L, pc, bid,
-                "tenant",
-                "EXPLOIT",
-                new String[]{},
-                false
-        );
+        return new RightsPluginConfiguration(1L, pc, bid, "EXPLOIT", new String[] {}, false);
     }
 
     private OrderProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
@@ -140,21 +135,20 @@ public class SimpleShellProcessManyToOnePluginTest {
         when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
                 .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
 
-        return new OrderProcessRepositoryImpl(
-                Mockito.mock(IPluginService.class),
-                engineRepo,
-                rightsRepo,
-                Mockito.mock(IRuntimeTenantResolver.class),
-                rolesChecker
-        );
+        return new OrderProcessRepositoryImpl(Mockito.mock(IPluginService.class), engineRepo, rightsRepo,
+                Mockito.mock(IRuntimeTenantResolver.class), rolesChecker);
     }
 
     private IWorkloadEngineRepository makeEngineRepo(IWorkloadEngine engine) {
         return new IWorkloadEngineRepository() {
-            @Override public Mono<IWorkloadEngine> findByName(String name) {
+
+            @Override
+            public Mono<IWorkloadEngine> findByName(String name) {
                 return Mono.just(engine);
             }
-            @Override public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {
+
+            @Override
+            public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {
                 return Mono.just(engine);
             }
         };
@@ -162,17 +156,25 @@ public class SimpleShellProcessManyToOnePluginTest {
 
     private IWorkloadEngine makeEngine() {
         return new IWorkloadEngine() {
-            @Override public String name() {
+
+            @Override
+            public String name() {
                 return "JOB";
             }
-            @Override public void selfRegisterInRepo() { }
-            @Override public Mono<PExecution> run(ExecutionContext context) {
+
+            @Override
+            public void selfRegisterInRepo() {
+            }
+
+            @Override
+            public Mono<PExecution> run(ExecutionContext context) {
                 return Mono.just(context.getExec());
             }
         };
     }
 
-    private SimpleShellProcessOneToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
+    private SimpleShellProcessOneToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService,
+            ISharedStorageService storageService) {
         SimpleShellProcessOneToOnePlugin shellProcessPlugin = new SimpleShellProcessOneToOnePlugin();
 
         shellProcessPlugin.setWorkdirService(workdirService);
@@ -190,36 +192,20 @@ public class SimpleShellProcessManyToOnePluginTest {
     }
 
     private PExecution makeExec(UUID execId, UUID batchId, UUID processBusinessId) throws Exception {
-        return new PExecution(
-            execId, "exec cid",  batchId, "batch cid",
-            Duration.ofSeconds(10),
-            List.of(
-                    new PInputFile("one", "one.raw", "text/plain", Paths.get("src/test/resources/one.raw").toUri().toURL(), 3L, "checksum", inputMetadataAsMap(false, "urn"), "one"),
-                    new PInputFile("two", "two.raw", "text/plain", Paths.get("src/test/resources/two.raw").toUri().toURL(), 3L, "checksum", inputMetadataAsMap(false, "urn"), "two")
-            ),
-            List.empty(),
-            "tenant",
-            "user@ema.il",
-            processBusinessId,
-            OffsetDateTime.now().minusMinutes(2),
-            OffsetDateTime.now().minusMinutes(1),
-            0,
-            true
-        );
+        return new PExecution(execId, "exec cid", batchId, "batch cid", Duration.ofSeconds(10),
+                List.of(new PInputFile("one", "one.raw", "text/plain",
+                        Paths.get("src/test/resources/one.raw").toUri().toURL(), 3L, "checksum",
+                        inputMetadataAsMap(false, "urn"), "one"),
+                        new PInputFile("two", "two.raw", "text/plain",
+                                Paths.get("src/test/resources/two.raw").toUri().toURL(), 3L, "checksum",
+                                inputMetadataAsMap(false, "urn"), "two")),
+                List.empty(), "tenant", "user@ema.il", processBusinessId, OffsetDateTime.now().minusMinutes(2),
+                OffsetDateTime.now().minusMinutes(1), 0, true);
     }
 
     private PBatch makeBatch(UUID batchId, PProcess process) {
-        return new PBatch(
-            "corr",
-            batchId,
-            process.getProcessId(),
-            "tenant", "user", "role",
-            List.of(
-                new ExecutionStringParameterValue("OUTPUT_NAME", "tarred_file")
-            ),
-            HashMap.empty(),
-            true
-        );
+        return new PBatch("corr", batchId, process.getProcessId(), "tenant", "user", "role",
+                List.of(new ExecutionStringParameterValue("OUTPUT_NAME", "tarred_file")), HashMap.empty(), true);
     }
 
 }

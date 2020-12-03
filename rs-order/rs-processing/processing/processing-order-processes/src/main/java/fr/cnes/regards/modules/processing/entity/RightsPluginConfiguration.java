@@ -61,10 +61,6 @@ public class RightsPluginConfiguration {
     @Column(name = "process_business_id")
     private UUID processBusinessId;
 
-    /** Redundant information which is however somewhat useful for filtering in certain cases. */
-    @Column(name = "tenant")
-    private String tenant;
-
     @Column(name = "user_role", columnDefinition = "text")
     private String role;
 
@@ -94,12 +90,11 @@ public class RightsPluginConfiguration {
         );
     }
 
-    public static RightsPluginConfiguration fromDto(String tenant, ProcessPluginConfigurationRightsDTO dto) {
+    public static RightsPluginConfiguration fromDto( ProcessPluginConfigurationRightsDTO dto) {
         return new RightsPluginConfiguration(
                 null,
                 dto.getPluginConfiguration(),
                 UUID.fromString(dto.getPluginConfiguration().getBusinessId()),
-                tenant,
                 dto.getRights().getRole(),
                 dto.getRights().getDatasets().toJavaArray(String[]::new),
                 dto.getRights().isLinkedToAllDatasets()

@@ -17,22 +17,30 @@
 */
 package fr.cnes.regards.modules.processing.controller;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
-import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
-import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
-import io.vavr.collection.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BY_DATASETS_SUFFIX;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.LINKDATASET_SUFFIX;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
+import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
+import io.vavr.collection.Map;
 
 /**
  * This class is the controller for manipulating {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}
@@ -44,14 +52,11 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.
 @RequestMapping(path = PROCESSPLUGIN_PATH)
 public class ProcessPluginDatasetController {
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
     private final IProcessPluginConfigService rightsConfigService;
 
     @Autowired
     public ProcessPluginDatasetController(IRuntimeTenantResolver runtimeTenantResolver,
-                                          IProcessPluginConfigService rightsConfigService) {
-        this.runtimeTenantResolver = runtimeTenantResolver;
+            IProcessPluginConfigService rightsConfigService) {
         this.rightsConfigService = rightsConfigService;
     }
 
@@ -59,21 +64,21 @@ public class ProcessPluginDatasetController {
     @ResourceAccess(description = "Find processes attached to any of the given dataset",
             role = DefaultRole.REGISTERED_USER)
     public Collection<ProcessLabelDTO> findProcessesByDataset(@PathVariable(DATASET_PARAM) String dataset) {
-        return rightsConfigService.getDatasetLinkedProcesses(dataset).collectList().block();
+        return rightsConfigService.getDatasetLinkedProcesses(dataset);
     }
 
     @PutMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Attach the given dataset to all the given processes", role = DefaultRole.ADMIN)
     public void attachDatasetToProcesses(@RequestBody List<UUID> processBusinessIds,
-                                         @PathVariable(DATASET_PARAM) String dataset) {
-        rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset).block();
+            @PathVariable(DATASET_PARAM) String dataset) {
+        rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset);
     }
 
     @PostMapping(path = BY_DATASETS_SUFFIX)
     @ResourceAccess(description = "Find processes attached to any of the given datasets",
             role = DefaultRole.REGISTERED_USER)
     public Map<String, List<ProcessLabelDTO>> findProcessesByDatasets(@RequestBody List<String> datasets) {
-        return rightsConfigService.findProcessesByDatasets(datasets).map(ProcessesByDatasetsDTO::getMap).block()
+        return rightsConfigService.findProcessesByDatasets(datasets).getMap()
                 .mapValues(io.vavr.collection.List::asJava);
     }
 

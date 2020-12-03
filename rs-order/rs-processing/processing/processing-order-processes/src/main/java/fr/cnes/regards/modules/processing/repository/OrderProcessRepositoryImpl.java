@@ -17,6 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.repository;
 
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
+
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -34,19 +46,8 @@ import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import fr.cnes.regards.modules.processing.plugins.exception.RightsPluginConfigurationNotFoundException;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-
-import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
-import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
 
 /**
  * This class is a concrete implementation of process repository based on {@link PluginConfiguration}.
@@ -69,13 +70,9 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     private final IRoleCheckerService roleChecker;
 
     @Autowired
-    public OrderProcessRepositoryImpl(
-            IPluginService pluginService,
-            IWorkloadEngineRepository enginRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
-            IRuntimeTenantResolver tenantResolver,
-            IRoleCheckerService roleChecker
-    ) {
+    public OrderProcessRepositoryImpl(IPluginService pluginService, IWorkloadEngineRepository enginRepo,
+            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IRuntimeTenantResolver tenantResolver,
+            IRoleCheckerService roleChecker) {
         this.pluginService = pluginService;
         this.enginRepo = enginRepo;
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
@@ -83,54 +80,49 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         this.roleChecker = roleChecker;
     }
 
-    @Override public Flux<PProcess> findAllByTenant(String tenant) {
-        return findRightsPluginConfigurations()
-                .flatMap(rights -> buildPProcess(tenant, rights));
+    @Override
+    public Flux<PProcess> findAllByTenant(String tenant) {
+        return findRightsPluginConfigurations().flatMap(rights -> buildPProcess(tenant, rights));
     }
 
-    @Override public Mono<PProcess> findByTenantAndProcessName(String tenant, String processName) {
-            return findAllByTenant(tenant)
-                    .filter(p -> p.getProcessName().equals(processName))
-                    .next();
+    @Override
+    public Mono<PProcess> findByTenantAndProcessName(String tenant, String processName) {
+        return findAllByTenant(tenant).filter(p -> p.getProcessName().equals(processName)).next();
     }
 
-    @Override public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
-        return findRightsPluginConfigurations()
-                .flatMap(rights -> buildPProcess(tenant, rights))
-                .filter(p -> p.getProcessId().equals(processId))
-                .next();
+    @Override
+    public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
+        return findRightsPluginConfigurations().flatMap(rights -> buildPProcess(tenant, rights))
+                .filter(p -> p.getProcessId().equals(processId)).next();
     }
 
-    @Override public Flux<PProcess> findAllByTenantAndUserRole(PUserAuth details) {
-        return findRightsPluginConfigurations()
-                .filterWhen(rights -> roleChecker.roleIsUnder(details, rights.getRole()))
+    @Override
+    public Flux<PProcess> findAllByTenantAndUserRole(PUserAuth details) {
+        return findRightsPluginConfigurations().filterWhen(rights -> roleChecker.roleIsUnder(details, rights.getRole()))
                 .flatMap(rights -> buildPProcess(details.getTenant(), rights));
     }
 
-    @Override public Mono<PProcess> findByBatch(PBatch batch) {
+    @Override
+    public Mono<PProcess> findByBatch(PBatch batch) {
         return findAllByTenant(batch.getTenant())
-                .filter(process -> process.getProcessId().equals(batch.getProcessBusinessId()))
-                .next();
+                .filter(process -> process.getProcessId().equals(batch.getProcessBusinessId())).next();
     }
 
     private Mono<PProcess> buildPProcess(String tenant, RightsPluginConfiguration rights) {
         return getProcessDefinition(tenant, rights.getPluginConfiguration().getBusinessId())
-                .flatMap(def -> fromPlugin(rights, def));
+                .flatMap(def -> fromPlugin(rights, def, tenant));
     }
 
     private Flux<PluginConfiguration> findPluginConfigurations() {
-        return Flux.fromIterable(pluginService.getAllPluginConfigurations())
-                .filter(this::eligibleClass);
+        return Flux.fromIterable(pluginService.getAllPluginConfigurations()).filter(this::eligibleClass);
     }
 
     private Flux<RightsPluginConfiguration> findRightsPluginConfigurations() {
-        return findPluginConfigurations()
-                .flatMap(this::getByPluginConfigurationId);
+        return findPluginConfigurations().flatMap(this::getByPluginConfigurationId);
     }
 
     private Mono<RightsPluginConfiguration> getByPluginConfigurationId(PluginConfiguration pc) {
-        return Mono.defer(() -> rightsPluginConfigRepo.findByPluginConfiguration(pc)
-                .map(Mono::just)
+        return Mono.defer(() -> rightsPluginConfigRepo.findByPluginConfiguration(pc).map(Mono::just)
                 .getOrElse(() -> Mono.error(new RightsPluginConfigurationNotFoundException(pc))));
     }
 
@@ -138,7 +130,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         try {
             String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
             return Class.forName(pluginClassName).isAssignableFrom(IProcessDefinition.class);
-        } catch (ClassNotFoundException|RuntimeException e) {
+        } catch (ClassNotFoundException | RuntimeException e) {
             LOGGER.debug("Unable to find class matching class name for plugin configuration pc={}", pc, e);
             return false;
         }
@@ -148,37 +140,22 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         return t.fold(Mono::error, Mono::just);
     }
 
-    public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef) {
+    public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
         OrderProcessInfoMapper mapper = new OrderProcessInfoMapper();
         return Mono.defer(() -> tryToMono(processDef.sizeForecast())
-            .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
-                .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName())
-                    .map(engine -> {
-                        PluginConfiguration pc = rpc.getPluginConfiguration();
-                        return new PProcess.ConcretePProcess(
-                                UUID.fromString(pc.getBusinessId()),
-                                pc.getLabel(),
-                                addTenantRole(mapper.toMap(processDef.processInfo()), rpc.getTenant(), rpc.getRole()),
-                                pc.isActive(),
-                                processDef.batchChecker(),
-                                processDef.executionChecker(),
-                                processDef.parameters(),
-                                sizeForecast,
-                                durationForecast,
-                                engine,
-                                processDef.executable(),
-                                processDef.inputOutputMapper()
-                        );
-                    })
-                )
-            )
-        );
+                .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
+                        .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName()).map(engine -> {
+                            PluginConfiguration pc = rpc.getPluginConfiguration();
+                            return new PProcess.ConcretePProcess(UUID.fromString(pc.getBusinessId()), pc.getLabel(),
+                                    addTenantRole(mapper.toMap(processDef.processInfo()), tenant, rpc.getRole()),
+                                    pc.isActive(), processDef.batchChecker(), processDef.executionChecker(),
+                                    processDef.parameters(), sizeForecast, durationForecast, engine,
+                                    processDef.executable(), processDef.inputOutputMapper());
+                        }))));
     }
 
     private Map<String, String> addTenantRole(Map<String, String> processInfo, String tenant, String role) {
-        return processInfo
-            .put(PROCESS_INFO_TENANT_PARAM_NAME, tenant)
-            .put(PROCESS_INFO_ROLE_PARAM_NAME, role);
+        return processInfo.put(PROCESS_INFO_TENANT_PARAM_NAME, tenant).put(PROCESS_INFO_ROLE_PARAM_NAME, role);
     }
 
     private Mono<IProcessDefinition> getProcessDefinition(String tenant, String processName) {
@@ -192,8 +169,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     }
 
     private <T> Mono<T> fromOptional(Callable<Optional<T>> copt) {
-        return Mono.fromCallable(copt)
-                .flatMap(o -> o.map(Mono::just).orElseGet(Mono::empty));
+        return Mono.fromCallable(copt).flatMap(o -> o.map(Mono::just).orElseGet(Mono::empty));
     }
 
 }
