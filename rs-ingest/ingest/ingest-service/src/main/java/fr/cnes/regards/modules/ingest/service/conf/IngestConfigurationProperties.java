@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.service.conf;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+
 /**
  * Ingest configuration properties
  *
@@ -33,6 +35,12 @@ public class IngestConfigurationProperties {
 
     @Value("${regards.ingest.max.bulk.size:1000}")
     private Integer maxBulkSize;
+
+    /**
+     * See {@link IBatchHandler#getReceiveTimeout} for more information
+     */
+    @Value("${regards.ingest.batch.messages.timeout:1000}")
+    private Long batchReceiveTimeout;
 
     /*
      * In minute.
@@ -55,4 +63,13 @@ public class IngestConfigurationProperties {
     public void setRemoteRequestTimeout(Long remoteRequestTimeout) {
         this.remoteRequestTimeout = remoteRequestTimeout;
     }
+
+    public Long getBatchReceiveTimeout() {
+        return batchReceiveTimeout;
+    }
+
+    public void setBatchReceiveTimeout(Long batchReceiveTimeout) {
+        this.batchReceiveTimeout = batchReceiveTimeout;
+    }
+
 }
