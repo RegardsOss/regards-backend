@@ -280,23 +280,17 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param target publishing scope
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected synchronized final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
-            int priority, boolean purgeQueue) {
+    protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
+                                     int priority, boolean purgeQueue) {
 
         final Class<?> eventType = event.getClass();
-
-        Boolean isFirstPublication = Boolean.FALSE;
-        if (!alreadyPublished.containsKey(eventType.getName())) {
-            alreadyPublished.put(eventType.getName(), Boolean.TRUE);
-            isFirstPublication = Boolean.TRUE; // First publication
-        }
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
 
             // Declare AMQP elements for first publication
-            if (isFirstPublication) {
+            if (!alreadyPublished.containsKey(eventType.getName())) {
                 amqpAdmin.declareDeadLetter();
 
                 // Declare exchange
@@ -321,6 +315,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
                     LOGGER.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
+                alreadyPublished.put(eventType.getName(), Boolean.TRUE);
             }
 
             // Publish
