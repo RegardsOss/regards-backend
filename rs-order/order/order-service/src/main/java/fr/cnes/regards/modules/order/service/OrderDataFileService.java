@@ -115,7 +115,10 @@ public class OrderDataFileService implements IOrderDataFileService {
         // In case FilesTask does not yet exist
         if (filesTask != null) {
             if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+                    || (f.getState() == FileState.ERROR)
+                    || (f.getState() == FileState.DOWNLOAD_ERROR)
+                    || (f.getState() == FileState.PROCESSING_ERROR))
+            ) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -270,7 +273,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos
                 .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED,
-                                                  FileState.DOWNLOAD_ERROR, FileState.ERROR)
+                        FileState.DOWNLOAD_ERROR, FileState.PROCESSING_ERROR, FileState.ERROR)
                 .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count } Files with status DOWNLOAD_ERROR are not taken into account
         // because they are not considered as errors (available from storage)
