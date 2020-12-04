@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,6 @@ import reactor.core.publisher.Mono;
  * @author gandrieu
  */
 @Service
-@MultitenantTransactional
 public class DownloadService implements IDownloadService {
 
     private static final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
@@ -122,9 +122,11 @@ public class DownloadService implements IDownloadService {
             () -> {
                 try {
                     runtimeTenantResolver.forceTenant(tenant);
+                    FeignSecurityManager.asSystem();
                     return storageClient.downloadFile(checksum).body().asInputStream();
                 }
                 finally {
+                    FeignSecurityManager.reset();
                     runtimeTenantResolver.clearTenant();
                 }
             },
