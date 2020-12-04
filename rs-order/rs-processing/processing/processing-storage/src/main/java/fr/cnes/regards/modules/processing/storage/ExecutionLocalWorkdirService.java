@@ -93,6 +93,7 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
     public Mono<ExecutionLocalWorkdir> cleanupWorkdir(ExecutionLocalWorkdir workdir) {
         return Mono.fromCallable(() -> {
             try {
+                LOGGER.info("Deleting workdir at {}", workdir.getBasePath());
                 FileSystemUtils.deleteRecursively(workdir.getBasePath());
             } catch (IOException e) {
                 LOGGER.warn("Could not delete workdir {} following failure to download input files.", workdir.getBasePath(), e);

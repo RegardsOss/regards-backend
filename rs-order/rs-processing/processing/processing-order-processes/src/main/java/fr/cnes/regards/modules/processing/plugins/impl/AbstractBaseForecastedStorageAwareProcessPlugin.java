@@ -68,6 +68,13 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
         };
     }
 
+    public IExecutable cleanWorkdir() {
+        return context -> context.getParam(ExecutionLocalWorkdir.class)
+                .flatMap(workdirService::cleanupWorkdir)
+                .map(wd -> context)
+                .switchIfEmpty(Mono.just(context));
+    }
+
     public IExecutionLocalWorkdirService getWorkdirService() {
         return workdirService;
     }

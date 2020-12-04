@@ -159,7 +159,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
             dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
             throw e;
         } catch (InterruptedException e) {
-            logger.info("Order job has been interupted !");
+            Thread.currentThread().interrupt();
+            logger.info("Order job has been interrupted !");
         } finally {
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);

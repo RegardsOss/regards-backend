@@ -107,11 +107,12 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
     @Override public IExecutable executable() {
         return sendEvent(prepareEvent())
-            .andThen(prepareWorkdir()
-                .andThen(sendEvent(runningEvent())
-                    .andThen(new SimpleShellProcessExecutable()
-                        .andThen(storeOutputFiles()))))
-            .onError(failureEvent());
+            .andThen(prepareWorkdir())
+            .andThen(sendEvent(runningEvent()))
+            .andThen(new SimpleShellProcessExecutable())
+            .andThen(storeOutputFiles())
+            .onError(failureEvent())
+            .andThen(cleanWorkdir());
     }
 
     protected Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
