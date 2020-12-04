@@ -157,8 +157,6 @@ public class SimpleShellProcessManyToOnePluginTest {
     private OrderProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
         IRightsPluginConfigurationRepository rightsRepo = Mockito.mock(IRightsPluginConfigurationRepository.class);
         when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
-        IRoleCheckerService rolesChecker = Mockito.mock(IRoleCheckerService.class);
-        when(rolesChecker.roleIsUnder(any(), anyString())).thenReturn(Mono.just(true));
         IPUserAuthService authFactory = Mockito.mock(IPUserAuthService.class);
         when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
                 .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
@@ -167,8 +165,7 @@ public class SimpleShellProcessManyToOnePluginTest {
                 Mockito.mock(IPluginService.class),
                 engineRepo,
                 rightsRepo,
-                Mockito.mock(IRuntimeTenantResolver.class),
-                rolesChecker
+                Mockito.mock(IRuntimeTenantResolver.class)
         );
     }
 
