@@ -97,49 +97,43 @@ public interface INotificationRepository
         // first lets get all notification ids that respect our wishes
         LOGGER.trace("----------------------------- STARTING find id page");
         Page<BigInteger> pageIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status.toString(),
-                                                                                    projectUser,
-                                                                                    role,
-                                                                                    pageable);
+                                                                                          projectUser,
+                                                                                          role,
+                                                                                          pageable);
         LOGGER.trace("----------------------------- ENDING find id page");
         // now let get all the notif according to extracted ids
         LOGGER.trace("----------------------------- STARTING notif without message by ids");
-        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.stream().map(BigInteger::longValue).collect(
-                Collectors.toList()));
+        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.stream()
+                                                                                      .map(BigInteger::longValue)
+                                                                                      .collect(Collectors.toList()));
         LOGGER.trace("----------------------------- ENDING findByStatusAndRecipientsContaining");
         // eventually, reconstruct a page
         return new PageImpl<>(notifs, pageable, pageIds.getTotalElements());
     }
 
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-//    @Query("SELECT n.id as id, n.date as date, n.roleRecipients as roleRecipients, n.projectUserRecipients as projectUserRecipients, "
-//            + "n.sender as sender, n.status as status, n.level as level, n.title as title, n.mimeType as mimeType "
-//            + "FROM Notification n WHERE n.id in (:ids)")
-    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(List<Long> ids);
+    @Query(value = "SELECT n.id as id, n.date as date, n.sender as sender, n.status as status, n.level as level, "
+            + "n.title as title, n.mimeType as mimeType FROM Notification n WHERE n.id in :ids")
+    List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(@Param("ids") List<Long> ids);
 
-    @Query(value = "select notif.id "
-            + "from {h-schema}t_notification notif "
+    @Query(value = "select notif.id from {h-schema}t_notification notif "
             + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
             + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
             + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
-            countQuery = "select count(notif.id) "
-                    + "from {h-schema}t_notification notif "
+            countQuery = "select count(notif.id) from {h-schema}t_notification notif "
                     + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
                     + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
                     + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
             nativeQuery = true)
-    //This is a native query so we need to pass status as string and not as Enum
+        //This is a native query so we need to pass status as string and not as Enum
     Page<BigInteger> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(@Param("status") String status,
             @Param("user") String projectUser, @Param("role") String role, Pageable pageable);
 
-    @Query(value = "select count(notif.id) "
-            + "from {h-schema}t_notification notif "
+    @Query(value = "select count(notif.id) from {h-schema}t_notification notif "
             + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
             + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
-            + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
-            nativeQuery = true)
-    //This is a native query so we need to pass status as string and not as Enum
-    Long countByStatus(@Param("status") String status, @Param("user") String projectUser,
-            @Param("role") String role);
+            + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)", nativeQuery = true)
+        //This is a native query so we need to pass status as string and not as Enum
+    Long countByStatus(@Param("status") String status, @Param("user") String projectUser, @Param("role") String role);
 
     @Modifying
     @Query("delete from Notification n where (:role member of n.roleRecipients)  AND n.status = :status")

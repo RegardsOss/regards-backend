@@ -19,10 +19,6 @@ public class NotificationAdapter extends TypeAdapter<INotificationWithoutMessage
         out.value(value.getDate().format(OffsetDateTimeAdapter.ISO_DATE_TIME_UTC));
         out.name("id");
         out.value(value.getId());
-        out.name("rolerecipients");
-        out.value(value.getRoleRecipients().toString());
-        out.name("projectuserreciptients");
-        out.value(value.getProjectUserRecipients().toString());
         out.name("sender");
         out.value(value.getSender());
         out.name("status");

@@ -16,10 +16,6 @@ public interface INotificationWithoutMessage {
 
     Long getId();
 
-    Set<String> getRoleRecipients();
-
-    Set<String> getProjectUserRecipients();
-
     String getSender();
 
     NotificationStatus getStatus();
