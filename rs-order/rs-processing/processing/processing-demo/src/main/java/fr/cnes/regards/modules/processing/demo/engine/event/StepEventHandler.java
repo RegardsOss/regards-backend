@@ -59,7 +59,7 @@ public class StepEventHandler implements ApplicationListener<ApplicationReadyEve
         UUID execId = message.getExecId();
         LOGGER.info("exec={} - Async execution step received", execId);
         execService.createContext(execId)
-            .flatMap(ctx -> ctx.sendEvent(message::getStep))
+            .flatMap(ctx -> ctx.sendEvent(message.getStep()))
             .block();
         // Dirty block because we want to propagate errors as exceptions to prevent commit in rabbitmq transaction.
         // Defeats the purpose of the reactive interfaces, but there is no reactive IHandler yet.
