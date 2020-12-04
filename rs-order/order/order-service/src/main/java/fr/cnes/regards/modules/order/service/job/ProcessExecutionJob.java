@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -196,6 +197,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     protected PBatchResponse createBatch(BasketDatasetSelection dsSel, IProcessingRestClient processingClient) {
         ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
         PBatchRequest request = createBatchRequest(dsSel, processDatasetDescription);
+        FeignSecurityManager.asUser(user, userRole);
         ResponseEntity<PBatchResponse> batchResponse = processingClient.createBatch(request);
 
         if (!batchResponse.getStatusCode().is2xxSuccessful()) {
