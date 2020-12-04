@@ -79,6 +79,8 @@ public class DumpSettingsService implements IDumpSettingsService {
 
     @Override
     public void resetSettings() {
+        // delete old settings and init new ones (by default)
         dumpSettingsRepository.deleteById(DumpSettings.DUMP_CONF_ID);
+        this.retrieve();
     }
 }
