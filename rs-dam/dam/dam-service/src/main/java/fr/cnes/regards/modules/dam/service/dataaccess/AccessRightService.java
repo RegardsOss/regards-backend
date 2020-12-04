@@ -162,7 +162,17 @@ public class AccessRightService implements IAccessRightService {
                         case NO_ACCESS:
                         default:
                             break;
+                    }
 
+                    switch (accessRight.getDataAccessLevel()) {
+                        case CUSTOM_ACCESS:
+                        case INHERITED_ACCESS:
+                            break;
+                        case NO_ACCESS:
+                            dataAccess = false;
+                            break;
+                        default:
+                            break;
                     }
 
                     metadata.addDataObjectGroup(accessRight.getAccessGroup().getName(), datasetAccess, dataAccess,

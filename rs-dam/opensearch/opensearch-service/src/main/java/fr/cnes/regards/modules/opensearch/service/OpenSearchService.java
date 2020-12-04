@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -136,9 +137,9 @@ public class OpenSearchService implements IOpenSearchService {
     }
 
     @Override
-    public UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws Exception {
+    public UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws ModuleException {
         return descriptor.getUrl().stream().filter(template -> type.toString().equals(template.getType())).findFirst()
-                .orElseThrow(() -> new Exception("No Template url matching"));
+                .orElseThrow(() -> new ModuleException("No Template url matching"));
     }
 
 }

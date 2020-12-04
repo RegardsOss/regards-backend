@@ -102,7 +102,8 @@ public class AttrDescToJsonMapping {
         } catch (IllegalStateException e) {
             LOGGER.warn("Impossible to parse declared {} property for attribute {}",
                         ELASTICSEARCH_MAPPING_PROP_NAME,
-                        attrDesc.getPath());
+                        attrDesc.getPath(),
+                        e);
             return new JsonObject();
         }
     }

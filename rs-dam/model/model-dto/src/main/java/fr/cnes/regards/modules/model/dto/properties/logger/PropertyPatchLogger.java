@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PropertyPatchLogger {
 
+    private PropertyPatchLogger() {}
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyPatchLogger.class);
 
     private static final String PREFIX = "[MONITORING] ";

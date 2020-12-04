@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -56,7 +56,7 @@ public abstract class AbstractCacheableModelFinder
     * Model cache is used to avoid useless database request as models rarely change!<br/>
     * tenant key -> model key / attributes val
     */
-    private final Map<String, LoadingCache<String, List<ModelAttrAssoc>>> modelCacheMap = new HashMap<>();
+    private final Map<String, LoadingCache<String, List<ModelAttrAssoc>>> modelCacheMap = new ConcurrentHashMap<>();
 
     @Autowired
     private ISubscriber subscriber;
@@ -81,25 +81,19 @@ public abstract class AbstractCacheableModelFinder
     }
 
     private LoadingCache<String, List<ModelAttrAssoc>> getTenantCache(String tenant) {
+        return modelCacheMap.computeIfAbsent(tenant, t ->
+            CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES)
+                .build(new CacheLoader<String, List<ModelAttrAssoc>>() {
 
-        LoadingCache<String, List<ModelAttrAssoc>> modelCache = modelCacheMap.get(tenant);
-        if (modelCache == null) {
-            // Dynamically initialize cache
-            modelCache = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES)
-                    .build(new CacheLoader<String, List<ModelAttrAssoc>>() {
-
-                        @Override
-                        public List<ModelAttrAssoc> load(String modelName) throws Exception {
-                            List<ModelAttrAssoc> attributesByModel = loadAttributesByModel(modelName);
-                            if (attributesByModel == null) {
-                                throw new Exception(String.format("Unknow Model %s", modelName));
-                            }
-                            return attributesByModel;
+                    @Override
+                    public List<ModelAttrAssoc> load(String modelName) throws Exception {
+                        List<ModelAttrAssoc> attributesByModel = loadAttributesByModel(modelName);
+                        if (attributesByModel == null) {
+                            throw new Exception(String.format("Unknow Model %s", modelName));
                         }
-                    });
-            modelCacheMap.put(tenant, modelCache);
-        }
-        return modelCache;
+                        return attributesByModel;
+                    }
+                }));
     }
 
     private void cleanTenantCache(String tenant, String model) {
