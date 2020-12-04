@@ -55,7 +55,8 @@ public class BatchServiceImpl implements IBatchService {
     @Override
     public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
         return processRepo.findByTenantAndProcessBusinessID(auth.getTenant(), data.getProcessBusinessId())
-                .flatMap(p -> createBatch(p, data).flatMap(b -> checkBatch(p, b)));
+                .flatMap(p -> createBatch(p, data).flatMap(b -> checkBatch(p, b)))
+                .flatMap(batchRepo::save);
     }
 
     private Mono<Seq<Violation>> check(PProcess process, PBatch batch) {
