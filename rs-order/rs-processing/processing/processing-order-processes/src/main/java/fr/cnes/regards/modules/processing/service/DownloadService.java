@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,17 +66,18 @@ public class DownloadService implements IDownloadService {
     private static final DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
 
     private final Proxy proxy;
-
-    @Qualifier("nonProxyHosts")
     private final Set<String> nonProxyHosts;
-
     private final IStorageRestClient storageClient;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    public DownloadService(Proxy proxy, Set<String> nonProxyHosts, IStorageRestClient storageClient) {
+    public DownloadService(Proxy proxy, @Qualifier("nonProxyHosts") Set<String> nonProxyHosts,
+                           IStorageRestClient storageClient,
+                           IRuntimeTenantResolver runtimeTenantResolver) {
         this.proxy = proxy;
         this.nonProxyHosts = nonProxyHosts;
         this.storageClient = storageClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -97,19 +99,38 @@ public class DownloadService implements IDownloadService {
     }
 
     private Mono<Path> internalDownload(String checksum, Path dest) {
-        return Mono.fromCallable(() -> {
-            Files.createDirectories(dest.getParent());
-            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(checksum);
-            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
-        }).flatMap(voidMono -> voidMono.map(n -> dest))
-                .onErrorResume(mustWrap(),
-                               errorWithContextMono(PExecution.class, (exec, t) -> new InternalDownloadException(exec,
-                                       "Failed to download internal " + checksum + " into " + dest, t)));
+        return Mono.subscriberContext()
+            .map(ctx -> ctx.get(PExecution.class))
+            .map(PExecution::getTenant)
+            .flatMap(tenant -> internalDownloadWithTenant(checksum, dest, tenant));
     }
 
-    public Flux<DataBuffer> downloadUsingStorageRestClient(String checksum) {
-        return DataBufferUtils.readInputStream(() -> storageClient.downloadFile(checksum).body().asInputStream(),
-                                               bufferFactory, 4096);
+    private Mono<Path> internalDownloadWithTenant(String checksum, Path dest, String tenant) {
+        return Mono.fromCallable(() -> {
+            Files.createDirectories(dest.getParent());
+            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, checksum);
+            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
+        })
+        .flatMap(voidMono -> voidMono.map(n -> dest))
+        .onErrorResume(mustWrap(),
+                       errorWithContextMono(PExecution.class, (exec, t) -> new InternalDownloadException(exec,
+                               "Failed to download internal " + checksum + " into " + dest, t)));
+    }
+
+    public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String checksum) {
+        return DataBufferUtils.readInputStream(
+            () -> {
+                try {
+                    runtimeTenantResolver.forceTenant(tenant);
+                    return storageClient.downloadFile(checksum).body().asInputStream();
+                }
+                finally {
+                    runtimeTenantResolver.clearTenant();
+                }
+            },
+            bufferFactory,
+            4096
+        );
     }
 
     private Mono<Path> externalDownload(URL url, Path dest) {
