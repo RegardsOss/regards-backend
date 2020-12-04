@@ -17,8 +17,10 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
+import feign.Response;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
@@ -35,10 +37,12 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Proxy;
 import java.net.URL;
@@ -99,14 +103,13 @@ public class DownloadService implements IDownloadService {
     private Mono<Path> internalDownload(String checksum, Path dest) {
         return Mono.subscriberContext()
             .map(ctx -> ctx.get(PExecution.class))
-            .map(PExecution::getTenant)
-            .flatMap(tenant -> internalDownloadWithTenant(checksum, dest, tenant));
+            .flatMap(exec -> internalDownloadWithTenant(checksum, dest, exec.getTenant(), exec.getUserName()));
     }
 
-    private Mono<Path> internalDownloadWithTenant(String checksum, Path dest, String tenant) {
+    private Mono<Path> internalDownloadWithTenant(String checksum, Path dest, String tenant, String user) {
         return Mono.fromCallable(() -> {
             Files.createDirectories(dest.getParent());
-            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, checksum);
+            Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, user, checksum);
             return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
         })
         .flatMap(voidMono -> voidMono.map(n -> dest))
@@ -115,13 +118,22 @@ public class DownloadService implements IDownloadService {
                                "Failed to download internal " + checksum + " into " + dest, t)));
     }
 
-    public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String checksum) {
+    public Flux<DataBuffer> downloadUsingStorageRestClient(String tenant, String user, String checksum) {
         return DataBufferUtils.readInputStream(
             () -> {
                 try {
                     runtimeTenantResolver.forceTenant(tenant);
-                    FeignSecurityManager.asSystem();
-                    return storageClient.downloadFile(checksum).body().asInputStream();
+                    FeignSecurityManager.asUser(user, DefaultRole.PROJECT_ADMIN.name());
+                    Response response = storageClient.downloadFile(checksum);
+                    HttpStatus httpStatus = HttpStatus.valueOf(response.status());
+                    if (httpStatus.is2xxSuccessful()) {
+                        return response.body().asInputStream();
+                    } else if (httpStatus == HttpStatus.TOO_MANY_REQUESTS) {
+                        throw new DownloadQuotaExceededException(user, checksum);
+                    }
+                    else {
+                        throw new IOException(String.format("Internal download failed for user %s for checksum %s", user, checksum));
+                    }
                 }
                 finally {
                     FeignSecurityManager.reset();
