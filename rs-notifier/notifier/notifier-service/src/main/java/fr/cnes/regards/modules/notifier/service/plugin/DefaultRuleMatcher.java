@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service.plugin;
 
+import com.google.gson.JsonObject;
 import java.util.Map.Entry;
 
 import com.google.gson.JsonElement;
@@ -54,21 +55,21 @@ public class DefaultRuleMatcher implements IRuleMatcher {
     private String attributeValueToSeek;
 
     @Override
-    public boolean match(JsonElement element) {
-        return handleProperties(element);
+    public boolean match(JsonObject jsonObject) {
+        return handleProperties(jsonObject);
     }
 
     /**
      * Browse a list of properties to find the one with the name of the class attribute 'attributeToSeek'
      * and the value 'attributeValueToSeek'
-     * @param element
+     * @param jsonObject
      */
-    private boolean handleProperties(JsonElement element) {
-        if (element == null) {
+    private boolean handleProperties(JsonObject jsonObject) {
+        if (jsonObject == null) {
             return false;
         }
 
-        return element.getAsJsonObject().entrySet().stream().anyMatch(entry -> containtAttributeToSeek(entry));
+        return jsonObject.entrySet().stream().anyMatch(entry -> containsAttributeToSeek(entry));
     }
 
     /**
@@ -76,13 +77,13 @@ public class DefaultRuleMatcher implements IRuleMatcher {
      * @param entry to check
      * @return true if match, false otherwise
      */
-    private boolean containtAttributeToSeek(Entry<String, JsonElement> entry) {
+    private boolean containsAttributeToSeek(Entry<String, JsonElement> entry) {
         if (entry.getKey().equals(attributeToSeek) && entry.getValue().getAsString().equals(attributeValueToSeek)) {
             return true;
         }
         if (entry.getValue().isJsonObject()) {
             return entry.getValue().getAsJsonObject().entrySet().stream()
-                    .anyMatch(subEntry -> containtAttributeToSeek(subEntry));
+                    .anyMatch(subEntry -> containsAttributeToSeek(subEntry));
         }
         return false;
     }

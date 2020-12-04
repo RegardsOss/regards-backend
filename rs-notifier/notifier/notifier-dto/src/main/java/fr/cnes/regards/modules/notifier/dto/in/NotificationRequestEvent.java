@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.dto.in;
 
+import com.google.gson.JsonObject;
 import javax.validation.constraints.NotNull;
 
 import java.time.OffsetDateTime;
@@ -36,12 +37,11 @@ import fr.cnes.regards.framework.amqp.event.Target;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class NotificationRequestEvent extends AbstractRequestEvent implements ISubscribable {
 
-    @NotNull(message = "JSON element is required")
-    private JsonElement payload;
+    private @NotNull(message = "JSON element is required") JsonObject payload;
 
     private JsonElement metadata;
 
-    public NotificationRequestEvent(JsonElement payload, JsonElement metadata, String requestId, String requestOwner) {
+    public NotificationRequestEvent(JsonObject payload, JsonElement metadata, String requestId, String requestOwner) {
         this.payload = payload;
         this.metadata = metadata;
         super.setRequestId(requestId);
@@ -49,11 +49,11 @@ public class NotificationRequestEvent extends AbstractRequestEvent implements IS
         super.setRequestDate(OffsetDateTime.now());
     }
 
-    public JsonElement getPayload() {
+    public JsonObject getPayload() {
         return payload;
     }
 
-    public void setPayload(JsonElement payload) {
+    public void setPayload(JsonObject payload) {
         this.payload = payload;
     }
 

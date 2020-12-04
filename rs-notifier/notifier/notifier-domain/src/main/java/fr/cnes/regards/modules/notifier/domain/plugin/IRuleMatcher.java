@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.dom4j.rule.Rule;
 
-import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import sun.security.pkcs11.Secmod;
 
 /**
  * Describe action to applied to a {@link Rule}
@@ -34,9 +35,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface IRuleMatcher {
 
     /**
-     * Verify if a {@link JsonElement} match with a rule
-     * @param element {@link JsonElement} to verify if it matches
+     * Verify if a {@link JsonObject} match with a rule
+     * @param jsonObject {@link JsonObject} to verify if it matches
      * @return true if match, false otherwise
      */
-    boolean match(JsonElement element);
+    boolean match(JsonObject jsonObject);
 }

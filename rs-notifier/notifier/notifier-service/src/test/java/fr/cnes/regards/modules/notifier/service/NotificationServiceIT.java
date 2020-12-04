@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import com.google.gson.JsonObject;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -172,7 +173,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         List<NotificationRequest> notificationRequestsToRetry_AllRuleMatchOneRecipientError = new ArrayList<>(
                 nbEventForRetry / 3);
         Set<NotificationRequestEvent> eventForRetry = new HashSet<>(nbEventForRetry);
-        JsonElement payloadMatchR1 = initElement("elementRule1.json");
+        JsonObject payloadMatchR1 = initElement("elementRule1.json");
         // we want to simulate that some requests could be matched by all rules but one recipient was in error
         for (int i = 0; i < nbEventForRetry / 3; i++) {
             NotificationRequest toRetry = new NotificationRequest(payloadMatchR1,
@@ -234,7 +235,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
 
         // Let create some events that are not based on already known requests
         Set<NotificationRequestEvent> firstTime = new HashSet<>(properties.getMaxBulkSize() - nbEventForRetry);
-        JsonElement payloadMatchR2 = initElement("elementRule2.json");
+        JsonObject payloadMatchR2 = initElement("elementRule2.json");
         for (int i = 0; i < properties.getMaxBulkSize() - nbEventForRetry; i++) {
             firstTime.add(new NotificationRequestEvent(payloadMatchR2,
                                                        gson.toJsonTree("FIRST_TIME"),
@@ -341,7 +342,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 properties.getMaxBulkSize() % 4);
         int nbOfRequestPerType = properties.getMaxBulkSize() / 4;
         // Lets create notification requests that should only be matched by first rule
-        JsonElement elementRule1 = initElement("elementRule1.json");
+        JsonObject elementRule1 = initElement("elementRule1.json");
         List<NotificationRequest> first = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
             first.add(new NotificationRequest(elementRule1,
@@ -354,7 +355,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         }
         first = notificationRepo.saveAll(first);
         // Lets create notification requests that should only be matched by second rule
-        JsonElement elementRule2 = initElement("elementRule2.json");
+        JsonObject elementRule2 = initElement("elementRule2.json");
         List<NotificationRequest> second = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
             second.add(new NotificationRequest(elementRule2,
@@ -367,7 +368,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         }
         second = notificationRepo.saveAll(second);
         // Lets create notification requests that should be matched by both rules
-        JsonElement elementBothRule = initElement("elementBothRule.json");
+        JsonObject elementBothRule = initElement("elementBothRule.json");
         List<NotificationRequest> both = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
             both.add(new NotificationRequest(elementBothRule,
@@ -380,7 +381,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         }
         both = notificationRepo.saveAll(both);
         // Lets create notification requests that should not be matched by any rules
-        JsonElement elementNoneRule = initElement("elementNoneRule.json");
+        JsonObject elementNoneRule = initElement("elementNoneRule.json");
         List<NotificationRequest> none = new ArrayList<>(nbOfRequestPerType);
         for (int i = 0; i < nbOfRequestPerType; i++) {
             none.add(new NotificationRequest(elementNoneRule,
@@ -488,7 +489,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.class.getAnnotation(Plugin.class).id()));
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> requestsToSchedule = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
@@ -544,7 +545,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.class.getAnnotation(Plugin.class).id()));
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> requestsToSchedule = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
@@ -610,7 +611,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.class.getAnnotation(Plugin.class).id()));
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
@@ -665,7 +666,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.class.getAnnotation(Plugin.class).id()));
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
@@ -722,7 +723,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                 RECIPIENT_R1_2_LABEL,
                 new HashSet<>(),
                 RecipientSender3.class.getAnnotation(Plugin.class).id()));
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> toProcess = new ArrayList<>(properties.getMaxBulkSize());
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
             NotificationRequest toSchedule = new NotificationRequest(matchR1,
@@ -780,7 +781,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     public void testCheckSuccess() throws EncryptionException, EntityNotFoundException, EntityInvalidException {
         // we just need to create notification requests in state SCHEDULED and with no more recipients associated to check the success
         int nbSuccess = properties.getMaxBulkSize() / 2;
-        JsonElement matchR1 = initElement("elementRule1.json");
+        JsonObject matchR1 = initElement("elementRule1.json");
         List<NotificationRequest> requestsInSuccess = new ArrayList<>(nbSuccess);
         for (int i = 0; i < nbSuccess; i++) {
             requestsInSuccess.add(new NotificationRequest(matchR1,
@@ -853,7 +854,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule2 = twoRules3Recipients.getRule2();
         //lets prepare some element that are being retried while matched
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("MatchWhileScheduling");
         List<NotificationRequest> beingScheduled = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
@@ -981,7 +982,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule2 = twoRules3Recipients.getRule2();
         //lets prepare some element that are being retried while matched
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("ProcessFailWhileMatch");
         List<NotificationRequest> beingMatchForRuleError = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
@@ -1081,7 +1082,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR2_1 = twoRules3Recipients.getRecipientR2_1();
         Rule rule2 = twoRules3Recipients.getRule2();
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("MatchWhileProcessFail");
         List<NotificationRequest> beingProcessed = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
@@ -1187,7 +1188,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule1 = twoRules3Recipients.getRule1();
         Rule rule2 = twoRules3Recipients.getRule2();
         //lets prepare some element that are being retried while matched
-        JsonElement elementR1 = initElement("elementRule1.json");
+        JsonObject elementR1 = initElement("elementRule1.json");
         JsonElement metadata = gson.toJsonTree("RetryWhileMatching");
         List<NotificationRequest> beingMatched = new ArrayList<>();
         List<NotificationRequestEvent> retryEvents = new ArrayList<>();
@@ -1208,7 +1209,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
             beingMatched.add(request);
         }
         beingMatched = notificationRepo.saveAll(beingMatched);
-        JsonElement elementR2 = initElement("elementRule2.json");
+        JsonObject elementR2 = initElement("elementRule2.json");
         //lets prepare some element that are completely new and are not being matched
         List<NotificationRequestEvent> newEvents = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() - properties.getMaxBulkSize() / 2; i++) {
@@ -1309,7 +1310,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule2 = twoRules3Recipients.getRule2();
         // lets init some requests that have been matched and will be scheduled
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("RetryWhileScheduling");
         List<NotificationRequest> beingScheduled = new ArrayList<>();
         List<NotificationRequestEvent> beingRetriedEvents = new ArrayList<>();
@@ -1414,7 +1415,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule2 = twoRules3Recipients.getRule2();
         // lets init some requests that have been matched and will be scheduled
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("RetryWhileScheduling");
         List<NotificationRequest> beingRetried = new ArrayList<>();
         List<NotificationRequestEvent> beingRetriedEvents = new ArrayList<>();
@@ -1513,7 +1514,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR2_1 = twoRules3Recipients.getRecipientR2_1();
         //lets prepare some element that are being retried while matched
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("MatchWhileScheduling");
         List<NotificationRequest> beingScheduled = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
@@ -1614,7 +1615,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_2 = twoRules3Recipients.getRecipientR1_2();
         PluginConfiguration recipientR2_1 = twoRules3Recipients.getRecipientR2_1();
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("MatchWhileProcessFail");
         List<NotificationRequest> beingProcessed = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize() / 2; i++) {
@@ -1720,7 +1721,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         Rule rule2 = twoRules3Recipients.getRule2();
         // lets init some requests that have been matched and will be scheduled
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("RetryWhileScheduling");
         List<NotificationRequest> beingRetried = new ArrayList<>();
         List<NotificationRequestEvent> beingRetriedEvents = new ArrayList<>();
@@ -1834,7 +1835,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
         PluginConfiguration recipientR1_2 = twoRules3Recipients.getRecipientR1_2();
         Rule rule2 = twoRules3Recipients.getRule2();
         // we consider that rule2 could not be matched initially while rule1 could be match
-        JsonElement elementBothRules = initElement("elementBothRule.json");
+        JsonObject elementBothRules = initElement("elementBothRule.json");
         JsonElement metadata = gson.toJsonTree("MatchWhileProcessFail");
         List<NotificationRequest> beingProcessed = new ArrayList<>();
         List<NotificationRequestEvent> toRetry = new ArrayList<>();

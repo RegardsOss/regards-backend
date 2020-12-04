@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -51,7 +52,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     public void testRegistrationAndProcessing()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
 
-        JsonElement element = initElement("elementRule1.json");
+        JsonObject element = initElement("elementRule1.json");
 
         initPlugins(false);
 
@@ -76,7 +77,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceTe
     @Test
     public void testRegistrationAndProcessingWith1RecipientFail()
             throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
-        JsonElement element = initElement("elementRule1.json");
+        JsonObject element = initElement("elementRule1.json");
         initPlugins(true);
 
         List<NotificationRequestEvent> events = new ArrayList<NotificationRequestEvent>();

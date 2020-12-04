@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
+import com.google.gson.JsonObject;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -117,7 +118,7 @@ public class NotificationRequest {
 
     @Column(columnDefinition = "jsonb", name = "payload", nullable = false)
     @Type(type = "jsonb")
-    private JsonElement payload;
+    private JsonObject payload;
 
     @Column(name = "metadata", nullable = false, columnDefinition = "jsonb")
     @Type(type = "jsonb")
@@ -141,7 +142,7 @@ public class NotificationRequest {
     @Column(name = "version")
     private long version;
 
-    public NotificationRequest(JsonElement payload, JsonElement metadata, String requestId, String requestOwner,
+    public NotificationRequest(JsonObject payload, JsonElement metadata, String requestId, String requestOwner,
             OffsetDateTime requestDate, NotificationState state, Set<Rule> rulesToMatch) {
         this.payload = payload;
         this.requestDate = requestDate;
@@ -155,11 +156,11 @@ public class NotificationRequest {
     public NotificationRequest() {
     }
 
-    public JsonElement getPayload() {
+    public JsonObject getPayload() {
         return payload;
     }
 
-    public void setPayload(JsonElement payload) {
+    public void setPayload(JsonObject payload) {
         this.payload = payload;
     }
 

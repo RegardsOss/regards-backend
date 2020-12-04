@@ -422,6 +422,9 @@ public class NotificationRuleService extends AbstractCacheableRule
                     // associate the same recipient to one request and at least one of those rules could not be instantiated
                     cannotBeInstantiatedRules.add(rule.getRulePlugin());
                     requestsCouldNotBeMatched.add(notificationRequest);
+                } catch (Exception e) {
+                    LOGGER.error("Rule could not be matched because of unexpected issue: " + e.getMessage(), e);
+                    requestsCouldNotBeMatched.add(notificationRequest);
                 }
             }
             // we remove all rules that could be matched now so we can avoid playing with iterators

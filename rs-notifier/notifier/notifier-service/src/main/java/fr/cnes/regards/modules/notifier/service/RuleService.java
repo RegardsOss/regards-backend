@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,9 @@ public class RuleService implements IRuleService {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RuleService.class);
+
+    @Autowired
+    private INotificationRequestRepository notifRepo;
 
     @Autowired
     private IRuleRepository ruleRepo;
@@ -113,6 +117,7 @@ public class RuleService implements IRuleService {
         Set<String> confToDelete = rules.stream().map(Rule::getRulePlugin).map(PluginConfiguration::getBusinessId)
                 .collect(Collectors.toSet());
         // Delete  rule associations
+        notifRepo.deleteAll();
         ruleRepo.deleteAll();
 
         notifService.cleanCache();

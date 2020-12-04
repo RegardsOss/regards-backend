@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notifier.service;
 
 import static org.junit.Assert.fail;
 
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -238,11 +239,11 @@ public abstract class AbstractNotificationMultitenantServiceTest extends Abstrac
      * load {@link JsonElement} from a resource test
      * @return initialised {@link JsonElement}
      */
-    protected JsonElement initElement(String name) {
+    protected JsonObject initElement(String name) {
         try (InputStream input = this.getClass().getResourceAsStream(name);
                 Reader reader = new InputStreamReader(input)) {
 
-            return gson.fromJson(CharStreams.toString(reader), JsonElement.class);
+            return gson.fromJson(CharStreams.toString(reader), JsonObject.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import element";
             LOGGER.debug(errorMessage);
