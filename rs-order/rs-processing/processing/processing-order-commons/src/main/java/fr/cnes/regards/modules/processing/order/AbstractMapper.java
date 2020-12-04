@@ -47,12 +47,14 @@ public abstract class AbstractMapper<T> {
 
 
     protected final Option<Boolean> parseBoolean(Map<String, String> map, String propName) {
-        return map.get(propName).flatMap(propValue -> Try.of(() -> Boolean.parseBoolean(propValue)).toOption());
+        return map.get(propName).flatMap(propValue ->
+                Try.of(() -> Boolean.parseBoolean(propValue)).toOption()
+        );
     }
 
     protected final Option<UniformResourceName> parseUrn(Map<String, String> map, String propName) {
         return map.get(propName).flatMap(propValue ->
-                Try.of(() -> UniformResourceName.fromString(propName)).toOption());
+                Try.of(() -> UniformResourceName.fromString(propValue)).toOption());
 
     }
 
