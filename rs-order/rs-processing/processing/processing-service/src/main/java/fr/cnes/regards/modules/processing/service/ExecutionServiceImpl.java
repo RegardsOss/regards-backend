@@ -100,7 +100,7 @@ public class ExecutionServiceImpl implements IExecutionService {
         return batchRepo.findById(exec.getBatchId())
             .flatMap(batch -> processRepo.findByBatch(batch)
                 .flatMap(process -> createContext(exec, batch, process)
-                    .doOnNext(process.getEngine()::run).map(x -> exec)));
+                    .flatMap(ctx -> process.getEngine().run(ctx))));
     }
 
     private Mono<PExecution> makeExec(PExecutionRequestEvent request) {
