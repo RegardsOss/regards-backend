@@ -171,6 +171,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
                     dataFileService.save(dataFilesMultimap.values()))
                     // PROCESSING TO BE LAUNCHED
                     .peek(id -> {
+                        // Delete the OrderDataFiles which were only temporary input files
+                        orderDataFileRepository.deleteAll(dataFilesMultimap.values());
                         // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
                         jobInfoService.enqueueJobForId(id);
                         // Nudge the order job service to enqueue next storage files jobs.

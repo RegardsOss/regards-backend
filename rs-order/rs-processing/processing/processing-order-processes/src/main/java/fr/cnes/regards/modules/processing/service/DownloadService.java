@@ -132,7 +132,9 @@ public class DownloadService implements IDownloadService {
                         throw new DownloadQuotaExceededException(user, checksum);
                     }
                     else {
-                        throw new IOException(String.format("Internal download failed for user %s for checksum %s", user, checksum));
+                        throw new IOException(
+                                String.format("Internal download failed for user %s for checksum %s, storage answered with status %s",
+                                        user, checksum, response.status()));
                     }
                 }
                 finally {
