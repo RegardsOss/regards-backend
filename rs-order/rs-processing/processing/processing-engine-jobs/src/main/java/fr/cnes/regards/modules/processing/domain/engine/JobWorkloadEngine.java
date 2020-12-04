@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.domain.engine;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
@@ -53,10 +54,17 @@ public class JobWorkloadEngine implements IWorkloadEngine {
 
     private final IWorkloadEngineRepository engineRepo;
 
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     @Autowired
-    public JobWorkloadEngine(IJobInfoService jobInfoService, IWorkloadEngineRepository engineRepo) {
+    public JobWorkloadEngine(
+            IJobInfoService jobInfoService,
+            IWorkloadEngineRepository engineRepo,
+            IRuntimeTenantResolver runtimeTenantResolver
+    ) {
         this.jobInfoService = jobInfoService;
         this.engineRepo = engineRepo;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -73,17 +81,24 @@ public class JobWorkloadEngine implements IWorkloadEngine {
     @Override
     public Mono<PExecution> run(ExecutionContext context) {
         return Mono.fromCallable(() -> {
-            JobInfo jobInfo = new JobInfo(false, 0,
-                    List.of(new JobParameter(LaunchExecutionJob.EXEC_ID_PARAM, context.getExec().getId())).toJavaSet(),
-                    context.getBatch().getUser(), LaunchExecutionJob.class.getName());
+            try {
+                JobInfo jobInfo = new JobInfo(false, 0,
+                        List.of(new JobParameter(LaunchExecutionJob.EXEC_ID_PARAM, context.getExec().getId())).toJavaSet(),
+                        context.getBatch().getUser(), LaunchExecutionJob.class.getName());
 
-            jobInfo.setExpirationDate(nowUtc().plus(context.getExec().getExpectedDuration()));
-            JobInfo pendingJob = jobInfoService.createAsQueued(jobInfo);
+                jobInfo.setExpirationDate(nowUtc().plus(context.getExec().getExpectedDuration()));
+                String tenant = context.getExec().getTenant();
+                runtimeTenantResolver.forceTenant(tenant);
+                JobInfo pendingJob = jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.info("batch={} exec={} - Job created with ID {}", context.getBatch().getId(),
+                LOGGER.info("batch={} exec={} - Job created with ID {}", context.getBatch().getId(),
                         context.getExec().getId(), pendingJob.getId());
 
-            return context.getExec();
+                return context.getExec();
+            }
+            finally {
+                runtimeTenantResolver.clearTenant();
+            }
         });
 
     }
