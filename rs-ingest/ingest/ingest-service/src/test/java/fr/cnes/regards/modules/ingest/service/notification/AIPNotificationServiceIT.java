@@ -20,26 +20,9 @@
 
 package fr.cnes.regards.modules.ingest.service.notification;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -60,13 +43,26 @@ import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
-import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
 
 /**
  * Test for {@link AIPNotificationService}
@@ -81,9 +77,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private static final String SESSION = "SESSION" + "_" + "0001";
 
     @Autowired
-    IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
     private StorageClientMock storageClient;
 
     @SpyBean
@@ -95,9 +88,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
 
     @Autowired
     private IAIPNotificationSettingsRepository aipNotificationSettingsRepository;
@@ -114,9 +104,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private IAIPService aipService;
-
-    @Autowired
-    private IIngestRequestService ingestRequestService;
 
     @Override
     public void doInit() {
@@ -143,14 +130,14 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
                                                          Lists.newArrayList("ADDED_TAG"), Lists.newArrayList(),
                                                          Lists.newArrayList(), Lists.newArrayList(),
                                                          Lists.newArrayList()));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Delete all aips
         oaisDeletionService.registerOAISDeletionCreator(
                 OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE).withSession(SESSION));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         testRequestsSuccess(nbSIP);
     }
@@ -170,7 +157,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
         // Retry requests
         requestService
                 .scheduleRequestRetryJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
@@ -180,27 +167,27 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
                                                          Lists.newArrayList("ADDED_TAG"), Lists.newArrayList(),
                                                          Lists.newArrayList(), Lists.newArrayList(),
                                                          Lists.newArrayList()));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
         requestService
                 .scheduleRequestRetryJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Create aip deletion requests
         oaisDeletionService.registerOAISDeletionCreator(
                 OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE).withSession(SESSION));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(FIVE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
         requestService.scheduleRequestRetryJob(
                 SearchRequestsParameters.build().withRequestType(RequestTypeEnum.OAIS_DELETION));
-        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
+        ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
     }
 
@@ -301,7 +288,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
             //update request
 
         }
-        Assert.assertEquals("Requests do not have expected step or state", false, isWrongStateStep);
+        Assert.assertFalse("Requests do not have expected step or state", isWrongStateStep);
     }
 
     /**
@@ -315,7 +302,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
                 nb = nb + 1;
             }
         }
-        Assert.assertEquals("AIPs was supposed to be marked as deleted", nbAipDeletedExpected, nb);
+        Assert.assertEquals("AIPs were supposed to be marked as deleted", nbAipDeletedExpected, nb);
     }
 
     /**
@@ -324,20 +311,19 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     public void assertModifiedAIPS(String tagExpected) {
         List<AIPEntity> aips = aipRepository.findAll();
         boolean isTagMissing = false;
-        Iterator it = aips.iterator();
+        Iterator<AIPEntity> it = aips.iterator();
         AIPEntity aip;
         while (it.hasNext() && !isTagMissing) {
-            aip = (AIPEntity) it.next();
+            aip = it.next();
             if (!aip.getTags().contains(tagExpected)) {
                 isTagMissing = true;
             }
         }
-        Assert.assertEquals("AIPs were not updated", false, isTagMissing);
+        Assert.assertFalse("AIPs were not updated", isTagMissing);
     }
 
     /**
      * Change state of notification settings
-     * @param state
      */
     private void initNotificationSettings(boolean state) {
        AIPNotificationSettings notificationSettings = new AIPNotificationSettings();

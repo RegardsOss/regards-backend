@@ -158,22 +158,9 @@ public class AIPNotificationService implements IAIPNotificationService {
         }
 
         // Handle Deletion and Update requests
+        // no need to publish events like ingest requests as no service needs it for the moment
         if (!successRequests.isEmpty()) {
-            for (AbstractRequest abstractRequest : successRequests) {
-                if (abstractRequest instanceof OAISDeletionRequest) {
-                    OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
-                    AIPNotificationLogger
-                            .notificationSuccess(oaisDeletionRequest.getId(), oaisDeletionRequest.getProviderId());
-                    // no need to publish an event as no service needs it for the moment
-
-                } else if (abstractRequest instanceof AIPUpdateRequest) {
-                    AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
-                    AIPNotificationLogger
-                            .notificationSuccess(aipUpdateRequest.getId(), aipUpdateRequest.getProviderId());
-                    // no need to publish an event as no service needs it for the moment
-                    requestService.deleteRequest(abstractRequest);
-                }
-            }
+            successRequests.forEach((request) -> AIPNotificationLogger.notificationSuccess(request.getId(), request.getProviderId()));
             // Delete successful requests
             requestService.deleteRequests(successRequests);
         }

@@ -20,23 +20,18 @@
 
 package fr.cnes.regards.modules.ingest.service.settings;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import java.util.Optional;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
-import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 
 /**
  * Test for {@link AIPNotificationSettingsService}

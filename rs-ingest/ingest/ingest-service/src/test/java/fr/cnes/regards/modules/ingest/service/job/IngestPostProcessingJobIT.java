@@ -20,21 +20,7 @@
 
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
@@ -45,13 +31,24 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Sebastien Binda
  * @author Iliana Ghazali
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=post_process_test", "regards.amqp.enabled=true" },
+        properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it", "regards.amqp.enabled=true" },
         locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class IngestPostProcessingJobIT extends IngestMultitenantServiceTest {
@@ -112,6 +109,7 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceTest {
 
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
+        ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
         if(!isToNotify) {
             ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP);
         } else {
@@ -135,7 +133,6 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceTest {
     public void checkPostProcessWithErrors() throws ModuleException {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_WITH_ERRORS_LABEL, AIPPostProcessFailTestPlugin.class);
-        storageClient.setBehavior(true, true);
         initData(CHAIN_PP_WITH_ERRORS_LABEL);
         Assert.assertEquals(3, aipPostProcessRepo.findAllByState(InternalRequestState.ERROR, PageRequest.of(0,100)).getTotalElements());
     }

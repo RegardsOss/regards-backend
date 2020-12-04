@@ -57,7 +57,6 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
 /**
  * Test {@link AIPUpdateRunnerJob}

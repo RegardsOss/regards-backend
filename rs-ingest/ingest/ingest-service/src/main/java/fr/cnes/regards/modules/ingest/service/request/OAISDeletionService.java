@@ -177,7 +177,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                             request.setAip(null);
                             // add aip content to payload (in case of notification error, the aip does not exist anymore
                             // but its content is required to notify, so it is added in the request payload)
-                            request.setAipToNotify(aipToDelete.getAip());
+                            request.setAipToNotify(aipToDelete);
                             // add request to list of requests successfully processed
                             success.add(request);
                         }

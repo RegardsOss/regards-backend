@@ -18,25 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -45,7 +26,13 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.*;
+import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -61,7 +48,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import static fr.cnes.regards.modules.ingest.service.TestData.*;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.flow.IngestRequestFlowHandler;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
@@ -69,6 +55,29 @@ import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.test.IngestServiceTest;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.TestPropertySource;
+
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSession;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
+import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
 
 /**
  * Overlay of the default class to manage context cleaning in non transactional testing
@@ -81,6 +90,8 @@ import fr.cnes.regards.modules.test.IngestServiceTest;
 public abstract class IngestMultitenantServiceTest extends AbstractMultitenantServiceTest {
 
     protected static final long TWO_SECONDS = 2000;
+
+    protected static final long THREE_SECONDS = 3000;
 
     protected static final long FIVE_SECONDS = 5000;
 
@@ -155,7 +166,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
         ingestServiceTest.clear();
         // clean AMQP queues and repositories
         ingestServiceTest.init();
-        //notificationSettingsRepository.deleteAll();
+        notificationSettingsRepository.deleteAll();
         ingestServiceTest.cleanAMQPQueues(IngestRequestFlowHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
         // override this method to custom action performed after
         doAfter();
