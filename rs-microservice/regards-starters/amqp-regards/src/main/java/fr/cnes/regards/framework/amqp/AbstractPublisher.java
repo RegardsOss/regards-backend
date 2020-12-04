@@ -18,39 +18,22 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.ExchangeBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Common publisher methods
@@ -86,11 +69,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
     /**
      * Map tracing already published events to avoid redeclaring all AMQP elements
      */
-    private final Map<String, Boolean> alreadyPublished = new HashMap<>();
-
-    private final Map<String, String> exchangesByEvent = new HashMap<>();
-
-    private final Map<String, String> routingKeysByEvent = new HashMap<>();
+    private final Map<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = new ConcurrentHashMap<>();
 
     public AbstractPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
@@ -290,45 +269,49 @@ public abstract class AbstractPublisher implements IPublisherContract {
             rabbitVirtualHostAdmin.bind(virtualHost);
 
             // Declare AMQP elements for first publication
-            if (!alreadyPublished.containsKey(eventType.getName())) {
-                amqpAdmin.declareDeadLetter();
+            if (! exchangesAndRoutingKeysByEvent.containsKey(eventType.getName())) {
+                synchronized (eventType.getName().intern()) {
+                    if (! exchangesAndRoutingKeysByEvent.containsKey(eventType.getName())) {
+                        amqpAdmin.declareDeadLetter();
 
-                // Declare exchange
-                Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
+                        // Declare exchange
+                        Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
 
-                if (WorkerMode.UNICAST.equals(workerMode)) {
-                    // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
-                    // specific routing key
-                    Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
-                    if (purgeQueue) {
-                        amqpAdmin.purgeQueue(queue.getName(), false);
+                        if (WorkerMode.UNICAST.equals(workerMode)) {
+                            // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
+                            // specific routing key
+                            Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
+                            if (purgeQueue) {
+                                amqpAdmin.purgeQueue(queue.getName(), false);
+                            }
+                            amqpAdmin.declareBinding(queue, exchange, workerMode);
+                            exchangesAndRoutingKeysByEvent.put(eventType.getName(),
+                                ExchangeAndRoutingKey.of(
+                                    exchange.getName(),
+                                    amqpAdmin.getRoutingKey(Optional.of(queue), workerMode)
+                                ));
+                        } else if (WorkerMode.BROADCAST.equals(workerMode)) {
+                            // Routing key useless ... always skipped with a fanout exchange
+                            exchangesAndRoutingKeysByEvent.put(eventType.getName(),
+                                ExchangeAndRoutingKey.of(
+                                    exchange.getName(),
+                                    amqpAdmin.getRoutingKey(Optional.empty(), workerMode)
+                                ));
+                        } else {
+                            String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
+                            LOGGER.error(errorMessage);
+                            throw new IllegalArgumentException(errorMessage);
+                        }
                     }
-                    amqpAdmin.declareBinding(queue, exchange, workerMode);
-                    cacheAmqpElements(eventType, exchange.getName(),
-                                      amqpAdmin.getRoutingKey(Optional.of(queue), workerMode));
-                } else if (WorkerMode.BROADCAST.equals(workerMode)) {
-                    // Routing key useless ... always skipped with a fanout exchange
-                    cacheAmqpElements(eventType, exchange.getName(),
-                                      amqpAdmin.getRoutingKey(Optional.empty(), workerMode));
-                } else {
-                    String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
-                    LOGGER.error(errorMessage);
-                    throw new IllegalArgumentException(errorMessage);
                 }
-                alreadyPublished.put(eventType.getName(), Boolean.TRUE);
             }
 
             // Publish
-            publishMessageByTenant(tenant, exchangesByEvent.get(eventType.getName()),
-                                   routingKeysByEvent.get(eventType.getName()), event, priority, null);
+            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.get(eventType.getName());
+            publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }
-    }
-
-    private <T> void cacheAmqpElements(Class<?> eventType, String exchangeName, String routingKey) {
-        exchangesByEvent.put(eventType.getName(), exchangeName);
-        routingKeysByEvent.put(eventType.getName(), routingKey);
     }
 
     /**
@@ -362,5 +345,39 @@ public abstract class AbstractPublisher implements IPublisherContract {
             messageProperties.setPriority(priority);
             return new Message(message.getBody(), messageProperties);
         });
+    }
+
+
+    private static class ExchangeAndRoutingKey
+    {
+        public final String exchange;
+        public final String routingKey;
+
+        private ExchangeAndRoutingKey(String exchange, String routingKey) {
+            this.exchange   = exchange;
+            this.routingKey = routingKey;
+        }
+
+        public static ExchangeAndRoutingKey of(String exchange, String routingKey) {
+            return new ExchangeAndRoutingKey(exchange, routingKey);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            ExchangeAndRoutingKey that = (ExchangeAndRoutingKey) o;
+            return Objects.equals(exchange, that.exchange) &&
+                Objects.equals(routingKey, that.routingKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(exchange, routingKey);
+        }
     }
 }
