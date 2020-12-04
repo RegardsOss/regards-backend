@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.access.services.client;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.access.services.client.cache.ServiceAggregatorKeyGenerator;
+import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
+import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
@@ -30,10 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.access.services.client.cache.ServiceAggregatorKeyGenerator;
-import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
-import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import java.util.List;
 
 /**
  * Feign client for calling ServicesAggregatorController methods
@@ -44,11 +41,6 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 @RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IServiceAggregatorClient {
-
-    /**
-     * Logger
-     */
-    Logger LOGGER = LoggerFactory.getLogger(IServiceAggregatorClient.class);
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset

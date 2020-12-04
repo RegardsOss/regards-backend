@@ -44,7 +44,9 @@ public abstract class ComposableClientException extends Exception {
     public abstract Seq<Throwable> causes();
 
     public ComposableClientException compose(ComposableClientException other) {
-        if (other == null) { return this; }
+        if (other == null) {
+            return this;
+        }
         return new Multiple(this.causes().appendAll(other.causes()));
     }
 

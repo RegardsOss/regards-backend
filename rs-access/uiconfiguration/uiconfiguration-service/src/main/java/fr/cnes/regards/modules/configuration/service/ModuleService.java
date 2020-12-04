@@ -64,6 +64,8 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     private static final Logger LOG = LoggerFactory.getLogger(ModuleService.class);
 
     private static final String MODULE_HAS_NOT_VALID_JSON_FORMAT = "Module has not valid json format.";
+    public static final String LAYERS = "layers";
+    public static final String CONTENT = "content";
 
     /**
      * The default configuration for project user menu
@@ -177,23 +179,23 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException(MODULE_HAS_NOT_VALID_JSON_FORMAT, e);
         }
-        if (!moduleConfJson.has("layers")) {
+        if (!moduleConfJson.has(LAYERS)) {
             throw new EntityInvalidException("Module is not a valid Mizar json context file.");
         }
 
         JsonArray layers = new JsonArray();
-        if (!dataset.has("content")) {
+        if (!dataset.has(CONTENT)) {
             LOG.warn("Dataset retrieved from catalog doesn't fit the expected result");
             return moduleConfJson;
         }
-        JsonArray ds = dataset.getAsJsonArray("content");
+        JsonArray ds = dataset.getAsJsonArray(CONTENT);
         if (ds.size() < 1) {
             LOG.warn("There is no dataset available for this user");
             return moduleConfJson;
         }
         // Iterate over datasets resources
         ds.forEach(d -> {
-            String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("id").getAsString();
+            String datasetIpId = d.getAsJsonObject().get(CONTENT).getAsJsonObject().get("id").getAsString();
             JsonObject layer = new JsonObject();
             layer.addProperty("category", "Catalog");
             layer.addProperty("type", "OpenSearch");
@@ -202,9 +204,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             layers.add(layer);
         });
         //  Add to the end of the list all layers configured in the module json
-        moduleConfJson.get("layers").getAsJsonArray().forEach(layers::add);
+        moduleConfJson.get(LAYERS).getAsJsonArray().forEach(layers::add);
         // save the layer list inside the module conf
-        moduleConfJson.add("layers", layers);
+        moduleConfJson.add(LAYERS, layers);
         return moduleConfJson;
     }
 
@@ -294,7 +296,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             final Module projectList = new Module();
             projectList.setActive(true);
             projectList.setApplicationId(LayoutDefaultApplicationIds.PORTAL.toString());
-            projectList.setContainer("content");
+            projectList.setContainer(CONTENT);
             projectList.setDescription("List of projects");
             projectList.setType("projects-list");
             projectList.setConf("{}");

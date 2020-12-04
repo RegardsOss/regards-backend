@@ -90,6 +90,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     public static final String ROLES_ROLE_ID = "/roles/{role_id}";
 
     public static final String PENDINGACCESSES = "/pendingaccesses";
+    public static final String ACCESSRIGHTS_CLIENT = "accessrights-client";
 
     /**
      * Client handling project users
@@ -167,7 +168,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     public ResponseEntity<EntityModel<ProjectUserDto>> retrieveProjectUser(@PathVariable("user_id") Long userId) throws ModuleException {
         return toResponse(
             Try.of(() -> projectUsersClient.retrieveProjectUser(userId))
-                .transform(handleClientFailure("accessrights-client"))
+                .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                 .map(EntityModel::getContent)
                 .flatMap(user ->
                     Try.of(() -> storageClient.getCurrentQuotas(user.getEmail()))
@@ -379,7 +380,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         AtomicReference<io.vavr.collection.List<ProjectUser>> users = new AtomicReference<>(io.vavr.collection.List.empty());
         return toResponse(
             Try.ofSupplier(usersRequest)
-                .transform(handleClientFailure("accessrights-client"))
+                .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                 .peek(r -> meta.set(r.getMetadata())) // need a piece of state (pagination metadata) for later if success
                 .map(PagedModel::getContent)
                 .map(c -> c.stream()
@@ -438,7 +439,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
     ) throws ModuleException {
         return toResponse(
             Try.ofSupplier(projectUsersCall)
-                .transform(handleClientFailure("accessrights-client"))
+                .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                 .map(EntityModel::getContent)
                 .combine(Try.ofSupplier(quotaCall)
                     .transform(ignoreStorageQuotaErrors))
@@ -460,7 +461,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
                 .map(unit -> storageClient.getCurrentQuotas(userEmail))
                 .transform(ignoreStorageQuotaErrors)
                 .combine(Try.ofSupplier(projectUsersCall)
-                    .transform(handleClientFailure("accessrights-client"))
+                    .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
                     .map(EntityModel::getContent))
                 .ap(ProjectUserDto::new)
                 .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
@@ -469,7 +470,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserDt
         );
     }
 
-    private Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors =
+    private final Function<Try<ResponseEntity<UserCurrentQuotas>>, Validation<ComposableClientException, UserCurrentQuotas>> ignoreStorageQuotaErrors =
         t -> t
             .map(ResponseEntity::getBody)
             // special value for frontend if any error on storage or storage not deploy

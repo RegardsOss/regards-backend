@@ -9,6 +9,8 @@ import java.util.function.Function;
 
 public class Try {
 
+    private Try() {}
+
     public static  <T> Function<io.vavr.control.Try<ResponseEntity<T>>, Validation<ComposableClientException, T>> handleClientFailure(String clientName) {
         return (t) -> t
             .toEither()
