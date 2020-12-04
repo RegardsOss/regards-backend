@@ -156,10 +156,7 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     }
 
     private RightsPluginConfiguration findEntityByBusinessId(UUID processBusinessId) {
-        PluginConfiguration pc = Option.of(pluginConfigRepo.findCompleteByBusinessId(processBusinessId.toString()))
-                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Plugin with UUID " + processBusinessId + " not found"));
-        return rightsPluginConfigRepo.findByPluginConfiguration(pc)
+        return rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processBusinessId.toString())
                 .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Rights for plugin with UUID " + processBusinessId + " not found"));
     }

@@ -82,58 +82,25 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
 
     @Override
     public Flux<PProcess> findAllByTenant(String tenant) {
-        return findRightsPluginConfigurations().flatMap(rights -> buildPProcess(tenant, rights));
-    }
-
-    @Override
-    public Mono<PProcess> findByTenantAndProcessName(String tenant, String processName) {
-        return findAllByTenant(tenant).filter(p -> p.getProcessName().equals(processName)).next();
+        return Flux.fromIterable(rightsPluginConfigRepo.findAll())
+                .flatMap(rights -> buildPProcess(tenant, rights));
     }
 
     @Override
     public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
-        return findRightsPluginConfigurations().flatMap(rights -> buildPProcess(tenant, rights))
-                .filter(p -> p.getProcessId().equals(processId)).next();
-    }
-
-    @Override
-    public Flux<PProcess> findAllByTenantAndUserRole(PUserAuth details) {
-        return findRightsPluginConfigurations().filterWhen(rights -> roleChecker.roleIsUnder(details, rights.getRole()))
-                .flatMap(rights -> buildPProcess(details.getTenant(), rights));
+        return rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processId.toString()).map(Mono::just)
+                .getOrElse(() -> Mono.error(new RuntimeException("Unfound " + processId)))
+                .flatMap(rights -> buildPProcess(tenant, rights));
     }
 
     @Override
     public Mono<PProcess> findByBatch(PBatch batch) {
-        return findAllByTenant(batch.getTenant())
-                .filter(process -> process.getProcessId().equals(batch.getProcessBusinessId())).next();
+        return findByTenantAndProcessBusinessID(batch.getTenant(), batch.getProcessBusinessId());
     }
 
     private Mono<PProcess> buildPProcess(String tenant, RightsPluginConfiguration rights) {
         return getProcessDefinition(tenant, rights.getPluginConfiguration().getBusinessId())
                 .flatMap(def -> fromPlugin(rights, def, tenant));
-    }
-
-    private Flux<PluginConfiguration> findPluginConfigurations() {
-        return Flux.fromIterable(pluginService.getAllPluginConfigurations()).filter(this::eligibleClass);
-    }
-
-    private Flux<RightsPluginConfiguration> findRightsPluginConfigurations() {
-        return findPluginConfigurations().flatMap(this::getByPluginConfigurationId);
-    }
-
-    private Mono<RightsPluginConfiguration> getByPluginConfigurationId(PluginConfiguration pc) {
-        return Mono.defer(() -> rightsPluginConfigRepo.findByPluginConfiguration(pc).map(Mono::just)
-                .getOrElse(() -> Mono.error(new RightsPluginConfigurationNotFoundException(pc))));
-    }
-
-    private boolean eligibleClass(PluginConfiguration pc) {
-        try {
-            String pluginClassName = PluginUtils.getPluginMetadata(pc.getPluginId()).getPluginClassName();
-            return IProcessDefinition.class.isAssignableFrom(Class.forName(pluginClassName));
-        } catch (ClassNotFoundException | RuntimeException e) {
-            LOGGER.debug("Unable to find class matching class name for plugin configuration pc={}", pc, e);
-            return false;
-        }
     }
 
     private <T> Mono<T> tryToMono(Try<T> t) {
@@ -142,16 +109,30 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
 
     public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
         OrderProcessInfoMapper mapper = new OrderProcessInfoMapper();
-        return Mono.defer(() -> tryToMono(processDef.sizeForecast())
-                .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
-                        .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName()).map(engine -> {
-                            PluginConfiguration pc = rpc.getPluginConfiguration();
-                            return new PProcess.ConcretePProcess(UUID.fromString(pc.getBusinessId()), pc.getLabel(),
-                                    addTenantRole(mapper.toMap(processDef.processInfo()), tenant, rpc.getRole()),
-                                    pc.isActive(), processDef.batchChecker(), processDef.executionChecker(),
-                                    processDef.parameters(), sizeForecast, durationForecast, engine,
-                                    processDef.executable(), processDef.inputOutputMapper());
-                        }))));
+        return tryToMono(processDef.sizeForecast())
+            .flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
+                .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName())
+                    .map(engine -> {
+                        PluginConfiguration pc = rpc.getPluginConfiguration();
+                        return new PProcess.ConcretePProcess(
+                            UUID.fromString(pc.getBusinessId()),
+                            pc.getLabel(),
+                            addTenantRole(
+                                mapper.toMap(processDef.processInfo()),
+                                tenant,
+                                rpc.getRole()
+                            ),
+                            pc.isActive(),
+                            processDef.batchChecker(),
+                            processDef.executionChecker(),
+                            processDef.parameters(),
+                            sizeForecast,
+                            durationForecast,
+                            engine,
+                            processDef.executable(),
+                            processDef.inputOutputMapper()
+                        );
+                    })));
     }
 
     private Map<String, String> addTenantRole(Map<String, String> processInfo, String tenant, String role) {

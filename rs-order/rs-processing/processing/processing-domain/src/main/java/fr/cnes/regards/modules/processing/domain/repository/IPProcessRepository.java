@@ -35,11 +35,7 @@ public interface IPProcessRepository {
 
     Flux<PProcess> findAllByTenant(String tenant);
 
-    Mono<PProcess> findByTenantAndProcessName(String tenant, String processName);
-
     Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId);
-
-    Flux<PProcess> findAllByTenantAndUserRole(PUserAuth auth);
 
     Mono<PProcess> findByBatch(PBatch batch);
 

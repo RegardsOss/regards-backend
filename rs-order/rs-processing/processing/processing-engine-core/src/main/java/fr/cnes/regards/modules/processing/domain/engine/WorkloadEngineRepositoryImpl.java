@@ -43,6 +43,7 @@ public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
             return Mono.error(new EngineAlreadyExistsException(name));
         }
         else {
+            enginesByName.put(name, engine);
             return Mono.just(engine);
         }
     }

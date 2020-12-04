@@ -37,6 +37,8 @@ import java.util.UUID;
 @Repository
 public interface IRightsPluginConfigurationRepository extends JpaRepository<RightsPluginConfiguration, Long> {
 
+    Option<RightsPluginConfiguration> findByPluginConfigurationBusinessId(String processBusinessId);
+
     Option<RightsPluginConfiguration> findByPluginConfiguration(PluginConfiguration pluginConfigurationId);
 
     @Query(

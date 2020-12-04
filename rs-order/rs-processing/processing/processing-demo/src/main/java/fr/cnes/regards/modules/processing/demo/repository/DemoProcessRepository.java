@@ -63,18 +63,8 @@ public class DemoProcessRepository implements IPProcessRepository {
     }
 
     @Override
-    public Mono<PProcess> findByTenantAndProcessName(String tenant, String processName) {
-        return findAll().filter(p -> p.getProcessName().equals(processName)).next(); // No tenants used  here
-    }
-
-    @Override
     public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
         return findById(processId); // No tenants used  here
-    }
-
-    @Override
-    public Flux<PProcess> findAllByTenantAndUserRole(PUserAuth auth) {
-        return findAll();
     }
 
     @Override

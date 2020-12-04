@@ -53,12 +53,20 @@ public class IRightsPluginConfigurationRepositoryTest extends AbstractProcessing
 
         PluginConfiguration pc = makeConfig();
         UUID processBusinessId = UUID.fromString(pc.getBusinessId());
-        RightsPluginConfiguration rpc = new RightsPluginConfiguration(null, pc, processBusinessId, "EXPLOIT",
-                new String[] {}, true);
 
+        RightsPluginConfiguration rpc = new RightsPluginConfiguration(
+                null,
+                pc,
+                processBusinessId,
+                "EXPLOIT",
+                new String[] {},
+                true
+        );
+
+        RightsPluginConfiguration persistedAllDatasetsArrayEmpty = rightsRepo.save(rpc);
         rightsRepo.updateRoleToForProcessBusinessId("ADMIN", processBusinessId);
 
-        Optional<RightsPluginConfiguration> fetched = rightsRepo.findById(rpc.getId());
+        Optional<RightsPluginConfiguration> fetched = rightsRepo.findById(persistedAllDatasetsArrayEmpty.getId());
         assertThat(fetched.map(RightsPluginConfiguration::getRole)).contains("ADMIN");
     }
 
