@@ -78,4 +78,8 @@ public interface ProcessingConstants {
 
     }
 
+    interface Engines {
+        String JOBS = "JOBS";
+    }
+
 }

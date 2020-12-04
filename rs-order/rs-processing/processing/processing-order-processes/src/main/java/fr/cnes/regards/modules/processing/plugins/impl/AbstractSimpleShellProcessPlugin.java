@@ -18,23 +18,17 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import com.zaxxer.nuprocess.NuAbstractProcessHandler;
-import com.zaxxer.nuprocess.NuProcess;
 import com.zaxxer.nuprocess.NuProcessBuilder;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
-import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
-import fr.cnes.regards.modules.processing.domain.engine.JobWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
-import fr.cnes.regards.modules.processing.order.*;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function2;
 import io.vavr.Tuple;
@@ -48,9 +42,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static fr.cnes.regards.modules.processing.domain.PStep.*;
 import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
@@ -98,7 +90,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     }
 
     @Override public String engineName() {
-        return JobWorkloadEngine.NAME;
+        return ProcessingConstants.Engines.JOBS;
     }
 
     @Override public Seq<ExecutionParameterDescriptor> parameters() {

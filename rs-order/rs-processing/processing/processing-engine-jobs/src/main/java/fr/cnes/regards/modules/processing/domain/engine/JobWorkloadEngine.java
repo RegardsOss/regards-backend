@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.domain.engine;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
@@ -46,8 +47,6 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 @Component
 public class JobWorkloadEngine implements IWorkloadEngine {
 
-    public static final String NAME = "JOBS";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(JobWorkloadEngine.class);
 
     private final IJobInfoService jobInfoService;
@@ -62,7 +61,7 @@ public class JobWorkloadEngine implements IWorkloadEngine {
 
     @Override
     public String name() {
-        return NAME;
+        return ProcessingConstants.Engines.JOBS;
     }
 
     @Override
