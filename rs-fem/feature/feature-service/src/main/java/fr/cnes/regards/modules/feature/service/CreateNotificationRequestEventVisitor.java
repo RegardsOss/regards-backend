@@ -44,7 +44,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public NotificationRequestEvent visitCreationRequest(FeatureCreationRequest creationRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()),
+        return new NotificationRequestEvent(gson.toJsonTree(creationRequest.getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.CREATED)),
                                             creationRequest.getRequestId(),
                                             creationRequest.getRequestOwner());
@@ -53,13 +53,13 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
     @Override
     public NotificationRequestEvent visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
         if (deletionRequest.isAlreadyDeleted()) {
-            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()),
+            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
                                                 gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.ALREADY_DELETED)),
                                                 deletionRequest.getRequestId(),
                                                 deletionRequest.getRequestOwner());
         } else {
-            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()),
+            return new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify()).getAsJsonObject(),
                                                 gson.toJsonTree(new NotificationActionEventMetadata(
                                                        FeatureManagementAction.DELETED)),
                                                 deletionRequest.getRequestId(),
@@ -69,7 +69,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public NotificationRequestEvent visitCopyRequest(FeatureCopyRequest copyRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(copyRequest.getUrn()).getFeature()),
+        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(copyRequest.getUrn()).getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.COPY)),
                                             copyRequest.getRequestId(),
                                             copyRequest.getRequestOwner());
@@ -77,7 +77,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
 
     @Override
     public NotificationRequestEvent visitUpdateRequest(FeatureUpdateRequest updateRequest) {
-        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(updateRequest.getUrn()).getFeature()),
+        return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(updateRequest.getUrn()).getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.UPDATED)),
                                             updateRequest.getRequestId(),
                                             updateRequest.getRequestOwner());
@@ -86,7 +86,7 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
     @Override
     public NotificationRequestEvent visitNotificationRequest(FeatureNotificationRequest featureNotificationRequest) {
         return new NotificationRequestEvent(gson.toJsonTree(featureRepo.findByUrn(featureNotificationRequest.getUrn())
-                                                                   .getFeature()),
+                                                                   .getFeature()).getAsJsonObject(),
                                             gson.toJsonTree(new NotificationActionEventMetadata(FeatureManagementAction.NOTIFIED)),
                                             featureNotificationRequest.getRequestId(),
                                             featureNotificationRequest.getRequestOwner());
