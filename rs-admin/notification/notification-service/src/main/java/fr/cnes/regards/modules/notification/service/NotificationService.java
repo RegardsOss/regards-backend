@@ -251,7 +251,7 @@ public class NotificationService implements INotificationService {
     @Override
     public Long countUnreadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.countByStatus(NotificationStatus.UNREAD, authenticationResolver.getUser(),
+            return notificationRepository.countByStatus(NotificationStatus.UNREAD.toString(), authenticationResolver.getUser(),
                                                         authenticationResolver.getRole());
         } else {
             return notificationRepository.countByStatus(NotificationStatus.UNREAD);
@@ -264,7 +264,7 @@ public class NotificationService implements INotificationService {
     @Override
     public Long countReadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.countByStatus(NotificationStatus.READ, authenticationResolver.getUser(),
+            return notificationRepository.countByStatus(NotificationStatus.READ.toString(), authenticationResolver.getUser(),
                                                         authenticationResolver.getRole());
         } else {
             return notificationRepository.countByStatus(NotificationStatus.READ);

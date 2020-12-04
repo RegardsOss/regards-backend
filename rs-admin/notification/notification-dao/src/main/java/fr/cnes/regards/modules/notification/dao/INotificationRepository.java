@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +44,14 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing Notifications.<br>
- * Embeds paging/sorting abilities by entending {@link PagingAndSortingRepository}.<br>
+ * Embeds paging/sorting abilities by extending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
  * @author Xavier-Alexandre Brochard
  */
 public interface INotificationRepository
         extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
+
+    Logger LOGGER = LoggerFactory.getLogger(INotificationRepository.class);
 
     /**
      * Find all notifications having given project user or given role as recipient.
@@ -77,10 +81,9 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, pageable, pageNotifications.getTotalElements());
     }
 
-    @Query(value = "select distinct n.id from Notification n" + " ORDER BY id DESC")
+    @Query(value = "select n.id from Notification n ORDER BY id DESC")
     Page<Long> findAllId(Pageable page);
 
-    Logger LOGGER = LoggerFactory.getLogger(INotificationRepository.class);
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
      * @param projectUser The required project user recipient
@@ -93,11 +96,15 @@ public interface INotificationRepository
         // handling pagination by hand here is a bit touchy as we have conditions on joined tables
         // first lets get all notification ids that respect our wishes
         LOGGER.trace("----------------------------- STARTING find id page");
-        Page<Long> pageIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status, projectUser, role, pageable);
+        Page<BigInteger> pageIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status.toString(),
+                                                                                    projectUser,
+                                                                                    role,
+                                                                                    pageable);
         LOGGER.trace("----------------------------- ENDING find id page");
         // now let get all the notif according to extracted ids
         LOGGER.trace("----------------------------- STARTING notif without message by ids");
-        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.getContent());
+        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageIds.stream().map(BigInteger::longValue).collect(
+                Collectors.toList()));
         LOGGER.trace("----------------------------- ENDING findByStatusAndRecipientsContaining");
         // eventually, reconstruct a page
         return new PageImpl<>(notifs, pageable, pageIds.getTotalElements());
@@ -109,16 +116,30 @@ public interface INotificationRepository
 //            + "FROM Notification n WHERE n.id in (:ids)")
     List<INotificationWithoutMessage> findAllByIdInOrderByIdDesc(List<Long> ids);
 
-    @Query(value = "select n.id from Notification n"
-            + " where n.status= :status and (:user member of n.projectUserRecipients or "
-            + ":role member of n.roleRecipients ) ORDER BY id DESC")
-    Page<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc( @Param("status") NotificationStatus status, @Param("user") String projectUser,
-            @Param("role") String role, Pageable pageable);
+    @Query(value = "select notif.id "
+            + "from {h-schema}t_notification notif "
+            + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+            + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+            + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
+            countQuery = "select count(notif.id) "
+                    + "from {h-schema}t_notification notif "
+                    + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+                    + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+                    + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
+            nativeQuery = true)
+    //This is a native query so we need to pass status as string and not as Enum
+    Page<BigInteger> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(@Param("status") String status,
+            @Param("user") String projectUser, @Param("role") String role, Pageable pageable);
 
-    @Query(value = "select COUNT(distinct n.id) from Notification n"
-            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
-            + " ?3 member of n.roleRecipients) GROUP BY id ORDER BY id DESC")
-    Long countByStatus(NotificationStatus status, String projectUser, String role);
+    @Query(value = "select count(notif.id) "
+            + "from {h-schema}t_notification notif "
+            + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+            + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+            + "where notif.status=:status and (pu.projectuser_email=:user or role.role_name=:role)",
+            nativeQuery = true)
+    //This is a native query so we need to pass status as string and not as Enum
+    Long countByStatus(@Param("status") String status, @Param("user") String projectUser,
+            @Param("role") String role);
 
     @Modifying
     @Query("delete from Notification n where (:role member of n.roleRecipients)  AND n.status = :status")

@@ -51,7 +51,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void getAllNotifications() {
-        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, null, DefaultRole.PROJECT_ADMIN.toString(), PageRequest.of(0, 10));
+        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "null", DefaultRole.PROJECT_ADMIN.toString(), PageRequest.of(0, 10));
     }
 
     @Test
