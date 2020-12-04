@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
@@ -17,15 +18,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.ingest.service.notification;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -48,6 +40,13 @@ import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Notification service for {@link AbstractRequest}
@@ -116,28 +115,28 @@ public class AIPNotificationService implements IAIPNotificationService {
             // INGEST REQUESTS
             if (abstractRequest instanceof IngestRequest) {
                 IngestRequest ingestRequest = (IngestRequest) abstractRequest;
-                eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(ingestRequest.getAips()), gson.toJsonTree(
-                        new NotificationActionEventMetadata(RequestTypeConstant.INGEST_VALUE)),
-                                                             ingestRequest.getId().toString(), this.microserviceName));
+                ingestRequest.getAips().forEach((aip) -> eventToSend.add(
+                        new NotificationRequestEvent(
+                            gson.toJsonTree(aip).getAsJsonObject(),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.INGEST_VALUE)),
+                            ingestRequest.getId().toString(), this.microserviceName)));
             }
             // OAIS DELETION REQUESTS
             else if (abstractRequest instanceof OAISDeletionRequest) {
                 OAISDeletionRequest oaisDeletionRequest = (OAISDeletionRequest) abstractRequest;
                 // remark : aip content is in payload because it has already been removed from database
-                eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAipToNotify()),
-                                                             gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                     RequestTypeConstant.OAIS_DELETION_VALUE)),
-                                                             oaisDeletionRequest.getId().toString(),
-                                                             this.microserviceName));
+                eventToSend.add(
+                        new NotificationRequestEvent(gson.toJsonTree(oaisDeletionRequest.getAipToNotify()).getAsJsonObject(),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.OAIS_DELETION_VALUE)),
+                            oaisDeletionRequest.getId().toString(), this.microserviceName));
             }
             // UPDATE REQUESTS
             else if (abstractRequest instanceof AIPUpdateRequest) {
                 AIPUpdateRequest aipUpdateRequest = (AIPUpdateRequest) abstractRequest;
-                eventToSend.add(new NotificationRequestEvent(gson.toJsonTree(aipUpdateRequest.getAip()),
-                                                             gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                     RequestTypeConstant.UPDATE_VALUE)),
-                                                             aipUpdateRequest.getId().toString(),
-                                                             this.microserviceName));
+                eventToSend.add(
+                        new NotificationRequestEvent(gson.toJsonTree(aipUpdateRequest.getAip()).getAsJsonObject(),
+                            gson.toJsonTree(new NotificationActionEventMetadata(RequestTypeConstant.UPDATE_VALUE)),
+                            aipUpdateRequest.getId().toString(), this.microserviceName));
             }
         }
         return eventToSend;
