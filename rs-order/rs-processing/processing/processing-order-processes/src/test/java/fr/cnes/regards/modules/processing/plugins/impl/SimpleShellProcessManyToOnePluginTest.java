@@ -28,11 +28,13 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParam
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
-import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.storage.*;
+import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.storage.SharedStorageService;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
@@ -53,7 +55,6 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;

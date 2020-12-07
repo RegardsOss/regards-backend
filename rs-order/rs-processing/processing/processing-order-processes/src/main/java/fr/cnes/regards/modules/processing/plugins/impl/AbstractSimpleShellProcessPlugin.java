@@ -18,6 +18,7 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import com.zaxxer.nuprocess.NuAbstractProcessHandler;
+import com.zaxxer.nuprocess.NuProcess;
 import com.zaxxer.nuprocess.NuProcessBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
@@ -33,12 +34,13 @@ import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -169,6 +171,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
                     shellScriptName,
                     i
             );
+            LOGGER.error(message);
             sink.error(new SimpleShellProcessExecutionException(message));
         }
 
@@ -183,21 +186,25 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
         @Override public void onStdout(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
-            LOGGER.info("batch={} exec={} process={} :\n{}",
-                ctx.getBatch().getId(),
-                ctx.getExec().getId(),
-                shellScriptName,
-                msg
-            );
+            if (!StringUtils.isBlank(msg)) {
+                LOGGER.debug("batch={} exec={} process={} :\nstdout: {}",
+                        ctx.getBatch().getId(),
+                        ctx.getExec().getId(),
+                        shellScriptName,
+                        msg
+                );
+            }
         }
         @Override public void onStderr(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
-            LOGGER.error("batch={} exec={} process={} :\n{}",
-                ctx.getBatch().getId(),
-                ctx.getExec().getId(),
-                shellScriptName,
-                msg
-            );
+            if (!StringUtils.isBlank(msg)) {
+                LOGGER.error("batch={} exec={} process={} :\nstderr: {}",
+                        ctx.getBatch().getId(),
+                        ctx.getExec().getId(),
+                        shellScriptName,
+                        msg
+                );
+            }
         }
         protected String readBytesToString(ByteBuffer byteBuffer) {
             byte[] bytes = new byte[byteBuffer.remaining()];
@@ -230,10 +237,10 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
                     pb.setProcessListener(handler);
                     pb.setCwd(workdir.getBasePath());
                     startProcess(pb);
-                } catch(FileNotFoundException e) {
+                } catch(IOException e) {
                     LOGGER.error("The shell script appears to be missing: {}", shellScriptName, e);
                     sink.error(e);
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     LOGGER.error(e.getMessage(), e);
                     sink.error(e);
                 }
@@ -244,10 +251,13 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
          * This method is a wrapped around {@link NuProcessBuilder#start()}, which declares
          * the throwing of FileNotFoundException.
          * @param pb the process to start
-         * @throws FileNotFoundException may be thrown by the used method even though it is not declared.
+         * @throws IOException may be thrown by the used method even though it is not declared.
          */
-        private void startProcess(NuProcessBuilder pb) throws FileNotFoundException {
-            pb.start();
+        private void startProcess(NuProcessBuilder pb) throws IOException {
+            NuProcess start = pb.start();
+            if (start == null) {
+                throw new IOException("NuProcess start failed");
+            }
         }
     }
 
