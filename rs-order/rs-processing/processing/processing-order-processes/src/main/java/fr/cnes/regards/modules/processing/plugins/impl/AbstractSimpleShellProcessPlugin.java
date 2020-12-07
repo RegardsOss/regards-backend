@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
-import io.vavr.Function2;
+import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
 import org.slf4j.Logger;
@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
 
+import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -109,15 +110,25 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         return sendEvent(prepareEvent())
             .andThen(prepareWorkdir()
                 .andThen(sendEvent(runningEvent())
-                    .andThen(new SimpleShellProcessExecutable()
-                        .andThen(storeOutputFiles()
-                            .andThen(cleanWorkdir()))))
-                .onError(failureEvent())
-            );
+                    .andThen(new SimpleShellProcessExecutable())
+                        .andThen(storeOutputFiles())
+                            .andThen(cleanWorkdir())
+                    .onErrorThen(sendFailureEventThenClean())
+                )
+            )
+            .onErrorThen(sendFailureEvent());
     }
 
-    protected Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> failureEvent() {
-        return (ctx, t) -> ctx.sendEvent(event(failure(t.getMessage())));
+    protected Function1<Throwable, IExecutable> sendFailureEvent() {
+        return t -> (ctx -> ctx.sendEvent(event(failure(t.getMessage()))));
+    }
+
+    protected IExecutable failureEvent(Throwable t) {
+        return sendFailureEvent().apply(t);
+    }
+
+    protected Function1<Throwable, IExecutable> sendFailureEventThenClean() {
+        return t -> failureEvent(t).andThen(cleanWorkdir());
     }
 
     protected Function<ExecutionContext, ExecutionEvent> runningEvent() {
@@ -218,14 +229,29 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
                     ShellScriptNuProcessHandler handler = new ShellScriptNuProcessHandler(ctx, sink);
                     pb.setProcessListener(handler);
                     pb.setCwd(workdir.getBasePath());
-                    pb.start();
+                    startProcess(pb);
+                } catch(FileNotFoundException e) {
+                    LOGGER.error("The shell script appears to be missing: {}", shellScriptName, e);
+                    sink.error(e);
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
                     sink.error(e);
                 }
             });
         }
+
+        /**
+         * This method is a wrapped around {@link NuProcessBuilder#start()}, which declares
+         * the throwing of FileNotFoundException.
+         * @param pb the process to start
+         * @throws FileNotFoundException may be thrown by the used method even though it is not declared.
+         */
+        private void startProcess(NuProcessBuilder pb) throws FileNotFoundException {
+            pb.start();
+        }
     }
+
+
 
     public static class SimpleShellProcessExecutionException extends Exception {
         public SimpleShellProcessExecutionException(String s) {

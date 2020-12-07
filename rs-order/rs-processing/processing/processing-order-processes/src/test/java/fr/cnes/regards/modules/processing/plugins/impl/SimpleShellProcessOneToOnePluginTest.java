@@ -24,20 +24,20 @@ import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
-import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
-import fr.cnes.regards.modules.processing.storage.*;
+import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
+import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.processing.storage.SharedStorageService;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import io.vavr.control.Option;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -55,7 +55,6 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
@@ -135,6 +134,73 @@ public class SimpleShellProcessOneToOnePluginTest {
 
         assertThat(outputFiles.get()).isNotNull();
         assertThat(outputFiles.get()).hasSize(2);
+
+        LOGGER.info("Steps during execution: {}", steps.get());
+    }
+
+
+    @Test
+    public void runSimpleScriptOnError() throws Exception {
+        UUID execId = UUID.randomUUID();
+        UUID batchId = UUID.randomUUID();
+
+        Path tempWorkdirBase = Files.createTempDirectory("workdirs");
+        Path tempStorageBase = Files.createTempDirectory("storage");
+
+        IDownloadService downloadService = (file, dest) -> Mono.fromCallable(() -> {
+            throw new RuntimeException("wups on download");
+        });
+        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
+        ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
+
+        IWorkloadEngine engine = makeEngine();
+        IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
+        OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
+        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
+
+        RightsPluginConfiguration rpc = makeRightsPluginConfig();
+        PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
+        PBatch batch = makeBatch(batchId, process);
+        PExecution exec = makeExec(execId, batchId, batch.getProcessBusinessId());
+
+        AtomicReference<Seq<PStep>> steps = new AtomicReference<>(List.empty());
+        AtomicReference<Seq<POutputFile>> outputFiles = new AtomicReference<>();
+        AtomicReference<PExecution> execRef = new AtomicReference<>(exec);
+        AtomicReference<ExecutionContext> finalContext = new AtomicReference<>();
+
+        ExecutionContext ctx = new ExecutionContext(
+                exec,
+                batch,
+                process,
+                s -> {
+                    Seq<POutputFile> execOutFiles = s.outputFiles();
+                    if (!execOutFiles.isEmpty()) { outputFiles.set(execOutFiles); }
+                    return Mono
+                            .fromCallable(() -> steps.updateAndGet(ss -> s.step().map(ss::append).getOrElse(ss)))
+                            .map(ss -> execRef.updateAndGet(e -> e.withSteps(ss)));
+                }
+        );
+
+        CountDownLatch subscriptionLatch = new CountDownLatch(1);
+
+        IExecutable executable = shellProcessPlugin.executable();
+        executable
+                .execute(ctx)
+                .subscribeOn(Schedulers.immediate())
+                .subscribe(
+                        c -> { LOGGER.info("Success: {}", c); finalContext.set(c); },
+                        e -> LOGGER.error("Failure", e),
+                        subscriptionLatch::countDown
+                );
+
+        subscriptionLatch.await(1L, MINUTES);
+
+        assertThat(finalContext.get()).isNotNull();
+        assertThat(finalContext.get().getExec().getSteps()).hasSize(2);
+        assertThat(finalContext.get().getExec().getSteps().get(0).getStatus()).isEqualTo(PREPARE);
+        assertThat(finalContext.get().getExec().getSteps().get(1).getStatus()).isEqualTo(FAILURE);
+
+        assertThat(outputFiles.get()).isNull();
 
         LOGGER.info("Steps during execution: {}", steps.get());
     }

@@ -18,6 +18,7 @@
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
+import io.vavr.Function1;
 import io.vavr.Function2;
 import reactor.core.publisher.Mono;
 
@@ -70,6 +71,11 @@ public interface IExecutable {
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {
         return context -> execute(context).onErrorResume(recover.apply(context));
     }
+
+    default IExecutable onErrorThen(Function1<Throwable, IExecutable> recover) {
+        return context -> execute(context).onErrorResume(t -> recover.apply(t).execute(context));
+    }
+
 
     default IExecutable interrupt() {
         return context -> execute(context).flatMap(c -> Mono.empty());
