@@ -387,7 +387,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         processExecJobUnsaved.setExpirationDate(order.getExpirationDate());
         JobInfo processExecJob = jobInfoService.createAsPending(processExecJobUnsaved);
 
-        Long[] internalInputFiles = findInputFilesInStorage(order.getId(), features);
+        Long[] internalInputFiles = findInputFilesInStorage(order.getId(), features, orderProcessInfo.getRequiredDatatypes());
         JobInfo storageFilesJobUnsaved = new JobInfo(false,
                 orderJobService.computePriority(user, userRole),
                 HashSet.of(
@@ -418,10 +418,10 @@ public class OrderProcessingService implements IOrderProcessingService {
         return List.ofAll(orderDataFileRepository.findAllById(ids)).toJavaArray(OrderDataFile[]::new);
     }
 
-    private Long[] findInputFilesInStorage(Long orderId, List<EntityFeature> features) {
+    private Long[] findInputFilesInStorage(Long orderId, List<EntityFeature> features, List<DataType> requiredDatatypes) {
         return features
                 .flatMap(f -> List.ofAll(f.getFiles().values())
-                        .filter(file -> !file.isReference())
+                        .filter(file -> !file.isReference() && requiredDatatypes.contains(file.getDataType()))
                         .map(file -> new OrderDataFile(file, f.getId(), orderId))
                 )
                 .map(orderDataFileRepository::save)

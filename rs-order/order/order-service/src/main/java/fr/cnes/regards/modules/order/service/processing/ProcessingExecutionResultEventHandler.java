@@ -120,7 +120,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             LOGGER.error("{} no output found", logPrefix(evt));
             updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
         } else {
-            /*ProcessingExecu
+            /*
              * As a reminder of what the previous steps of the process did:
              * - in OrderProcessingService, we created OrderDataFile corresponding to the output files
              *   and we gave a temporary URL for these files with the following pattern as defined in

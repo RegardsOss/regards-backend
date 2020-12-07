@@ -110,8 +110,11 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+
         try {
-            PBatchResponse batchResponse = createBatch(dsSel, processingClient);
+            ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
+            PBatchRequest request = createBatchRequest(dsSel, processDatasetDescription);
+            PBatchResponse batchResponse = createBatch(dsSel, processDatasetDescription, request, processingClient);
 
             Scope scope = processInfo.getScope();
 
@@ -141,6 +144,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             advanceCompletion();
         }
     }
+
 
     private List<PInputFile> createInputsForFeatureWithCorrelationId(ProcessOutputFeatureDesc feature,
             java.util.List<OrderDataFile> inputs) {
@@ -203,9 +207,12 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
         );
     }
 
-    protected PBatchResponse createBatch(BasketDatasetSelection dsSel, IProcessingRestClient processingClient) {
-        ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
-        PBatchRequest request = createBatchRequest(dsSel, processDatasetDescription);
+    protected PBatchResponse createBatch(
+            BasketDatasetSelection dsSel,
+            ProcessDatasetDescription processDatasetDescription,
+            PBatchRequest request,
+            IProcessingRestClient processingClient
+    ) {
         try {
             FeignSecurityManager.asUser(user, userRole);
             ResponseEntity<PBatchResponse> batchResponse = processingClient.createBatch(request);
