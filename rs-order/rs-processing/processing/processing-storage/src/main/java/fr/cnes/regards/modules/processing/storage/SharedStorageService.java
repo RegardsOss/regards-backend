@@ -80,6 +80,7 @@ public class SharedStorageService implements ISharedStorageService {
             Path storageExecPath = basePath.resolve(ctx.getExec().getId().toString());
             Path execOutputPath = workdir.outputFolder();
             IOutputToInputMapper ioMapper = ctx.getProcess().getMapper();
+            LOGGER.info("Storing outputs from {} in {}", execOutputPath, storageExecPath);
 
             return Flux.<Mono<POutputFile>> create(sink -> {
                 try {

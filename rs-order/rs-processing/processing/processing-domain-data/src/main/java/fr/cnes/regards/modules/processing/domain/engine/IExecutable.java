@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.processing.domain.engine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.Function1;
 import io.vavr.Function2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
@@ -35,6 +37,8 @@ import java.util.function.Function;
  * @author gandrieu
  */
 public interface IExecutable {
+
+    Logger LOGGER = LoggerFactory.getLogger(IExecutable.class);
 
     /**
      * An executable receives execution context, and returns a new context in a Mono.
@@ -73,7 +77,10 @@ public interface IExecutable {
     }
 
     default IExecutable onErrorThen(Function1<Throwable, IExecutable> recover) {
-        return context -> execute(context).onErrorResume(t -> recover.apply(t).execute(context));
+        return context -> execute(context).onErrorResume(t -> {
+            LOGGER.error("Failure on context {}", context, t);
+            return recover.apply(t).execute(context);
+        });
     }
 
 
