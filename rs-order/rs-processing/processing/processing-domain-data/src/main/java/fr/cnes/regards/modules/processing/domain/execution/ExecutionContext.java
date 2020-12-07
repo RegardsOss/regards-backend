@@ -24,15 +24,14 @@ import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.Map;
+import io.vavr.control.Option;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 import reactor.core.publisher.Mono;
 
-import java.util.function.Supplier;
+import java.util.HashMap;
 
 /**
  * This class corresponds to all the context for an execution:
@@ -53,10 +52,10 @@ public class ExecutionContext {
 
     IExecutionEventNotifier eventNotifier;
 
-    @With Map<Class<?>, Object> params;
+    @With HashMap<Class<?>, Object> params; // FIXME: make this map immutable, but it caused problems in SimpleShellProcessPlugin
 
     public ExecutionContext(PExecution exec, PBatch batch, PProcess process, IExecutionEventNotifier notifierFor) {
-        this(exec, batch, process, notifierFor, HashMap.empty());
+        this(exec, batch, process, notifierFor, new HashMap<>());
     }
 
     public Mono<ExecutionContext> sendEvent(ExecutionEvent event) {
@@ -66,12 +65,14 @@ public class ExecutionContext {
     }
 
     public <T> ExecutionContext withParam(Class<T> type, T value) {
-        return withParams(params.put(type, value));
+        params.put(type, value);
+        return withParams(params);
     }
 
     @SuppressWarnings("unchecked")
     public <T> Mono<T> getParam(Class<T> type) {
-        return params.get(type).map(o -> (T)o)
+        return Option.of(params.get(type))
+            .map(o -> (T)o)
             .map(Mono::just)
             .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '" + type.getSimpleName() + "' not found")));
     }
