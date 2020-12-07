@@ -53,7 +53,7 @@ public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProces
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_EXECUTION,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 100L)
+                new SizeLimit(SizeLimit.Type.FILES, maxFilesInInput)
         );
     }
 }

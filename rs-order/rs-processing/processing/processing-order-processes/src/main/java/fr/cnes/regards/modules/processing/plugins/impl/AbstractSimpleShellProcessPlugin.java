@@ -76,12 +76,27 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     )
     protected List<String> envVariableNames;
 
+    @PluginParameter(
+            name = "maxFilesInInput",
+            label = "Maximum number of files as input for one execution",
+            description = "This parameter allows to limit the number of files given as input." +
+                    " Must be positive or null." +
+                    " Set to 0 for no limit.",
+            optional = true,
+            defaultValue = "0"
+    )
+    protected long maxFilesInInput = 0;
+
     public void setShellScriptName(String shellScriptName) {
         this.shellScriptName = shellScriptName;
     }
 
     public void setEnvVariableNames(List<String> envVariableNames) {
         this.envVariableNames = envVariableNames;
+    }
+
+    public void setMaxFilesInInput(int maxFilesInInput) {
+        this.maxFilesInInput = maxFilesInInput;
     }
 
     @Override public ConstraintChecker<PBatch> batchChecker() {

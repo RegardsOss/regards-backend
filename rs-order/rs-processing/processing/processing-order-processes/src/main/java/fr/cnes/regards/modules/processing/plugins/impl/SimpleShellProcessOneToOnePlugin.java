@@ -20,12 +20,10 @@ package fr.cnes.regards.modules.processing.plugins.impl;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
-import fr.cnes.regards.modules.processing.order.*;
-import io.vavr.collection.Map;
-
-import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
-import static fr.cnes.regards.modules.processing.domain.engine.IExecutable.sendEvent;
-import static io.vavr.collection.List.ofAll;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 
 /**
  * This class is a sample plugin launching a shell script.
@@ -57,7 +55,7 @@ public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcess
                 Scope.ITEM,
                 Cardinality.ONE_PER_INPUT_FILE,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 1L)
+                new SizeLimit(SizeLimit.Type.FILES, maxFilesInInput)
         );
     }
 }
