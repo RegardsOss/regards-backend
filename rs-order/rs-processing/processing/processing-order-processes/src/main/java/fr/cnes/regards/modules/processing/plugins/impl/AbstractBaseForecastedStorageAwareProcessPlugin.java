@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.Seq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +41,8 @@ import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.
  */
 public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends AbstractBaseForecastedProcessPlugin {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBaseForecastedStorageAwareProcessPlugin.class);
+    
     @Autowired
     protected IExecutionLocalWorkdirService workdirService;
 
@@ -72,6 +76,10 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
         return context -> context.getParam(ExecutionLocalWorkdir.class)
                 .flatMap(workdirService::cleanupWorkdir)
                 .map(wd -> context)
+                .onErrorResume(t -> {
+                    LOGGER.error("execId={} Failed to cleanup execution workdir", context.getExec().getId(), t);
+                    return Mono.just(context);
+                })
                 .switchIfEmpty(Mono.just(context));
     }
 
