@@ -56,7 +56,7 @@ public interface IExecutable {
     }
 
     static IExecutable sendEvent(Function<ExecutionContext, ExecutionEvent> eventFn) {
-        return context -> context.sendEvent(eventFn.apply(context)).log();
+        return context -> context.sendEvent(eventFn.apply(context));
     }
 
     static IExecutable sendEvent(ExecutionEvent event) {
@@ -69,13 +69,7 @@ public interface IExecutable {
      * @return a new executable with this and next in sequence.
      */
     default IExecutable andThen(String name, IExecutable next) {
-        return ctx1 -> {
-            LOGGER.info("Incept andThen {}: {}", name, ctx1);
-            return execute(ctx1)
-                    .doOnNext(ctx2 -> LOGGER.info("Before andThen {}: {}", name, ctx1))
-                    .flatMap(ctx2 -> next.execute(ctx2)
-                        .doOnNext(ctx3 -> LOGGER.info("After andThen {}: {}", name, ctx3)));
-        };
+        return ctx1 -> execute(ctx1).flatMap(next::execute);
     }
 
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {

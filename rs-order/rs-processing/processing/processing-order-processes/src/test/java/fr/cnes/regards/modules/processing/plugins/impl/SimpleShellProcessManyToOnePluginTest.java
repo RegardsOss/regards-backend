@@ -205,6 +205,7 @@ public class SimpleShellProcessManyToOnePluginTest {
 
         shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/tarInputs.sh").toFile().getAbsolutePath());
         shellProcessPlugin.setEnvVariableNames(List.of("OUTPUT_NAME").toJavaList());
+        shellProcessPlugin.setMaxFilesInInput(100);
 
         return shellProcessPlugin;
 

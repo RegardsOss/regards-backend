@@ -21,6 +21,8 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
+import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
+import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
@@ -57,8 +59,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                 .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
                 .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
                 .subscriberContext(addInContext(PExecution.class, exec))
-                .switchIfEmpty(Mono.just(context))
-                .log("prepareWorkdir");
+                .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
         };
     }
 
@@ -97,5 +98,11 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
 
     public void setStorageService(ISharedStorageService storageService) {
         this.storageService = storageService;
+    }
+
+    public static class WorkdirPreparationException extends ProcessingExecutionException {
+        public WorkdirPreparationException(PExecution exec, String message) {
+            super(ProcessingExceptionType.WORKDIR_PREPARATION_ERROR, exec, message);
+        }
     }
 }
