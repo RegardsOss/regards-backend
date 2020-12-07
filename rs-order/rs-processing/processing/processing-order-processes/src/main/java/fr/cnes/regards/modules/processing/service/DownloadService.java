@@ -110,7 +110,7 @@ public class DownloadService implements IDownloadService {
         return Mono.fromCallable(() -> {
             Files.createDirectories(dest.getParent());
             Flux<DataBuffer> dataBufferFlux = downloadUsingStorageRestClient(tenant, user, checksum);
-            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.WRITE);
+            return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         })
         .flatMap(voidMono -> voidMono.map(n -> dest))
         .onErrorResume(mustWrap(),
