@@ -166,6 +166,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                     if (request.isDeleteFiles() && !request.isRequestFilesDeleted()) {
                         aipService.scheduleLinkedFilesDeletion(request);
                     } else {
+                        // delete first the request so the aip can be deleted (the aip is a foreign key in the request)
                         requestService.deleteRequest(request);
                         aipService.processDeletion(sipToDelete.getSipId(),
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
@@ -173,13 +174,14 @@ public class OAISDeletionService implements IOAISDeletionService {
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                         // if notifications are required
                         if(isToNotify) {
-                            // break the link between request and aip (because the deleted aip is a foreign key in the request)
+                            // break the link between request and aip (the aip does not exist anymore)
                             request.setAip(null);
-                            // add aip content to payload (in case of notification error, the aip does not exist anymore
-                            // but its content is required to notify, so it is added in the request payload)
+                            // add aip content to the payload (the aip does not exist anymore but its content is still
+                            // required to notify its deletion, so it is added in the request payload)
                             request.setAipToNotify(aipToDelete);
-                            // add request to list of requests successfully processed
-                            success.add(request);
+                            // save again the request and add it to the list of requests successfully processed
+                            OAISDeletionRequest registeredRequest = deletionRequestRepository.save(request);
+                            success.add(registeredRequest);
                         }
                     }
                 } catch (Exception e) {
