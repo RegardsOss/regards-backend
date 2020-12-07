@@ -293,8 +293,10 @@ public class OrderDataFileService implements IOrderDataFileService {
                 .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count } Files with status DOWNLOAD_ERROR are not taken into account
         // because they are not considered as errors (available from storage)
-        Map<Long, Long> errorCountMap = repos
-                .selectCountFilesByOrderIdAndStates(now, FileState.ERROR, FileState.PROCESSING_ERROR).stream()
+        Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
+                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> processErrorCountMap = repos
+                .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.PROCESSING_ERROR).stream()
                 .collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map {order_id -> available files count }
         Map<Long, Long> availableCountMap = repos.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
@@ -305,7 +307,8 @@ public class OrderDataFileService implements IOrderDataFileService {
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.containsKey(order.getId()) ? treatedSizeMap.get(order.getId()) : 0l;
             order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
-            long errorCount = errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l;
+            long errorCount = (errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l)
+                    + (processErrorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l);
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.containsKey(order.getId()) ? availableCountMap.get(order.getId())
                     : 0l;
