@@ -76,7 +76,7 @@ public class OutputFileEntity implements Persistable<UUID> {
      */
     @EqualsAndHashCode.Exclude
     @Transient
-    private boolean persisted;
+    private boolean persisted = true; // True when comes from the database
 
     public OutputFileEntity persisted() {
         this.persisted = true;
