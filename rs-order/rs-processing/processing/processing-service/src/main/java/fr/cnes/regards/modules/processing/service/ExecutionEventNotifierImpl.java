@@ -74,7 +74,7 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
     @Override
     public Mono<PExecution> notifyEvent(ExecutionEvent event) {
         return execRepo.findById(execution.getId())
-                .flatMap(exec -> registerOutputFiles(execution, event.outputFiles()))
+                .flatMap(exec -> registerOutputFiles(exec, event.outputFiles()))
                 .flatMap(exec -> registerStep(event, exec))
                 .flatMap(exec -> sendResult(event, exec))
                 .subscriberContext(addInContext(PExecution.class, execution));

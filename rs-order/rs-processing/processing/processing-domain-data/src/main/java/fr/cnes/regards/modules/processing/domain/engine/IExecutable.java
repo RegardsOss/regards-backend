@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -69,7 +70,14 @@ public interface IExecutable {
      * @return a new executable with this and next in sequence.
      */
     default IExecutable andThen(IExecutable next) {
-        return ctx1 -> execute(ctx1).flatMap(next::execute);
+        return ctx1 -> {
+            UUID uuid = UUID.randomUUID();
+            LOGGER.info("Before andThen {}: {}", uuid, ctx1);
+            return execute(ctx1).flatMap(ctx2 -> {
+                LOGGER.info("After andThen {}: {}", uuid, ctx2);
+                return next.execute(ctx2);
+            });
+        };
     }
 
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {
@@ -82,7 +90,6 @@ public interface IExecutable {
             return recover.apply(t).execute(context);
         });
     }
-
 
     default IExecutable interrupt() {
         return context -> execute(context).flatMap(c -> Mono.empty());

@@ -102,6 +102,7 @@ public class SharedStorageService implements ISharedStorageService {
                     });
                 }
                 catch(Exception e) {
+                    LOGGER.error("Failed to store results", e);
                     sink.error(e);
                 }
             })
