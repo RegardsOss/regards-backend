@@ -41,6 +41,8 @@ public class FunctionDescriptorParser {
      */
     private static final String PARAM_SPLIT_REGEXP = ",(?=([^']*'[^']*')*[^']*$)";
 
+    private FunctionDescriptorParser() {}
+
     public static FunctionDescriptor parse(Object value) {
         if (value == null) {
             LOGGER.info(SKIPPING, value);

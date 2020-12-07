@@ -35,7 +35,7 @@ public interface IHandler<M> {
     Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
     /**
-     * User {@link #handleAndLog(String, Object)} instead.
+     * @deprecated User {@link #handleAndLog(String, Object)} instead.
      * @param wrapper
      */
     @Deprecated
@@ -54,7 +54,7 @@ public interface IHandler<M> {
     }
 
     /**
-     * Use {@link #handle(String, Object)} instead.
+     * @deprecated Use {@link #handle(String, Object)} instead.
      */
     @Deprecated
     default void handle(TenantWrapper<M> wrapper) {

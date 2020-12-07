@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
-
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Help to init tenant data sources
@@ -81,7 +79,7 @@ public final class TenantDataSourceHelper {
     private static void addApplicationName(TenantConnection connection, String appName) {
         String appKey = "ApplicationName";
         if (!connection.getUrl().contains(appKey)) {
-            StringBuffer buffer = new StringBuffer(connection.getUrl());
+            StringBuilder buffer = new StringBuilder(connection.getUrl());
             if (!connection.getUrl().contains(QUERY_PARAM_DELIMITER)) {
                 buffer.append(QUERY_PARAM_DELIMITER);
             } else {
@@ -101,7 +99,7 @@ public final class TenantDataSourceHelper {
             if (connection.getUrl().contains(rbi)) {
                 // Nothing to do
             } else {
-                StringBuffer buffer = new StringBuffer(connection.getUrl());
+                StringBuilder buffer = new StringBuilder(connection.getUrl());
                 if (!connection.getUrl().contains(QUERY_PARAM_DELIMITER)) {
                     buffer.append(QUERY_PARAM_DELIMITER);
                 } else {

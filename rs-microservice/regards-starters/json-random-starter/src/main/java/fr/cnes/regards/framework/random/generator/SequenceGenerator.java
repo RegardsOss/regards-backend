@@ -47,6 +47,8 @@ public class SequenceGenerator extends AbstractRandomGenerator<String> {
 
     @Override
     public String random() {
-        return String.format(format, current++);
+        String s = String.format(format, current);
+        current++;
+        return s;
     }
 }

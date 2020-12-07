@@ -47,7 +47,7 @@ public class JsonMessageConverters implements MessageConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageConverters.class);
 
     /**
-     * Use {@link AmqpConstants#REGARDS_CONVERTER_HEADER} instead.
+     * @deprecated Use {@link AmqpConstants#REGARDS_CONVERTER_HEADER} instead.
      * Will be remove in V1.3
      */
     @Deprecated

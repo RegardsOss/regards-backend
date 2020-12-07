@@ -55,7 +55,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
     private static final String CONVERSION_ERROR = "Cannot convert incoming message : %s";
 
     /**
-     * Use {@link AmqpConstants#REGARDS_TYPE_HEADER} instead.
+     * @deprecated Use {@link AmqpConstants#REGARDS_TYPE_HEADER} instead.
      * Will be remove in V1.2
      */
     @Deprecated
