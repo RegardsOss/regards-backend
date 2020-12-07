@@ -58,7 +58,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                 .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
                 .subscriberContext(addInContext(PExecution.class, exec))
                 .switchIfEmpty(Mono.just(context))
-                .log();
+                .log("prepareWorkdir");
         };
     }
 

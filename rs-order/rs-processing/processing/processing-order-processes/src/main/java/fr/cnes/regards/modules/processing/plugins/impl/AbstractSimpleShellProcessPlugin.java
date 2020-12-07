@@ -214,8 +214,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
         @Override
         public Mono<ExecutionContext> execute(ExecutionContext ctx) {
-            return getWorkdirService()
-                .makeWorkdir(ctx.getExec())
+            return ctx.getParam(ExecutionLocalWorkdir.class)
                 .flatMap(workdir -> executeInWorkdir(ctx, workdir));
         }
 

@@ -34,6 +34,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 
 import static fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.WORKDIR_CREATION_ERROR;
@@ -77,10 +78,16 @@ public class ExecutionLocalWorkdirService implements IExecutionLocalWorkdirServi
             })
             .flatMapMany(x -> Flux.fromIterable(inputFiles))
             .parallel(8)
-            .flatMap(f -> download(f, workdir.inputFolder().resolve(f.getLocalRelativePath())))
-            .reduce((x,y) -> x)
+            .flatMap(f -> {
+                Path dest = workdir.inputFolder().resolve(f.getLocalRelativePath());
+                LOGGER.info("Attempt to download input file {} into input folder at {}", f, dest);
+                return download(f, dest);
+            })
+            .collectSortedList(Comparator.comparing(Path::toAbsolutePath))
+            .doOnNext(paths -> LOGGER.debug("Downloaded all these paths in workdir {}:\n{}", workdir.getBasePath(), paths))
             .map(x -> workdir)
-            .onErrorResume(t -> cleanupWorkdir(workdir).flatMap(x -> Mono.error(t)));
+            .onErrorResume(t -> cleanupWorkdir(workdir).flatMap(x -> Mono.error(t)))
+            .doOnTerminate(() -> LOGGER.debug("Finished preparing workdir {}", workdir.getBasePath()));
     }
 
     private Mono<Path> download(PInputFile src, Path dst) {

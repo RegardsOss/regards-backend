@@ -31,6 +31,8 @@ import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import io.vavr.collection.Set;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -41,6 +43,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +52,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
 
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.EXTERNAL_DOWNLOAD_ERROR;
@@ -62,6 +66,8 @@ import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.
  */
 @Service
 public class DownloadService implements IDownloadService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadService.class);
 
     private static final OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
 
@@ -84,7 +90,9 @@ public class DownloadService implements IDownloadService {
 
     @Override
     public Mono<Path> download(PInputFile file, Path dest) {
-        return createParentFolderIfNeeded(dest).flatMap(d -> discriminateInternalExternal(file, d));
+        return createParentFolderIfNeeded(dest).flatMap(d -> discriminateInternalExternal(file, d))
+            .doOnError(t -> LOGGER.error("Failed to download {} into {}", file, dest, t))
+            .log("download " + file.getInputCorrelationId(), Level.FINE, SignalType.ON_NEXT, SignalType.ON_COMPLETE, SignalType.ON_ERROR);
     }
 
     private Mono<Path> discriminateInternalExternal(PInputFile file, Path dest) {

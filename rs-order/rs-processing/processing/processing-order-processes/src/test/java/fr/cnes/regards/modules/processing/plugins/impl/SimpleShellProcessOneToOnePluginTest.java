@@ -41,7 +41,6 @@ import io.vavr.collection.Seq;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -63,6 +62,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class SimpleShellProcessOneToOnePluginTest {
@@ -148,7 +148,9 @@ public class SimpleShellProcessOneToOnePluginTest {
         Path tempStorageBase = Files.createTempDirectory("storage");
 
         IDownloadService downloadService = (file, dest) -> Mono.fromCallable(() -> {
-            throw new RuntimeException("wups on download");
+            //throw new RuntimeException("wups on download");
+            FileUtils.copyFile(new File(file.getUrl().toURI().toString().replace("file:", "")), dest.toFile());
+            return dest;
         });
         IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
         ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
@@ -156,7 +158,7 @@ public class SimpleShellProcessOneToOnePluginTest {
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
+        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, mock(ISharedStorageService.class));
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
@@ -196,8 +198,9 @@ public class SimpleShellProcessOneToOnePluginTest {
         subscriptionLatch.await(1L, MINUTES);
 
         assertThat(finalContext.get()).isNotNull();
-        assertThat(finalContext.get().getExec().getSteps()).hasSize(2);
+        assertThat(finalContext.get().getExec().getSteps()).hasSize(3);
         assertThat(finalContext.get().getExec().getSteps().get(0).getStatus()).isEqualTo(PREPARE);
+        assertThat(finalContext.get().getExec().getSteps().get(0).getStatus()).isEqualTo(RUNNING);
         assertThat(finalContext.get().getExec().getSteps().get(1).getStatus()).isEqualTo(FAILURE);
 
         assertThat(outputFiles.get()).isNull();
@@ -220,17 +223,17 @@ public class SimpleShellProcessOneToOnePluginTest {
     }
 
     private OrderProcessRepositoryImpl makeProcessRepo(IWorkloadEngineRepository engineRepo) throws Exception {
-        IRightsPluginConfigurationRepository rightsRepo = Mockito.mock(IRightsPluginConfigurationRepository.class);
+        IRightsPluginConfigurationRepository rightsRepo = mock(IRightsPluginConfigurationRepository.class);
         when(rightsRepo.findByPluginConfiguration(any())).thenAnswer(i -> makeRightsPluginConfig());
-        IPUserAuthService authFactory = Mockito.mock(IPUserAuthService.class);
+        IPUserAuthService authFactory = mock(IPUserAuthService.class);
         when(authFactory.authFromUserEmailAndRole(anyString(), anyString(), anyString()))
                 .thenAnswer(i -> new PUserAuth(i.getArgument(0), i.getArgument(1), i.getArgument(2), "authToken"));
 
         return new OrderProcessRepositoryImpl(
-                Mockito.mock(IPluginService.class),
+                mock(IPluginService.class),
                 engineRepo,
                 rightsRepo,
-                Mockito.mock(IRuntimeTenantResolver.class)
+                mock(IRuntimeTenantResolver.class)
         );
     }
 
