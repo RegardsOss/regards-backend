@@ -110,15 +110,12 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
     @Override public IExecutable executable() {
         return sendEvent(prepareEvent())
-            .andThen(prepareWorkdir()
-                .andThen(sendEvent(runningEvent())
-                    .andThen(new SimpleShellProcessExecutable())
-                        .andThen(storeOutputFiles())
-                            .andThen(cleanWorkdir())
-                    .onErrorThen(sendFailureEventThenClean())
-                )
-            )
-            .onErrorThen(sendFailureEvent());
+            .andThen("prepare workdir", prepareWorkdir())
+            .andThen("send running", sendEvent(runningEvent()))
+            .andThen("simple shell", new SimpleShellProcessExecutable())
+            .andThen("store output", storeOutputFiles())
+            .andThen("clean workdir", cleanWorkdir())
+            .onErrorThen(sendFailureEventThenClean());
     }
 
     protected Function1<Throwable, IExecutable> sendFailureEvent() {
@@ -130,7 +127,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     }
 
     protected Function1<Throwable, IExecutable> sendFailureEventThenClean() {
-        return t -> failureEvent(t).andThen(cleanWorkdir());
+        return t -> failureEvent(t).andThen("clean workdir", cleanWorkdir());
     }
 
     protected Function<ExecutionContext, ExecutionEvent> runningEvent() {

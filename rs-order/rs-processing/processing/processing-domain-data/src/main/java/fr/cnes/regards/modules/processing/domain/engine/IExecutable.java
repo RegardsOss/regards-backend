@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -69,14 +68,13 @@ public interface IExecutable {
      * @param next the next executable to launch after this one.
      * @return a new executable with this and next in sequence.
      */
-    default IExecutable andThen(IExecutable next) {
+    default IExecutable andThen(String name, IExecutable next) {
         return ctx1 -> {
-            UUID uuid = UUID.randomUUID();
-            LOGGER.info("Before andThen {}: {}", uuid, ctx1);
-            return execute(ctx1).flatMap(ctx2 -> {
-                LOGGER.info("After andThen {}: {}", uuid, ctx2);
-                return next.execute(ctx2);
-            });
+            LOGGER.info("Incept andThen {}: {}", name, ctx1);
+            return execute(ctx1)
+                    .doOnNext(ctx2 -> LOGGER.info("Before andThen {}: {}", name, ctx1))
+                    .flatMap(ctx2 -> next.execute(ctx2)
+                        .doOnNext(ctx3 -> LOGGER.info("After andThen {}: {}", name, ctx3)));
         };
     }
 
