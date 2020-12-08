@@ -18,40 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.util.Pair;
-import org.springframework.http.MediaType;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -78,6 +44,34 @@ import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
 import fr.cnes.regards.modules.notifier.service.job.NotificationJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.util.Pair;
+import org.springframework.http.MediaType;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service for checking {@link Rule} applied to {@link JsonElement} for notification sending
@@ -451,14 +445,22 @@ public class NotificationRuleService extends AbstractCacheableRule
         }
         // do not forget to handle all requests that were not matched by any rule and so should be considered successful
         // right now (for simplicity issue lets set its state to SCHEDULED and wait for the check to be done)
+        Predicate<NotificationRequest> isSchedulable = (r) -> Stream.of(
+            !requestsCouldNotBeMatched.contains(r),
+            !requestsActuallyMatched.contains(r),
+            // because of retry logic in case of previous error in the matching process,
+            // we have to check that nothing is to be done (already planned)
+            // This case can happen if the rule that could not be matched earlier does not match the request
+            r.getRecipientsToSchedule().isEmpty(),
+            r.getRecipientsInError().isEmpty(),
+            r.getRecipientsScheduled().isEmpty(),
+            r.getRulesToMatch().isEmpty()
+        ).allMatch(b -> b);
+
         toBeMatched.stream()
-                .filter(r -> !requestsActuallyMatched.contains(r) && !requestsCouldNotBeMatched.contains(r) &&
-                        // because of retry logic in case of previous error in the matching process,
-                        // we have to check that nothing is to be done (already planned)
-                        // This case can happen if the rule that could not be matched earlier does not match the request
-                        r.getRecipientsToSchedule().isEmpty() && r.getRecipientsInError().isEmpty() && r
-                        .getRecipientsScheduled().isEmpty() && r.getRulesToMatch().isEmpty())
+                .filter(isSchedulable)
                 .forEach(request -> request.setState(NotificationState.SCHEDULED));
+
         // save all notification
         notificationRequestRepo.saveAll(toBeMatched);
         return Pair.of(requestsActuallyMatched.size(), recipientsActuallyMatched.size());

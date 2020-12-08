@@ -101,7 +101,7 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
         }
     };
 
-    private Task notificationCheckSuccessTask = () -> {
+    private final Task notificationCheckSuccessTask = () -> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         int nb = this.notificationService.checkSuccess();
