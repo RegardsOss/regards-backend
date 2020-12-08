@@ -40,7 +40,7 @@ import java.util.UUID;
 @Repository
 public interface IExecutionEntityRepository extends ReactiveCrudRepository<ExecutionEntity, UUID> {
 
-
+    // @formatter:off
     /**
      * We look for executions whose last recorded step is RUNNING, and its difference between recording time
      * and now is greater than the duration declared in the corresponding execution.
@@ -94,4 +94,5 @@ public interface IExecutionEntityRepository extends ReactiveCrudRepository<Execu
             UUID processBusinessId,
             List<ExecutionStatus> nonFinalStatusList
     );
+    // @formatter:on
 }

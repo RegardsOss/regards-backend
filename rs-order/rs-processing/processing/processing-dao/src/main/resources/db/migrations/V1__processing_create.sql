@@ -11,6 +11,7 @@ CREATE TABLE t_batch (
     parameters          jsonb        NOT NULL,
     primary key (id)
 );
+
 CREATE INDEX ON t_batch (tenant);
 CREATE INDEX ON t_batch (user_role);
 CREATE INDEX ON t_batch (process_business_id);
@@ -23,7 +24,7 @@ CREATE TABLE t_execution (
     created              timestamptz  NOT NULL,
     last_updated         timestamptz  NOT NULL,
     id                   uuid         NOT NULL,
-    batch_id             uuid         NOT NULL,
+    batch_id             uuid         REFERENCES t_batch ON DELETE CASCADE,
     process_business_id  uuid         NOT NULL,
     current_status       varchar(10)  NOT NULL,
     tenant               varchar(255) NOT NULL,
@@ -34,11 +35,6 @@ CREATE TABLE t_execution (
     file_parameters      jsonb        NOT NULL,
     primary key (id)
 );
-
-ALTER TABLE t_execution
-    ADD CONSTRAINT fk_exec_batch
-    FOREIGN KEY (batch_id)
-    REFERENCES t_batch;
 
 CREATE INDEX ON t_execution (last_updated);
 CREATE INDEX ON t_execution (current_status);
@@ -53,7 +49,7 @@ CREATE TABLE t_outputfile (
     size_bytes            int8        NOT NULL,
     created               timestamptz NOT NULL,
     id                    uuid        NOT NULL,
-    exec_id               uuid        NOT NULL,
+    exec_id               uuid        REFERENCES t_execution ON DELETE CASCADE,
     checksum_method       varchar(10) NOT NULL,
     checksum_value        varchar(64) NOT NULL,
     name                  text        NOT NULL,
@@ -61,11 +57,6 @@ CREATE TABLE t_outputfile (
     input_correlation_ids text[]      NOT NULL DEFAULT '{}',
     PRIMARY KEY (id)
 );
-
-ALTER TABLE t_outputfile
-    ADD CONSTRAINT fk_outputfile_exec
-    FOREIGN KEY (exec_id)
-    REFERENCES t_execution;
 
 CREATE INDEX ON t_outputfile (checksum_value);
 CREATE INDEX ON t_outputfile (url);

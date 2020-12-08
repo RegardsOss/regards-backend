@@ -28,9 +28,14 @@ import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.service.exception.ProcessConstraintViolationsException;
 import io.vavr.collection.Seq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.UUID;
 
@@ -42,14 +47,23 @@ import java.util.UUID;
 @Service
 public class BatchServiceImpl implements IBatchService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BatchServiceImpl.class);
+    
     private final IPProcessRepository processRepo;
 
     private final IPBatchRepository batchRepo;
 
+    private final long batchRipeForDeleteAgeMs;
+
     @Autowired
-    public BatchServiceImpl(IPProcessRepository processRepo, IPBatchRepository batchRepo) {
+    public BatchServiceImpl(
+            IPProcessRepository processRepo,
+            IPBatchRepository batchRepo,
+            @Value("${regards.processing.cleanup.batch.age.ms:604800000}") long batchRipeForDeleteAgeMs
+    ) {
         this.processRepo = processRepo;
         this.batchRepo = batchRepo;
+        this.batchRipeForDeleteAgeMs = batchRipeForDeleteAgeMs;
     }
 
     @Override
@@ -57,6 +71,14 @@ public class BatchServiceImpl implements IBatchService {
         return processRepo.findByTenantAndProcessBusinessID(auth.getTenant(), data.getProcessBusinessId())
                 .flatMap(p -> createBatch(p, data).flatMap(b -> checkBatch(p, b)))
                 .flatMap(batchRepo::save);
+    }
+
+    @Scheduled(fixedDelayString = "${regards.processing.cleanup.batch.rate.ms:3600000}")
+    public void deleteOldBatches() {
+        batchRepo.deleteAllFinishedForMoreThan(batchRipeForDeleteAgeMs)
+                .subscribeOn(Schedulers.immediate())
+                .doOnError(t -> LOGGER.error("Failed to delete old batches", t))
+                .subscribe();
     }
 
     private Mono<Seq<Violation>> check(PProcess process, PBatch batch) {

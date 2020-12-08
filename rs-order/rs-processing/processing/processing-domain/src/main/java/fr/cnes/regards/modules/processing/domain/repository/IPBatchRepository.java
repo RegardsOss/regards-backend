@@ -34,4 +34,5 @@ public interface IPBatchRepository {
 
     Mono<PBatch> findById(UUID id);
 
+    Mono<Void> deleteAllFinishedForMoreThan(long batchRipeForDeleteAgeMs);
 }

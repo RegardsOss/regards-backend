@@ -19,8 +19,10 @@ package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -33,4 +35,27 @@ import java.util.UUID;
 @Repository
 public interface IBatchEntityRepository extends ReactiveCrudRepository<BatchEntity, UUID> {
 
+    /**
+     * We look for executions whose last recorded step is RUNNING, and its difference between recording time
+     * and now is greater than the duration declared in the corresponding execution.
+     */
+    // @formatter:off
+    @Query( "WITH counts AS ( " +
+            "  SELECT " +
+            "    E.batch_id AS batch_id, " +
+            "    COUNT(*) AS count_all_execs, " +
+            "    COUNT(*) FILTER ( " +
+            "      WHERE current_status IN ('FAILURE', 'SUCCESS', 'TIMED_OUT', 'CANCELLED') " +
+            "      AND  EXTRACT(EPOCH FROM now()) - EXTRACT(EPOCH FROM E.last_updated) > (:tooOldDuration / 1000) " +
+            "    ) AS count_finished_execs " +
+            "  FROM public.t_execution as E " +
+            "  GROUP BY E.batch_id " +
+            ") " +
+            "SELECT * FROM public.t_batch AS B " +
+            "LEFT JOIN counts ON B.id = counts.batch_id " +
+            "WHERE counts.count_all_execs IS NULL" +
+            "   OR counts.count_all_execs = counts.count_finished_execs"
+    )
+    Flux<BatchEntity> getCleanableBatches(long tooOldDuration);
+    // @formatter:on
 }
