@@ -26,8 +26,12 @@ import fr.cnes.regards.modules.processing.entity.mapping.DomainEntityMapper;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.control.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.ReactiveTransactionManager;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -41,6 +45,8 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class PBatchRepositoryImpl implements IPBatchRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PBatchRepositoryImpl.class);
+
     static Cache<UUID, PBatch> cache = Caffeine.newBuilder()
             .expireAfterAccess(30, TimeUnit.MINUTES)
             .maximumSize(10000)
@@ -50,13 +56,20 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
 
     private final DomainEntityMapper.Batch mapper;
 
+    private final DatabaseClient databaseClient;
+
+    private final ReactiveTransactionManager reactiveTransactionManager;
+
     @Autowired
     public PBatchRepositoryImpl(
             IBatchEntityRepository delegate,
-            DomainEntityMapper.Batch mapper
-    ) {
+            DomainEntityMapper.Batch mapper,
+            DatabaseClient databaseClient,
+            ReactiveTransactionManager reactiveTransactionManager) {
         this.delegate = delegate;
         this.mapper = mapper;
+        this.databaseClient = databaseClient;
+        this.reactiveTransactionManager = reactiveTransactionManager;
     }
 
     @Override public Mono<PBatch> save(PBatch domain) {
@@ -77,6 +90,12 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
                 .doOnNext(b -> cache.put(b.getId(), b))
             )
             .switchIfEmpty(Mono.defer(() -> Mono.error(new BatchNotFoundException(id))));
+    }
+
+    @Override
+    public Mono<Void> deleteAllFinishedForMoreThan(long batchRipeForDeleteAgeMs) {
+        return delegate.deleteAll(delegate.getCleanableBatches(batchRipeForDeleteAgeMs)
+                .doOnNext(b -> LOGGER.info("Deleting batch {}", b)));
     }
 
     public static final class BatchNotFoundException extends ProcessingException {
