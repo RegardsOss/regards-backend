@@ -30,17 +30,9 @@ import fr.cnes.regards.modules.processing.order.SizeLimit;
  *
  * @author gandrieu
  */
-@Plugin(
-        id = SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN,
-        version = "1.0.0-SNAPSHOT",
-        description = "Launch a shell script",
-        author = "REGARDS Team",
-        contact = "regards@c-s.fr",
-        license = "GPLv3",
-        owner = "CSSI",
-        url = "https://github.com/RegardsOss",
-        markdown = "SimpleShellProcessOneToOnePlugin.md"
-)
+@Plugin(id = SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN, version = "1.0.0-SNAPSHOT",
+        description = "Launch a shell script", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
+        owner = "CSSI", url = "https://github.com/RegardsOss", markdown = "SimpleShellProcessOneToOnePlugin.md")
 public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcessPlugin {
 
     public static final String SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN = "SimpleShellProcessOneToOnePlugin";
@@ -50,12 +42,11 @@ public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcess
         return IOutputToInputMapper.sameNameWithoutExt();
     }
 
-    @Override public OrderProcessInfo processInfo() {
-        return new OrderProcessInfo(
-                Scope.ITEM,
-                Cardinality.ONE_PER_INPUT_FILE,
+    @Override
+    public OrderProcessInfo processInfo() {
+        return new OrderProcessInfo(Scope.ITEM, Cardinality.ONE_PER_INPUT_FILE,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput)
-        );
+                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput),
+                sizeForecast().get());
     }
 }

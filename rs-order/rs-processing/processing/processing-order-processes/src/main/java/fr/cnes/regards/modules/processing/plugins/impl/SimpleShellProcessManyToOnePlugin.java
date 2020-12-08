@@ -30,17 +30,9 @@ import fr.cnes.regards.modules.processing.order.SizeLimit;
  *
  * @author gandrieu
  */
-@Plugin(
-        id = SimpleShellProcessManyToOnePlugin.SIMPLE_SHELL_PROCESS_MANY_TO_ONE_PLUGIN,
-        version = "1.0.0-SNAPSHOT",
-        description = "Launch a shell script",
-        author = "REGARDS Team",
-        contact = "regards@c-s.fr",
-        license = "GPLv3",
-        owner = "CSSI",
-        url = "https://github.com/RegardsOss",
-        markdown = "SimpleShellProcessManyToOnePlugin.md"
-)
+@Plugin(id = SimpleShellProcessManyToOnePlugin.SIMPLE_SHELL_PROCESS_MANY_TO_ONE_PLUGIN, version = "1.0.0-SNAPSHOT",
+        description = "Launch a shell script", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
+        owner = "CSSI", url = "https://github.com/RegardsOss", markdown = "SimpleShellProcessManyToOnePlugin.md")
 public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProcessPlugin {
 
     public static final String SIMPLE_SHELL_PROCESS_MANY_TO_ONE_PLUGIN = "SimpleShellProcessManyToOnePlugin";
@@ -50,12 +42,11 @@ public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProces
         return IOutputToInputMapper.allMappings();
     }
 
-    @Override public OrderProcessInfo processInfo() {
-        return new OrderProcessInfo(
-                Scope.SUBORDER,
-                Cardinality.ONE_PER_EXECUTION,
+    @Override
+    public OrderProcessInfo processInfo() {
+        return new OrderProcessInfo(Scope.SUBORDER, Cardinality.ONE_PER_EXECUTION,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput)
-        );
+                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput),
+                sizeForecast().get());
     }
 }

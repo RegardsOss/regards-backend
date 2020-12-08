@@ -2,7 +2,6 @@ CREATE TABLE t_rights_plugin_configuration (
     id int8 NOT NULL,
     plugin_configuration_id int8 NOT NULL,
     process_business_id uuid NOT NULL,
-    tenant text,
     user_role text,
     datasets varchar(128)[], -- t_entity ipId iv varchar(128)
     PRIMARY KEY (id)
