@@ -101,7 +101,7 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
         }
 
         for (ProcessConfigurationDTO process : processes) {
-            plugins.stream().filter(p -> p.getBusinessId() == process.getPluginConfBid()).findFirst()
+            plugins.stream().filter(p -> p.getBusinessId().equals(process.getPluginConfBid())).findFirst()
                     .ifPresent(pc -> processService
                             .create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights())));
         }
