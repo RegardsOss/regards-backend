@@ -47,7 +47,6 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
                     + "        sub.id,"
                     + "        sub.plugin_configuration_id, "
                     + "        sub.process_business_id, "
-                    + "        sub.tenant, "
                     + "        sub.user_role, "
                     + "        sub.datasets, "
                     + "        sub.is_linked_to_all_datasets "
