@@ -123,8 +123,6 @@ public class OrderProcessingService implements IOrderProcessingService {
             OrderCounts orderCounts
     ) throws ModuleException {
 
-        DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel);
-
         ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDescription();
         UUID processBusinessId = processDatasetDesc.getProcessBusinessId();
         String processIdStr = processBusinessId.toString();
@@ -138,6 +136,10 @@ public class OrderProcessingService implements IOrderProcessingService {
                                         order.getLabel(), user, dsSel.getId(), processDto)));
         
                 List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
+                
+                // Creates datasetTasks with required data types and update estimated size
+                DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, requiredDatatypes.toJavaList());
+                dsTask.setFilesSize(orderProcessInfo.getSizeForecast().expectedResultSizeInBytes(dsTask.getFilesSize()));
         
                 AtomicLong suborderCount = new AtomicLong(1);
         
