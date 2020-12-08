@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.processing.domain.service;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 public interface IMonitoringService {
 
-    Mono<Page<PExecution>> getExecutionsPageForCriteria(
+    Mono<Page<ExecutionMonitoringDTO>> getExecutionsPageForCriteria(
         String tenant,
         List<ExecutionStatus> status,
         @Nullable String userEmail,

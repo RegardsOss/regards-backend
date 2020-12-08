@@ -17,16 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.repository;
 
-import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
-import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -40,8 +30,17 @@ import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_ROLE_PARAM_NAME;
+import static fr.cnes.regards.modules.processing.order.Constants.PROCESS_INFO_TENANT_PARAM_NAME;
 
 /**
  * This class is a concrete implementation of process repository based on {@link PluginConfiguration}.
@@ -101,7 +100,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         return t.fold(Mono::error, Mono::just);
     }
 
-    public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
+    private Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
         OrderProcessInfoMapper mapper = new OrderProcessInfoMapper();
         return tryToMono(processDef.sizeForecast()).flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
                 .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName()).map(engine -> {

@@ -78,13 +78,18 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.processing</groupId>
 			<artifactId>processing-test</artifactId>
 		</dependency>
-	</dependencies>
+
+    </dependencies>
 
 	<build>
 		<plugins>

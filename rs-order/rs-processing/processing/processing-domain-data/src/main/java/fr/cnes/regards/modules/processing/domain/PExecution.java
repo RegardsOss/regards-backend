@@ -19,8 +19,8 @@ package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -36,7 +36,13 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Value @With
+@Getter
+@FieldDefaults(level= AccessLevel.PROTECTED)
+@AllArgsConstructor
+@ToString
+@EqualsAndHashCode
+@With
+@Builder
 public class PExecution {
 
     /** The execution ID */
