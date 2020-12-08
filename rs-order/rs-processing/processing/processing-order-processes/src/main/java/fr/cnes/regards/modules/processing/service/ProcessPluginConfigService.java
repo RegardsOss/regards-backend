@@ -42,7 +42,6 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Stream;
-import io.vavr.control.Option;
 
 /**
  * This class is the implementation for {@link IProcessPluginConfigService}.
@@ -100,9 +99,17 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto) {
-        UUID processBusinessId = UUID.randomUUID();
-        rightsDto.getPluginConfiguration().setBusinessId(processBusinessId.toString());
-        RightsPluginConfiguration rights = RightsPluginConfiguration.fromDto(rightsDto);
+        ProcessPluginConfigurationRightsDTO toSave;
+        if (rightsDto.getPluginConfiguration().getBusinessId() == null) {
+            UUID processBusinessId = UUID.randomUUID();
+            rightsDto.getPluginConfiguration().setBusinessId(processBusinessId.toString());
+            toSave = rightsDto;
+        } else {
+            PluginConfiguration pc = pluginConfigRepo
+                    .findCompleteByBusinessId(rightsDto.getPluginConfiguration().getBusinessId());
+            toSave = new ProcessPluginConfigurationRightsDTO(pc, rightsDto.getRights());
+        }
+        RightsPluginConfiguration rights = RightsPluginConfiguration.fromDto(toSave);
         ProcessPluginConfigurationRightsDTO dto = RightsPluginConfiguration.toDto(rightsPluginConfigRepo.save(rights));
         publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.CREATE, null, dto));
         return dto;
