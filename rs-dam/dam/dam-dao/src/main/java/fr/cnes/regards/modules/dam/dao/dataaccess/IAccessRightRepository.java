@@ -18,13 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
@@ -45,18 +50,40 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
     Optional<AccessRight> findById(Long pId);
 
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
-    Page<AccessRight> findAllByDataset(Dataset dataset, Pageable pageable);
+    default Page<AccessRight> findAllByDataset(Dataset dataset, Pageable pageable) {
+        Page<Long> idPage = findIdPageByDataset(dataset, pageable);
+        List<AccessRight> accessRights = findAllById(idPage.getContent());
+        return new PageImpl<>(accessRights, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select ar.id from AccessRight ar where ar.dataset=:dataset")
+    Page<Long> findIdPageByDataset(@Param("dataset") Dataset dataset, Pageable pageable);
+
+    @Override
+    default Page<AccessRight> findAll(Pageable pageable) {
+        Page<Long> idPage = findIdPage(pageable);
+        List<AccessRight> accessRights = findAllById(idPage.getContent());
+        return new PageImpl<>(accessRights, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select ar.id from AccessRight ar")
+    Page<Long> findIdPage(Pageable pageable);
+
+    default Page<AccessRight> findAllByAccessGroup(AccessGroup accessGroup, Pageable pageable) {
+        Page<Long> idPage = findIdPageByAccessGroup(accessGroup, pageable);
+        List<AccessRight> accessRights = findAllById(idPage.getContent());
+        return new PageImpl<>(accessRights, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select ar.id from AccessRight ar where ar.accessGroup=:accessGroup")
+    Page<Long> findIdPageByAccessGroup(@Param("accessGroup") AccessGroup accessGroup, Pageable pageable);
 
     @Override
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
-    Page<AccessRight> findAll(Pageable pageable);
+    List<AccessRight> findAllById(Iterable<Long> longs);
 
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
     List<AccessRight> findAllByDataset(Dataset dataset);
-
-    @EntityGraph(value = "graph.accessright.dataset.and.accessgroup")
-    Page<AccessRight> findAllByAccessGroup(AccessGroup accessGroup, Pageable pageable);
 
     /**
      * This method returns zero or one AccessRight
@@ -65,8 +92,14 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
      * @param pageable
      * @return {@link AccessRight}s by page
      */
-    @EntityGraph(value = "graph.accessright.plugins")
-    Page<AccessRight> findAllByAccessGroupAndDataset(AccessGroup accessGroup, Dataset dataset, Pageable pageable);
+    default Page<AccessRight> findAllByAccessGroupAndDataset(AccessGroup accessGroup, Dataset dataset, Pageable pageable) {
+        Page<Long> idPage = findIdPageByAccessGroupAndDataset(accessGroup, dataset, pageable);
+        List<AccessRight> accessRights = findAllById(idPage.getContent());
+        return new PageImpl<>(accessRights, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select ar.id from AccessRight ar where ar.accessGroup=:accessGroup and ar.dataset=:dataset")
+    Page<Long> findIdPageByAccessGroupAndDataset(@Param("accessGroup") AccessGroup accessGroup,@Param("dataset") Dataset dataset, Pageable pageable);
 
     /**
      * This methods return only zero or one AccessRight
