@@ -17,6 +17,11 @@
 */
 package fr.cnes.regards.modules.processing.demo.process;
 
+import static fr.cnes.regards.modules.processing.demo.DemoConstants.PROFILE;
+import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType.STRING;
+
+import java.util.UUID;
+
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PProcess;
@@ -32,10 +37,6 @@ import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 
-import java.util.UUID;
-
-import static fr.cnes.regards.modules.processing.demo.DemoConstants.PROFILE;
-import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType.STRING;
 /**
  * This class is a demo process.
  *
@@ -44,63 +45,85 @@ import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionPara
 public class DemoProcess implements PProcess {
 
     private final IWorkloadEngine engine;
-    private final DemoSimulatedAsyncProcessFactory asyncProcessFactory;
 
+    private final DemoSimulatedAsyncProcessFactory asyncProcessFactory;
 
     public DemoProcess(IWorkloadEngine engine, DemoSimulatedAsyncProcessFactory asyncProcessFactory) {
         this.engine = engine;
         this.asyncProcessFactory = asyncProcessFactory;
     }
 
-    @Override public UUID getProcessId() {
+    @Override
+    public UUID getProcessId() {
         return UUID.fromString("500f6543-4379-461d-80f2-8fe3bd211e9d");
     }
 
-    @Override public String getProcessName() {
+    @Override
+    public String getProcessName() {
         return "DemoProcess";
     }
 
-    @Override public Map<String, String> getProcessInfo() {
+    @Override
+    public Map<String, String> getProcessInfo() {
         return HashMap.empty();
     }
 
-    @Override public boolean isActive() {
+    @Override
+    public boolean isActive() {
         return true;
     }
 
-    @Override public ConstraintChecker<PBatch> getBatchChecker() {
+    @Override
+    public ConstraintChecker<PBatch> getBatchChecker() {
         return ConstraintChecker.noViolation();
     }
 
-    @Override public ConstraintChecker<PExecution> getExecutionChecker() {
+    @Override
+    public ConstraintChecker<PExecution> getExecutionChecker() {
         return ConstraintChecker.noViolation();
     }
 
-    @Override public Seq<ExecutionParameterDescriptor> getParameters() {
-        return List.of(
-            new ExecutionParameterDescriptor(PROFILE, STRING, "Profile for this process execution", false, false, true)
-        );
+    @Override
+    public Seq<ExecutionParameterDescriptor> getParameters() {
+        return List.of(new ExecutionParameterDescriptor(PROFILE, STRING, "Profile for this process execution", false,
+                false, true));
     }
 
-    @Override public IResultSizeForecast getResultSizeForecast() {
+    @Override
+    public IResultSizeForecast getResultSizeForecast() {
         // For example, doubles the size of the input
-        return i -> i * 2;
+        return new IResultSizeForecast() {
+
+            @Override
+            public String format() {
+                return "*2";
+            }
+
+            @Override
+            public long expectedResultSizeInBytes(long inputSizeInBytes) {
+                return inputSizeInBytes * 2l;
+            }
+        };
     }
 
-    @Override public IRunningDurationForecast getRunningDurationForecast() {
+    @Override
+    public IRunningDurationForecast getRunningDurationForecast() {
         // For example, takes 1 second per megabyte of input
         return IRunningDurationForecast.secondsPerMegabytes(1);
     }
 
-    @Override public IWorkloadEngine getEngine() {
+    @Override
+    public IWorkloadEngine getEngine() {
         return engine;
     }
 
-    @Override public IOutputToInputMapper getMapper() {
+    @Override
+    public IOutputToInputMapper getMapper() {
         return (ctx, o) -> List.empty();
     }
 
-    @Override public IExecutable getExecutable() {
+    @Override
+    public IExecutable getExecutable() {
         return new DemoProcessExecutable(asyncProcessFactory);
     }
 }
