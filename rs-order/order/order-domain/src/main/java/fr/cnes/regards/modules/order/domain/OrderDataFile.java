@@ -18,19 +18,35 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
+import java.util.Objects;
+
+import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EntityResult;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.SqlResultSetMappings;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Type;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import org.hibernate.annotations.Type;
-import org.springframework.util.MimeType;
-
-import javax.persistence.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Objects;
 
 /**
  * Inherits from DataFile to add nearline state and IP_ID
@@ -138,11 +154,11 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Column(name = "url", columnDefinition = "text")
     public String getUrl() {
-        return (super.getUri() != null) ? super.getUri().toString() : null;
+        return super.getUri();
     }
 
-    public void setUrl(String url) throws URISyntaxException {
-        super.setUri(new URI(url));
+    public void setUrl(String url) {
+        super.setUri(url);
     }
 
     @Override
@@ -230,12 +246,12 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
         OrderDataFile dataFile = (OrderDataFile) o;
-        return Objects.equals(getChecksum(), dataFile.getChecksum()) && Objects
-                .equals(getDigestAlgorithm(), dataFile.getDigestAlgorithm());
+        return Objects.equals(getChecksum(), dataFile.getChecksum())
+                && Objects.equals(getDigestAlgorithm(), dataFile.getDigestAlgorithm());
     }
 
     @Override

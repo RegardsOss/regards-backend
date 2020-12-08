@@ -18,7 +18,21 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -39,19 +53,6 @@ import io.vavr.collection.HashSet;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /**
  * When rs-process has finished an execution, it sends a PExecutionResultEvent.
@@ -195,19 +196,14 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                 LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
                             logPrefix(evt), orderDataFileUrl, orderDataFileCount);
             }
-            try {
-                OrderDataFile odf = orderDataFiles.get(0);
-                String url = outputFile.getUrl().toString();
-                odf.setUrl(url);
-                odf.setState(FileState.AVAILABLE);
-                odf.setChecksum(outputFile.getChecksumValue());
-                odf.setFilename(outputFile.getName());
-                odf.setFilesize(outputFile.getSize());
-                updatedDataFiles.add(odf);
-            } catch (URISyntaxException e) {
-                LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(), e);
-                return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
-            }
+            OrderDataFile odf = orderDataFiles.get(0);
+            String url = outputFile.getUrl().toString();
+            odf.setUrl(url);
+            odf.setState(FileState.AVAILABLE);
+            odf.setChecksum(outputFile.getChecksumValue());
+            odf.setFilename(outputFile.getName());
+            odf.setFilesize(outputFile.getSize());
+            updatedDataFiles.add(odf);
         }
 
         return updatedDataFiles;
@@ -241,21 +237,14 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                     LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
                                 logPrefix(evt), orderDataFileUrl, orderDataFileCount);
                 }
-                try {
-                    OrderDataFile odf = orderDataFiles.get(0);
-                    String url = outputFile.getUrl().toString();
-                    odf.setUrl(url);
-                    odf.setState(FileState.AVAILABLE);
-                    odf.setChecksum(outputFile.getChecksumValue());
-                    odf.setFilename(outputFile.getName());
-                    odf.setFilesize(outputFile.getSize());
-
-                    updatedDataFiles.add(odf);
-                } catch (URISyntaxException e) {
-                    LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(),
-                                 e);
-                    error.set(true);
-                }
+                OrderDataFile odf = orderDataFiles.get(0);
+                String url = outputFile.getUrl().toString();
+                odf.setUrl(url);
+                odf.setState(FileState.AVAILABLE);
+                odf.setChecksum(outputFile.getChecksumValue());
+                odf.setFilename(outputFile.getName());
+                odf.setFilesize(outputFile.getSize());
+                updatedDataFiles.add(odf);
             }).onEmpty(() -> {
                 LOGGER.error("{} the output {} has incoherent inputCorrelationIds, referencing several features when they should reference only one",
                              logPrefix(evt), outputFile.getName());
@@ -286,20 +275,15 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
                         logPrefix(evt), orderDataFileUrl, orderDataFileCount);
         }
-        try {
-            for (OrderDataFile odf : orderDataFiles) {
-                String url = outputFile.getUrl().toString();
-                odf.setUrl(url);
-                odf.setState(FileState.AVAILABLE);
-                odf.setChecksum(outputFile.getChecksumValue());
-                odf.setFilename(outputFile.getName());
-                odf.setFilesize(outputFile.getSize());
-            }
-            return orderDataFiles;
-        } catch (URISyntaxException e) {
-            LOGGER.error("{} could not create URI from execution output URL: {}", logPrefix(evt), e.getInput(), e);
-            return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
+        for (OrderDataFile odf : orderDataFiles) {
+            String url = outputFile.getUrl().toString();
+            odf.setUrl(url);
+            odf.setState(FileState.AVAILABLE);
+            odf.setChecksum(outputFile.getChecksumValue());
+            odf.setFilename(outputFile.getName());
+            odf.setFilesize(outputFile.getSize());
         }
+        return orderDataFiles;
     }
 
     private List<OrderDataFile> setAllDataFilesInSuborderAsInError(
