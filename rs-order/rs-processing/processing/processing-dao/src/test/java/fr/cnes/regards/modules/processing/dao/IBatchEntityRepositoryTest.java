@@ -69,13 +69,25 @@ public class IBatchEntityRepositoryTest extends AbstractRepoTest {
 
         entityExecRepo.saveAll(executions).blockLast();
 
-        // WHEN
+        // WHEN looking for batches ripe for deletion
         List<BatchEntity> entitiesToBeDeleted = entityBatchRepo.getCleanableBatches(Duration.ofDays(7).toMillis()).collectList().block();
 
         // THEN
         assertThat(entitiesToBeDeleted).hasSize(2);
         assertThat(entitiesToBeDeleted.stream().map(BatchEntity::getId))
                 .containsExactlyInAnyOrder(batchNoExec.getId(), batchToBeDeleted.getId());
+
+        // WHEN deleting these batches
+        entityBatchRepo.deleteAll(entitiesToBeDeleted).block();
+
+        // Executions have been deleted by cascade
+        List<ExecutionEntity> remainingExecs = entityExecRepo.findAllById(Flux.fromIterable(executions).map(ExecutionEntity::getId))
+                .collectList()
+                .block();
+        assertThat(remainingExecs).hasSize(4);
+        assertThat(remainingExecs.stream().map(ExecutionEntity::getBatchId).distinct())
+                .containsExactlyInAnyOrder(batchRecentExec.getId(), batchRunningExec.getId());
+
     }
 
     private void generateExecution(List<ExecutionEntity> entities, BatchEntity batchRecentExec, ExecutionStatus success, OffsetDateTime lastUpdated) {
