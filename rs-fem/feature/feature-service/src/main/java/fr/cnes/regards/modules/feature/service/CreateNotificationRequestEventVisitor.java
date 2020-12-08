@@ -33,9 +33,9 @@ public class CreateNotificationRequestEventVisitor implements IAbstractFeatureRe
         }
     }
 
-    private Gson gson;
+    private final Gson gson;
 
-    private IFeatureEntityRepository featureRepo;
+    private final IFeatureEntityRepository featureRepo;
 
     public CreateNotificationRequestEventVisitor(Gson gson, IFeatureEntityRepository featureRepo) {
         this.gson = gson;

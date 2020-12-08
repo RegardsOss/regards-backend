@@ -77,6 +77,8 @@ public class FeatureLogger {
 
     private static final String NOTIFICATION_ERROR_FORMAT = PREFIX + "Feature Notification ERROR" + PX3;
 
+    private FeatureLogger() {}
+
     public static void creationDenied(String requestOwner, String requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(CREATION_DENIED_FORMAT, requestOwner, requestId, providerId, errors));
     }

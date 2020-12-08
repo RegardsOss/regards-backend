@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -69,7 +70,7 @@ public class FeatureMetrics {
     @Autowired
     private FeatureConfigurationProperties properties;
 
-    private final Map<String, Counter> counters = new HashMap<>();
+    private final Map<String, Counter> counters = new ConcurrentHashMap<>();
 
     public static enum FeatureCreationState {
 

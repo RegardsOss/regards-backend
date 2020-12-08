@@ -16,6 +16,8 @@ public class FeatureProperties {
 
     public static final String PROPERTIES_FIELD_NAME = "properties";
 
+    private FeatureProperties() {}
+
     public static void beforeRead(JsonObject wrapper) {
         JsonElement attEl = wrapper.get(PROPERTIES_FIELD_NAME);
         if ((attEl != null) && !attEl.isJsonNull()) {
