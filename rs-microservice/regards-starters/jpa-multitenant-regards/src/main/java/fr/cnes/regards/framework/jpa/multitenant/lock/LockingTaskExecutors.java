@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockConfiguration;
@@ -34,6 +27,11 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.sql.DataSource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marc SORDI
@@ -42,14 +40,9 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 public class LockingTaskExecutors {
 
     /**
-     * List of available {@link LockProvider}
-     */
-    private final Map<String, LockProvider> lockProviders = new HashMap<>();
-
-    /**
      * List of {@link LockingTaskExecutor} for execution action with lock.
      */
-    private final Map<String, LockingTaskExecutor> taskExecutors = new HashMap<>();
+    private final Map<String, LockingTaskExecutor> taskExecutors = new ConcurrentHashMap<>();
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -68,12 +61,10 @@ public class LockingTaskExecutors {
 
     public void registerLockingTaskExecutor(String tenant, DataSource datasource) {
         LockProvider lockProvider = new JdbcTemplateLockProvider(datasource);
-        lockProviders.put(tenant, lockProvider);
         taskExecutors.put(tenant, new DefaultLockingTaskExecutor(lockProvider));
     }
 
     public void removeLockingTaskExecutor(String tenant) {
-        lockProviders.remove(tenant);
         taskExecutors.remove(tenant);
     }
 

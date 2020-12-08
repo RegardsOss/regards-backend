@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, Object>> {
 
@@ -33,9 +34,9 @@ public class ObjectRandomGenerator extends AbstractRandomGenerator<Map<String, O
      */
     private static final String KEYS_TO_REMOVE_PREFIX = "#";
 
-    private final Map<String, RandomGenerator<?>> generators = new HashMap<>();
+    private final Map<String, RandomGenerator<?>> generators = new ConcurrentHashMap<>();
 
-    private final Map<String, RandomGenerator<?>> dependentGenerators = new HashMap<>();
+    private final Map<String, RandomGenerator<?>> dependentGenerators = new ConcurrentHashMap<>();
 
     private final List<String> keysToRemove = new ArrayList<>();
 

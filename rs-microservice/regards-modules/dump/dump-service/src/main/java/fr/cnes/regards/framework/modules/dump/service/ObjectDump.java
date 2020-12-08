@@ -35,7 +35,7 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     private final OffsetDateTime creationDate;
 
-    private Object jsonContent;
+    private final Object jsonContent;
 
     private final String jsonName;
 

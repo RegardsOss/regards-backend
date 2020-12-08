@@ -65,7 +65,7 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    private Map<String, ScheduledFuture> schedulersByTenant = Maps.newHashMap();
+    private final Map<String, ScheduledFuture> schedulersByTenant = Maps.newHashMap();
 
     /**
      * Create schedulers when the application context has been refreshed see {@link ApplicationStartedEvent}

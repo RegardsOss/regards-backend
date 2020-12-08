@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.random.function;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FunctionDescriptor {
 
     private FunctionDescriptorType type;
 
-    private Map<Integer, String> parameters = new HashMap<>();
+    private final Map<Integer, String> parameters = new ConcurrentHashMap<>();
 
     public FunctionDescriptor(FunctionDescriptorType type) {
         this.type = type;
@@ -41,10 +41,6 @@ public class FunctionDescriptor {
 
     public Map<Integer, String> getParameters() {
         return parameters;
-    }
-
-    public void setParameters(Map<Integer, String> parameters) {
-        this.parameters = parameters;
     }
 
     public void addParameter(Integer position, String value) {
