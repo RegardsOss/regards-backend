@@ -62,12 +62,24 @@ public interface INotificationRepository
     default Page<INotificationWithoutMessage> findByRecipientsContaining(String projectUser, String role,
             Pageable pageable) {
 
-        return findByProjectUserRecipientsContainingOrRoleRecipientsContaining(projectUser, role, pageable);
+        Page<BigInteger> idPage = findIdPageByRecipientsContaining(projectUser, role, pageable);
+        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(idPage.getContent().stream()
+                                                                                      .map(BigInteger::longValue)
+                                                                                      .collect(Collectors.toList()));
+        return new PageImpl<>(notifs, idPage.getPageable(), idPage.getTotalElements());
     }
 
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    Page<INotificationWithoutMessage> findByProjectUserRecipientsContainingOrRoleRecipientsContaining(
-            String projectUser, String role, Pageable pageable);
+    @Query(value = "select notif.id from {h-schema}t_notification notif "
+            + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+            + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+            + "where pu.projectuser_email=:user or role.role_name=:role",
+            countQuery = "select count(notif.id) from {h-schema}t_notification notif "
+                    + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+                    + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+                    + "where pu.projectuser_email=:user or role.role_name=:role",
+            nativeQuery = true)
+    Page<BigInteger> findIdPageByRecipientsContaining(@Param("user") String projectUser,
+            @Param("role") String role, Pageable pageable);
 
     @Override
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
@@ -147,11 +159,29 @@ public interface INotificationRepository
 
     /**
      * Find all notifications with passed <code>status</code>
-     * @param pStatus The notification status
+     * @param status The notification status
      * @return The list of notifications
      */
+    default Page<Notification> findByStatus(NotificationStatus status, Pageable pageable) {
+        Page<BigInteger> idPage = findIdPageByStatus(status.toString(), pageable);
+        List<Notification> notifs = findAllNotifByIdInOrderByIdDesc(idPage.stream().map(BigInteger::longValue).collect(
+                Collectors.toList()));
+        return new PageImpl<>(notifs, idPage.getPageable(), idPage.getTotalElements());
+    }
+
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    Page<Notification> findByStatus(NotificationStatus pStatus, Pageable page);
+    List<Notification> findAllNotifByIdInOrderByIdDesc(List<Long> ids);
+
+    @Query(value = "select notif.id from {h-schema}t_notification notif "
+            + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+            + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+            + "where notif.status=:status",
+            countQuery = "select count(notif.id) from {h-schema}t_notification notif "
+                    + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
+                    + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
+                    + "where notif.status=:status",
+            nativeQuery = true)
+    Page<BigInteger> findIdPageByStatus(@Param("status") String status, Pageable pageable);
 
     /**
      * Find all notifications without message with passed <code>status</code>

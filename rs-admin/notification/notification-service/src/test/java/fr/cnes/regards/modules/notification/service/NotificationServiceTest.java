@@ -254,16 +254,6 @@ public class NotificationServiceTest {
             }
 
             @Override
-            public Set<String> getRoleRecipients() {
-                return null;
-            }
-
-            @Override
-            public Set<String> getProjectUserRecipients() {
-                return null;
-            }
-
-            @Override
             public String getSender() {
                 return null;
             }

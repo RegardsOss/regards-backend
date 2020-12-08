@@ -25,12 +25,15 @@ import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -61,14 +64,24 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all {@link ProjectUser}s with passed <code>status</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pStatus
+     * @param status
      *            The {@link ProjectUser}'s <code>status</code>
-     * @param pPageable
+     * @param pageable
      *            the pagination information
      * @return The {@link List} of {@link ProjectUser}s with passed <code>status</code>
      */
+    default Page<ProjectUser> findByStatus(UserStatus status, Pageable pageable) {
+        Page<Long> idPage = findIdPageByStatus(status, pageable);
+        List<ProjectUser> projectUsers = findAllById(idPage.getContent());
+        return new PageImpl<>(projectUsers, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Override
     @EntityGraph(value = "graph.user.metadata")
-    Page<ProjectUser> findByStatus(UserStatus pStatus, Pageable pPageable);
+    List<ProjectUser> findAllById(Iterable<Long> ids);
+
+    @Query(value = "select pu.id from ProjectUser pu where pu.status=:status")
+    Page<Long> findIdPageByStatus(@Param("status") UserStatus status, Pageable pageable);
 
     /**
      * Find all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
@@ -96,25 +109,38 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all project users whose role name equals param.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pNames
+     * @param names
      *            a set of role name
-     * @param pPageable
+     * @param pageable
      *            the pagination information
      * @return all project users with this role
      */
-    @EntityGraph(value = "graph.user.metadata")
-    Page<ProjectUser> findByRoleNameIn(Set<String> pNames, Pageable pPageable);
+    default Page<ProjectUser> findByRoleNameIn(Set<String> names, Pageable pageable) {
+        Page<Long> idPage = findIdPageByRoleNameIn(names, pageable);
+        List<ProjectUser> projectUsers = findAllById(idPage.getContent());
+        return new PageImpl<>(projectUsers, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query(value = "select pu.id from ProjectUser pu where pu.role.name in :names")
+    Page<Long> findIdPageByRoleNameIn(@Param("names") Set<String> names, Pageable pageable);
 
     /**
      * Find all project users Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pPageable
+     * @param pageable
      *            the pagination information
      * @return all project users with this role
      */
     @Override
     @EntityGraph(value = "graph.user.metadata")
-    Page<ProjectUser> findAll(Pageable pPageable);
+    default Page<ProjectUser> findAll(Pageable pageable) {
+        Page<Long> idPage = findIdPage(pageable);
+        List<ProjectUser> projectUsers = findAllById(idPage.getContent());
+        return new PageImpl<>(projectUsers, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select pu.id from ProjectUser pu")
+    Page<Long> findIdPage(Pageable pageable);
 
     /**
      * Find all project users respecting the given specification
