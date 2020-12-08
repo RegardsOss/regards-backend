@@ -20,8 +20,10 @@ package fr.cnes.regards.modules.processing.plugins.impl;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
-import fr.cnes.regards.modules.processing.order.*;
-import io.vavr.collection.Map;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 
 /**
  * This class is a sample plugin launching a shell script.
@@ -53,7 +55,7 @@ public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProces
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_EXECUTION,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, maxFilesInInput)
+                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput)
         );
     }
 }

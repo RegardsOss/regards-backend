@@ -466,7 +466,7 @@ public class OrderProcessingService implements IOrderProcessingService {
 
         public boolean isOverProcessAndStorageLimits(OrderProcessInfo orderProcessInfo) {
             SizeLimit sizeLimit = orderProcessInfo.getSizeLimit();
-            SizeLimit.Type processLimitType = sizeLimit.getType();
+            SizeLimit.Type processLimitType = sizeLimit.getLimit() == 0L ? SizeLimit.Type.NO_LIMIT : sizeLimit.getType();
             Long processLimitValue = sizeLimit.getLimit();
             boolean countExceedsMaxExternalBucketSize = count >= suborderSizeCounter.maxExternalBucketSize();
             boolean sizeExceedsStorageBucketSize = size >= suborderSizeCounter.getStorageBucketSize();

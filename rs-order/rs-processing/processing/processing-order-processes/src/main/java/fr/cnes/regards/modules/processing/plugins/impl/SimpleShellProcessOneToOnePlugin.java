@@ -55,7 +55,7 @@ public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcess
                 Scope.ITEM,
                 Cardinality.ONE_PER_INPUT_FILE,
                 io.vavr.collection.List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, maxFilesInInput)
+                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput)
         );
     }
 }
