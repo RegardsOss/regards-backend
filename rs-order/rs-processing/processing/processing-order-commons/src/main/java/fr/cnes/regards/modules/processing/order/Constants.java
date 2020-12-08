@@ -34,6 +34,8 @@ public interface Constants {
 
     String SIZE_LIMIT_VALUE = "sizeLimitValue";
 
+    String SIZE_FORECAST = "sizeForecast";
+
     String INTERNAL = "internal";
 
     String FEATURE_ID = "featureId";

@@ -18,6 +18,8 @@
 package fr.cnes.regards.modules.processing.order;
 
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
+import fr.cnes.regards.modules.processing.forecast.ForecastParser;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -43,7 +45,8 @@ public class OrderProcessInfoMapper extends AbstractMapper<OrderProcessInfo> {
                 .reduceOption((a,b) -> String.format("%s,%s", a, b))
                 .getOrElse(""),
             SIZE_LIMIT_TYPE, params.getSizeLimit().getType().name(),
-            SIZE_LIMIT_VALUE, params.getSizeLimit().getLimit().toString()
+            SIZE_LIMIT_VALUE, params.getSizeLimit().getLimit().toString(),
+            SIZE_FORECAST, params.getSizeForecast().format()
         );
     }
 
@@ -52,7 +55,13 @@ public class OrderProcessInfoMapper extends AbstractMapper<OrderProcessInfo> {
             .flatMap(scope -> parse(map, CARDINALITY, Cardinality.class)
                 .flatMap(card -> parseDatatypes(map)
                     .flatMap(datatypes -> parseSizeLimit(map)
-                        .map(sizeLimit -> new OrderProcessInfo(scope, card, datatypes, sizeLimit)))));
+                        .flatMap(sizeLimit -> parseSizeForecast(map)
+                            .map(sizeForecast -> new OrderProcessInfo(scope, card, datatypes, sizeLimit, sizeForecast))))));
+    }
+
+    protected Option<IResultSizeForecast> parseSizeForecast(Map<String, String> map) {
+        return map.get(SIZE_FORECAST)
+            .flatMap(fc -> ForecastParser.INSTANCE.parseResultSizeForecast(fc).toOption());
     }
 
     protected Option<List<DataType>> parseDatatypes(Map<String, String> map) {

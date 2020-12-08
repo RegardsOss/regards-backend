@@ -29,12 +29,9 @@ public interface IResultSizeForecast {
 
     long expectedResultSizeInBytes(long inputSizeInBytes);
 
-    static IResultSizeForecast zeroSize() {
-        return i -> 0L;
-    }
+    String format();
 
     interface Parser {
-
         Try<IResultSizeForecast> parseResultSizeForecast(String str);
     }
 }

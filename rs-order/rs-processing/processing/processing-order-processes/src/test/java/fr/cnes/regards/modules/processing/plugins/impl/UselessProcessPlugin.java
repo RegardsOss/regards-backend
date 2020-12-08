@@ -23,14 +23,13 @@ import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IRunningDurationForecast;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
+import fr.cnes.regards.modules.processing.forecast.AbsoluteResultSizeForecast;
 import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
 import fr.cnes.regards.modules.processing.order.Scope;
 import fr.cnes.regards.modules.processing.order.SizeLimit;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
-import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import reactor.core.publisher.Mono;
@@ -45,17 +44,20 @@ import reactor.core.publisher.Mono;
         url = "https://github.com/RegardsOss")
 public class UselessProcessPlugin implements IProcessDefinition {
 
+    private IResultSizeForecast sizeForecast = new AbsoluteResultSizeForecast(0);
+
     @Override public OrderProcessInfo processInfo() {
         return new OrderProcessInfo(
             Scope.ITEM,
             Cardinality.ONE_PER_INPUT_FILE,
             List.of(DataType.RAWDATA),
-            new SizeLimit(SizeLimit.Type.FILES, 0L)
+            new SizeLimit(SizeLimit.Type.FILES, 0L),
+            sizeForecast
         );
     }
 
     @Override public Try<IResultSizeForecast> sizeForecast() {
-        return Try.success(IResultSizeForecast.zeroSize());
+        return Try.success(sizeForecast);
     }
 
     @Override public Try<IRunningDurationForecast> durationForecast() {

@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.processing.forecast;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import lombok.Value;
 
+import java.util.Locale;
+
 /**
  * This class represents a size forecast not depending on the input.
  *
@@ -32,6 +34,11 @@ public class AbsoluteResultSizeForecast implements IResultSizeForecast {
 
     @Override public long expectedResultSizeInBytes(long inputSizeInBytes) {
         return expectedSize;
+    }
+
+
+    @Override public String format() {
+        return String.format(Locale.ENGLISH, "%db", getExpectedSize());
     }
 
 }

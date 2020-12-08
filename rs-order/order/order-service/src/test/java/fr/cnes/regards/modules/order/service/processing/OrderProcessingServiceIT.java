@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
 import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
@@ -81,7 +82,8 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
                 Scope.ITEM,
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 1L)
+                new SizeLimit(SizeLimit.Type.FILES, 1L),
+                new MultiplierResultSizeForecast(1d)
         );
         int expectedExecutions = 10;
 
@@ -139,7 +141,8 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_FEATURE,
                 List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 4L)
+                new SizeLimit(SizeLimit.Type.FILES, 4L),
+                new MultiplierResultSizeForecast(1d)
         );
         int expectedExecutions = 3;
 
@@ -197,7 +200,8 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
                 Scope.SUBORDER,
                 Cardinality.ONE_PER_EXECUTION,
                 List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 5L)
+                new SizeLimit(SizeLimit.Type.FILES, 5L),
+                new MultiplierResultSizeForecast(1d)
         );
         int expectedExecutions = 2;
 

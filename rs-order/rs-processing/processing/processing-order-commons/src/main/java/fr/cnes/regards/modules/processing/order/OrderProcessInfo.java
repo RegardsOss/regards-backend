@@ -18,6 +18,7 @@
 package fr.cnes.regards.modules.processing.order;
 
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import io.vavr.collection.List;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -36,5 +37,6 @@ public class OrderProcessInfo {
     Cardinality cardinality;
     List<DataType> requiredDatatypes;
     SizeLimit sizeLimit;
+    IResultSizeForecast sizeForecast;
 
 }

@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
+import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
@@ -229,8 +230,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                 batchSuborderIdentifier,
                 UniformResourceName.fromString(dsSel.getDatasetIpid()),
                 features,
-                orderProcessInfo.getCardinality(),
-                orderProcessInfo.getRequiredDatatypes()
+                orderProcessInfo
         );
         JobInfo result = new JobInfo(
                 false,
@@ -256,13 +256,21 @@ public class OrderProcessingService implements IOrderProcessingService {
             BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
             UniformResourceName dsSelIpId,
             List<EntityFeature> features,
-            Cardinality cardinality,
-            List<DataType> requiredDataTypes
+            OrderProcessInfo processInfo
     ) {
+
+        Cardinality cardinality = processInfo.getCardinality();
+        List<DataType> requiredDataTypes = processInfo.getRequiredDatatypes();
+        IResultSizeForecast sizeForecast = processInfo.getSizeForecast();
         Long orderId = batchSuborderIdentifier.getOrderId();
 
         if (cardinality == Cardinality.ONE_PER_EXECUTION) {
-            DataFile dataFile = DataFile.build(
+            List<DataFile> applicableDataFilesIn = features.flatMap(f -> List.ofAll(f.getFiles().values()))
+                    .filter(f -> requiredDataTypes.contains(f.getDataType()));
+
+            long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize).reduce(Long::sum));
+
+            DataFile dataFileOut = DataFile.build(
                     DataType.OTHER,
                     batchSuborderIdentifier.repr(),
                     ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier),
@@ -270,13 +278,17 @@ public class OrderProcessingService implements IOrderProcessingService {
                     true,
                     true
             );
-            return List.of(createAndSaveOrderDataFile(dataFile, dsSelIpId, orderId))
+            dataFileOut.setFilesize(expectedSize);
+            return List.of(createAndSaveOrderDataFile(dataFileOut, dsSelIpId, orderId))
                     .map(OrderDataFile::getId)
                     .toJavaArray(Long[]::new);
         } else {
             return features.flatMap(feature -> {
                 if (cardinality == Cardinality.ONE_PER_FEATURE) {
-                    DataFile dataFile = DataFile.build(
+                    List<DataFile> applicableDataFilesIn = List.ofAll(feature.getFiles().values())
+                            .filter(f -> requiredDataTypes.contains(f.getDataType()));
+                    long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize).reduce(Long::sum));
+                    DataFile dataFileOut = DataFile.build(
                             DataType.OTHER,
                             feature.getId().toString(),
                             ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, feature),
@@ -284,10 +296,13 @@ public class OrderProcessingService implements IOrderProcessingService {
                             true,
                             true
                     );
-                    return List.of(createAndSaveOrderDataFile(dataFile, feature.getId(), orderId));
+                    dataFileOut.setFilesize(expectedSize);
+                    return List.of(createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
                     return featureRequiredDatafiles(feature, requiredDataTypes)
                             .map(dataFile -> {
+                                long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
+
                                 DataFile dataFileOut = DataFile.build(
                                         DataType.OTHER,
                                         dataFile.getFilename(),
@@ -296,6 +311,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                                         true,
                                         true
                                 );
+
+                                dataFileOut.setFilesize(expectedSize);
                                 return createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId);
                             })
                             .collect(Collectors.toList());

@@ -11,8 +11,14 @@
 
     <groupId>fr.cnes.regards.modules.processing</groupId>
     <artifactId>processing-order-commons</artifactId>
+
     <dependencies>
         <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.processing</groupId>
+            <artifactId>processing-domain-data</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards</artifactId>
