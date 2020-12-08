@@ -17,7 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -25,13 +40,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
+import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
+import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
 
 /**
  * This class is the module manager for the processing module when used in REGARDS in conjunction with rs-order.
@@ -46,13 +57,16 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IProcessPluginConfigService processService;
+
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = Sets.newHashSet();
-        for (PluginConfiguration p : pluginService.getAllPluginConfigurations()) {
+        for (ProcessPluginConfigurationRightsDTO p : processService.findAllRightsPluginConfigs()) {
             try {
-                pluginService.deletePluginConfiguration(p.getBusinessId());
-            } catch (ModuleException e) {
+                processService.delete(UUID.fromString(p.getPluginConfiguration().getBusinessId()));
+            } catch (DeleteAttemptOnUsedProcessException e) {
                 LOGGER.warn(RESET_FAIL_MESSAGE, e);
                 errors.add(e.getMessage());
             }
@@ -65,6 +79,9 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
 
         Set<String> importErrors = new HashSet<>();
         Set<PluginConfiguration> configurations = getPluginConfs(configuration.getConfiguration());
+        Set<ProcessConfigurationDTO> processes = getProcessConfs(configuration.getConfiguration());
+
+        Set<PluginConfiguration> plugins = Sets.newHashSet();
 
         // First create connections
         for (PluginConfiguration plgConf : configurations) {
@@ -73,9 +90,9 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
                 if (existingOne.isPresent()) {
                     existingOne.get().setLabel(plgConf.getLabel());
                     existingOne.get().setParameters(plgConf.getParameters());
-                    pluginService.updatePluginConfiguration(existingOne.get());
+                    plugins.add(pluginService.updatePluginConfiguration(existingOne.get()));
                 } else {
-                    pluginService.savePluginConfiguration(plgConf);
+                    plugins.add(pluginService.savePluginConfiguration(plgConf));
                 }
             } catch (ModuleException e) {
                 LOGGER.warn(IMPORT_FAIL_MESSAGE, e);
@@ -83,7 +100,14 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
             }
         }
 
+        for (ProcessConfigurationDTO process : processes) {
+            plugins.stream().filter(p -> p.getBusinessId() == process.getPluginConfBid()).findFirst()
+                    .ifPresent(pc -> processService
+                            .create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights())));
+        }
+
         return importErrors;
+
     }
 
     private Optional<PluginConfiguration> loadPluginConfiguration(String businessId) {
@@ -106,6 +130,8 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
             exportedConf.setIsActive(true);
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
+        processService.findAllRightsPluginConfigs().stream().forEach(c -> configurations.add(ModuleConfigurationItem
+                .build(new ProcessConfigurationDTO(c.getPluginConfiguration().getBusinessId(), c.getRights()))));
         return ModuleConfiguration.build(info, true, configurations);
     }
 
@@ -117,5 +143,10 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
     private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
         return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
                 .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+    }
+
+    private Set<ProcessConfigurationDTO> getProcessConfs(Collection<ModuleConfigurationItem<?>> items) {
+        return items.stream().filter(i -> ProcessConfigurationDTO.class.isAssignableFrom(i.getKey()))
+                .map(i -> (ProcessConfigurationDTO) i.getTypedValue()).collect(Collectors.toSet());
     }
 }
