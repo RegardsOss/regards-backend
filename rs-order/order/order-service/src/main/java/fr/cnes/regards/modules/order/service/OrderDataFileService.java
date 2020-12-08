@@ -18,37 +18,9 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -59,13 +31,25 @@ import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FileState;
-import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.*;
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -96,6 +80,9 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IProcessingEventSender processingEventSender;
 
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
@@ -263,6 +250,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             }
         } else { // Set State as DOWNLOADED, even if it is online
             dataFile.setState(FileState.DOWNLOADED);
+            processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
         }
         dataFile = self.save(dataFile);
         Order order = orderRepository.findSimpleById(dataFile.getOrderId());

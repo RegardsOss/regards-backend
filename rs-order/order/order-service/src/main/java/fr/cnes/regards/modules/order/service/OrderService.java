@@ -57,17 +57,15 @@ import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailability
 import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
 import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
-import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import freemarker.template.TemplateException;
-import io.vavr.collection.Array;
-import io.vavr.control.Try;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -184,6 +182,9 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private IOrderProcessingService orderProcessingService;
+
+    @Autowired
+    private IProcessingEventSender processingEventSender;
 
     @Autowired
     private TemplateService templateService;
@@ -810,8 +811,7 @@ public class OrderService implements IOrderService {
         availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).collect(Collectors.toList()));
         dataFileService.save(availableFiles);
 
-        publisher.publish(new DownloadedOutputFilesEvent(Array.ofAll(availableFiles).map(OrderDataFile::getUrl)
-                .flatMap(url -> Try.of(() -> new URL(url)).toOption()).toList()));
+        processingEventSender.sendDownloadedFilesNotification(availableFiles);
 
         // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
         orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);

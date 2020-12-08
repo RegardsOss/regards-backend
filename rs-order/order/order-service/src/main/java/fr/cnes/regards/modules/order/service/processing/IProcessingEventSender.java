@@ -19,9 +19,12 @@
 package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import io.vavr.control.Try;
+
+import java.util.Collection;
 
 /**
  * This interface defines signatures for a wrapper around {@link IPublisher},
@@ -36,4 +39,5 @@ public interface IProcessingEventSender {
 
     Try<DownloadedOutputFilesEvent> sendDownloadedFilesNotification(DownloadedOutputFilesEvent event);
 
+    Try<DownloadedOutputFilesEvent> sendDownloadedFilesNotification(Collection<OrderDataFile> dataFiles);
 }

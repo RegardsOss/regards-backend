@@ -19,12 +19,19 @@
 package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.processing.domain.events.DownloadedOutputFilesEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
+import io.vavr.collection.List;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import java.net.URL;
+import java.util.Collection;
 
 /**
  * Wrapper around {@link IPublisher}, used in  to be able to modify the sending behaviour during tests.
@@ -36,6 +43,8 @@ import org.springframework.stereotype.Service;
 @Profile("!test")
 public class ProcessingEventSender implements IProcessingEventSender {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingEventSender.class);
+
     private final IPublisher publisher;
 
     @Autowired
@@ -46,6 +55,7 @@ public class ProcessingEventSender implements IProcessingEventSender {
     @Override
     public Try<PExecutionRequestEvent> sendProcessingRequest(PExecutionRequestEvent event) {
         return Try.of(() -> {
+            LOGGER.debug("Sending processing execution request event: {}", event);
             publisher.publish(event);
             return event;
         });
@@ -54,8 +64,15 @@ public class ProcessingEventSender implements IProcessingEventSender {
     @Override
     public Try<DownloadedOutputFilesEvent> sendDownloadedFilesNotification(DownloadedOutputFilesEvent event) {
         return Try.of(() -> {
+            LOGGER.debug("Sending processing downloaded notification: {}", event);
             publisher.publish(event);
             return event;
         });
+    }
+
+    @Override
+    public Try<DownloadedOutputFilesEvent> sendDownloadedFilesNotification(Collection<OrderDataFile> dataFiles) {
+        return sendDownloadedFilesNotification(new DownloadedOutputFilesEvent(List.ofAll(dataFiles).map(OrderDataFile::getUrl)
+                .flatMap(url -> Try.of(() -> new URL(url)).toOption()).toList()));
     }
 }
