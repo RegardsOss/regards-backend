@@ -82,7 +82,7 @@ public class OpenApiFilter implements Filter {
 
     @Override
     public void destroy() {
-
+        // Nothing to do
     }
 
     static class ByteResponseWrapper extends HttpServletResponseWrapper {
@@ -170,7 +170,7 @@ public class OpenApiFilter implements Filter {
 
         @Override
         public void setWriteListener(WriteListener writeListener) {
-
+            // Nothing to do
         }
     }
 
@@ -199,7 +199,7 @@ public class OpenApiFilter implements Filter {
 
         @Override
         public void setReadListener(ReadListener readListener) {
-
+            // Nothing to do.
         }
     }
 }

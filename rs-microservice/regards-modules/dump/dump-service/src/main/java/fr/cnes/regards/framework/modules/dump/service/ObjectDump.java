@@ -75,10 +75,12 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         ObjectDump objectDump = (ObjectDump) o;
         return this.creationDate.equals(objectDump.creationDate) && this.jsonName.equals(objectDump.jsonName)
                 && this.dumpId.equals(dumpId);
