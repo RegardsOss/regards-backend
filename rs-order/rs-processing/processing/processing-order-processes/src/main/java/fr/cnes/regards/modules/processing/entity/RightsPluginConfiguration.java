@@ -90,7 +90,7 @@ public class RightsPluginConfiguration {
         );
     }
 
-    public static RightsPluginConfiguration fromDto( ProcessPluginConfigurationRightsDTO dto) {
+    public static RightsPluginConfiguration fromDto(ProcessPluginConfigurationRightsDTO dto) {
         return new RightsPluginConfiguration(
                 null,
                 dto.getPluginConfiguration(),

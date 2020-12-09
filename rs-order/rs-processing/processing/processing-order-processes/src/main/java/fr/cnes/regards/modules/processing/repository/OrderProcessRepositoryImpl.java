@@ -17,6 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -100,7 +101,8 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         return t.fold(Mono::error, Mono::just);
     }
 
-    private Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
+    @VisibleForTesting
+    public Mono<PProcess> fromPlugin(RightsPluginConfiguration rpc, IProcessDefinition processDef, String tenant) {
         OrderProcessInfoMapper mapper = new OrderProcessInfoMapper();
         return tryToMono(processDef.sizeForecast()).flatMap(sizeForecast -> tryToMono(processDef.durationForecast())
                 .flatMap(durationForecast -> enginRepo.findByName(processDef.engineName()).map(engine -> {

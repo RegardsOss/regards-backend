@@ -26,10 +26,8 @@ package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
 
 @Getter
-@SuperBuilder
 public class ExecutionMonitoringDTO extends PExecution {
 
     protected String processName;

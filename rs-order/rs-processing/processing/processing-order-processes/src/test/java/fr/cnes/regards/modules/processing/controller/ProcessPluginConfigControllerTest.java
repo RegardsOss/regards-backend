@@ -84,6 +84,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         useless1Config.setVersion("1.0");
         useless1Config.setPriorityOrder(1);
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", "useless-processName-1")));
+        useless1Config.setBusinessId(null);
         io.vavr.collection.List<String> datasets = list(randomDataset(), randomDataset());
         ProcessPluginConfigurationRightsDTO created = client.create(new ProcessPluginConfigurationRightsDTO(
                 useless1Config, new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets, false))).getContent();
@@ -212,6 +213,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         useless1Config.setVersion("1.0");
         useless1Config.setPriorityOrder(1);
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", s2)));
+        useless1Config.setBusinessId(null);
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         return client.create(new ProcessPluginConfigurationRightsDTO(useless1Config,
                 new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", initDatasets, false)))

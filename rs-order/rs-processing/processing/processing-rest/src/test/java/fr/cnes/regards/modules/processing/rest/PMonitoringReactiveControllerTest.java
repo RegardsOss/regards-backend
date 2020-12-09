@@ -26,9 +26,11 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.dao.IBatchEntityRepository;
 import fr.cnes.regards.modules.processing.dao.IExecutionEntityRepository;
-import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.PProcess;
+import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
+import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
 import fr.cnes.regards.modules.processing.entity.*;
 import fr.cnes.regards.modules.processing.testutils.AbstractProcessingTest;
@@ -52,6 +54,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.test.context.ContextConfiguration;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.Map;
@@ -65,24 +68,34 @@ import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatu
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration(
-        classes = { TestSpringConfiguration.class, PMonitoringReactiveControllerTest.Config.class }
+        classes = { PMonitoringReactiveControllerTest.Config.class, TestSpringConfiguration.class }
 )
 public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
 
     @Autowired private IBatchEntityRepository batchRepo;
     @Autowired private IExecutionEntityRepository execRepo;
+    @Autowired private IPProcessRepository processRepository;
 
     @Test public void executions() {
         // GIVEN
+        UUID processId = UUID.randomUUID();
+        PProcess mockProcess = mock(PProcess.class);
+        when(mockProcess.getProcessName()).thenReturn("processName");
+        when(mockProcess.getProcessId()).thenReturn(processId);
+        when(processRepository.findByTenantAndProcessBusinessID(any(), any())).thenAnswer(i -> Mono.just(mockProcess));
+
         UUID batchAId = UUID.randomUUID();
         UUID batchBId = UUID.randomUUID();
         createBatches(batchAId, batchBId);
-        List<ExecutionEntity> entities = createExecutions(batchAId, batchBId);
+        List<ExecutionEntity> entities = createExecutions(processId, batchAId, batchBId);
 
         // WHEN
-        PagedModel<EntityModel<PExecution>> response = client
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client
             .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
@@ -92,7 +105,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         assertThat(response.getContent()).hasSize(10);
 
         // WHEN
-        PagedModel<EntityModel<PExecution>> responseEmpty = client
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> responseEmpty = client
             .executions(TENANT_PROJECTA, asList(CANCELLED), toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
@@ -126,7 +139,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         batchRepo.saveAll(List.of(batchA, batchB)).collectList().block();
     }
 
-    private List<ExecutionEntity> createExecutions(UUID batchAId, UUID batchBId) {
+    private List<ExecutionEntity> createExecutions(UUID processId, UUID batchAId, UUID batchBId) {
 
         Random r = new Random();
         long now = System.currentTimeMillis();
@@ -134,6 +147,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         List<ExecutionEntity> failures = randomList(ExecutionEntity.class, 20).map(e -> e
                 .withId(UUID.randomUUID())
                 .withBatchId(batchAId)
+                .withProcessBusinessId(processId)
                 .withTenant(TENANT_PROJECTA)
                 .withCurrentStatus(FAILURE)
                 .withVersion(0)
@@ -144,6 +158,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         List<ExecutionEntity> entities = randomList(ExecutionEntity.class, 35).map(e -> e
                 .withId(UUID.randomUUID())
                 .withBatchId(batchAId)
+                .withProcessBusinessId(processId)
                 .withTenant(TENANT_PROJECTA)
                 .withCurrentStatus(r.nextBoolean() ? RUNNING : PREPARE)
                 .withVersion(0)
@@ -154,6 +169,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
         List<ExecutionEntity> otherTenants = randomList(ExecutionEntity.class, 20).map(e -> e
                 .withId(UUID.randomUUID())
                 .withBatchId(batchBId)
+                .withProcessBusinessId(processId)
                 .withTenant(TENANT_PROJECTB)
                 .withCurrentStatus(PREPARE)
                 .withVersion(0)
@@ -198,7 +214,7 @@ public class PMonitoringReactiveControllerTest extends AbstractProcessingTest {
     @Headers({ "Accept: application/json", "Content-Type: application/json" })
     public interface Client {
         @RequestLine("GET " + MONITORING_EXECUTIONS_PATH + "?tenant={tenant}&status={status}")
-        PagedModel<EntityModel<PExecution>> executions(
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> executions(
                 @Param("tenant") String tenant,
                 @Param("status") java.util.List<ExecutionStatus> status,
                 @QueryMap Map<String,String> params

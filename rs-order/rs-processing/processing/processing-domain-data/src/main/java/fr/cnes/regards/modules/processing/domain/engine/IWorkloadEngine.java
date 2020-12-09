@@ -21,8 +21,6 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
-
 
 /**
  * This interface defines an engine: something that takes a context and returns a running execution.
@@ -39,7 +37,6 @@ public interface IWorkloadEngine {
 
     Mono<PExecution> run(ExecutionContext context);
 
-    @PostConstruct
     void selfRegisterInRepo();
 
 }

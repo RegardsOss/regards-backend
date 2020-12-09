@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
+
 /**
  * Delegate the processing to someone else, just communicating with it through amqp.
  *
@@ -48,6 +50,7 @@ public class DemoEngine implements IWorkloadEngine {
         return null;
     }
 
+    @PostConstruct
     @Override public void selfRegisterInRepo() {
         engineRepo.register(this);
     }

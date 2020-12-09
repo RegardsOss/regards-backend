@@ -17,14 +17,6 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -42,6 +34,15 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * This class is the implementation for {@link IProcessPluginConfigService}.
@@ -51,6 +52,8 @@ import io.vavr.collection.Stream;
 @Service
 @MultitenantTransactional
 public class ProcessPluginConfigService implements IProcessPluginConfigService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigService.class);
 
     private final IPluginConfigurationRepository pluginConfigRepo;
 
@@ -100,13 +103,16 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     @Override
     public ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto) {
         ProcessPluginConfigurationRightsDTO toSave;
-        if (rightsDto.getPluginConfiguration().getBusinessId() == null) {
+        String businessId = rightsDto.getPluginConfiguration().getBusinessId();
+        if (businessId == null) {
+            LOGGER.debug("rights plugin before adding UUID: {}", rightsDto);
             UUID processBusinessId = UUID.randomUUID();
             rightsDto.getPluginConfiguration().setBusinessId(processBusinessId.toString());
             toSave = rightsDto;
+            LOGGER.debug("rights plugin after adding UUID: {}", rightsDto);
         } else {
-            PluginConfiguration pc = pluginConfigRepo
-                    .findCompleteByBusinessId(rightsDto.getPluginConfiguration().getBusinessId());
+            PluginConfiguration pc = pluginConfigRepo.findCompleteByBusinessId(businessId);
+            LOGGER.debug("found plugin with UUID={}: {}", businessId, rightsDto);
             toSave = new ProcessPluginConfigurationRightsDTO(pc, rightsDto.getRights());
         }
         RightsPluginConfiguration rights = RightsPluginConfiguration.fromDto(toSave);

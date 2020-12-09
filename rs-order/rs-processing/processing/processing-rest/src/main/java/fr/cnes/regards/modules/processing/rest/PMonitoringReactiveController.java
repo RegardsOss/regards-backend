@@ -17,7 +17,7 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
 import fr.cnes.regards.modules.processing.utils.TimeUtils;
@@ -62,7 +62,7 @@ public class PMonitoringReactiveController {
     }
 
     @GetMapping
-    public Mono<PagedModel<EntityModel<PExecution>>> executions(
+    public Mono<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
             @RequestParam(name = TENANT_PARAM) String tenant,
             @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
             @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
@@ -81,7 +81,7 @@ public class PMonitoringReactiveController {
         PageRequest paged = PageRequest.of(page, size);
         return monitoringService.getExecutionsPageForCriteria(tenant, status, userEmail, from, to, paged)
                 .map(p -> {
-                    PagedModel<EntityModel<PExecution>> result = PagedModel.of(
+                    PagedModel<EntityModel<ExecutionMonitoringDTO>> result = PagedModel.of(
                             p.getContent().stream().map(EntityModel::of).collect(Collectors.toList()),
                             new PagedModel.PageMetadata(size, page, p.getTotalElements(), p.getTotalPages())
                     );

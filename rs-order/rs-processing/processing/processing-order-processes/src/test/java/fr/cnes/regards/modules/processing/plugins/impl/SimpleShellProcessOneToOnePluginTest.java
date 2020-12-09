@@ -153,12 +153,13 @@ public class SimpleShellProcessOneToOnePluginTest {
             return dest;
         });
         IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
-        ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
+        ISharedStorageService storageService = mock(ISharedStorageService.class);
+        when(storageService.storeResult(any(), any())).thenAnswer(i -> Mono.error(new RuntimeException("Could not store")));
 
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, mock(ISharedStorageService.class));
+        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
@@ -200,8 +201,8 @@ public class SimpleShellProcessOneToOnePluginTest {
         assertThat(finalContext.get()).isNotNull();
         assertThat(finalContext.get().getExec().getSteps()).hasSize(3);
         assertThat(finalContext.get().getExec().getSteps().get(0).getStatus()).isEqualTo(PREPARE);
-        assertThat(finalContext.get().getExec().getSteps().get(0).getStatus()).isEqualTo(RUNNING);
-        assertThat(finalContext.get().getExec().getSteps().get(1).getStatus()).isEqualTo(FAILURE);
+        assertThat(finalContext.get().getExec().getSteps().get(1).getStatus()).isEqualTo(RUNNING);
+        assertThat(finalContext.get().getExec().getSteps().get(2).getStatus()).isEqualTo(FAILURE);
 
         assertThat(outputFiles.get()).isNull();
 

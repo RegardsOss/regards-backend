@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.processing.rest;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
 import fr.cnes.regards.modules.processing.utils.TimeUtils;
@@ -57,7 +57,7 @@ import static fr.cnes.regards.modules.processing.rest.utils.PageUtils.DEFAULT_SI
 @RestController
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "servlet", matchIfMissing = true)
 @RequestMapping(path = MONITORING_EXECUTIONS_PATH)
-public class PMonitoringController implements IResourceController<PExecution> {
+public class PMonitoringController implements IResourceController<ExecutionMonitoringDTO> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PMonitoringController.class);
 
@@ -72,7 +72,7 @@ public class PMonitoringController implements IResourceController<PExecution> {
     @ResourceAccess(
             description = "List executions filtered by tenant/user/date/status depending on the given parameters",
             role = DefaultRole.ADMIN)
-    public HttpEntity<PagedModel<EntityModel<PExecution>>> executions(
+    public HttpEntity<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
             @RequestParam(name = TENANT_PARAM) String tenant,
             @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
             @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
@@ -80,7 +80,7 @@ public class PMonitoringController implements IResourceController<PExecution> {
             @RequestParam(name = DATE_TO_PARAM, defaultValue = "2100-01-01T00:00:00.000Z") String toStr,
             @RequestParam(name = PAGE_PARAM, defaultValue = DEFAULT_PAGE) int page,
             @RequestParam(name = SIZE_PARAM, defaultValue = DEFAULT_SIZE) int size,
-            final PagedResourcesAssembler<PExecution> assembler
+            final PagedResourcesAssembler<ExecutionMonitoringDTO> assembler
     ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         LOGGER.info("status={}", status);
@@ -97,7 +97,7 @@ public class PMonitoringController implements IResourceController<PExecution> {
     }
 
     @Override
-    public EntityModel<PExecution> toResource(PExecution element, Object... extras) {
+    public EntityModel<ExecutionMonitoringDTO> toResource(ExecutionMonitoringDTO element, Object... extras) {
         return EntityModel.of(element);
     }
 }
