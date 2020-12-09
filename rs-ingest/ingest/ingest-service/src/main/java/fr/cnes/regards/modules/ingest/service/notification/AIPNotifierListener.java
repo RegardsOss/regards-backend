@@ -61,6 +61,7 @@ public class AIPNotifierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestGranted(List<NotifierEvent> granted) {
+        // Nothing to do.
     }
 
     @Override

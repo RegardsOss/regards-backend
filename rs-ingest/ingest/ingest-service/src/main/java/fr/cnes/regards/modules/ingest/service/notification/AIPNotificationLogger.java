@@ -59,6 +59,8 @@ public class AIPNotificationLogger {
 
     private static final String HANDLED_FROM_NOTIFIER_FORMAT = "Handled {} {} {}";
 
+    private AIPNotificationLogger() {}
+
     public static void notificationDenied(Long requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(NOTIFICATION_DENIED_FORMAT, requestId, providerId, errors));
     }

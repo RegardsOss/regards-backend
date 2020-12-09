@@ -39,7 +39,7 @@ public class AIPNotificationSettings {
 
     @Id
     @Column(name = "id", unique = true)
-    private Long id;
+    private final Long id;
 
     /**
      * To activate notifications on aip requests
@@ -65,10 +65,12 @@ public class AIPNotificationSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         AIPNotificationSettings that = (AIPNotificationSettings) o;
         return activeNotification == id.equals(that.id);
     }

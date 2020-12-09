@@ -231,7 +231,7 @@ public class AIPNotificationService implements IAIPNotificationService {
     // class used to format RequestTypeConstant in gson
     public static class NotificationActionEventMetadata {
 
-        private String action;
+        private final String action;
 
         public NotificationActionEventMetadata(String action) {
             this.action = action;

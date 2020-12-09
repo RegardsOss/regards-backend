@@ -33,9 +33,9 @@ import com.google.common.collect.Sets;
 
 public class PostProcessResult {
 
-    private Map<String, Set<String>> errors = Maps.newHashMap();
+    private final Map<String, Set<String>> errors = Maps.newHashMap();
 
-    private Set<String> successes = Sets.newHashSet();
+    private final Set<String> successes = Sets.newHashSet();
 
     private boolean interupted = false;
 
@@ -63,7 +63,7 @@ public class PostProcessResult {
         return successes;
     }
 
-    public boolean getInterrupted() {
+    public boolean isInterrupted() {
         return this.interupted;
     }
 

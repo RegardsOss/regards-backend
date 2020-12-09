@@ -27,6 +27,8 @@ package fr.cnes.regards.modules.ingest.service.schedule;
 
 public class SchedulerConstant {
 
+    private SchedulerConstant() {}
+
     /**
      * Common
      */

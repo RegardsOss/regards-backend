@@ -62,6 +62,8 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 public class IngestServiceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceTest.class);
+    public static final String NEW_SIP_S_IN_DATABASE_TEMPLATE = "{} new SIP(s) {} in database";
+    public static final String ALL_STATUS = "ALL_STATUS";
 
     @Autowired
     protected IIngestRequestRepository ingestRequestRepository;
@@ -183,13 +185,13 @@ public class IngestServiceTest {
                 newCount = totalCount;
             }
             if (newCount != sipCount) {
-                LOGGER.info("{} new SIP(s) {} in database", newCount - sipCount,
-                            sipState != null ? sipState.toString() : "ALL_STATUS");
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - sipCount,
+                            sipState != null ? sipState.toString() : ALL_STATUS);
             }
             sipCount = newCount;
             if (timerStop(expectedSips, end, sipCount, String
                     .format("Timeout after waiting %s ms for %s SIPs in %s. Actual=%s. Total count %s (no specific status)",
-                            timeout, expectedSips, sipState != null ? sipState.toString() : "ALL_STATUS", sipCount,
+                            timeout, expectedSips, sipState != null ? sipState.toString() : ALL_STATUS, sipCount,
                             totalCount))) {
                 break;
             }
@@ -212,13 +214,13 @@ public class IngestServiceTest {
                 newCount = totalCount;
             }
             if (newCount != aipCount) {
-                LOGGER.info("{} new SIP(s) {} in database", newCount - aipCount,
-                            aipState != null ? aipState.toString() : "ALL_STATUS");
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - aipCount,
+                            aipState != null ? aipState.toString() : ALL_STATUS);
             }
             aipCount = newCount;
             if (timerStop(expectedSips, end, aipCount, String
                     .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                            expectedSips, aipState != null ? aipState.toString() : "ALL_STATUS", aipCount,
+                            expectedSips, aipState != null ? aipState.toString() : ALL_STATUS, aipCount,
                             totalCount))) {
                 break;
             }
@@ -241,13 +243,13 @@ public class IngestServiceTest {
                 newCount = totalCount;
             }
             if (newCount != requestCount) {
-                LOGGER.info("{} new SIP(s) {} in database", newCount - requestCount,
-                            requestState != null ? requestState.toString() : "ALL_STATUS");
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - requestCount,
+                            requestState != null ? requestState.toString() : ALL_STATUS);
             }
             requestCount = newCount;
             if (timerStop(expectedSips, end, requestCount, String
                     .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                            expectedSips, requestState != null ? requestState.toString() : "ALL_STATUS", requestCount,
+                            expectedSips, requestState != null ? requestState.toString() : ALL_STATUS, requestCount,
                             totalCount))) {
                 break;
             }

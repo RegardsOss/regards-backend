@@ -124,7 +124,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
                 postProcessResult = plugin.postprocess(getAipById(aipIds));
 
                 // Check if process was interrupted
-                if (postProcessResult.getInterrupted() || Thread.currentThread().isInterrupted()) {
+                if (postProcessResult.isInterrupted() || Thread.currentThread().isInterrupted()) {
                     isInterrupted = true;
                     break;
                 }

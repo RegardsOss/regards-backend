@@ -101,6 +101,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
+    public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
 
     @Autowired
     private IngestConfigurationProperties confProperties;
@@ -368,7 +369,7 @@ public class IngestRequestService implements IIngestRequestService {
                     saveAndPublishErrorRequest(request, "Remote file storage request denied");
                 } else {
                     // Keep track of the error
-                    saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", step));
+                    saveAndPublishErrorRequest(request, String.format(UNEXPECTED_STEP_S_TEMPLATE, step));
                 }
 
                 // Monitoring
@@ -414,7 +415,7 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             } else {
                 // Keep track of the error
-                saveAndPublishErrorRequest(request, String.format("Unexpected step \"%s\"", request.getStep()));
+                saveAndPublishErrorRequest(request, String.format(UNEXPECTED_STEP_S_TEMPLATE, request.getStep()));
             }
         }
         finalizeSuccessfulRequest(toFinalize, true, chains, lastVersions);
@@ -521,7 +522,7 @@ public class IngestRequestService implements IIngestRequestService {
             request.setStep(IngestRequestStep.REMOTE_STORAGE_ERROR);
 
         } else {
-            errorMessage = String.format("Unexpected step \"%s\"", request.getStep());
+            errorMessage = String.format(UNEXPECTED_STEP_S_TEMPLATE, request.getStep());
         }
         // Keep track of the error
         saveAndPublishErrorRequest(request, errorMessage);
