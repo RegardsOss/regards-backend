@@ -96,10 +96,12 @@ public class ScanDirectoryInfo {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         ScanDirectoryInfo that = (ScanDirectoryInfo) o;
         return Objects.equals(scannedDirectory, that.scannedDirectory) && Objects
                 .equals(lastModificationDate, that.lastModificationDate);
