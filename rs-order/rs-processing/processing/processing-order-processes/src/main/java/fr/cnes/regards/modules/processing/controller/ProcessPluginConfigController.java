@@ -17,17 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.controller;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BID_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BID_USERROLE_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.CONFIG_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.USER_ROLE_PARAM;
-
-import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
+import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
+import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,28 +37,15 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
-import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
-import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.USER_ROLE_PARAM;
 
 /**
  * This class is he controller for manipulating {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}s.
@@ -152,16 +141,19 @@ public class ProcessPluginConfigController implements IResourceController<Proces
     public EntityModel<ProcessPluginConfigurationRightsDTO> toResource(
             final ProcessPluginConfigurationRightsDTO element, final Object... extras) {
         final EntityModel<ProcessPluginConfigurationRightsDTO> resource = resourceService.toResource(element);
-        String businessIdStr = element.getPluginConfiguration().getBusinessId();
-        UUID businessId = UUID.fromString(businessIdStr);
-        resourceService.addLink(resource, this.getClass(), "findByBusinessId", LinkRels.SELF,
-                                MethodParamFactory.build(UUID.class, businessId));
-        resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
-                                MethodParamFactory.build(UUID.class, businessId),
-                                MethodParamFactory.build(ProcessPluginConfigurationRightsDTO.class));
-        if (rightsConfigService.canDelete(businessId)) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
-                                    MethodParamFactory.build(UUID.class, businessId));
+        PluginConfiguration pluginConfiguration = element.getPluginConfiguration();
+        if (pluginConfiguration != null) {
+            String businessIdStr = pluginConfiguration.getBusinessId();
+            UUID businessId = UUID.fromString(businessIdStr);
+            resourceService.addLink(resource, this.getClass(), "findByBusinessId", LinkRels.SELF,
+                    MethodParamFactory.build(UUID.class, businessId));
+            resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
+                    MethodParamFactory.build(UUID.class, businessId),
+                    MethodParamFactory.build(ProcessPluginConfigurationRightsDTO.class));
+            if (rightsConfigService.canDelete(businessId)) {
+                resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                        MethodParamFactory.build(UUID.class, businessId));
+            }
         }
         return resource;
     }
