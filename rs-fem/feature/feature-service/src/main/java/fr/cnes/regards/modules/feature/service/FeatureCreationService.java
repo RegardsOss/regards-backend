@@ -363,10 +363,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     @Override
     public void handleSuccessfulCreation(Set<FeatureCreationRequest> requests) {
         long startSuccessProcess = System.currentTimeMillis();
-        Set<FeatureCreationRequest> requestWithoutFiles = new HashSet<>();
         for (FeatureCreationRequest request : requests) {
-            // Register request
-            requestWithoutFiles.add(request);
             // Monitoring log
             FeatureLogger.creationSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
                                           request.getFeature().getUrn());
@@ -387,21 +384,20 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
             }
         }
 
-        if (!requestWithoutFiles.isEmpty()) {
+        if (!requests.isEmpty()) {
             // See if notifications are required
             if (notificationSettingsService.retrieve().isActiveNotification()) {
                 // notify creation of feature without files
-                featureCreationRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                      requestWithoutFiles.stream().map(AbstractFeatureRequest::getId)
-                                                              .collect(Collectors.toSet()));
+                requests.forEach(r->r.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED));
+                featureCreationRequestRepo.saveAll(requests);
             } else {
                 // Successful requests are deleted now!
-                featureCreationRequestRepo.deleteInBatch(requestWithoutFiles);
-                LOGGER.trace("------------->>> {} creation requests without files deleted in {} ms", requestWithoutFiles.size(), System.currentTimeMillis() - startSuccessProcess);
+                featureCreationRequestRepo.deleteInBatch(requests);
+                LOGGER.trace("------------->>> {} creation requests without files deleted in {} ms", requests.size(), System.currentTimeMillis() - startSuccessProcess);
             }
         }
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
-                     requestWithoutFiles.size(),
+                     requests.size(),
                      System.currentTimeMillis() - startSuccessProcess);
     }
 
