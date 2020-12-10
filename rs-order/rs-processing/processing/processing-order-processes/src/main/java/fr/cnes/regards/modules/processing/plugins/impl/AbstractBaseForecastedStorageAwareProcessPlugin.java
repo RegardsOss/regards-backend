@@ -78,7 +78,10 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                 .flatMap(workdirService::cleanupWorkdir)
                 .map(wd -> context)
                 .onErrorResume(t -> {
-                    LOGGER.error("execId={} Failed to cleanup execution workdir", context.getExec().getId(), t);
+                    LOGGER.error("execId={} Failed to cleanup execution workdir: {} - {}",
+                            context.getExec().getId(),
+                            t.getClass(), t.getMessage()
+                    );
                     return Mono.just(context);
                 })
                 .switchIfEmpty(Mono.just(context));

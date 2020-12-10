@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
@@ -96,7 +95,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
     protected String userRole;
 
-    protected BasketDatasetSelection dsSel;
+    protected BasketDatasetSelectionDescriptor dsSel;
 
     protected BatchSuborderCorrelationIdentifier batchCorrelationId;
 
@@ -113,8 +112,8 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
         try {
             ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
-            PBatchRequest request = createBatchRequest(dsSel, processDatasetDescription);
-            PBatchResponse batchResponse = createBatch(dsSel, processDatasetDescription, request, processingClient);
+            PBatchRequest request = createBatchRequest(dsSel.getDatasetIpId(), processDatasetDescription);
+            PBatchResponse batchResponse = createBatch(dsSel.getDsSelId(), processDatasetDescription, request, processingClient);
 
             Scope scope = processInfo.getScope();
 
@@ -173,17 +172,16 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                 .error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
     }
 
-    protected PBatchRequest createBatchRequest(BasketDatasetSelection dsSel,
-            ProcessDatasetDescription processDatasetDescription) {
-        FileSetStatistics stats = createBatchStats(dsSel);
+    protected PBatchRequest createBatchRequest(String datasetIpid, ProcessDatasetDescription processDatasetDescription) {
+        FileSetStatistics stats = createBatchStats(datasetIpid);
         return new PBatchRequest(batchCorrelationId.repr(), processDesc.getProcessId(), tenant, user, userRole,
-                HashMap.ofAll(processDatasetDescription.getParameters()), HashMap.of(dsSel.getDatasetIpid(), stats));
+                HashMap.ofAll(processDatasetDescription.getParameters()), HashMap.of(datasetIpid, stats));
     }
 
-    protected FileSetStatistics createBatchStats(BasketDatasetSelection dsSel) {
+    protected FileSetStatistics createBatchStats(String datasetIpid) {
         Long totalInputSizes = List.ofAll(processInputDataFiles.getFilesPerFeature().values())
                 .flatMap(Function.identity()).map(OrderDataFile::getFilesize).fold(0L, Long::sum);
-        return new FileSetStatistics(dsSel.getDatasetIpid(), 1, totalInputSizes);
+        return new FileSetStatistics(datasetIpid, 1, totalInputSizes);
     }
 
     protected PExecutionRequestEvent createExecRequestEvent(String correlationId, UUID batchId,
@@ -208,7 +206,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     protected PBatchResponse createBatch(
-            BasketDatasetSelection dsSel,
+            Long dsSelId,
             ProcessDatasetDescription processDatasetDescription,
             PBatchRequest request,
             IProcessingRestClient processingClient
@@ -219,13 +217,13 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             FeignSecurityManager.reset();
 
             if (!batchResponse.getStatusCode().is2xxSuccessful()) {
-                throw new CouldNotCreateBatchException(jobInfoId, dsSel.getId(),
+                throw new CouldNotCreateBatchException(jobInfoId, dsSelId,
                         processDatasetDescription.getProcessBusinessId(), batchResponse);
             }
 
             return batchResponse.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            throw new CouldNotCreateBatchException(jobInfoId, dsSel.getId(),
+            throw new CouldNotCreateBatchException(jobInfoId, dsSelId,
                     processDatasetDescription.getProcessBusinessId());
         }
     }

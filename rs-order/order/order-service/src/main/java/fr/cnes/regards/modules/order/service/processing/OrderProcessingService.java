@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
+import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
@@ -245,7 +246,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                         new ProcessOutputFilesJobParameter(outputFiles),
                         new ProcessDTOJobParameter(pProcessDTO),
                         new ProcessBatchCorrelationIdJobParameter(batchSuborderIdentifier.repr()),
-                        new BasketDatasetSelectionJobParameter(dsSel)
+                        new BasketDatasetSelectionJobParameter(new BasketDatasetSelectionDescriptor(dsSel))
                 ).toJavaSet(),
                 user,
                 ProcessExecutionJob.class.getName()

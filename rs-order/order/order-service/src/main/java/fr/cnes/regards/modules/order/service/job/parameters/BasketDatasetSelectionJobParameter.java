@@ -20,7 +20,7 @@
 package fr.cnes.regards.modules.order.service.job.parameters;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
 
 /**
  * This class is a Job Parameter used by {@link fr.cnes.regards.modules.order.service.job.ProcessExecutionJob}.
@@ -29,19 +29,19 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
  */
 public class BasketDatasetSelectionJobParameter extends JobParameter {
 
-    public static final String NAME = "dsSel";
+    public static final String NAME = "dsSelDesc";
 
-    public BasketDatasetSelectionJobParameter(BasketDatasetSelection value) {
+    public BasketDatasetSelectionJobParameter(BasketDatasetSelectionDescriptor value) {
         super(NAME, value);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public BasketDatasetSelection getValue() {
+    public BasketDatasetSelectionDescriptor getValue() {
         return super.getValue();
     }
 
-    public void setValue(BasketDatasetSelection value) {
+    public void setValue(BasketDatasetSelectionDescriptor value) {
         super.setValue(value);
     }
 
