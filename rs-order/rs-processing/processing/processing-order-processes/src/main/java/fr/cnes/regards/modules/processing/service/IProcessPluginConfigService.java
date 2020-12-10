@@ -47,8 +47,7 @@ public interface IProcessPluginConfigService {
 
     Boolean canDelete(UUID processBusinessId);
 
-    ProcessPluginConfigurationRightsDTO delete(UUID processBusinessId)
-            throws DeleteAttemptOnUsedProcessException, ModuleException;
+    void delete(UUID processBusinessId) throws DeleteAttemptOnUsedProcessException, ModuleException;
 
     void putDatasetLinkedProcesses(List<UUID> processBusinessIds, String dataset);
 
