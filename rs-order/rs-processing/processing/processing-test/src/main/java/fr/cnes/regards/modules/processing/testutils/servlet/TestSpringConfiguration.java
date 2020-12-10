@@ -91,6 +91,7 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 @Configuration
 @EnableAutoConfiguration(exclude = {
         R2dbcMigrateAutoConfiguration.class,
+        Oauth2AutoConfiguration.class,
 })
 @EnableWebMvc
 @EnableJpaRepositories
@@ -109,7 +110,6 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
         MultitenantJpaAutoConfiguration.class,
         JacksonAutoConfiguration.class,
         FeignClientConfiguration.class,
-        Oauth2AutoConfiguration.class,
         GsonAutoConfiguration.class,
 })
 public class TestSpringConfiguration implements WebMvcConfigurer {

@@ -81,7 +81,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
         // CREATE A CONFIG
         PluginConfiguration useless1Config = new PluginConfiguration("useless1 label",
                 UselessProcessPlugin.class.getSimpleName());
-        useless1Config.setVersion("1.0");
+        useless1Config.setVersion("1.0.0-SNAPSHOT");
         useless1Config.setPriorityOrder(1);
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", "useless-processName-1")));
         useless1Config.setBusinessId(null);
@@ -210,7 +210,7 @@ public class ProcessPluginConfigControllerTest extends AbstractProcessingTest {
     private ProcessPluginConfigurationRightsDTO createConfig(io.vavr.collection.List<String> initDatasets, String s,
             String s2) {
         PluginConfiguration useless1Config = new PluginConfiguration(s, UselessProcessPlugin.class.getSimpleName());
-        useless1Config.setVersion("1.0");
+        useless1Config.setVersion("1.0.0-SNAPSHOT");
         useless1Config.setPriorityOrder(1);
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", s2)));
         useless1Config.setBusinessId(null);
