@@ -102,8 +102,14 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
 
         for (ProcessConfigurationDTO process : processes) {
             plugins.stream().filter(p -> p.getBusinessId().equals(process.getPluginConfBid())).findFirst()
-                    .ifPresent(pc -> processService
-                            .create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights())));
+                    .ifPresent(pc -> {
+                        try {
+                            processService.create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights()));
+                        } catch (EntityNotFoundException e) {
+                            LOGGER.error(e.getMessage(), e);
+                            importErrors.add(e.getMessage());
+                        }
+                    });
         }
 
         return importErrors;

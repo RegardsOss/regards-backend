@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.dto.ProcessesByDatasetsDTO;
@@ -37,9 +39,11 @@ public interface IProcessPluginConfigService {
 
     ProcessPluginConfigurationRightsDTO findByBusinessId(UUID processBusinessId);
 
-    ProcessPluginConfigurationRightsDTO update(UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto);
+    ProcessPluginConfigurationRightsDTO update(UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto)
+            throws ModuleException;
 
-    ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto);
+    ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto)
+            throws EntityNotFoundException;
 
     Boolean canDelete(UUID processBusinessId);
 

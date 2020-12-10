@@ -17,10 +17,22 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
@@ -34,15 +46,6 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * This class is the implementation for {@link IProcessPluginConfigService}.
@@ -55,7 +58,7 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessPluginConfigService.class);
 
-    private final IPluginConfigurationRepository pluginConfigRepo;
+    private final IPluginService pluginService;
 
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
 
@@ -63,13 +66,12 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private final IPublisher publisher;
 
-    public ProcessPluginConfigService(IPluginConfigurationRepository pluginConfigRepo,
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo, IPExecutionRepository executionRepository,
-            IPublisher publisher) {
-        this.pluginConfigRepo = pluginConfigRepo;
+    public ProcessPluginConfigService(IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+            IPExecutionRepository executionRepository, IPublisher publisher, IPluginService pluginService) {
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;
         this.publisher = publisher;
+        this.pluginService = pluginService;
     }
 
     @Override
@@ -86,8 +88,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public ProcessPluginConfigurationRightsDTO update(UUID processBusinessId,
-            ProcessPluginConfigurationRightsDTO rightsDto) {
-        PluginConfiguration updatedPc = pluginConfigRepo.save(rightsDto.getPluginConfiguration());
+            ProcessPluginConfigurationRightsDTO rightsDto) throws ModuleException {
+        PluginConfiguration updatedPc = pluginService.updatePluginConfiguration(rightsDto.getPluginConfiguration());
         RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
         rights.setPluginConfiguration(updatedPc);
         rights.setDatasets(rightsDto.getRights().getDatasets().toJavaArray(String[]::new));
@@ -101,7 +103,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     }
 
     @Override
-    public ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto) {
+    public ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto)
+            throws EntityNotFoundException {
         ProcessPluginConfigurationRightsDTO toSave;
         String businessId = rightsDto.getPluginConfiguration().getBusinessId();
         if (businessId == null) {
@@ -111,7 +114,7 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
             toSave = rightsDto;
             LOGGER.debug("rights plugin after adding UUID: {}", rightsDto);
         } else {
-            PluginConfiguration pc = pluginConfigRepo.findCompleteByBusinessId(businessId);
+            PluginConfiguration pc = pluginService.getPluginConfiguration(businessId);
             LOGGER.debug("found plugin with UUID={}: {}", businessId, rightsDto);
             toSave = new ProcessPluginConfigurationRightsDTO(pc, rightsDto.getRights());
         }
