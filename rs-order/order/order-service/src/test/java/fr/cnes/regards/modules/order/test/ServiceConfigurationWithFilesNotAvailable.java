@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.test;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
@@ -90,4 +91,7 @@ public class ServiceConfigurationWithFilesNotAvailable {
     public IProcessingRestClient processingRestClient() {
         return Mockito.mock(IProcessingRestClient.class);
     }
+
+    @Bean
+    public IProcessingEventSender processingEventSender() { return Mockito.mock(IProcessingEventSender.class); }
 }
