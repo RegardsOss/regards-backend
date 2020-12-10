@@ -271,7 +271,11 @@ public class OrderProcessingService implements IOrderProcessingService {
             List<DataFile> applicableDataFilesIn = features.flatMap(f -> List.ofAll(f.getFiles().values()))
                     .filter(f -> requiredDataTypes.contains(f.getDataType()));
 
-            long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize).reduce(Long::sum));
+            long expectedSize = sizeForecast.expectedResultSizeInBytes(
+                applicableDataFilesIn.map(DataFile::getFilesize)
+                    .reduceOption(Long::sum)
+                    .getOrElse(0L)
+            );
 
             DataFile dataFileOut = DataFile.build(
                     DataType.OTHER,
