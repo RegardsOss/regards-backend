@@ -18,21 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -53,6 +39,18 @@ import io.vavr.collection.HashSet;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import org.apache.commons.lang3.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * When rs-process has finished an execution, it sends a PExecutionResultEvent.
@@ -110,7 +108,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         BatchSuborderCorrelationIdentifier batchSuborderCorrId = readBatchSuborderIdentifier(batchCorrelationId);
         ExecutionCorrelationIdentifier execCorrId = gson.fromJson(evt.getExecutionCorrelationId(),
                                                                   ExecutionCorrelationIdentifier.class);
-        String user = execCorrId.getUser();
+
 
         ExecutionStatus finalStatus = evt.getFinalStatus();
         final List<OrderDataFile> updatedDataFiles;
@@ -156,7 +154,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         }
 
         dataFileService.save(updatedDataFiles);
-        orderJobService.manageUserOrderStorageFilesJobInfos(user);
+        orderJobService.manageUserOrderStorageFilesJobInfos(execCorrId.getUser());
         // Used by tests
         applicationPublisher.publishEvent(ExecResultHandlerResultEvent.event(evt, updatedDataFiles));
 
