@@ -17,7 +17,20 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-import fr.cnes.regards.modules.processing.domain.*;
+import java.time.Duration;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
+import fr.cnes.regards.modules.processing.domain.PProcess;
+import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
@@ -29,15 +42,7 @@ import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesReposit
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import io.vavr.collection.Seq;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.time.Duration;
-import java.util.UUID;
 
 /**
  * This class is the implementation for the {@link IExecutionService} interface.
@@ -82,8 +87,7 @@ public class ExecutionServiceImpl implements IExecutionService {
         return makeExec(request).flatMap(this::runEngine);
     }
 
-    @Scheduled(
-            cron = "${regards.processing.executions.timedout.cleanup.cron:0 */6 * * *}" // every six hours by default
+    @Scheduled(cron = "${regards.processing.executions.timedout.cleanup.cron:0 0 */6 * * *}" // every six hours by default
     )
     @Override
     public void scheduledTimeoutNotify() {
@@ -98,10 +102,8 @@ public class ExecutionServiceImpl implements IExecutionService {
     }
 
     private Mono<PExecution> runEngine(PExecution exec) {
-        return batchRepo.findById(exec.getBatchId())
-            .flatMap(batch -> processRepo.findByBatch(batch)
-                .flatMap(process -> createContext(exec, batch, process)
-                    .flatMap(ctx -> process.getEngine().run(ctx))));
+        return batchRepo.findById(exec.getBatchId()).flatMap(batch -> processRepo.findByBatch(batch)
+                .flatMap(process -> createContext(exec, batch, process).flatMap(ctx -> process.getEngine().run(ctx))));
     }
 
     private Mono<PExecution> makeExec(PExecutionRequestEvent request) {
@@ -111,17 +113,11 @@ public class ExecutionServiceImpl implements IExecutionService {
                 .flatMap(execRepo::create);
     }
 
-    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch, Duration duration) {
-        return PExecution.create(
-            request.getExecutionCorrelationId(),
-            batch.getId(),
-            batch.getCorrelationId(),
-            duration,
-            request.getInputFiles(),
-            batch.getTenant(),
-            batch.getUser(),
-            batch.getProcessBusinessId()
-        );
+    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch,
+            Duration duration) {
+        return PExecution.create(request.getExecutionCorrelationId(), batch.getId(), batch.getCorrelationId(), duration,
+                                 request.getInputFiles(), batch.getTenant(), batch.getUser(),
+                                 batch.getProcessBusinessId());
     }
 
     private Mono<Duration> estimateDuration(PBatch batch, Seq<PInputFile> inputFiles) {
