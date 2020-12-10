@@ -35,6 +35,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -69,9 +71,13 @@ public class ProcessPluginDatasetController {
 
     @PutMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Attach the given dataset to all the given processes", role = DefaultRole.ADMIN)
-    public void attachDatasetToProcesses(@RequestBody List<UUID> processBusinessIds,
+    public void attachDatasetToProcesses(@RequestBody(required = false) List<UUID> processBusinessIds,
             @PathVariable(DATASET_PARAM) String dataset) {
-        rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset);
+        if (processBusinessIds != null) {
+            rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset);
+        } else {
+            rightsConfigService.putDatasetLinkedProcesses(Lists.newArrayList(), dataset);
+        }
     }
 
     @PostMapping(path = BY_DATASETS_SUFFIX)
