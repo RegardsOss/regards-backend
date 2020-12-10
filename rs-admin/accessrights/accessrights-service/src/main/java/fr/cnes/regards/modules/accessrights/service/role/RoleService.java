@@ -946,4 +946,9 @@ public class RoleService implements IRoleService {
         roleRepository.deleteById(role.getId());
         publishRoleEvent(role);
     }
+
+    @Override
+    public Optional<Role> getCurrentRole() {
+        return roleRepository.findByName(authResolver.getRole());
+    }
 }

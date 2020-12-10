@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -183,11 +184,16 @@ public class RoleController implements IResourceController<Role> {
      * @return true when the current role should have access to something requiring at least the provided role
      * @throws EntityNotFoundException if some role does not exists
      */
-    @ResourceAccess(description = "Return true if the role provided is included by the current role", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Return true if the role provided is included by the current role",
+            role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     public ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
             throws EntityNotFoundException {
-        boolean result = roleService.isCurrentRoleSuperiorTo(roleName);
+        Optional<Role> cr = roleService.getCurrentRole();
+        boolean result = false;
+        if (cr.isPresent()) {
+            result = cr.get().getName().equals(roleName) || roleService.isCurrentRoleSuperiorTo(roleName);
+        }
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

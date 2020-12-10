@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -56,7 +57,7 @@ public interface IRoleService {
      * @return The {@link Role}'s
      * @throws EntityNotFoundException
      *             when no role with passed name could be found
-
+    
      */
     Role retrieveRole(String pRoleName) throws EntityNotFoundException;
 
@@ -101,7 +102,7 @@ public interface IRoleService {
      *            new {@link @Role} to create
      * @return {@link Role} created
      * @throws EntityException
-
+    
      */
     Role createRole(Role role) throws EntityException;
 
@@ -234,7 +235,7 @@ public interface IRoleService {
      * @param pRole
      *            role to retrieve inherited roles
      * @return list of {@link Role}
-
+    
      */
     Set<Role> retrieveInheritedRoles(Role pRole);
 
@@ -284,7 +285,7 @@ public interface IRoleService {
      *
      * @param pResourceId
      * @return list of {@link Role}
-
+    
      */
     Set<Role> retrieveRolesWithResource(Long pResourceId);
 
@@ -298,4 +299,10 @@ public interface IRoleService {
      * @return true if the current user role is superior to the provided one
      */
     boolean isCurrentRoleSuperiorTo(String roleName) throws EntityNotFoundException;
+
+    /**
+     * Return current authentified user role
+     * @return {@link Role}
+     */
+    Optional<Role> getCurrentRole();
 }
