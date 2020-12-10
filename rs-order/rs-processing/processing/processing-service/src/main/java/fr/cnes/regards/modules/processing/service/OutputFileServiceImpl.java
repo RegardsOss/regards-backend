@@ -22,6 +22,8 @@ import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesReposit
 import fr.cnes.regards.modules.processing.domain.service.IOutputFileService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import io.vavr.collection.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,8 @@ import java.net.URL;
  */
 @Service
 public class OutputFileServiceImpl implements IOutputFileService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutputFileServiceImpl.class);
 
     private final IPOutputFilesRepository outFileRepo;
     private final ISharedStorageService storageService;
@@ -50,11 +54,17 @@ public class OutputFileServiceImpl implements IOutputFileService {
     }
 
     @Scheduled(
-        fixedRate = 60L * 60L * 1000L // Every hour TODO make configurable? // TODO add jitter?
+        cron = "${regards.processing.outputfiles.cleanup.cron:0 */2 * * *}" // every two hours by default
     )
     @Override public void scheduledDeleteDownloadedFiles() {
-        outFileRepo.save(outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse()
-            .flatMap(storageService::delete))
-            .subscribe();
+        outFileRepo.save(
+            outFileRepo.findByDownloadedIsTrueAndDeletedIsFalse()
+                .flatMap(storageService::delete)
+                .map(outfile -> outfile.withDeleted(true))
+        )
+        .subscribe(
+            outfile -> LOGGER.debug("Deleted output file {}", outfile),
+            error -> LOGGER.error("Failed to delete output files: {}", error.getMessage(), error)
+        );
     }
 }

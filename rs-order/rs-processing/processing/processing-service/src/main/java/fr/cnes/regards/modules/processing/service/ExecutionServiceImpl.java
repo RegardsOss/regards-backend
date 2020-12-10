@@ -82,7 +82,8 @@ public class ExecutionServiceImpl implements IExecutionService {
         return makeExec(request).flatMap(this::runEngine);
     }
 
-    @Scheduled(fixedRate = 60L * 60L * 1000L // Every hour TODO make configurable? // TODO add jitter?
+    @Scheduled(
+            cron = "${regards.processing.executions.timedout.cleanup.cron:0 */6 * * *}" // every six hours by default
     )
     @Override
     public void scheduledTimeoutNotify() {
