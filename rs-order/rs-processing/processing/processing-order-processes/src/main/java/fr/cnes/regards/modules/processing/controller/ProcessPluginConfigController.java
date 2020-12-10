@@ -135,7 +135,7 @@ public class ProcessPluginConfigController implements IResourceController<Proces
             @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId) {
         try {
             return ResponseEntity.ok(toResource(rightsConfigService.delete(processBusinessId)));
-        } catch (DeleteAttemptOnUsedProcessException e) {
+        } catch (DeleteAttemptOnUsedProcessException | ModuleException e) {
             return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }

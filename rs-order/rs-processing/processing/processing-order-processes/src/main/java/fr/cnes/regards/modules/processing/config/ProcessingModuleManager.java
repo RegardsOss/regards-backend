@@ -66,7 +66,7 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
         for (ProcessPluginConfigurationRightsDTO p : processService.findAllRightsPluginConfigs()) {
             try {
                 processService.delete(UUID.fromString(p.getPluginConfiguration().getBusinessId()));
-            } catch (DeleteAttemptOnUsedProcessException e) {
+            } catch (DeleteAttemptOnUsedProcessException | ModuleException e) {
                 LOGGER.warn(RESET_FAIL_MESSAGE, e);
                 errors.add(e.getMessage());
             }
