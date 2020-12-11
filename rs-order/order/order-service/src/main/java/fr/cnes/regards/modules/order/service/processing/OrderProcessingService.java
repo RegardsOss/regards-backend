@@ -93,6 +93,8 @@ public class OrderProcessingService implements IOrderProcessingService {
     protected final IJobInfoService jobInfoService;
     protected final int orderValidationPeriodDays;
 
+    // @formatter:off
+
     @Autowired
     public OrderProcessingService(
             BasketSelectionPageSearch basketSelectionPageSearch,
@@ -130,12 +132,9 @@ public class OrderProcessingService implements IOrderProcessingService {
         try {
             ResponseEntity<PProcessDTO> response = processingClient.findByUuid(processIdStr);
             if (response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+
                 PProcessDTO processDto = response.getBody();
-                OrderProcessInfo orderProcessInfo = processInfoMapper.fromMap(processDto.getProcessInfo())
-                        .getOrElseThrow(() -> new UnparsableProcessInfoException(
-                                String.format("Unparsable process infos: order=%s user=%s dsSel=%s processDto=%s",
-                                        order.getLabel(), user, dsSel.getId(), processDto)));
-        
+                OrderProcessInfo orderProcessInfo = parseOrderProcessInfo(order, dsSel, user, processDto);
                 List<DataType> requiredDatatypes = orderProcessInfo.getRequiredDatatypes();
                 
                 // Creates datasetTasks with required data types and update estimated size
@@ -145,15 +144,17 @@ public class OrderProcessingService implements IOrderProcessingService {
                 AtomicLong suborderCount = new AtomicLong(1);
         
                 OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
-                        .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
-                        .flatMap(featureGroup -> hasRequiredFilesInStorage(featureGroup)
-                                ? manageFeaturesWithFilesInStorage(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
-                                : manageFeaturesWithOnlyExternalFiles(featureGroup, order, suborderCount, processDto, orderProcessInfo, dsSel, tenant, user, userRole)
-                        )
-                        .doOnNext(dsTask::addReliantTask)
-                        .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
-                        .reduce(OrderCounts.initial(), OrderCounts::add)
-                        .block();
+                    .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
+                    .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
+                        order, dsSel,
+                        tenant, user, userRole,
+                        processDto, orderProcessInfo,
+                        suborderCount, featureGroup
+                    ))
+                    .doOnNext(dsTask::addReliantTask)
+                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
+                    .reduce(OrderCounts.initial(), OrderCounts::add)
+                    .block();
         
                 if (!dsTask.getReliantTasks().isEmpty()) {
                     order.addDatasetOrderTask(dsTask);
@@ -165,6 +166,35 @@ public class OrderProcessingService implements IOrderProcessingService {
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw new ModuleException(e.getMessage());
+        }
+    }
+
+    private OrderProcessInfo parseOrderProcessInfo(Order order, BasketDatasetSelection dsSel, String user, PProcessDTO processDto) {
+        return processInfoMapper.fromMap(processDto.getProcessInfo())
+                .getOrElseThrow(() -> new UnparsableProcessInfoException(
+                        String.format("Unparsable process infos: order=%s user=%s dsSel=%s processDto=%s",
+                                order.getLabel(), user, dsSel.getId(), processDto)));
+    }
+
+    private Publisher<? extends FilesTask> discriminateBetweenSomeInStorageOrOnlyExternal(
+            Order order, BasketDatasetSelection dsSel,
+            String tenant, String user, String userRole,
+            PProcessDTO processDto, OrderProcessInfo orderProcessInfo,
+            AtomicLong suborderCount, GroupedFlux<Boolean, EntityFeature> featureGroup
+    ) {
+        if (hasRequiredFilesInStorage(featureGroup)) {
+            return manageFeaturesWithFilesInStorage(
+                featureGroup, order, suborderCount,
+                processDto, orderProcessInfo, dsSel,
+                tenant, user, userRole
+            );
+        }
+        else {
+            return manageFeaturesWithOnlyExternalFiles(
+                featureGroup, order, suborderCount,
+                processDto, orderProcessInfo, dsSel,
+                tenant, user, userRole
+            );
         }
     }
 
@@ -181,14 +211,20 @@ public class OrderProcessingService implements IOrderProcessingService {
     ) {
 
         return windowAccordingToScopeAndSizeLimit(featureGroup, orderProcessInfo)
-                .flatMap(features -> {
-                    if (orderProcessInfo.getScope() == Scope.SUBORDER) {
-                        return createProcessExecutionJobAndFilesTask(order, suborderCount, pProcessDTO, orderProcessInfo, dsSel, tenant, user, userRole, features);
-                    } else {
-                        return Flux.fromIterable(features)
-                                .flatMap(feature -> createProcessExecutionJobAndFilesTask(order, suborderCount, pProcessDTO, orderProcessInfo, dsSel, tenant, user, userRole, List.of(feature)));
-                    }
-                });
+            .flatMap(features -> {
+                if (orderProcessInfo.getScope() == Scope.SUBORDER) {
+                    return createProcessExecutionJobAndFilesTask(
+                        order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
+                        tenant, user, userRole, features
+                    );
+                } else {
+                    return Flux.fromIterable(features)
+                        .flatMap(feature -> createProcessExecutionJobAndFilesTask(
+                            order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
+                            tenant, user, userRole, List.of(feature))
+                        );
+                }
+            });
     }
 
     protected Publisher<FilesTask> createProcessExecutionJobAndFilesTask(
@@ -202,7 +238,10 @@ public class OrderProcessingService implements IOrderProcessingService {
             String userRole,
             List<EntityFeature> features
     ) {
-        JobInfo jobInfo = createProcessExecutionJobForFeatures(order, suborderCount, pProcessDTO, orderProcessInfo, dsSel, tenant, user, userRole, features);
+        JobInfo jobInfo = createProcessExecutionJobForFeatures(
+            order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
+            tenant, user, userRole, features
+        );
         jobInfoService.createAsQueued(jobInfo);
         OrderDataFile[] outputFiles = extractOutputFilesFromProcessExecJob(jobInfo);
 
@@ -225,10 +264,15 @@ public class OrderProcessingService implements IOrderProcessingService {
             String userRole,
             List<EntityFeature> features
     ) {
-        ProcessInputsPerFeature processInputsPerFeature = createInputFiles(features, orderProcessInfo.getRequiredDatatypes());
+        ProcessInputsPerFeature processInputsPerFeature = createInputFiles(
+                features,
+                orderProcessInfo.getRequiredDatatypes()
+        );
         Long suborderCountId = suborderCount.getAndIncrement();
 
-        BatchSuborderCorrelationIdentifier batchSuborderIdentifier = new BatchSuborderCorrelationIdentifier(order.getId(), dsSel.getId(), suborderCountId);
+        BatchSuborderCorrelationIdentifier batchSuborderIdentifier = new BatchSuborderCorrelationIdentifier(
+                order.getId(), dsSel.getId(), suborderCountId
+        );
         Long[] outputFiles = createOutputFilesAndReturnIds(
                 batchSuborderIdentifier,
                 UniformResourceName.fromString(dsSel.getDatasetIpid()),
@@ -239,14 +283,14 @@ public class OrderProcessingService implements IOrderProcessingService {
                 false,
                 orderJobService.computePriority(user, userRole),
                 HashSet.of(
-                        new TenantJobParameter(tenant),
-                        new UserJobParameter(user),
-                        new UserRoleJobParameter(userRole),
-                        new ProcessInputsPerFeatureJobParameter(processInputsPerFeature),
-                        new ProcessOutputFilesJobParameter(outputFiles),
-                        new ProcessDTOJobParameter(pProcessDTO),
-                        new ProcessBatchCorrelationIdJobParameter(batchSuborderIdentifier.repr()),
-                        new BasketDatasetSelectionJobParameter(new BasketDatasetSelectionDescriptor(dsSel))
+                    new TenantJobParameter(tenant),
+                    new UserJobParameter(user),
+                    new UserRoleJobParameter(userRole),
+                    new ProcessInputsPerFeatureJobParameter(processInputsPerFeature),
+                    new ProcessOutputFilesJobParameter(outputFiles),
+                    new ProcessDTOJobParameter(pProcessDTO),
+                    new ProcessBatchCorrelationIdJobParameter(batchSuborderIdentifier.repr()),
+                    new BasketDatasetSelectionJobParameter(new BasketDatasetSelectionDescriptor(dsSel))
                 ).toJavaSet(),
                 user,
                 ProcessExecutionJob.class.getName()
@@ -294,7 +338,12 @@ public class OrderProcessingService implements IOrderProcessingService {
                 if (cardinality == Cardinality.ONE_PER_FEATURE) {
                     List<DataFile> applicableDataFilesIn = List.ofAll(feature.getFiles().values())
                             .filter(f -> requiredDataTypes.contains(f.getDataType()));
-                    long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize).reduce(Long::sum));
+                    long expectedSize = sizeForecast.expectedResultSizeInBytes(
+                        applicableDataFilesIn
+                            .map(DataFile::getFilesize)
+                            .reduceOption(Long::sum)
+                            .getOrElse(0L)
+                    );
                     DataFile dataFileOut = DataFile.build(
                             DataType.OTHER,
                             feature.getId().toString(),
@@ -307,22 +356,22 @@ public class OrderProcessingService implements IOrderProcessingService {
                     return List.of(createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
                     return featureRequiredDatafiles(feature, requiredDataTypes)
-                            .map(dataFile -> {
-                                long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
+                        .map(dataFile -> {
+                            long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
 
-                                DataFile dataFileOut = DataFile.build(
-                                        DataType.OTHER,
-                                        dataFile.getFilename(),
-                                        ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, feature, dataFile),
-                                        MimeType.valueOf(OCTET_STREAM),
-                                        true,
-                                        true
-                                );
+                            DataFile dataFileOut = DataFile.build(
+                                DataType.OTHER,
+                                dataFile.getFilename(),
+                                ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, feature, dataFile),
+                                MimeType.valueOf(OCTET_STREAM),
+                                true,
+                                true
+                            );
 
-                                dataFileOut.setFilesize(expectedSize);
-                                return createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId);
-                            })
-                            .collect(Collectors.toList());
+                            dataFileOut.setFilesize(expectedSize);
+                            return createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId);
+                        })
+                        .collect(Collectors.toList());
                 } else {
                     // Happens only if some new cases appear for Cardinality
                     throw new NotImplementedException("New Cardinality case missing");
@@ -349,11 +398,11 @@ public class OrderProcessingService implements IOrderProcessingService {
      */
     protected ProcessInputsPerFeature createInputFiles(List<EntityFeature> features, List<DataType> requiredDataTypes) {
         return new ProcessInputsPerFeature(features
-                .toMap(ProcessOutputFeatureDesc::from, feature ->
-                    featureRequiredDatafiles(feature, requiredDataTypes)
-                            .map(dataFile -> new OrderDataFile(dataFile, feature.getId(), -1L))
-                            .collect(Collectors.toList()))
-                .toJavaMap());
+            .toMap(ProcessOutputFeatureDesc::from, feature ->
+                featureRequiredDatafiles(feature, requiredDataTypes)
+                    .map(dataFile -> new OrderDataFile(dataFile, feature.getId(), -1L))
+                    .collect(Collectors.toList()))
+            .toJavaMap());
     }
 
     protected Stream<DataFile> featureRequiredDatafiles(EntityFeature feature, List<DataType> requiredTypes) {
@@ -363,12 +412,12 @@ public class OrderProcessingService implements IOrderProcessingService {
 
     protected Flux<List<EntityFeature>> windowAccordingToScopeAndSizeLimit(GroupedFlux<Boolean, EntityFeature> featureGroup, OrderProcessInfo orderProcessInfo) {
         return featureGroup
-                .publish(fg -> fg.zipWith(fg.scan(
-                        new FeatureAccumulator(),
-                        (acc, f) -> acc.addFeatureAndReturnInitialAccumulatorIfOverLimits(f, orderProcessInfo))
-                )
-                .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
-                .map(featsAndAccs -> List.ofAll(featsAndAccs).map(Tuple2::getT1)));
+            .publish(fg -> fg.zipWith(fg.scan(
+                new FeatureAccumulator(),
+                (acc, f) -> acc.addFeatureAndReturnInitialAccumulatorIfOverLimits(f, orderProcessInfo))
+            )
+            .bufferUntil(featAndAcc -> featAndAcc.getT2().isInitial(), true)
+            .map(featsAndAccs -> List.ofAll(featsAndAccs).map(Tuple2::getT1)));
     }
 
     protected Flux<FilesTask> manageFeaturesWithFilesInStorage(
@@ -383,7 +432,10 @@ public class OrderProcessingService implements IOrderProcessingService {
             String userRole
     ) {
         return windowAccordingToScopeAndSizeLimit(featureGroup, orderProcessInfo)
-                .flatMap(features -> createProcessJobAndStorageFilesJobForFeatures(order, suborderCount, pProcessDTO, orderProcessInfo, dsSel, tenant, user, userRole, features));
+            .flatMap(features -> createProcessJobAndStorageFilesJobForFeatures(
+                order, suborderCount, pProcessDTO, orderProcessInfo, dsSel,
+                tenant, user, userRole, features)
+            );
     }
 
     private Mono<FilesTask> createProcessJobAndStorageFilesJobForFeatures(
@@ -506,4 +558,6 @@ public class OrderProcessingService implements IOrderProcessingService {
             return size == 0L && count == 0;
         }
     }
+
+    // @formatter:on
 }
