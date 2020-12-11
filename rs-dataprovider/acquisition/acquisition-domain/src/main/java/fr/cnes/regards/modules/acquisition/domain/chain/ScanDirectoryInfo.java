@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.acquisition.domain.chain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -43,6 +44,7 @@ import javax.persistence.Table;
 @Table(name="t_scan_dir_info")
 public class ScanDirectoryInfo {
 
+    @ConfigIgnore
     @Id
     @SequenceGenerator(name= "ScanDirInfoSequence", initialValue = 1, sequenceName = "seq_scan_dir_info")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ScanDirInfoSequence")
