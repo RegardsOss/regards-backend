@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -31,11 +32,17 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
 import fr.cnes.regards.framework.utils.cycle.generics.invalid1.PluginWithCyclicPojoCollection;
 import fr.cnes.regards.framework.utils.cycle.generics.invalid2.PluginWithCyclicPojoMap;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -92,13 +99,20 @@ public class PluginWithGenericsTest {
         Info info3 = new Info();
         info3.setMessage("info 3");
 
+        GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty());
+        Gson gson = builder.create();
+
         Set<Info> infos = new HashSet<>(Arrays.asList(info1, info2, info3));
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
+        String test = gson.toJson(infos);
+        IPluginParam param = PluginParameterUtils.forType(PluginParamType.COLLECTION,
+                                                          PluginWithPojoCollection.FIELD_NAME, test, true);
+
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam
+                .build(PluginWithPojoCollection.FIELD_NAME, PluginParameterTransformer.toJson(infos)).dynamic());
 
         IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithPojoCollection.class, "", parameters), null);
+                .getPlugin(PluginConfiguration.build(PluginWithPojoCollection.class, "", parameters), null, param);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();

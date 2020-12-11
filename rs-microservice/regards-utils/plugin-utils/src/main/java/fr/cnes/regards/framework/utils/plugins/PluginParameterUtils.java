@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.utils.plugins;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,11 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -71,6 +77,8 @@ public final class PluginParameterUtils {
     private static final String NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED = "Issue with Plugin %s and one of its configuration %s, parameter %s has no default value and is required.";
 
     private static final String EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN = "Exception while processing param <%s> in plugin class <%s> with param <%s>.";
+
+    private static Gson gson = new Gson();
 
     /**
      * Retrieve List of {@link PluginParamDescriptor} by reflection on class fields
@@ -430,6 +438,7 @@ public final class PluginParameterUtils {
      * @param value
      * @return new created {@link IPluginParam}
      */
+    @SuppressWarnings({ "serial", "unchecked" })
     public static IPluginParam forType(PluginParamType paramType, String paramName, String value, boolean isDynamic) {
         AbstractPluginParam<?> param = null;
         switch (paramType) {
@@ -458,10 +467,21 @@ public final class PluginParameterUtils {
                 param = IPluginParam.build(paramName, Boolean.valueOf(value));
                 break;
             case POJO:
+                param = IPluginParam.build(paramName, new JsonParser().parse(value).getAsJsonObject());
+                break;
             case COLLECTION:
+                Type type = new TypeToken<Collection<JsonElement>>() {
+                }.getType();
+                param = IPluginParam.build(paramName, (Collection<JsonElement>) gson.fromJson(value, type));
+                break;
             case MAP:
+                Type typeMap = new TypeToken<Map<String, JsonElement>>() {
+                }.getType();
+                param = IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
+                break;
             case PLUGIN:
-                // FIXME : Handle complex types
+                param = IPluginParam.plugin(paramName, value);
+                break;
             default:
                 throw new PluginUtilsRuntimeException(
                         String.format("Type parameter <%s> cannot be handled. Complex types are not supported yet.",
