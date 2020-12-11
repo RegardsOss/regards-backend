@@ -21,6 +21,7 @@ import com.zaxxer.nuprocess.NuAbstractProcessHandler;
 import com.zaxxer.nuprocess.NuProcess;
 import com.zaxxer.nuprocess.NuProcessBuilder;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -34,6 +35,7 @@ import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function1;
 import io.vavr.Tuple;
 import io.vavr.collection.Seq;
+import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +89,17 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     )
     protected long maxFilesInInput = 0;
 
+    @PluginParameter(
+            name = "requiredDataTypes",
+            label = "Comma-separated list of required DataTypes",
+            description = "This parameter allows to change the feature files sent as input for executions. " +
+                    "By default, only RAWDATA are sent, but changing this parameter to 'RAWDATA,THUMBNAIL,AIP' " +
+                    "for instance would provide RAWDATA, THUMBNAIL and AIP files.",
+            optional = true,
+            defaultValue = "RAWDATA"
+    )
+    protected String requiredDataTypes = "RAWDATA";
+
     public void setShellScriptName(String shellScriptName) {
         this.shellScriptName = shellScriptName;
     }
@@ -131,6 +144,12 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
             .andThen("store output", storeOutputFiles())
             .andThen("clean workdir", cleanWorkdir())
             .onErrorThen(sendFailureEventThenClean());
+    }
+
+    protected Seq<DataType> requiredDataTypes() {
+        return io.vavr.collection.List.of(requiredDataTypes.split(","))
+            .map(String::trim)
+            .flatMap(str -> Try.of(() -> DataType.valueOf(str)));
     }
 
     protected Function1<Throwable, IExecutable> sendFailureEvent() {

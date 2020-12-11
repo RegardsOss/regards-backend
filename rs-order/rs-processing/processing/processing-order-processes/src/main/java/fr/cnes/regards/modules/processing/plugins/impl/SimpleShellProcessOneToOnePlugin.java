@@ -18,7 +18,6 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
@@ -54,7 +53,7 @@ public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcess
         return new OrderProcessInfo(
                 Scope.ITEM,
                 Cardinality.ONE_PER_INPUT_FILE,
-                io.vavr.collection.List.of(DataType.RAWDATA),
+                requiredDataTypes().toList(),
                 new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput),
                 this.sizeForecast().get()
         );
