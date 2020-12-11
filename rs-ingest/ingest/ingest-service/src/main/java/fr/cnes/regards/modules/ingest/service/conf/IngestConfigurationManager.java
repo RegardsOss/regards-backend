@@ -18,20 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.conf;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
@@ -41,6 +30,14 @@ import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
 import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Configuration manager for current module
@@ -93,12 +90,7 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                     LOGGER.error("New dump settings were not updated, cause by:", e);
                 }
             } else if (AIPNotificationSettings.class.isAssignableFrom(item.getKey())) {
-                try {
-                    notificationSettingsService.update(item.getTypedValue());
-                } catch (EntityNotFoundException e) {
-                    importErrors.add(String.format("New notification settings were not updated, cause by: %s", e.getMessage()));
-                    LOGGER.error("New notification settings were not updated, cause by:", e);
-                }
+                notificationSettingsService.update(item.getTypedValue());
             }
         }
         return importErrors;

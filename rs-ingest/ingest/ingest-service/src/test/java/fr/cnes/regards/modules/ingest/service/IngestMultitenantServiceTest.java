@@ -161,7 +161,7 @@ public abstract class IngestMultitenantServiceTest extends AbstractMultitenantSe
     }
 
     @After
-    public void clear() throws Exception {
+    public void after() throws Exception {
         // unsubscribe from AMQP queues
         ingestServiceTest.clear();
         // clean AMQP queues and repositories

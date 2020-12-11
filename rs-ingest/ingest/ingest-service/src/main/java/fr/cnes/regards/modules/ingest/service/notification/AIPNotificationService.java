@@ -192,6 +192,8 @@ public class AIPNotificationService implements IAIPNotificationService {
     @Override
     public void handleNotificationError(Set<AbstractRequest> errorRequests) {
         // for each type of request set the change the state and the step of the request to ERROR
+        String errorMsg = "An error occurred while notifying the request result to notifier. "
+                + "Please check issues reported on notifier.";
         for (AbstractRequest abstractRequest : errorRequests) {
             // INGEST REQUESTS
             if (abstractRequest instanceof IngestRequest) {
@@ -201,7 +203,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 ingestRequest.setState(InternalRequestState.ERROR);
                 ingestRequest.setStep(IngestRequestStep.REMOTE_NOTIFICATION_ERROR);
-
+                ingestRequest.addError(errorMsg);
             }
             // OAIS DELETION REQUESTS
             else if (abstractRequest instanceof OAISDeletionRequest) {
@@ -212,7 +214,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 oaisDeletionRequest.setState(InternalRequestState.ERROR);
                 oaisDeletionRequest.setStep(DeletionRequestStep.REMOTE_NOTIFICATION_ERROR);
-
+                oaisDeletionRequest.addError(errorMsg);
             }
             // UPDATE REQUESTS
             else if (abstractRequest instanceof AIPUpdateRequest) {
@@ -222,6 +224,7 @@ public class AIPNotificationService implements IAIPNotificationService {
                 // put request state to error and change step
                 aipUpdateRequest.setState(InternalRequestState.ERROR);
                 aipUpdateRequest.setStep(AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR);
+                aipUpdateRequest.addError(errorMsg);
             }
         }
         // Save error requests

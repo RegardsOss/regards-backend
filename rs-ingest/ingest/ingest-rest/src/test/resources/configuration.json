@@ -71,6 +71,19 @@
                             "parameters": []
                         }
                     }
+                },
+                {
+                    "key": "fr.cnes.regards.framework.modules.dump.domain.DumpSettings",
+                    "value": {
+                        "activeModule": true,
+                        "cronTrigger": "0 0 0 1-7 * SUN"
+                    }
+                },
+                {
+                    "key": "fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings",
+                    "value": {
+                        "activeNotification": false
+                    }
                 }
             ]
         }

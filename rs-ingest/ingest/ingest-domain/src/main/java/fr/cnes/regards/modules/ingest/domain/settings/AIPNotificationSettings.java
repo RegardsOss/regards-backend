@@ -20,11 +20,12 @@
 
 package fr.cnes.regards.modules.ingest.domain.settings;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Objects;
 
 /**
  * Model to handle optional notifications
@@ -37,9 +38,10 @@ public class AIPNotificationSettings {
     // only one setting per tenant
     private static final long INGEST_NOTIFICATION_SETTING_ID = 0L;
 
+    @ConfigIgnore
     @Id
     @Column(name = "id", unique = true)
-    private final Long id;
+    private Long id;
 
     /**
      * To activate notifications on aip requests
@@ -63,16 +65,18 @@ public class AIPNotificationSettings {
         return id;
     }
 
+    public void setId() {
+        this.id = INGEST_NOTIFICATION_SETTING_ID;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (this == o)
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         AIPNotificationSettings that = (AIPNotificationSettings) o;
-        return activeNotification == id.equals(that.id);
+        return activeNotification == that.activeNotification && Objects.equals(id, that.id);
     }
 
     @Override

@@ -20,23 +20,20 @@
 
 package fr.cnes.regards.modules.ingest.service.settings;
 
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
+import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 
 /**
  * see {@link IAIPNotificationSettingsService}
@@ -100,13 +97,15 @@ public class AIPNotificationSettingsService implements IAIPNotificationSettingsS
     }
 
     @Override
-    public AIPNotificationSettings update(AIPNotificationSettings aipNotificationSettings)
-            throws EntityNotFoundException {
-        if (!notificationSettingsRepository.existsById(aipNotificationSettings.getId())) {
-            throw new EntityNotFoundException(aipNotificationSettings.getId().toString(),
-                                              AIPNotificationSettings.class);
+    public void update(AIPNotificationSettings aipNotificationSettings) {
+        // SET ID (only one id is allowed for aipNotificationSettings)
+        aipNotificationSettings.setId();
+
+        // UPDATE SETTINGS if they already exist
+        Optional<AIPNotificationSettings> aipSettingsOpt = notificationSettingsRepository.findById(aipNotificationSettings.getId());
+        if (!aipSettingsOpt.isPresent() || !aipSettingsOpt.get().equals(aipNotificationSettings)) {
+            notificationSettingsRepository.save(aipNotificationSettings);
         }
-        return notificationSettingsRepository.save(aipNotificationSettings);
     }
 
     @Override

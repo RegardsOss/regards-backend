@@ -78,12 +78,4 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
         notificationSettingsService.update(notificationSettings);
         Assert.assertEquals(false, notificationSettingsRepository.findFirstBy().get().isActiveNotification());
     }
-
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Test exception is thrown when entity is not found on update")
-    public void testUpdateEntityNotFound() throws EntityNotFoundException {
-        notificationSettingsRepository.deleteAll();
-        AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
-        notificationSettingsService.update(notificationSettings);
-    }
 }

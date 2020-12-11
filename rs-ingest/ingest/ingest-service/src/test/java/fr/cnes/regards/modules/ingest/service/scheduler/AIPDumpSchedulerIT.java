@@ -20,25 +20,22 @@
 
 package fr.cnes.regards.modules.ingest.service.scheduler;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test for {@link AIPSaveMetadataScheduler}
@@ -96,16 +93,6 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
         try {
             saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
             Assert.fail(String.format("%s was expected", EntityInvalidException.class.getName()));
-        } catch (ModuleException e) {
-            LOGGER.error("Exception successfully thrown", e);
-        }
-
-        // CHECK NOT EXISTING DUMP EXCEPTION
-        // Test update with dump settings that do not exist in db
-        dumpSettings = new DumpSettings(true, "* * 0 * * *", "target/", null);
-        try {
-            saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
-            Assert.fail(String.format("%s was expected", EntityNotFoundException.class.getName()));
         } catch (ModuleException e) {
             LOGGER.error("Exception successfully thrown", e);
         }
