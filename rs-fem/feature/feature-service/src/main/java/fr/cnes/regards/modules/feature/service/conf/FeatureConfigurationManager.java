@@ -69,13 +69,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
                     LOGGER.error("Not able to update new dump settings, cause by:", e);
                 }
             } else if (FeatureNotificationSettings.class.isAssignableFrom(item.getKey())) {
-                try {
-                    notificationSettingsService.update(item.getTypedValue());
-                } catch (EntityNotFoundException e) {
-                    importErrors.add(String.format("New notification settings were not updated, cause by: %s",
-                                                   e.getMessage()));
-                    LOGGER.error("Not able to update new notification settings, cause by:", e);
-                }
+                notificationSettingsService.update(item.getTypedValue());
             } else {
                 String message = String.format(
                         "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",

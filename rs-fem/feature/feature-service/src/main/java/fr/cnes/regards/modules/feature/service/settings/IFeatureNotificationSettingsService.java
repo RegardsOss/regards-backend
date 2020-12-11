@@ -42,7 +42,7 @@ public interface IFeatureNotificationSettingsService {
     /**
      * Update {@link FeatureNotificationSettings}
      */
-    FeatureNotificationSettings update(FeatureNotificationSettings pFeatureNotificationSettings) throws EntityNotFoundException;
+    void update(FeatureNotificationSettings pFeatureNotificationSettings);
 
     void resetSettings();
 }

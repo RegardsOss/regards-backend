@@ -102,16 +102,6 @@ public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceTes
         } catch (ModuleException e) {
             LOGGER.error("Exception successfully thrown", e);
         }
-
-        // CHECK NOT EXISTING DUMP EXCEPTION
-        // Test update with dump settings that do not exist in db
-        dumpSettings = new DumpSettings(true, "* * 0 * * *", "target/", null);
-        try {
-            saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
-            Assert.fail(String.format("%s was expected", EntityNotFoundException.class.getName()));
-        } catch (ModuleException e) {
-            LOGGER.error("Exception successfully thrown", e);
-        }
     }
 
     @Override

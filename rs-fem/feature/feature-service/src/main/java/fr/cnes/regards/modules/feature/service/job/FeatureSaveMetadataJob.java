@@ -87,7 +87,7 @@ public class FeatureSaveMetadataJob extends AbstractJob<Void> {
             // Write dump
             metadataService.writeZips(metadataRequest, getWorkspace());
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
-            logger.info("[FEATURE SAVE METADATA JOB] Dump successfully done between {} {}",
+            logger.info("[FEATURE SAVE METADATA JOB] Dump successfully done between {} and {}",
                         metadataRequest.getPreviousDumpDate(), metadataRequest.getRequestDate());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {

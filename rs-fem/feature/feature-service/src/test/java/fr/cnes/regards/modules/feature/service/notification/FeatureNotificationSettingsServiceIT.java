@@ -82,12 +82,4 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
         notificationSettingsService.update(notificationSettings);
         Assert.assertEquals(false, notificationSettingsRepository.findFirstBy().get().isActiveNotification());
     }
-
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Test exception is thrown when entity is not found on update")
-    public void testUpdateEntityNotFound() throws EntityNotFoundException {
-        notificationSettingsRepository.deleteAll();
-        FeatureNotificationSettings notificationSettings = new FeatureNotificationSettings();
-        notificationSettingsService.update(notificationSettings);
-    }
 }

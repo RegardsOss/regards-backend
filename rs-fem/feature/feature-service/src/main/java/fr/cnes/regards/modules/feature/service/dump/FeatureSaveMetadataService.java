@@ -76,29 +76,24 @@ public class FeatureSaveMetadataService {
         OffsetDateTime lastDumpDate = lastDump.getLastDumpReqDate();
         lastDump.setLastDumpReqDate(OffsetDateTime.now());
 
-        try {
-            dumpSettingsService.update(lastDump);
+        dumpSettingsService.update(lastDump);
 
-            // Create request
-            FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest
-                    .build(AbstractRequestEvent.generateRequestId(), "NONE", OffsetDateTime.now(), RequestState.GRANTED,
-                           null, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, lastDumpDate,
-                           lastDump.getDumpLocation());
+        // Create request
+        FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest
+                .build(AbstractRequestEvent.generateRequestId(), "NONE", OffsetDateTime.now(), RequestState.GRANTED,
+                       null, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, lastDumpDate,
+                       lastDump.getDumpLocation());
 
-            metadataRequestRepository.save(requestToSchedule);
+        metadataRequestRepository.save(requestToSchedule);
 
-            // Schedule save metadata job
-            jobInfo = new JobInfo(false, requestToSchedule.getPriority().getPriorityLevel(),
-                                  Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST,
-                                                                   requestToSchedule)), null,
-                                  FeatureSaveMetadataJob.class.getName());
-            jobInfoService.createAsQueued(jobInfo);
-            LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 FeatureSaveMetaDataRequest(s) in {} ms",
-                         System.currentTimeMillis() - start);
-        } catch (EntityNotFoundException e) {
-            LOGGER.error("[SAVE METADATA SCHEDULER] Problem while updating lastDumpReqDate. Job not scheduled. {}",
-                         e.getMessage());
-        }
+        // Schedule save metadata job
+        jobInfo = new JobInfo(false, requestToSchedule.getPriority().getPriorityLevel(),
+                              Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST,
+                                                               requestToSchedule)), null,
+                              FeatureSaveMetadataJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+        LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 FeatureSaveMetaDataRequest(s) in {} ms",
+                     System.currentTimeMillis() - start);
         return jobInfo;
     }
 

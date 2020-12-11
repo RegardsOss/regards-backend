@@ -20,6 +20,7 @@
 
 package fr.cnes.regards.modules.feature.domain.settings;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -38,9 +39,10 @@ public class FeatureNotificationSettings {
     // only one setting per tenant
     private static final long FEM_NOTIFICATION_SETTINGS_ID = 0L;
 
+    @ConfigIgnore
     @Id
     @Column(name = "id", unique = true)
-    private final Long id;
+    private Long id;
 
     /**
      * To activate notifications on feature requests
@@ -64,6 +66,10 @@ public class FeatureNotificationSettings {
         return id;
     }
 
+    public void setId() {
+        this.id = FEM_NOTIFICATION_SETTINGS_ID;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -73,7 +79,7 @@ public class FeatureNotificationSettings {
             return false;
         }
         FeatureNotificationSettings that = (FeatureNotificationSettings) o;
-        return activeNotification == id.equals(that.id);
+        return activeNotification == that.activeNotification && Objects.equals(id, that.id);
     }
 
     @Override

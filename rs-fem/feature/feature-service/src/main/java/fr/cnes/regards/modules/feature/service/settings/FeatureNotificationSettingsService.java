@@ -101,13 +101,15 @@ public class FeatureNotificationSettingsService implements IFeatureNotificationS
     }
 
     @Override
-    public FeatureNotificationSettings update(FeatureNotificationSettings featureNotificationSettings)
-            throws EntityNotFoundException {
-        if (!notificationSettingsRepository.existsById(featureNotificationSettings.getId())) {
-            throw new EntityNotFoundException(featureNotificationSettings.getId().toString(),
-                                              FeatureNotificationSettings.class);
+    public void update(FeatureNotificationSettings featureNotificationSettings) {
+        // SET ID (only one id is allowed for featureNotificationSettings)
+        featureNotificationSettings.setId();
+
+        // UPDATE SETTINGS if they already exist
+        Optional<FeatureNotificationSettings> featSettingsOpt = notificationSettingsRepository.findById(featureNotificationSettings.getId());
+        if (!featSettingsOpt.isPresent() || !featSettingsOpt.get().equals(featureNotificationSettings)) {
+            notificationSettingsRepository.save(featureNotificationSettings);
         }
-        return notificationSettingsRepository.save(featureNotificationSettings);
     }
 
     @Override
