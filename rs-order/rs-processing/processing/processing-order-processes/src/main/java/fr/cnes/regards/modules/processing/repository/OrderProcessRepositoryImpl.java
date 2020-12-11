@@ -18,9 +18,12 @@
 package fr.cnes.regards.modules.processing.repository;
 
 import com.google.common.annotations.VisibleForTesting;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PProcess;
@@ -29,6 +32,8 @@ import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepos
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
 import fr.cnes.regards.modules.processing.plugins.IProcessDefinition;
+import io.vavr.Tuple;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +77,7 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
     public Flux<PProcess> findAllByTenant(String tenant) {
         tenantResolver.forceTenant(tenant);
         Flux<PProcess> process = Flux.fromIterable(rightsPluginConfigRepo.findAll())
-                .flatMap(rights -> buildPProcess(tenant, rights));
+                .flatMap(rights -> buildPProcess(tenant, rights, HashMap.empty()));
         tenantResolver.clearTenant();
         return process;
     }
@@ -82,18 +87,25 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         tenantResolver.forceTenant(tenant);
         Mono<PProcess> process = rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processId.toString())
                 .map(Mono::just).getOrElse(() -> Mono.error(new RuntimeException("Unfound " + processId)))
-                .flatMap(rights -> buildPProcess(tenant, rights));
+                .flatMap(rights -> buildPProcess(tenant, rights, HashMap.empty()));
         tenantResolver.clearTenant();
         return process;
     }
 
     @Override
     public Mono<PProcess> findByBatch(PBatch batch) {
-        return findByTenantAndProcessBusinessID(batch.getTenant(), batch.getProcessBusinessId());
+        String tenant = batch.getTenant();
+        UUID processId = batch.getProcessBusinessId();
+        tenantResolver.forceTenant(tenant);
+        Mono<PProcess> process = rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processId.toString())
+                .map(Mono::just).getOrElse(() -> Mono.error(new RuntimeException("Unfound " + processId)))
+                .flatMap(rights -> buildPProcess(tenant, rights, batch.getUserSuppliedParameters().toMap(v -> Tuple.of(v.getName(), v.getValue()))));
+        tenantResolver.clearTenant();
+        return process;
     }
 
-    private Mono<PProcess> buildPProcess(String tenant, RightsPluginConfiguration rights) {
-        return getProcessDefinition(tenant, rights.getPluginConfiguration().getBusinessId())
+    private Mono<PProcess> buildPProcess(String tenant, RightsPluginConfiguration rights, Map<String,String> dParams) {
+        return getProcessDefinition(tenant, rights.getPluginConfiguration().getBusinessId(), dParams)
                 .flatMap(def -> fromPlugin(rights, def, tenant));
     }
 
@@ -119,16 +131,34 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         return processInfo.put(PROCESS_INFO_TENANT_PARAM_NAME, tenant).put(PROCESS_INFO_ROLE_PARAM_NAME, role);
     }
 
-    private Mono<IProcessDefinition> getProcessDefinition(String tenant, String processName) {
-        return fromOptional(() -> getOptionalPlugin(tenant, processName));
+    private Mono<IProcessDefinition> getProcessDefinition(String tenant, String processBusinessId, Map<String,String> dParams) {
+        return fromOptional(() -> getOptionalPlugin(tenant, processBusinessId, dParams));
     }
 
-    private Optional<IProcessDefinition> getOptionalPlugin(String tenant, String processName)
+    private Optional<IProcessDefinition> getOptionalPlugin(String tenant, String processBusinessId, Map<String,String> dParams)
             throws NotAvailablePluginConfigurationException {
         tenantResolver.forceTenant(tenant);
-        Optional<IProcessDefinition> process = pluginService.getOptionalPlugin(processName);
-        tenantResolver.clearTenant();
-        return process;
+        try {
+            if (dParams.isEmpty()) {
+                return pluginService.getOptionalPlugin(processBusinessId);
+            }
+            else {
+                PluginConfiguration pcWithParams = pluginService.getPluginConfiguration(processBusinessId);
+                IPluginParam[] params = dParams.map((name, value) -> {
+                    IPluginParam parameter = pcWithParams.getParameter(name);
+                    return Tuple.of(name, PluginParameterUtils.forType(parameter.getType(), name, value, true));
+                })
+                .values()
+                .toJavaArray(IPluginParam[]::new);
+                return pluginService.getOptionalPlugin(processBusinessId, params);
+            }
+        }
+        catch(EntityNotFoundException e) {
+            return Optional.empty();
+        }
+        finally {
+            tenantResolver.clearTenant();
+        }
     }
 
     private <T> Mono<T> fromOptional(Callable<Optional<T>> copt) {

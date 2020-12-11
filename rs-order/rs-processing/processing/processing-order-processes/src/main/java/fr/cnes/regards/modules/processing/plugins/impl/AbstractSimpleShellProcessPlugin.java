@@ -30,11 +30,12 @@ import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function1;
 import io.vavr.Tuple;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Seq;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -48,6 +49,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.cnes.regards.modules.processing.domain.PStep.*;
 import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
@@ -61,6 +64,8 @@ import static io.vavr.collection.List.ofAll;
  */
 public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
 
+    protected static final Pattern KEYVALUE_PATTERN = Pattern.compile("^\\s*(?<name>[^=]+?)\\s*=(?<value>.*?)$");
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSimpleShellProcessPlugin.class);
 
     @PluginParameter(
@@ -71,12 +76,14 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     protected String shellScriptName;
 
     @PluginParameter(
-            name = "envVarNames",
-            label = "Environment variable names",
-            description = "List of the names of the environment variables needed to be set by the user when creating the batch.",
+            name = "envVariables",
+            label = "Environment variables to give to the shell script",
+            description = "List of environment variables needed by the shell script." +
+                    " Format as KEy=VALUE separated by '&', for instance:" +
+                    " KEY1=value1&KEY2=value2 ",
             optional = true
     )
-    protected List<String> envVariableNames;
+    protected String envVariables;
 
     @PluginParameter(
             name = "maxFilesInInput",
@@ -104,8 +111,8 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         this.shellScriptName = shellScriptName;
     }
 
-    public void setEnvVariableNames(List<String> envVariableNames) {
-        this.envVariableNames = envVariableNames;
+    public void setEnvVariables(String envVariables) {
+        this.envVariables = envVariables;
     }
 
     public void setMaxFilesInInput(int maxFilesInInput) {
@@ -125,15 +132,7 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     }
 
     @Override public Seq<ExecutionParameterDescriptor> parameters() {
-        return emptyOrAllImmutable(envVariableNames)
-            .map(name -> new ExecutionParameterDescriptor(
-                name,
-                ExecutionParameterType.STRING,
-                "The " + name + " env variable for the script",
-                false,
-                false,
-                true
-            ));
+        return io.vavr.collection.List.empty();
     }
 
     @Override public IExecutable executable() {
@@ -253,13 +252,9 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         }
 
         public Mono<? extends ExecutionContext> executeInWorkdir(ExecutionContext ctx, ExecutionLocalWorkdir workdir) {
-            Map<String, String> envVarsMap = ctx
-                    .getBatch()
-                    .getUserSuppliedParameters()
-                    .toJavaMap(v -> Tuple.of(v.getName(), v.getValue()));
 
             NuProcessBuilder pb = new NuProcessBuilder(Arrays.asList(shellScriptName));
-            pb.environment().putAll(envVarsMap);
+            pb.environment().putAll(parseEnvVars());
 
             return Mono.create(sink -> {
                 try {
@@ -291,6 +286,15 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
         }
     }
 
+    private Map<String, String> parseEnvVars() {
+        return Option.of(envVariables)
+            .map(s -> io.vavr.collection.List.of(s.split("\\&"))
+                .map(KEYVALUE_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .toMap(matcher -> Tuple.of(matcher.group("name"), matcher.group("value"))))
+            .getOrElse(HashMap.empty())
+            .toJavaMap();
+    }
 
 
     public static class SimpleShellProcessExecutionException extends Exception {

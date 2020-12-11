@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
@@ -272,7 +271,7 @@ public class SimpleShellProcessOneToOnePluginTest {
         shellProcessPlugin.setSizeForecast("*1");
 
         shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/copyInputToOutput.sh").toFile().getAbsolutePath());
-        shellProcessPlugin.setEnvVariableNames(List.of("SIMPLE_FOO", "SIMPLE_BAR").toJavaList());
+        shellProcessPlugin.setEnvVariables("SIMPLE_FOO=foo&SIMPLE_BAR=bar");
         shellProcessPlugin.setMaxFilesInInput(1);
 
         return shellProcessPlugin;
@@ -304,10 +303,7 @@ public class SimpleShellProcessOneToOnePluginTest {
             batchId,
             process.getProcessId(),
             "tenant", "user", "role",
-            List.of(
-                new ExecutionStringParameterValue("SIMPLE_FOO", "foo"),
-                new ExecutionStringParameterValue("SIMPLE_BAR", "bar")
-            ),
+            List.of(),
             HashMap.empty(),
             true
         );

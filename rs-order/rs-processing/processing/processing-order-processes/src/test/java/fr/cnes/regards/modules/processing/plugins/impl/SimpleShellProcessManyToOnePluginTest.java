@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
@@ -204,7 +203,7 @@ public class SimpleShellProcessManyToOnePluginTest {
         shellProcessPlugin.setSizeForecast("*1");
 
         shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/tarInputs.sh").toFile().getAbsolutePath());
-        shellProcessPlugin.setEnvVariableNames(List.of("OUTPUT_NAME").toJavaList());
+        shellProcessPlugin.setEnvVariables("OUTPUT_NAME=tarred_file");
         shellProcessPlugin.setMaxFilesInInput(100);
 
         return shellProcessPlugin;
@@ -236,9 +235,7 @@ public class SimpleShellProcessManyToOnePluginTest {
             batchId,
             process.getProcessId(),
             "tenant", "user", "role",
-            List.of(
-                new ExecutionStringParameterValue("OUTPUT_NAME", "tarred_file")
-            ),
+            List.of(),
             HashMap.empty(),
             true
         );
