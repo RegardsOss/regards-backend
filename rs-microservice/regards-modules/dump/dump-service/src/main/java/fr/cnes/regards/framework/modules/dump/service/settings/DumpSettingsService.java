@@ -58,11 +58,14 @@ public class DumpSettingsService implements IDumpSettingsService {
     }
 
     @Override
-    public DumpSettings update(DumpSettings dumpSettings) throws EntityNotFoundException {
-        if (!dumpSettingsRepository.existsById(dumpSettings.getId())) {
-            throw new EntityNotFoundException(dumpSettings.getId().toString(), DumpSettings.class);
+    public boolean update(DumpSettings dumpSettings)  {
+        boolean isUpdated = false;
+        Optional<DumpSettings> dumpSettingsOpt = dumpSettingsRepository.findById(dumpSettings.getId());
+        if (!dumpSettingsOpt.isPresent() || !dumpSettingsOpt.get().equals(dumpSettings)) {
+            isUpdated = true;
+            dumpSettingsRepository.save(dumpSettings);
         }
-        return dumpSettingsRepository.save(dumpSettings);
+        return isUpdated;
     }
 
     @Override

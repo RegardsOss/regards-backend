@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.framework.modules.dump.domain;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -34,10 +36,11 @@ import java.time.OffsetDateTime;
 public class DumpSettings {
 
     // only one configuration per tenant
-    public static final long DUMP_CONF_ID = 0;
+    public static final long DUMP_CONF_ID = 0L;
 
+    @ConfigIgnore
     @Id
-    @Column(name ="id")
+    @Column(name ="id", unique = true)
     private Long id;
 
     @Column(name = "active_module", nullable = false)
@@ -66,6 +69,10 @@ public class DumpSettings {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId() {
+        this.id = DUMP_CONF_ID;
     }
 
     public OffsetDateTime getLastDumpReqDate() {
@@ -98,5 +105,22 @@ public class DumpSettings {
 
     public void setDumpLocation(String dumpLocation) {
         this.dumpLocation = dumpLocation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        DumpSettings that = (DumpSettings) o;
+        return activeModule == that.activeModule && Objects.equals(id, that.id) && Objects
+                .equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation) && Objects
+                .equals(lastDumpReqDate, that.lastDumpReqDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, activeModule, cronTrigger, dumpLocation, lastDumpReqDate);
     }
 }

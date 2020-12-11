@@ -38,10 +38,9 @@ public interface IDumpSettingsService {
      * Update {@link DumpSettings} with the new settings provided. If DumpSettings are not already in the database,
      * {@link EntityNotFoundException} is thrown.
      * @param dumpSettings new DumpSettings
-     * @return DumpSettings updated
-     * @throws EntityNotFoundException
+     * @return boolean if dumpSettings were updated
      */
-    DumpSettings update(DumpSettings dumpSettings) throws EntityNotFoundException;
+    boolean update(DumpSettings dumpSettings);
 
     /**
      * Reset the last dump request date by putting a null value. It is useful to recreate a complete dump.

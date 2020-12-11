@@ -19,7 +19,10 @@
 
 package fr.cnes.regards.framework.modules.dump.service.scheduler;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
@@ -136,6 +139,9 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
      */
     @RegardsTransactional
     public void updateDumpAndScheduler(DumpSettings newDumpSettings) throws ModuleException {
+        // SET ID (only one id is allowed for dumpSettings)
+        newDumpSettings.setId();
+
         // PARAMETER CHECK
         // check cron expression
         String cronTrigger = newDumpSettings.getCronTrigger();
@@ -143,11 +149,10 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
             throw new EntityInvalidException(String.format("Cron Expression %s is not valid.", cronTrigger));
         }
 
-        // UPDATE DUMP SETTINGS if they already exist
-        dumpSettingsService.update(newDumpSettings);
-
-        // UPDATE SCHEDULER
-        updateScheduler(runtimeTenantResolver.getTenant());
+        // UPDATE DUMP SETTINGS AND SCHEDULER if they were modified
+        if(dumpSettingsService.update(newDumpSettings)) {
+            updateScheduler(runtimeTenantResolver.getTenant());
+        }
     }
 
     protected abstract String getLockName();
