@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.gson.Gson;
-
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;

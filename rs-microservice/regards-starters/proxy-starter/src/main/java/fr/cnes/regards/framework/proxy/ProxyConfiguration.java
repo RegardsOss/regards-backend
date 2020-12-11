@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.proxy;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.http.HeaderElement;
+import org.apache.http.HeaderElementIterator;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -28,11 +30,15 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +100,23 @@ public class ProxyConfiguration {
         //                                                                          null,
         //                                                                          SSLConnectionSocketFactory
         //                                                                                  .getDefaultHostnameVerifier());
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        connManager.setDefaultMaxPerRoute(10);
+        connManager.setMaxTotal(20);
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().setConnectionManager(connManager)
+                .setKeepAliveStrategy((httpResponse, httpContext) -> {
+                    HeaderElementIterator it = new BasicHeaderElementIterator(httpResponse
+                                                                                      .headerIterator(HTTP.CONN_KEEP_ALIVE));
+                    while (it.hasNext()) {
+                        HeaderElement he = it.nextElement();
+                        String param = he.getName();
+                        String value = he.getValue();
+                        if (value != null && param.equalsIgnoreCase("timeout")) {
+                            return Long.parseLong(value) * 1000;
+                        }
+                    }
+                    return 30 * 1000;
+                });
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
