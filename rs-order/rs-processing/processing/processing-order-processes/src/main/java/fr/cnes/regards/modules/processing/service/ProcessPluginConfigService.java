@@ -135,10 +135,11 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     public void delete(UUID processBusinessId) throws DeleteAttemptOnUsedProcessException, ModuleException {
         RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
         if (canDelete(processBusinessId)) {
-            String plgBid = rights.getPluginConfiguration().getBusinessId();
+            PluginConfiguration plgConf = rights.getPluginConfiguration();
             rights.setPluginConfiguration(null);
             rightsPluginConfigRepo.delete(rights);
-            pluginService.deletePluginConfiguration(plgBid);
+            pluginService.deletePluginConfiguration(plgConf.getBusinessId());
+            rights.setPluginConfiguration(plgConf);
             ProcessPluginConfigurationRightsDTO dto = RightsPluginConfiguration.toDto(rights);
             publisher.publish(new RightsPluginConfigurationEvent(Type.DELETE, dto, null));
         } else {
