@@ -43,7 +43,6 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     @NotNull(message = "Parameter type is required")
     protected PluginParamType type;
 
-    @NotNull(message = "Parameter value is required")
     protected T value;
 
     protected boolean dynamic = false;
@@ -74,7 +73,7 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     }
 
     public boolean isValidDynamicValue(T value) {
-        if (dynamicsValues == null || dynamicsValues.isEmpty()) {
+        if ((dynamicsValues == null) || dynamicsValues.isEmpty()) {
             // No restriction
             return true;
         } else {
@@ -89,14 +88,14 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
 
     @Override
     public boolean hasDynamicValues() {
-        return dynamicsValues != null && !dynamicsValues.isEmpty();
+        return (dynamicsValues != null) && !dynamicsValues.isEmpty();
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (name == null ? 0 : name.hashCode());
+        result = (prime * result) + (name == null ? 0 : name.hashCode());
         return result;
     }
 
