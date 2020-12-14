@@ -272,7 +272,6 @@ public class SimpleShellProcessOneToOnePluginTest {
 
         shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/copyInputToOutput.sh").toFile().getAbsolutePath());
         shellProcessPlugin.setEnvVariables("SIMPLE_FOO=foo&SIMPLE_BAR=bar");
-        shellProcessPlugin.setMaxFilesInInput(1);
 
         return shellProcessPlugin;
 

@@ -86,7 +86,7 @@ public class SimpleShellProcessManyToOnePluginTest {
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessOneToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
+        SimpleShellProcessManyToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
@@ -192,8 +192,8 @@ public class SimpleShellProcessManyToOnePluginTest {
         };
     }
 
-    private SimpleShellProcessOneToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
-        SimpleShellProcessOneToOnePlugin shellProcessPlugin = new SimpleShellProcessOneToOnePlugin();
+    private SimpleShellProcessManyToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
+        SimpleShellProcessManyToOnePlugin shellProcessPlugin = new SimpleShellProcessManyToOnePlugin();
 
         shellProcessPlugin.setWorkdirService(workdirService);
         shellProcessPlugin.setStorageService(storageService);

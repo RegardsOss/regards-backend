@@ -70,4 +70,8 @@ public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProces
                 this.sizeForecast().get()
         );
     }
+
+    public void setMaxFilesInInput(int i) {
+        maxFilesInInput = i;
+    }
 }
