@@ -18,6 +18,7 @@
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
@@ -43,6 +44,17 @@ import fr.cnes.regards.modules.processing.order.SizeLimit;
 public class SimpleShellProcessManyToOnePlugin extends AbstractSimpleShellProcessPlugin {
 
     public static final String SIMPLE_SHELL_PROCESS_MANY_TO_ONE_PLUGIN = "SimpleShellProcessManyToOnePlugin";
+
+    @PluginParameter(
+            name = "maxFilesInInput",
+            label = "Maximum number of files as input for one execution",
+            description = "This parameter allows to limit the number of files given as input." +
+                    " Must be positive or null." +
+                    " Set to 0 for no limit.",
+            optional = true,
+            defaultValue = "0"
+    )
+    protected long maxFilesInInput = 0;
 
     @Override
     public IOutputToInputMapper inputOutputMapper() {

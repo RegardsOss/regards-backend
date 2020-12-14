@@ -86,17 +86,6 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     protected String envVariables;
 
     @PluginParameter(
-            name = "maxFilesInInput",
-            label = "Maximum number of files as input for one execution",
-            description = "This parameter allows to limit the number of files given as input." +
-                    " Must be positive or null." +
-                    " Set to 0 for no limit.",
-            optional = true,
-            defaultValue = "0"
-    )
-    protected long maxFilesInInput = 0;
-
-    @PluginParameter(
             name = "requiredDataTypes",
             label = "Comma-separated list of required DataTypes",
             description = "This parameter allows to change the feature files sent as input for executions. " +
@@ -113,10 +102,6 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
 
     public void setEnvVariables(String envVariables) {
         this.envVariables = envVariables;
-    }
-
-    public void setMaxFilesInInput(int maxFilesInInput) {
-        this.maxFilesInInput = maxFilesInInput;
     }
 
     @Override public ConstraintChecker<PBatch> batchChecker() {

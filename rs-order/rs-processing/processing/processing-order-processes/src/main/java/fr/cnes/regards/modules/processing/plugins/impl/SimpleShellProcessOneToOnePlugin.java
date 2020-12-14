@@ -54,7 +54,7 @@ public class SimpleShellProcessOneToOnePlugin extends AbstractSimpleShellProcess
                 Scope.ITEM,
                 Cardinality.ONE_PER_INPUT_FILE,
                 requiredDataTypes().toList(),
-                new SizeLimit(maxFilesInInput == 0L ? SizeLimit.Type.NO_LIMIT : SizeLimit.Type.FILES, maxFilesInInput),
+                new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
                 this.sizeForecast().get()
         );
     }
