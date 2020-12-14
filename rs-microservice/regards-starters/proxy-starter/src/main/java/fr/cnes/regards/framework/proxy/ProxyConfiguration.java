@@ -115,7 +115,7 @@ public class ProxyConfiguration {
                             return Long.parseLong(value) * 1000;
                         }
                     }
-                    return 30 * 1000;
+                    return 5 * 1000;
                 });
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create();
