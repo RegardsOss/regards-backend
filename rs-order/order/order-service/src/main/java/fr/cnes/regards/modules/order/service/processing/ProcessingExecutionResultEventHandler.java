@@ -48,6 +48,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -109,15 +110,14 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         ExecutionCorrelationIdentifier execCorrId = gson.fromJson(evt.getExecutionCorrelationId(),
                                                                   ExecutionCorrelationIdentifier.class);
 
-
         ExecutionStatus finalStatus = evt.getFinalStatus();
         final List<OrderDataFile> updatedDataFiles;
         if (finalStatus != ExecutionStatus.SUCCESS) {
             LOGGER.error("{} terminated with status {}", logPrefix(evt), finalStatus);
-            updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
+            updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId, execCorrId.getFeatureId());
         } else if (evt.getOutputs().isEmpty()) {
             LOGGER.error("{} no output found", logPrefix(evt));
-            updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId);
+            updatedDataFiles = setAllDataFilesInSuborderAsInError(batchSuborderCorrId, execCorrId.getFeatureId());
         } else {
             /*
              * As a reminder of what the previous steps of the process did:
@@ -136,15 +136,15 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
              */
             switch (cardinality) {
                 case ONE_PER_EXECUTION: {
-                    updatedDataFiles = dealWithSingleExecutionOutputFile(evt, batchSuborderCorrId);
+                    updatedDataFiles = dealWithSingleExecutionOutputFile(evt, batchSuborderCorrId, execCorrId);
                     break;
                 }
                 case ONE_PER_FEATURE: {
-                    updatedDataFiles = dealWithOutputFilePerFeature(evt, batchSuborderCorrId);
+                    updatedDataFiles = dealWithOutputFilePerFeature(evt, batchSuborderCorrId, execCorrId);
                     break;
                 }
                 case ONE_PER_INPUT_FILE: {
-                    updatedDataFiles = dealWithOutputFilePerInputFile(evt, batchSuborderCorrId);
+                    updatedDataFiles = dealWithOutputFilePerInputFile(evt, batchSuborderCorrId, execCorrId);
                     break;
                 }
                 default:
@@ -171,12 +171,11 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      */
     private List<OrderDataFile> dealWithOutputFilePerInputFile(
             PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+            ExecutionCorrelationIdentifier execCorrId
     ) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
-
-        // TODO: detect if there are too few outputs, set the corresponding OrderDataFiles as PROCESSING_ERROR
 
         for (POutputFileDTO outputFile : outputs) {
             io.vavr.collection.List<String> inputCorrelationIds = outputFile.getInputCorrelationIds();
@@ -184,7 +183,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             if (inputsCidCount == 0) {
                 LOGGER.error("{} the output {} has no corresponding inputCorrelationIds, but it is supposed to have only one",
                              logPrefix(evt), outputFile.getName());
-                return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
+                return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier, execCorrId.getFeatureId());
             } else if (inputsCidCount != 1) {
                 LOGGER.warn("{} the output {} has {} corresponding inputCorrelationIds, but it is supposed to have only one",
                             logPrefix(evt), outputFile.getName(), inputsCidCount);
@@ -192,7 +191,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             // In this case, the corresponding OrderDataFile URL is supposed to be exactly the input correlation ID.
             String orderDataFileUrl = inputCorrelationIds.head();
 
-            List<OrderDataFile> orderDataFiles = orderDataFileRepository.findAllByUrlStartingWith(orderDataFileUrl);
+            List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
             int orderDataFileCount = orderDataFiles.size();
             if (orderDataFileCount != 1) {
                 LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
@@ -208,8 +207,11 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             updatedDataFiles.add(odf);
         }
 
+        updatedDataFiles.addAll(setNotAvailableOrderDataFilesInSuborderAsProcessingError(evt, batchSuborderIdentifier, execCorrId.getFeatureId()));
+
         return updatedDataFiles;
     }
+
 
     /**
      * This is the case where there should be exactly as many output file as features, possibly
@@ -220,24 +222,22 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      */
     private List<OrderDataFile> dealWithOutputFilePerFeature(
             PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
-    ) {
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+            ExecutionCorrelationIdentifier execCorrId) {
 
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
         AtomicBoolean error = new AtomicBoolean();
 
-        // TODO: detect if there are too few outputs, set the corresponding OrderDataFiles as PROCESSING_ERROR
-
         for (POutputFileDTO outputFile : outputs) {
 
             if (error.get()) {
-                return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier);
+                return setAllDataFilesInSuborderAsInError(batchSuborderIdentifier, execCorrId.getFeatureId());
             }
 
             allInputCidsReferenceTheSameFeature(outputFile.getInputCorrelationIds()).peek(featureIpId -> {
                 String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, featureIpId);
-                List<OrderDataFile> orderDataFiles = orderDataFileRepository.findAllByUrlStartingWith(orderDataFileUrl);
+                List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
                 int orderDataFileCount = orderDataFiles.size();
                 if (orderDataFileCount != 1) {
                     LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
@@ -268,8 +268,8 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      */
     private List<OrderDataFile> dealWithSingleExecutionOutputFile(
             PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
-    ) {
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+            ExecutionCorrelationIdentifier execCorrId) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         if (outputs.size() > 1) {
             LOGGER.warn("{} more than one output, while exactly one is expected ; ignoring all but first output",
@@ -277,7 +277,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         }
         POutputFileDTO outputFile = outputs.head();
         String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier);
-        List<OrderDataFile> orderDataFiles = orderDataFileRepository.findAllByUrlStartingWith(orderDataFileUrl);
+        List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
         int orderDataFileCount = orderDataFiles.size();
         if (orderDataFileCount != 1) {
             LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
@@ -295,14 +295,22 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
     }
 
     private List<OrderDataFile> setAllDataFilesInSuborderAsInError(
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
-        List<OrderDataFile> allFilesInSuborder = orderDataFileRepository
-                .findAllByUrlStartingWith(ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier));
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+            Option<String> featureId
+    ) {
+        String inputCid = getUrlPrefix(batchSuborderIdentifier, featureId);
+
+        List<OrderDataFile> allFilesInSuborder = getOrderDataFilesInSuborder(inputCid);
         List<OrderDataFile> allInError = Stream.ofAll(allFilesInSuborder).map(file -> {
             file.setState(FileState.PROCESSING_ERROR);
             return file;
         }).collect(Collectors.toList());
         return allInError;
+    }
+
+
+    private List<OrderDataFile> getOrderDataFilesInSuborder(String repr) {
+        return orderDataFileRepository.findAllByUrlStartingWith(repr);
     }
 
     private BatchSuborderCorrelationIdentifier readBatchSuborderIdentifier(String batchCorrelationId) {
@@ -328,6 +336,32 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                         .flatMap(ProcessInputCorrelationIdentifier::getFeatureIpId).getOrElse(missing))
                 .collect(HashSet.collector()).filter(s -> !missing.equals(s));
         return featureIpIds.size() == 1 ? featureIpIds.headOption() : Option.none();
+    }
+
+
+    private Collection<? extends OrderDataFile> setNotAvailableOrderDataFilesInSuborderAsProcessingError(
+            PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+            Option<String> featureId
+    ) {
+        String orderDataFileUrlPrefix = getUrlPrefix(batchSuborderIdentifier, featureId);
+
+        return Stream.ofAll(getOrderDataFilesInSuborder(orderDataFileUrlPrefix))
+                .filter(odf -> odf.getState() != FileState.AVAILABLE)
+                .map(odf -> {
+                    odf.setState(FileState.PROCESSING_ERROR);
+                    LOGGER.warn("{} OrderDataFile was expected as output from processing execution, but was not found in outputs: {}",
+                            logPrefix(evt),
+                            odf
+                    );
+                    return odf;
+                })
+                .toJavaList();
+    }
+
+    private String getUrlPrefix(BatchSuborderCorrelationIdentifier batchSuborderIdentifier, Option<String> featureId) {
+        return featureId.map(fid -> ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, fid))
+                .getOrElse(() -> ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier));
     }
 
 }
