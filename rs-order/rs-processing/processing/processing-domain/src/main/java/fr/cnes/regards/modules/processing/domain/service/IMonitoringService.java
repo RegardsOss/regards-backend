@@ -40,6 +40,7 @@ public interface IMonitoringService {
     Mono<Page<ExecutionMonitoringDTO>> getExecutionsPageForCriteria(
         String tenant,
         List<ExecutionStatus> status,
+        @Nullable String processBid,
         @Nullable String userEmail,
         OffsetDateTime from,
         OffsetDateTime to,

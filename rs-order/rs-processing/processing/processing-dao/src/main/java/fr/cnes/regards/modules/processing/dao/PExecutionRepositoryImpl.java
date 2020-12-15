@@ -17,8 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
+
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -28,16 +38,8 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a bridge between execution domain entities and database entities.
@@ -111,6 +113,26 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
+    public Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant, String processBid, String userEmail, List<ExecutionStatus> status, OffsetDateTime from,
+            OffsetDateTime to, Pageable page) {
+        return entityExecRepo
+                .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, userEmail,
+                                                                                                   status, from, to, page)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Flux<PExecution> findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to,
+            Pageable page) {
+        return entityExecRepo
+                .findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid,
+                                                                                                   status, from, to, page)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(String tenant,
             List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
         return entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status,
@@ -125,7 +147,26 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                                                                                                     status, from, to);
     }
 
+    @Override
+    public Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant, String processBid, String userEmail, List<ExecutionStatus> status, OffsetDateTime from,
+            OffsetDateTime to) {
+        return entityExecRepo
+                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, userEmail,
+                                                                                                    status, from, to);
+    }
+
+    @Override
+    public Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
+        return entityExecRepo
+                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, 
+                                                                                                    status, from, to);
+    }
+
     public static final class ExecutionNotFoundException extends ProcessingException {
+
+        private static final long serialVersionUID = 1L;
 
         public ExecutionNotFoundException(UUID execId) {
             super(ProcessingExceptionType.EXECUTION_NOT_FOUND_EXCEPTION,

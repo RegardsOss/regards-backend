@@ -50,6 +50,8 @@ public interface ProcessingConstants {
             String DATE_TO_PARAM = "to";
 
             String DATASET_PARAM = "datasetIpId";
+
+            String PROCESS_BID_PARAM = "processBusinessId";
         }
 
         String PROCESS_PATH = "/process";
@@ -79,6 +81,7 @@ public interface ProcessingConstants {
     }
 
     interface Engines {
+
         String JOBS = "JOBS";
     }
 

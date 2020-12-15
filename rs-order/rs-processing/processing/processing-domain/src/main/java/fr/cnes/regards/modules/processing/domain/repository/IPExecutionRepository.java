@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.domain.repository;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import io.vavr.collection.Seq;
+
 import org.springframework.data.domain.Pageable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -67,6 +68,25 @@ public interface IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     );
+    
+    Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String processBid,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    );
+    
+    Flux<PExecution> findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String processBid,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    );
 
     Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
@@ -77,6 +97,23 @@ public interface IPExecutionRepository {
     );
 
     Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
+
+    Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String processBid,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    );
+    
+    Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+            String tenant,
+            String processBid,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    );
 
 
 }
