@@ -30,10 +30,17 @@ import lombok.With;
 public class SizeLimit {
 
     public enum Type {
-        NO_LIMIT, FILES, BYTES;
+        NO_LIMIT, FILES, FEATURES, BYTES;
     }
 
     Type type;
     Long limit;
 
+    public boolean isExceededBy(long value) {
+        return limit != 0L && value >= limit;
+    }
+
+    public Type getType() {
+        return limit == 0L ? Type.NO_LIMIT : type;
+    }
 }

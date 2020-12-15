@@ -126,7 +126,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             Scope scope = processInfo.getScope();
 
             switch (scope) {
-                case ITEM: {
+                case FEATURE: {
                     HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
                         .forEach((feature, inputs) -> {
                             sendExecRequest(createExecRequestEvent(

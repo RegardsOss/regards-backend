@@ -28,6 +28,8 @@ import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepos
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.Scope;
 import fr.cnes.regards.modules.processing.repository.IRightsPluginConfigurationRepository;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
@@ -86,7 +88,7 @@ public class SimpleShellProcessManyToOnePluginTest {
         IWorkloadEngine engine = makeEngine();
         IWorkloadEngineRepository engineRepo = makeEngineRepo(engine);
         OrderProcessRepositoryImpl processRepo = makeProcessRepo(engineRepo);
-        SimpleShellProcessManyToOnePlugin shellProcessPlugin = makePlugin(workdirService, storageService);
+        SimpleShellProcessPlugin shellProcessPlugin = makePlugin(workdirService, storageService);
 
         RightsPluginConfiguration rpc = makeRightsPluginConfig();
         PProcess process = processRepo.fromPlugin(rpc, shellProcessPlugin, "tenant").block();
@@ -143,7 +145,7 @@ public class SimpleShellProcessManyToOnePluginTest {
     @NotNull public RightsPluginConfiguration makeRightsPluginConfig() {
         UUID bid = UUID.randomUUID();
         PluginConfiguration pc = new PluginConfiguration("label",
-                                                            SimpleShellProcessOneToOnePlugin.SIMPLE_SHELL_PROCESS_ONE_TO_ONE_PLUGIN);
+                                                            SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN);
         pc.setBusinessId(bid.toString());
 
         return new RightsPluginConfiguration(
@@ -192,11 +194,14 @@ public class SimpleShellProcessManyToOnePluginTest {
         };
     }
 
-    private SimpleShellProcessManyToOnePlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
-        SimpleShellProcessManyToOnePlugin shellProcessPlugin = new SimpleShellProcessManyToOnePlugin();
+    private SimpleShellProcessPlugin makePlugin(IExecutionLocalWorkdirService workdirService, ISharedStorageService storageService) {
+        SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin();
 
         shellProcessPlugin.setWorkdirService(workdirService);
         shellProcessPlugin.setStorageService(storageService);
+
+        shellProcessPlugin.setScope(Scope.SUBORDER);
+        shellProcessPlugin.setCardinality(Cardinality.ONE_PER_EXECUTION);
 
         // TODO: try removing these two setters to fix a cast exception
         shellProcessPlugin.setDurationForecast("10min");
@@ -204,7 +209,7 @@ public class SimpleShellProcessManyToOnePluginTest {
 
         shellProcessPlugin.setShellScriptName(Paths.get("src/test/resources/tarInputs.sh").toFile().getAbsolutePath());
         shellProcessPlugin.setEnvVariables("OUTPUT_NAME=tarred_file");
-        shellProcessPlugin.setMaxFilesInInput(100);
+        shellProcessPlugin.setMaxFeaturesInInput(100);
 
         return shellProcessPlugin;
 

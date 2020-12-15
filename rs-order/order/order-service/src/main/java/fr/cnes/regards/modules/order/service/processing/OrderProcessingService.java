@@ -534,13 +534,15 @@ public class OrderProcessingService implements IOrderProcessingService {
     class FeatureAccumulator {
         Long orderId;
         UUID processBusinessId;
-        int count;
+        int fileCount;
+        int featureCount;
         long size;
 
         public FeatureAccumulator(Long orderId, UUID processBusinessId) {
             this.orderId = orderId;
             this.processBusinessId = processBusinessId;
-            this.count = 0;
+            this.fileCount = 0;
+            this.featureCount = 0;
             this.size = 0L;
         }
 
@@ -548,33 +550,40 @@ public class OrderProcessingService implements IOrderProcessingService {
             List<DataFile> files = featureRequiredDatafiles(feature, orderProcessInfo.getRequiredDatatypes()).collect(List.collector());
             int deltaCount = files.size();
             long deltaSize = files.map(DataFile::getFilesize).sum().longValue();
-            FeatureAccumulator newAcc = new FeatureAccumulator(orderId, processBusinessId, count + deltaCount, size + deltaSize);
+            FeatureAccumulator newAcc = new FeatureAccumulator(orderId, processBusinessId,
+                    fileCount + deltaCount,
+                    featureCount + 1,
+                    size + deltaSize
+            );
             return newAcc.isOverProcessAndStorageLimits(orderProcessInfo) ? new FeatureAccumulator(orderId, processBusinessId) : newAcc;
         }
 
         public boolean isOverProcessAndStorageLimits(OrderProcessInfo orderProcessInfo) {
             SizeLimit sizeLimit = orderProcessInfo.getSizeLimit();
-            SizeLimit.Type processLimitType = sizeLimit.getLimit() == 0L ? SizeLimit.Type.NO_LIMIT : sizeLimit.getType();
-            Long processLimitValue = sizeLimit.getLimit();
-            boolean countExceedsMaxExternalBucketSize = count >= suborderSizeCounter.maxExternalBucketSize();
+            SizeLimit.Type processLimitType = sizeLimit.getType();
+            boolean countExceedsMaxExternalBucketSize = fileCount >= suborderSizeCounter.maxExternalBucketSize();
             boolean sizeExceedsStorageBucketSize = size >= suborderSizeCounter.getStorageBucketSize();
-            boolean countExceedsProcessFilesLimit = processLimitType == SizeLimit.Type.FILES && count >= processLimitValue;
-            boolean sizeExceedsProcessBytesLimit = processLimitType == SizeLimit.Type.BYTES && size >= processLimitValue;
+            boolean countExceedsProcessFilesLimit = processLimitType == SizeLimit.Type.FILES && sizeLimit.isExceededBy(fileCount);
+            boolean countExceedsProcessFeatureLimit = processLimitType == SizeLimit.Type.FEATURES && sizeLimit.isExceededBy(featureCount);
+            boolean sizeExceedsProcessBytesLimit = processLimitType == SizeLimit.Type.BYTES && sizeLimit.isExceededBy(size);
 
             boolean result = countExceedsMaxExternalBucketSize
                     || sizeExceedsStorageBucketSize
                     || countExceedsProcessFilesLimit
+                    || countExceedsProcessFeatureLimit
                     || sizeExceedsProcessBytesLimit;
             if (result) {
                 LOGGER.info("order={} processUuid={} Suborder interrupted for reason: " +
                         " max external bucket = {}," +
                         " storage bucket size = {}," +
-                        " process file limit = {}," +
-                        " process size limit = {}",
+                        " process info file limit = {}," +
+                        " process info feature limit = {}," +
+                        " process info size limit = {}",
                     orderId, processBusinessId,
                     countExceedsMaxExternalBucketSize,
                     sizeExceedsStorageBucketSize,
                     countExceedsProcessFilesLimit,
+                    countExceedsProcessFeatureLimit,
                     sizeExceedsProcessBytesLimit
                 );
             }
@@ -582,7 +591,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         }
 
         public boolean isInitial() {
-            return size == 0L && count == 0;
+            return size == 0L && fileCount == 0;
         }
     }
 

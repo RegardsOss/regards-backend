@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.processing.plugins.impl;
 import com.zaxxer.nuprocess.NuAbstractProcessHandler;
 import com.zaxxer.nuprocess.NuProcess;
 import com.zaxxer.nuprocess.NuProcessBuilder;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
@@ -28,8 +29,13 @@ import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
+import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
+import fr.cnes.regards.modules.processing.order.Cardinality;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.Scope;
+import fr.cnes.regards.modules.processing.order.SizeLimit;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import io.vavr.Function1;
 import io.vavr.Tuple;
@@ -37,6 +43,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +69,24 @@ import static io.vavr.collection.List.ofAll;
  *
  * @author gandrieu
  */
-public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
+@Plugin(
+        id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN,
+        version = "1.0.0-SNAPSHOT",
+        description = "Launch a shell script",
+        author = "REGARDS Team",
+        contact = "regards@c-s.fr",
+        license = "GPLv3",
+        owner = "CSSI",
+        url = "https://github.com/RegardsOss",
+        markdown = "SimpleShellProcessPlugin.md"
+)
+public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
+
+    public static final String SIMPLE_SHELL_PROCESS_PLUGIN = "SimpleShellProcessPlugin";
 
     protected static final Pattern KEYVALUE_PATTERN = Pattern.compile("^\\s*(?<name>[^=]+?)\\s*=(?<value>.*?)$");
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractSimpleShellProcessPlugin.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessPlugin.class);
 
     @PluginParameter(
             name = "shellScript",
@@ -96,12 +116,92 @@ public abstract class AbstractSimpleShellProcessPlugin extends AbstractBaseForec
     )
     protected String requiredDataTypes = "RAWDATA";
 
+    @PluginParameter(
+            name = "scope",
+            label = "Scope",
+            description = "This parameter defines how many executions are launched per suborder." +
+                    " The possible values are: SUBORDER, FEATURE." +
+                    " If the value is SUBORDER, there is only one execution per suborder," +
+                    " allowing to group several features in the same execution, and the corresponding script must" +
+                    " be able to deal with several features." +
+                    " If the value is FEATURE, there is one execution per feature in the suborder," +
+                    " allowing to isolate each feature in its own execution context and the corresponding script" +
+                    " deals with only one feature.",
+            optional = true,
+            defaultValue = "SUBORDER"
+    )
+    protected Scope scope = Scope.SUBORDER;
+
+    @PluginParameter(
+            name = "cardinality",
+            label = "Cardinality of output files",
+            description = "This parameter defines how many output files are created by the script." +
+                    " The possible values are: ONE_PER_EXECUTION, ONE_PER_FEATURE, ONE_PER_INPUT_FILE." +
+                    " If the value is ONE_PER_EXECUTION, the corresponding script must" +
+                    " produce only one output file. " +
+                    " If the value is ONE_PER_FEATURE, the corresponding script" +
+                    " must produce one output file for each feature present in the input. " +
+                    " If the value is ONE_PER_INPUT_FILE, the corresponding script" +
+                    " must produce one output file for each file present in the input. ",
+            optional = true,
+            defaultValue = "SUBORDER"
+    )
+    protected Cardinality cardinality = Cardinality.ONE_PER_FEATURE;
+
+    @PluginParameter(
+            name = "maxFilesInInput",
+            label = "Maximum number of features in input for one execution",
+            description = "This parameter allows to limit the number of features given as input." +
+                    " Must be positive or null. (This parameter is useless if the scope parameter is not SUBORDER.) " +
+                    " Set to 0 for no limit.",
+            optional = true,
+            defaultValue = "0"
+    )
+    protected long maxFeaturesInInput = 0;
+
+
+    @Override
+    public IOutputToInputMapper inputOutputMapper() {
+        switch(cardinality) {
+            case ONE_PER_INPUT_FILE: return IOutputToInputMapper.sameNameWithoutExt();
+            case ONE_PER_FEATURE: return IOutputToInputMapper.sameParent();
+            case ONE_PER_EXECUTION: return IOutputToInputMapper.allMappings();
+            default: throw new NotImplementedException("Unrecognized cardinality value: " + cardinality);
+        }
+    }
+
+    @Override public OrderProcessInfo processInfo() {
+        return new OrderProcessInfo(
+                Scope.FEATURE,
+                Cardinality.ONE_PER_INPUT_FILE,
+                requiredDataTypes().toList(),
+                new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
+                this.sizeForecast().get()
+        );
+    }
+
     public void setShellScriptName(String shellScriptName) {
         this.shellScriptName = shellScriptName;
     }
 
     public void setEnvVariables(String envVariables) {
         this.envVariables = envVariables;
+    }
+
+    public void setRequiredDataTypes(String requiredDataTypes) {
+        this.requiredDataTypes = requiredDataTypes;
+    }
+
+    public void setScope(Scope scope) {
+        this.scope = scope;
+    }
+
+    public void setCardinality(Cardinality cardinality) {
+        this.cardinality = cardinality;
+    }
+
+    public void setMaxFeaturesInInput(long maxFeaturesInInput) {
+        this.maxFeaturesInInput = maxFeaturesInInput;
     }
 
     @Override public ConstraintChecker<PBatch> batchChecker() {
