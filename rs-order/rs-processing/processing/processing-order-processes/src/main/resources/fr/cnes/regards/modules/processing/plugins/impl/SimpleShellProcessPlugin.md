@@ -1,14 +1,8 @@
 # How to use the simple shell plugin?
 
-## Order process info
-
-- Limit: 1 input files
-- Scope: this plugin has scope ITEM (one execution per feature)
-- Cardinality: this plugin has cardinality ONE_PER_INPUT_FILE (each input file generates a single output file) 
-
 ## General constraints on the scripts this plugin can launch
 
-This plugin provides a fully customizable way to launch shell scripts.
+This plugin provides a customizable way to launch shell scripts.
 
 However, the shell scripts must conform to the following conventions:
 
@@ -16,8 +10,8 @@ However, the shell scripts must conform to the following conventions:
   or be given as an absolute path (in which case the full path must be accessible by the
   java process launching rs-processing)
 - the script is invoked directly, with no command line arguments
-- all script parameters are set through environment variables, whose names are defined
-  in the plugin configuration, and set once and for all at the batch creation
+- all script parameters are set through environment variables, given as a dynamic parameter, 
+  and set once and for all at the batch creation
 - the script is executed from a specific workdir for each execution, containing:
     + an `input` folder with all the input files for the execution
     + an empty `output` folder where the script must create all the output files
@@ -29,5 +23,13 @@ However, the shell scripts must conform to the following conventions:
   
 ## Output to Input mapping policy
 
-This plugin attempts to map all its output files to input files having the same name
-except for the extension.
+If the cardinality parameter is set to "ONE_PER_EXECUTION", this plugin maps all the single
+output file to all the inputs. In this case, there is no constraint on the name of the output 
+file. 
+
+If the cardinality parameter is set to "ONE_PER_FEATURE", the single output file per feature
+must be present in a folder named `output/{featureIpId}` (corresponding to the input folder
+for this feature, which is named `input/{featureIpId}`).
+
+If the cardinality parameter is set to "ONE_PER_INPUT_FILE", this plugin attempts to map 
+all the output files to input files having the same name (except for the extension).

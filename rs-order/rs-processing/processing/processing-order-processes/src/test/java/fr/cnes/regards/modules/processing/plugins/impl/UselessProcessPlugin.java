@@ -48,7 +48,7 @@ public class UselessProcessPlugin implements IProcessDefinition {
 
     @Override public OrderProcessInfo processInfo() {
         return new OrderProcessInfo(
-            Scope.ITEM,
+            Scope.FEATURE,
             Cardinality.ONE_PER_INPUT_FILE,
             List.of(DataType.RAWDATA),
             new SizeLimit(SizeLimit.Type.FILES, 0L),

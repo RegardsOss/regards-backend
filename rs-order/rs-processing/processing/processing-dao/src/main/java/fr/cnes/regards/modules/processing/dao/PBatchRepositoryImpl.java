@@ -98,6 +98,11 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
                 .doOnNext(b -> LOGGER.info("Deleting batch {}", b)));
     }
 
+    @Override
+    public Mono<Void> deleteByProcessBusinessId(UUID processBusinessId) {
+        return delegate.deleteAll(delegate.findByProcessBusinessId(processBusinessId));
+    }
+
     public static final class BatchNotFoundException extends ProcessingException {
         public BatchNotFoundException(UUID batchId) {
             super(ProcessingExceptionType.BATCH_NOT_FOUND_EXCEPTION, String.format("Batch uuid not found: %s", batchId));

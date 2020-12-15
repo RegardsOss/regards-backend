@@ -169,10 +169,14 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      * Each output file is supposed to reference the corresponding inputCorrelationId, and
      * thus we can find the OrderDataFile which references it.
      */
-    private List<OrderDataFile> dealWithOutputFilePerInputFile(PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
+    private List<OrderDataFile> dealWithOutputFilePerInputFile(
+            PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
+    ) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
+
+        // TODO: detect if there are too few outputs, set the corresponding OrderDataFiles as PROCESSING_ERROR
 
         for (POutputFileDTO outputFile : outputs) {
             io.vavr.collection.List<String> inputCorrelationIds = outputFile.getInputCorrelationIds();
@@ -214,12 +218,16 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      * Each output file is supposed to reference one inputCorrelationId per input file, and
      * all of these input files are supposed to reference the same feature ID.
      */
-    private List<OrderDataFile> dealWithOutputFilePerFeature(PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
+    private List<OrderDataFile> dealWithOutputFilePerFeature(
+            PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
+    ) {
 
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         List<OrderDataFile> updatedDataFiles = new ArrayList<>();
         AtomicBoolean error = new AtomicBoolean();
+
+        // TODO: detect if there are too few outputs, set the corresponding OrderDataFiles as PROCESSING_ERROR
 
         for (POutputFileDTO outputFile : outputs) {
 
@@ -258,8 +266,10 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
      * Finding the corresponding OrderDataFile in the database is easy, we only need to use
      * the batchSuborderIdentifier.
      */
-    private List<OrderDataFile> dealWithSingleExecutionOutputFile(PExecutionResultEvent evt,
-            BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
+    private List<OrderDataFile> dealWithSingleExecutionOutputFile(
+            PExecutionResultEvent evt,
+            BatchSuborderCorrelationIdentifier batchSuborderIdentifier
+    ) {
         Seq<POutputFileDTO> outputs = evt.getOutputs();
         if (outputs.size() > 1) {
             LOGGER.warn("{} more than one output, while exactly one is expected ; ignoring all but first output",

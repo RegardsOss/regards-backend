@@ -22,6 +22,8 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 
+import java.nio.file.Paths;
+
 import static org.apache.commons.io.FilenameUtils.getName;
 import static org.apache.commons.io.FilenameUtils.removeExtension;
 
@@ -75,5 +77,21 @@ public interface IOutputToInputMapper {
             }).toList();
         };
     }
+
+    /** Provides an input/output mapper which looks at the parent folder. */
+    static IOutputToInputMapper sameParent() {
+        return (ctx, out) -> {
+            String outputParent = parentName(out.getName());
+            return ctx.getExec().getInputFiles().filter(input -> {
+                String inputParent = parentName(input.getLocalRelativePath());
+                return inputParent.equals(outputParent);
+            }).toList();
+        };
+    }
+
+    static String parentName(String name) {
+        return Paths.get(name).getParent().getFileName().toString();
+    }
+
 
 }

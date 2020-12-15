@@ -33,9 +33,9 @@ public enum Scope {
     SUBORDER,
 
     /**
-     * One execution per item, the execution has only the files
-     * for the given item.
+     * One execution per feature, the execution has only the files
+     * for the given feature.
      */
-    ITEM;
+    FEATURE;
 
 }

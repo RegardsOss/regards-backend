@@ -79,7 +79,7 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         // The important params are those:
         OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.ITEM,
+                Scope.FEATURE,
                 Cardinality.ONE_PER_INPUT_FILE,
                 List.of(DataType.RAWDATA),
                 new SizeLimit(SizeLimit.Type.FILES, 1L),

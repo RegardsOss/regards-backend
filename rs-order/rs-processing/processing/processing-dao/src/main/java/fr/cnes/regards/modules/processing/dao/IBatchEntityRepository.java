@@ -57,5 +57,7 @@ public interface IBatchEntityRepository extends ReactiveCrudRepository<BatchEnti
             "   OR counts.count_all_execs = counts.count_finished_execs"
     )
     Flux<BatchEntity> getCleanableBatches(long tooOldDuration);
+
+    Flux<BatchEntity> findByProcessBusinessId(UUID processBusinessId);
     // @formatter:on
 }

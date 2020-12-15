@@ -147,6 +147,13 @@ public class IBatchEntityRepositoryTest extends AbstractRepoTest {
                 .block();
 
         // WHEN
+        List<BatchEntity> entities = entityBatchRepo.findByProcessBusinessId(batch.getProcessBusinessId()).collectList().block();
+
+        // THEN
+        assertThat(entities).hasSize(1);
+        assertThat(entities.get(0).getId()).isEqualTo(batch.getId());
+
+        // WHEN
         Integer countSuccess = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                 batch.getTenant(),
                 singletonList(SUCCESS),
