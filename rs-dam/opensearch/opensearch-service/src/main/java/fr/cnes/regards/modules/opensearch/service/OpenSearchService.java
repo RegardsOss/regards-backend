@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -86,11 +85,13 @@ public class OpenSearchService implements IOpenSearchService {
     @Override
     public ICriterion parse(MultiValueMap<String, String> queryParameters) throws OpenSearchParseException {
         List<ICriterion> criteria = new ArrayList<>();
-        for (IParser parser : parsersHolder.get()) {
-            // Parse parameters ... may return null if parser required parameter(s) not set
-            ICriterion crit = parser.parse(queryParameters);
-            if ((crit != null) && !crit.isEmpty()) {
-                criteria.add(crit);
+        if (queryParameters != null) {
+            for (IParser parser : parsersHolder.get()) {
+                // Parse parameters ... may return null if parser required parameter(s) not set
+                ICriterion crit = parser.parse(queryParameters);
+                if ((crit != null) && !crit.isEmpty()) {
+                    criteria.add(crit);
+                }
             }
         }
         return criteria.isEmpty() ? ICriterion.all() : ICriterion.and(criteria);
