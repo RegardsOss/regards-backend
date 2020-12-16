@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import javax.validation.Valid;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
@@ -56,5 +62,9 @@ public interface ILegacySearchEngineJsonClient {
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams);
+
+    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
+    ResponseEntity<JsonObject> getDataobject(@Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn,
+            @RequestHeader HttpHeaders headers);
 
 }
