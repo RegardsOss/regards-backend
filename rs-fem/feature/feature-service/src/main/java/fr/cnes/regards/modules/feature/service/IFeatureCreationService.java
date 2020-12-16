@@ -37,7 +37,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
      * Process batch of requests during job
      * @return new feature created
      */
-    Set<FeatureEntity> processRequests(List<Long> requests, FeatureCreationJob featureCreationJob);
+    Set<FeatureEntity> processRequests(Set<Long> requests, FeatureCreationJob featureCreationJob);
 
     /**
      * Handle successful creation process

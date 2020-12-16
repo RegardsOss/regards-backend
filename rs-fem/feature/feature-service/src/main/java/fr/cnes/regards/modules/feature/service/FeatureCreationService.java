@@ -302,7 +302,7 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Set<FeatureEntity> processRequests(List<Long> requestIds,
+    public Set<FeatureEntity> processRequests(Set<Long> requestIds,
             FeatureCreationJob featureCreationJob) {
         List<FeatureCreationRequest> requests = featureCreationRequestRepo.findAllByIdIn(requestIds);
         long processStart = System.currentTimeMillis();

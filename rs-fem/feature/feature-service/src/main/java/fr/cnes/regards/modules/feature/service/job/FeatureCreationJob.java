@@ -51,7 +51,7 @@ public class FeatureCreationJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
-    private List<Long> featureCreationRequestIds;
+    private Set<Long> featureCreationRequestIds;
 
     @Autowired
     private IFeatureCreationService featureService;
