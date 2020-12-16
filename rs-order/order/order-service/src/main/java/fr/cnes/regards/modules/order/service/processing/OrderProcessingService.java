@@ -332,6 +332,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                     true,
                     true
             );
+            dataFileOut.setChecksum(UUID.randomUUID().toString());
+            // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setFilesize(expectedSize);
             return List.of(createAndSaveOrderDataFile(dataFileOut, dsSelIpId, orderId))
                     .map(OrderDataFile::getId)
@@ -355,6 +357,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                             true,
                             true
                     );
+                    dataFileOut.setChecksum(UUID.randomUUID().toString());
+                    // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                     dataFileOut.setFilesize(expectedSize);
                     return List.of(createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
@@ -370,7 +374,8 @@ public class OrderProcessingService implements IOrderProcessingService {
                                 true,
                                 true
                             );
-
+                            dataFileOut.setChecksum(UUID.randomUUID().toString());
+                            // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                             dataFileOut.setFilesize(expectedSize);
                             return createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId);
                         })
@@ -387,8 +392,7 @@ public class OrderProcessingService implements IOrderProcessingService {
 
     protected OrderDataFile createAndSaveOrderDataFile(DataFile dataFile, UniformResourceName name, Long orderId) {
         OrderDataFile orderDataFile = new OrderDataFile(dataFile, name, orderId);
-        orderDataFileService.save(orderDataFile);
-        return orderDataFile;
+        return orderDataFileService.save(orderDataFile);
     }
 
     /**
