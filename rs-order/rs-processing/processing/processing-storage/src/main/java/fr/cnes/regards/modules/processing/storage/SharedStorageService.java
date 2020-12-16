@@ -88,7 +88,7 @@ public class SharedStorageService implements ISharedStorageService {
                         @Override public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)
                                 throws IOException {
                             Mono<POutputFile> outputFile =
-                                    createOutputFile(ctx.getExec().getId(), path, storageExecPath)
+                                    createOutputFile(ctx.getExec().getId(), workdir, path, storageExecPath)
                                         .map(out -> ioMapper.mapInputCorrelationIds(ctx, out));
                             sink.next(outputFile);
                             return FileVisitResult.CONTINUE;
