@@ -60,6 +60,10 @@
             <artifactId>accessrights-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.search</groupId>
+            <artifactId>search-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.microservices.administration</groupId>
             <artifactId>remote-tenant-resolver</artifactId>
         </dependency>

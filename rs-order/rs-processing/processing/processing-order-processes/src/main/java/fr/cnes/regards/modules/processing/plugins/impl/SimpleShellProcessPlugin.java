@@ -144,7 +144,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
                     " If the value is ONE_PER_INPUT_FILE, the corresponding script" +
                     " must produce one output file for each file present in the input. ",
             optional = true,
-            defaultValue = "SUBORDER"
+            defaultValue = "ONE_PER_FEATURE"
     )
     protected String cardinality = Cardinality.ONE_PER_FEATURE.toString();
 

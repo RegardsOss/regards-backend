@@ -17,23 +17,44 @@
 */
 package fr.cnes.regards.modules.processing.plugins.impl;
 
+import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdir;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import io.vavr.collection.Seq;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
-
-import static fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent.event;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
 
 /**
  * This class is a base abstract class for process plugins which interact with the
@@ -44,47 +65,122 @@ import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.
 public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends AbstractBaseForecastedProcessPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBaseForecastedStorageAwareProcessPlugin.class);
-    
+
+    private static final String METADATA_DIR_PATH = "metadata";
+
+    private static final String METADATA_FILE_EXT = ".json";
+
     @Autowired
     protected IExecutionLocalWorkdirService workdirService;
 
     @Autowired
     protected ISharedStorageService storageService;
 
+    @Autowired
+    private ILegacySearchEngineJsonClient searchClient;
+
+    @Autowired
+    protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private Gson gson;
+
+    @PluginParameter(label = "Retrieve features metadata", description = "Define if metadata are provided to process",
+            name = "addMetadata", defaultValue = "false")
+    protected boolean addMetadata = false;
+
     public IExecutable prepareWorkdir() {
         return context -> {
             PExecution exec = context.getExec();
             Seq<PInputFile> inputFiles = exec.getInputFiles();
-            return workdirService.makeWorkdir(exec)
-                .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
-                .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
-                .subscriberContext(addInContext(PExecution.class, exec))
-                .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
+            //@formatter:off
+            return workdirService
+                    .makeWorkdir(exec)
+                    .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
+                    .flatMap(wd -> {
+                        if (addMetadata) {
+                            return addMetadataInWorkdir(wd, inputFiles, context.getBatch().getTenant());
+                        } else {
+                            return Mono.just(wd);
+                        }
+                    })
+                    .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
+                    .subscriberContext(addInContext(PExecution.class, exec))
+                    .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
+          //@formatter:on
         };
+    }
+
+    /**
+     * Add metadata file for each features. Metadata are retrieved from catalog service with feature id (urn)
+     *
+     * @param inputFiles {@link PInputFile}s
+     * @return
+     */
+    private Mono<ExecutionLocalWorkdir> addMetadataInWorkdir(ExecutionLocalWorkdir wd, Seq<PInputFile> inputFiles,
+            String tenant) {
+
+        return Mono.fromCallable(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            FeignSecurityManager.asSystem();
+            OrderInputFileMetadataMapper mapper = new OrderInputFileMetadataMapper();
+            //@formatter:off
+            inputFiles
+                .map(PInputFile::getMetadata)
+                .flatMap(mapper::fromMap)
+                .map(OrderInputFileMetadata::getFeatureId)
+                .distinct().forEach(urn -> {
+                        try {
+                            ResponseEntity<JsonObject> response = searchClient.getDataobject(urn, SearchEngineMappings.getJsonHeaders());
+                            if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
+                                JsonObject feature = response.getBody();
+                                String featureName = urn.toString();
+                                JsonElement el = feature.get("content");
+                                if ((el != null) && el.isJsonObject()) {
+                                    el = el.getAsJsonObject().get("providerId");
+                                    if ((el != null) && (el.getAsString() != null)) {
+                                        featureName = el.getAsString();
+                                    }
+                                }
+                                Path mfPath = Paths.get(wd.inputFolder().toString(),
+                                                              urn.toString(),
+                                                              METADATA_DIR_PATH,
+                                                              featureName.replaceAll(" ", "_")+METADATA_FILE_EXT);
+                                Files.createDirectories(mfPath.getParent());
+                                Files.createFile(mfPath);
+                                gson.toJson(feature, new FileWriter(mfPath.toFile()));
+                            } else {
+                                LOGGER.warn("Unable to retrieve entity {} catalog return code={}", urn,response.getStatusCodeValue());
+                            }
+                        } catch (HttpServerErrorException | HttpClientErrorException | IOException e) {
+                            LOGGER.error(e.getMessage(),e);
+                        }
+                });
+            //@formatter:on
+            return wd;
+        }).doOnTerminate(() -> {
+            FeignSecurityManager.reset();
+            runtimeTenantResolver.clearTenant();
+        });
+
     }
 
     public IExecutable storeOutputFiles() {
         return context -> {
             PExecution exec = context.getExec();
-            return context.getParam(ExecutionLocalWorkdir.class)
-                .flatMap(wd -> storageService.storeResult(context, wd))
-                .flatMap(out -> context.sendEvent(event(PStep.success(""), out)))
-                .subscriberContext(addInContext(PExecution.class, exec));
+            return context.getParam(ExecutionLocalWorkdir.class).flatMap(wd -> storageService.storeResult(context, wd))
+                    .flatMap(out -> context.sendEvent(event(PStep.success(""), out)))
+                    .subscriberContext(addInContext(PExecution.class, exec));
         };
     }
 
     public IExecutable cleanWorkdir() {
-        return context -> context.getParam(ExecutionLocalWorkdir.class)
-                .flatMap(workdirService::cleanupWorkdir)
-                .map(wd -> context)
-                .onErrorResume(t -> {
-                    LOGGER.error("execId={} Failed to cleanup execution workdir: {} - {}",
-                            context.getExec().getId(),
-                            t.getClass(), t.getMessage()
-                    );
+        return context -> context.getParam(ExecutionLocalWorkdir.class).flatMap(workdirService::cleanupWorkdir)
+                .map(wd -> context).onErrorResume(t -> {
+                    LOGGER.error("execId={} Failed to cleanup execution workdir: {} - {}", context.getExec().getId(),
+                                 t.getClass(), t.getMessage());
                     return Mono.just(context);
-                })
-                .switchIfEmpty(Mono.just(context));
+                }).switchIfEmpty(Mono.just(context));
     }
 
     public IExecutionLocalWorkdirService getWorkdirService() {
@@ -104,6 +200,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
     }
 
     public static class WorkdirPreparationException extends ProcessingExecutionException {
+
         public WorkdirPreparationException(PExecution exec, String message) {
             super(ProcessingExceptionType.WORKDIR_PREPARATION_ERROR, exec, message);
         }
