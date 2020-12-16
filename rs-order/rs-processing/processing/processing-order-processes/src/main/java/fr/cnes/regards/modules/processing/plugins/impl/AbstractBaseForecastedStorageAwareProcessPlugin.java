@@ -130,33 +130,37 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                 .flatMap(mapper::fromMap)
                 .map(OrderInputFileMetadata::getFeatureId)
                 .distinct().forEach(urn -> {
+             //@formatter:on
                         try {
-                            ResponseEntity<JsonObject> response = searchClient.getDataobject(urn, SearchEngineMappings.getJsonHeaders());
+                            ResponseEntity<JsonObject> response = searchClient
+                                    .getDataobject(urn, SearchEngineMappings.getJsonHeaders());
                             if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
                                 JsonObject feature = response.getBody();
                                 String featureName = urn.toString();
-                                JsonElement el = feature.get("content");
-                                if ((el != null) && el.isJsonObject()) {
-                                    el = el.getAsJsonObject().get("providerId");
+                                JsonElement featureContent = feature.get("content");
+                                if ((featureContent != null) && featureContent.isJsonObject()) {
+                                    JsonElement el = featureContent.getAsJsonObject().get("providerId");
                                     if ((el != null) && (el.getAsString() != null)) {
                                         featureName = el.getAsString();
                                     }
+                                    Path mfPath = Paths.get(wd.inputFolder().toString(), urn.toString(),
+                                                            METADATA_DIR_PATH,
+                                                            featureName.replaceAll(" ", "_") + METADATA_FILE_EXT);
+                                    Files.createDirectories(mfPath.getParent());
+                                    try (FileWriter writer = new FileWriter(Files.createFile(mfPath).toFile())) {
+                                        gson.toJson(featureContent, writer);
+                                    }
+
                                 }
-                                Path mfPath = Paths.get(wd.inputFolder().toString(),
-                                                              urn.toString(),
-                                                              METADATA_DIR_PATH,
-                                                              featureName.replaceAll(" ", "_")+METADATA_FILE_EXT);
-                                Files.createDirectories(mfPath.getParent());
-                                Files.createFile(mfPath);
-                                gson.toJson(feature, new FileWriter(mfPath.toFile()));
+
                             } else {
-                                LOGGER.warn("Unable to retrieve entity {} catalog return code={}", urn,response.getStatusCodeValue());
+                                LOGGER.warn("Unable to retrieve entity {} catalog return code={}", urn,
+                                            response.getStatusCodeValue());
                             }
                         } catch (HttpServerErrorException | HttpClientErrorException | IOException e) {
-                            LOGGER.error(e.getMessage(),e);
+                            LOGGER.error(e.getMessage(), e);
                         }
-                });
-            //@formatter:on
+                    });
             return wd;
         }).doOnTerminate(() -> {
             FeignSecurityManager.reset();
