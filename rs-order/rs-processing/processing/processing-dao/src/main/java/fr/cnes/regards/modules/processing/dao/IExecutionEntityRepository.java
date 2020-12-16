@@ -98,8 +98,8 @@ public interface IExecutionEntityRepository extends ReactiveCrudRepository<Execu
 
     Flux<ExecutionEntity> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
-            String processBid,
             String userEmail,
+            String processBid,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to,
@@ -115,13 +115,13 @@ public interface IExecutionEntityRepository extends ReactiveCrudRepository<Execu
 
     Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
-            String processBid,
             String userEmail,
+            String processBid,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to);
 
-    Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
             String processBid,
             List<ExecutionStatus> status,

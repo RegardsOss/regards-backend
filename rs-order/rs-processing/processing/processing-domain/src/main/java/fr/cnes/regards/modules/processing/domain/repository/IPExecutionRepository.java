@@ -71,8 +71,8 @@ public interface IPExecutionRepository {
     
     Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
-            String processBid,
             String userEmail,
+            String processBid,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to,
@@ -100,8 +100,8 @@ public interface IPExecutionRepository {
 
     Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant,
-            String processBid,
             String userEmail,
+            String processBid,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to

@@ -82,8 +82,8 @@ public class MonitoringServiceImpl implements IMonitoringService {
             return execRepo
                     .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                         tenant,
-                        processBid,
                         userEmail,
+                        processBid,
                         status,
                         from,
                         to
@@ -91,8 +91,8 @@ public class MonitoringServiceImpl implements IMonitoringService {
                     .flatMap(total -> execRepo
                         .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
                                 tenant,
-                                processBid,
                                 userEmail,
+                                processBid,
                                 status,
                                 from, to,
                                 paged

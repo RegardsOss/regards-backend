@@ -114,11 +114,16 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String processBid, String userEmail, List<ExecutionStatus> status, OffsetDateTime from,
+            String tenant, String userEmail, String processBid, List<ExecutionStatus> status, OffsetDateTime from,
             OffsetDateTime to, Pageable page) {
         return entityExecRepo
-                .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, userEmail,
-                                                                                                   status, from, to, page)
+                .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                                       userEmail,
+                                                                                                                       processBid,
+                                                                                                                       status,
+                                                                                                                       from,
+                                                                                                                       to,
+                                                                                                                       page)
                 .map(mapper::toDomain);
     }
 
@@ -127,8 +132,10 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to,
             Pageable page) {
         return entityExecRepo
-                .findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid,
-                                                                                                   status, from, to, page)
+                .findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                           processBid,
+                                                                                                           status, from,
+                                                                                                           to, page)
                 .map(mapper::toDomain);
     }
 
@@ -149,19 +156,25 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String processBid, String userEmail, List<ExecutionStatus> status, OffsetDateTime from,
+            String tenant, String userEmail, String processBid, List<ExecutionStatus> status, OffsetDateTime from,
             OffsetDateTime to) {
         return entityExecRepo
-                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, userEmail,
-                                                                                                    status, from, to);
+                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                                        userEmail,
+                                                                                                                        processBid,
+                                                                                                                        status,
+                                                                                                                        from,
+                                                                                                                        to);
     }
 
     @Override
     public Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
             String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
         return entityExecRepo
-                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, processBid, 
-                                                                                                    status, from, to);
+                .countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
+                                                                                                            processBid,
+                                                                                                            status,
+                                                                                                            from, to);
     }
 
     public static final class ExecutionNotFoundException extends ProcessingException {
