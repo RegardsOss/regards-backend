@@ -17,20 +17,18 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * This interface defines operations on ExecutionEntities in the database.
@@ -42,6 +40,7 @@ import reactor.core.publisher.Mono;
 public interface IExecutionEntityRepository extends ReactiveCrudRepository<ExecutionEntity, UUID> {
 
     // @formatter:off
+
     /**
      * We look for executions whose last recorded step is RUNNING, and its difference between recording time
      * and now is greater than the duration declared in the corresponding execution.
@@ -59,74 +58,10 @@ public interface IExecutionEntityRepository extends ReactiveCrudRepository<Execu
             Pageable page
     );
 
-    Flux<ExecutionEntity> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page
-    );
-
-    Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to
-    );
-
-    Flux<ExecutionEntity> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page
-    );
-
-    Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to
-    );
-
     Mono<Integer> countByProcessBusinessIdAndCurrentStatusIn(
             UUID processBusinessId,
             List<ExecutionStatus> nonFinalStatusList
     );
-
-    Flux<ExecutionEntity> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page);
-
-    Flux<ExecutionEntity> findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page);
-
-    Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to);
-
-    Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to);
 
     // @formatter:on
 

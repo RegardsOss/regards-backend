@@ -154,8 +154,9 @@ public class IBatchEntityRepositoryTest extends AbstractRepoTest {
         assertThat(entities.get(0).getId()).isEqualTo(batch.getId());
 
         // WHEN
-        Integer countSuccess = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+        Integer countSuccess = domainExecRepo.countAllForMonitoringSearch(
                 batch.getTenant(),
+                null,null,
                 singletonList(SUCCESS),
                 nowUtc().minusHours(5),
                 nowUtc().plusHours(5)
@@ -165,8 +166,9 @@ public class IBatchEntityRepositoryTest extends AbstractRepoTest {
         assertThat(countSuccess).isEqualTo(1);
 
         // WHEN
-        Integer countRunning = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+        Integer countRunning = domainExecRepo.countAllForMonitoringSearch(
                 batch.getTenant(),
+                null, null,
                 singletonList(RUNNING),
                 nowUtc().minusHours(5),
                 nowUtc().plusHours(5)
@@ -176,8 +178,9 @@ public class IBatchEntityRepositoryTest extends AbstractRepoTest {
         assertThat(countRunning).isEqualTo(2);
 
         // WHEN
-        Integer countRunningTimed = entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+        Integer countRunningTimed = domainExecRepo.countAllForMonitoringSearch(
                 batch.getTenant(),
+                null, null,
                 singletonList(RUNNING),
                 nowUtc().minusHours(1),
                 nowUtc().plusHours(1)

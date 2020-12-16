@@ -45,31 +45,7 @@ public interface IPExecutionRepository {
 
     Flux<PExecution> getTimedOutExecutions();
 
-    Flux<PExecution> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page
-    );
-
-    Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to
-    );
-
-    Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page
-    );
-    
-    Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    Flux<PExecution> findAllForMonitoringSearch(
             String tenant,
             String userEmail,
             String processBid,
@@ -78,42 +54,16 @@ public interface IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     );
-    
-    Flux<PExecution> findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            Pageable page
-    );
 
-    Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
+    Mono<Integer> countAllForMonitoringSearch(
             String tenant,
             String userEmail,
+            String processBid,
             List<ExecutionStatus> status,
             OffsetDateTime from,
             OffsetDateTime to
     );
 
     Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId, Seq<ExecutionStatus> nonFinalStatusList);
-
-    Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String userEmail,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to
-    );
-    
-    Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant,
-            String processBid,
-            List<ExecutionStatus> status,
-            OffsetDateTime from,
-            OffsetDateTime to
-    );
-
 
 }

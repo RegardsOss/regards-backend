@@ -17,18 +17,8 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -38,8 +28,17 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.core.DatabaseClient;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a bridge between execution domain entities and database entities.
@@ -49,43 +48,66 @@ import reactor.core.publisher.Mono;
 @Component
 public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
-    private static Cache<UUID, PExecution> cache = Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES)
-            .maximumSize(10000).build();
+    // @formatter:off
+
+    private static Cache<UUID, PExecution> cache = Caffeine
+        .newBuilder()
+        .expireAfterAccess(30, TimeUnit.MINUTES)
+        .maximumSize(10000).build();
 
     private final IExecutionEntityRepository entityExecRepo;
 
     private final DomainEntityMapper.Execution mapper;
 
+    private final DatabaseClient databaseClient;
+
     @Autowired
-    public PExecutionRepositoryImpl(IExecutionEntityRepository entityExecRepo, DomainEntityMapper.Execution mapper) {
+    public PExecutionRepositoryImpl(
+            IExecutionEntityRepository entityExecRepo,
+            DomainEntityMapper.Execution mapper,
+            DatabaseClient databaseClient
+    ) {
         this.entityExecRepo = entityExecRepo;
         this.mapper = mapper;
+        this.databaseClient = databaseClient;
     }
 
     @Override
     public Mono<PExecution> create(PExecution exec) {
-        return entityExecRepo.save(mapper.toEntity(exec)).map(ExecutionEntity::persisted).map(mapper::toDomain)
-                .doOnNext(e -> cache.put(e.getId(), e));
+        return entityExecRepo
+            .save(mapper.toEntity(exec))
+            .map(ExecutionEntity::persisted)
+            .map(mapper::toDomain)
+            .doOnNext(e -> cache.put(e.getId(), e));
     }
 
     @Override
     public Mono<Integer> countByProcessBusinessIdAndStatusIn(UUID processBusinessId,
             Seq<ExecutionStatus> nonFinalStatusList) {
-        return entityExecRepo.countByProcessBusinessIdAndCurrentStatusIn(processBusinessId,
-                                                                         nonFinalStatusList.toJavaList());
+        return entityExecRepo.countByProcessBusinessIdAndCurrentStatusIn(
+            processBusinessId,
+            nonFinalStatusList.toJavaList()
+        );
     }
 
     @Override
     public Mono<PExecution> update(PExecution exec) {
-        return entityExecRepo.save(mapper.toEntity(exec)).map(mapper::toDomain).doOnNext(e -> cache.put(e.getId(), e));
+        return entityExecRepo
+            .save(mapper.toEntity(exec))
+            .map(mapper::toDomain)
+            .doOnNext(e -> cache.put(e.getId(), e));
     }
 
     @Override
     public Mono<PExecution> findById(UUID id) {
-        return Option.of(cache.getIfPresent(id)).map(Mono::just)
-                .getOrElse(() -> entityExecRepo.findById(id).map(mapper::toDomain)
-                        .doOnNext(e -> cache.put(e.getId(), e)))
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new ExecutionNotFoundException(id))));
+        return Option.of(cache.getIfPresent(id))
+            .map(Mono::just)
+            .getOrElse(() -> entityExecRepo
+                .findById(id)
+                .map(mapper::toDomain)
+                .doOnNext(e -> cache.put(e.getId(), e))
+            )
+            .switchIfEmpty(Mono.defer(() -> Mono.error(new ExecutionNotFoundException(id))));
     }
 
     @Override
@@ -94,87 +116,81 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     }
 
     @Override
-    public Flux<PExecution> findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(String tenant,
-            List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to, Pageable page) {
-        return entityExecRepo
-                .findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status, from, to, page)
-                .map(mapper::toDomain);
+    public Flux<PExecution> findAllForMonitoringSearch(
+            String tenant,
+            String processBid,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to,
+            Pageable page
+    ) {
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
+                " SELECT E.* " +
+                " FROM t_execution AS E " +
+                " WHERE (:ignoreTenant OR E.tenant = :tenant) " +
+                "   AND (:ignoreProcessBid OR E.process_business_id = :processBid) " +
+                "   AND (:ignoreUserEmail OR E.user_email = :userEmail) " +
+                "   AND  E.current_status IN (:status) " +
+                "   AND  E.last_updated >= :lastUpdatedFrom " +
+                "   AND  E.last_updated <= :lastUpdatedTo " +
+                " LIMIT :limit OFFSET :offset"
+        );
+
+        execute = execute.bind("ignoreTenant", tenant == null);
+        execute = tenant == null ? execute.bindNull("tenant", String.class) : execute.bind("tenant", tenant);
+        execute = execute.bind("ignoreProcessBid", processBid == null);
+        execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
+        execute = execute.bind("ignoreUserEmail", userEmail == null);
+        execute = userEmail == null ? execute.bindNull("userEmail", String.class) : execute.bind("userEmail", userEmail);
+        execute = execute.bind("status", status);
+        execute = execute.bind("lastUpdatedFrom", from);
+        execute = execute.bind("lastUpdatedTo", to);
+        execute = execute.bind("limit", page.getPageSize());
+        execute = execute.bind("offset", page.getOffset());
+
+        return execute
+                .as(ExecutionEntity.class)
+                .fetch()
+                .all()
+                .map(mapper::toDomain)
+                .doOnNext(exec -> cache.put(exec.getId(), exec));
     }
 
     @Override
-    public Flux<PExecution> findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String userEmail, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to,
-            Pageable page) {
-        return entityExecRepo
-                .findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, userEmail,
-                                                                                                   status, from, to,
-                                                                                                   page)
-                .map(mapper::toDomain);
-    }
+    public Mono<Integer> countAllForMonitoringSearch(
+            String tenant,
+            String processBid,
+            String userEmail,
+            List<ExecutionStatus> status,
+            OffsetDateTime from,
+            OffsetDateTime to
+    ) {
+        DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
+                " SELECT COUNT(*) " +
+                " FROM t_execution AS E " +
+                " WHERE (:ignoreTenant OR E.tenant = :tenant) " +
+                "   AND (:ignoreProcessBid OR E.process_business_id = :processBid) " +
+                "   AND (:ignoreUserEmail OR E.user_email = :userEmail) " +
+                "   AND  E.current_status IN (:status) " +
+                "   AND  E.last_updated >= :lastUpdatedFrom " +
+                "   AND  E.last_updated <= :lastUpdatedTo "
+        );
 
-    @Override
-    public Flux<PExecution> findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String userEmail, String processBid, List<ExecutionStatus> status, OffsetDateTime from,
-            OffsetDateTime to, Pageable page) {
-        return entityExecRepo
-                .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
-                                                                                                                       userEmail,
-                                                                                                                       processBid,
-                                                                                                                       status,
-                                                                                                                       from,
-                                                                                                                       to,
-                                                                                                                       page)
-                .map(mapper::toDomain);
-    }
+        execute = execute.bind("ignoreTenant", tenant == null);
+        execute = tenant == null ? execute.bindNull("tenant", String.class) : execute.bind("tenant", tenant);
+        execute = execute.bind("ignoreProcessBid", processBid == null);
+        execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
+        execute = execute.bind("ignoreUserEmail", userEmail == null);
+        execute = userEmail == null ? execute.bindNull("userEmail", String.class) : execute.bind("userEmail", userEmail);
+        execute = execute.bind("status", status);
+        execute = execute.bind("lastUpdatedFrom", from);
+        execute = execute.bind("lastUpdatedTo", to);
 
-    @Override
-    public Flux<PExecution> findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to,
-            Pageable page) {
-        return entityExecRepo
-                .findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
-                                                                                                           processBid,
-                                                                                                           status, from,
-                                                                                                           to, page)
-                .map(mapper::toDomain);
-    }
-
-    @Override
-    public Mono<Integer> countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(String tenant,
-            List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
-        return entityExecRepo.countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, status,
-                                                                                                     from, to);
-    }
-
-    @Override
-    public Mono<Integer> countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String userEmail, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
-        return entityExecRepo
-                .countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant, userEmail,
-                                                                                                    status, from, to);
-    }
-
-    @Override
-    public Mono<Integer> countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String userEmail, String processBid, List<ExecutionStatus> status, OffsetDateTime from,
-            OffsetDateTime to) {
-        return entityExecRepo
-                .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
-                                                                                                                        userEmail,
-                                                                                                                        processBid,
-                                                                                                                        status,
-                                                                                                                        from,
-                                                                                                                        to);
-    }
-
-    @Override
-    public Mono<Integer> countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-            String tenant, String processBid, List<ExecutionStatus> status, OffsetDateTime from, OffsetDateTime to) {
-        return entityExecRepo
-                .countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(tenant,
-                                                                                                            processBid,
-                                                                                                            status,
-                                                                                                            from, to);
+        return execute
+                .as(Integer.class)
+                .fetch()
+                .one();
     }
 
     public static final class ExecutionNotFoundException extends ProcessingException {
@@ -192,4 +208,5 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         }
     }
 
+    // @formatter:on
 }

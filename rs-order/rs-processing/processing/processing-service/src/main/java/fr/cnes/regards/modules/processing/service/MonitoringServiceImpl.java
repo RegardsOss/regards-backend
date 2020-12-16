@@ -19,12 +19,15 @@
 
 package fr.cnes.regards.modules.processing.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
+import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
+import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
+import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,19 +36,14 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.dto.ExecutionMonitoringDTO;
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
-import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
-import fr.cnes.regards.modules.processing.domain.service.IMonitoringService;
-import io.vavr.control.Option;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class is the implementation for the {@link IMonitoringService} interface.
@@ -77,111 +75,17 @@ public class MonitoringServiceImpl implements IMonitoringService {
 
     private Mono<Page<PExecution>> getPExecutionsPageForCriteria(String tenant, List<ExecutionStatus> status, String processBid,
             @Nullable String userEmail, OffsetDateTime from, OffsetDateTime to, PageRequest paged) {
-
-        if ((userEmail != null) && (processBid != null)) {
-            return execRepo
-                    .countByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                        tenant,
-                        userEmail,
-                        processBid,
-                        status,
-                        from,
-                        to
-                    )
-                    .flatMap(total -> execRepo
-                        .findByTenantAndUserEmailAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                                tenant,
-                                userEmail,
-                                processBid,
-                                status,
-                                from, to,
-                                paged
-                        )
-                        .collectList()
-                        .map(content -> {
-                            Page<PExecution> p = new PageImpl<>(content, paged, total);
-                            return p;
-                        })
-                    )
-                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
-                    .doOnError(t -> LOGGER.error(t.getMessage(), t));
-        } else if (userEmail != null) {
-            return execRepo
-                    .countByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                        tenant,
-                        userEmail,
-                        status,
-                        from,
-                        to
-                    )
-                    .flatMap(total -> execRepo
-                        .findByTenantAndUserEmailAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                                tenant,
-                                userEmail,
-                                status,
-                                from, to,
-                                paged
-                        )
-                        .collectList()
-                        .map(content -> {
-                            Page<PExecution> p = new PageImpl<>(content, paged, total);
-                            return p;
-                        })
-                    )
-                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
-                    .doOnError(t -> LOGGER.error(t.getMessage(), t));
-        } else if (processBid != null ){
-            return execRepo
-                    .countByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                        tenant,
-                        processBid,
-                        status,
-                        from,
-                        to
-                    )
-                    .flatMap(total -> execRepo
-                        .findByTenantAndProcessBusinessIdAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                                tenant,
-                                processBid,
-                                status,
-                                from, to,
-                                paged
-                        )
-                        .collectList()
-                        .map(content -> {
-                            Page<PExecution> p = new PageImpl<>(content, paged, total);
-                            return p;
-                        })
-                    )
-                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
-                    .doOnError(t -> LOGGER.error(t.getMessage(), t));
-
-        } else {
-            return execRepo
-                    .countByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                        tenant,
-                        status,
-                        from,
-                        to
-                    )
-                    .flatMap(total -> execRepo
-                        .findByTenantAndCurrentStatusInAndLastUpdatedAfterAndLastUpdatedBefore(
-                            tenant,
-                            status,
-                            from,
-                            to,
-                            paged
-                        )
-                        .collectList()
-                        .map(content -> {
-                            Page<PExecution> p = new PageImpl<>(content, paged, total);
-                            return p;
-                        })
-                    )
-                    .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
-                    .doOnError(t -> LOGGER.error(t.getMessage(), t));
-
-        }
+        return execRepo.countAllForMonitoringSearch(tenant, processBid, userEmail, status, from, to)
+            .flatMap(total ->
+                execRepo.findAllForMonitoringSearch(tenant, processBid, userEmail, status, from, to, paged)
+                    .collectList()
+                    .map(content -> {
+                        Page<PExecution> p = new PageImpl<>(content, paged, total);
+                        return p;
+                    })
+            )
+            .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
+            .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
 
     @Override
