@@ -130,7 +130,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             optional = true,
             defaultValue = "SUBORDER"
     )
-    protected Scope scope = Scope.SUBORDER;
+    protected String scope = Scope.SUBORDER.toString();
 
     @PluginParameter(
             name = "cardinality",
@@ -146,7 +146,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             optional = true,
             defaultValue = "SUBORDER"
     )
-    protected Cardinality cardinality = Cardinality.ONE_PER_FEATURE;
+    protected String cardinality = Cardinality.ONE_PER_FEATURE.toString();
 
     @PluginParameter(
             name = "maxFilesInInput",
@@ -162,7 +162,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
     @Override
     public IOutputToInputMapper inputOutputMapper() {
-        switch(cardinality) {
+        switch(Cardinality.valueOf(cardinality)) {
             case ONE_PER_INPUT_FILE: return IOutputToInputMapper.sameNameWithoutExt();
             case ONE_PER_FEATURE: return IOutputToInputMapper.sameParent();
             case ONE_PER_EXECUTION: return IOutputToInputMapper.allMappings();
@@ -193,11 +193,11 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     }
 
     public void setScope(Scope scope) {
-        this.scope = scope;
+        this.scope = scope.toString();
     }
 
     public void setCardinality(Cardinality cardinality) {
-        this.cardinality = cardinality;
+        this.cardinality = cardinality.toString();
     }
 
     public void setMaxFeaturesInInput(long maxFeaturesInInput) {
