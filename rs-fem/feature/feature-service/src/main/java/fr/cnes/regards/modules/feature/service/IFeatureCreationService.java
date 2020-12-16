@@ -3,12 +3,10 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
-import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
@@ -39,7 +37,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
      * Process batch of requests during job
      * @return new feature created
      */
-    Set<FeatureEntity> processRequests(List<FeatureCreationRequest> requests, FeatureCreationJob featureCreationJob);
+    Set<FeatureEntity> processRequests(List<Long> requests, FeatureCreationJob featureCreationJob);
 
     /**
      * Handle successful creation process

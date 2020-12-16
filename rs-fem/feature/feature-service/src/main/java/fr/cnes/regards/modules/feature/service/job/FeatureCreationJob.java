@@ -51,10 +51,7 @@ public class FeatureCreationJob extends AbstractJob<Void> {
 
     public static final String IDS_PARAMETER = "ids";
 
-    private List<FeatureCreationRequest> featureCreationRequests;
-
-    @Autowired
-    private IFeatureCreationRequestRepository featureCreationRequestRepo;
+    private List<Long> featureCreationRequestIds;
 
     @Autowired
     private IFeatureCreationService featureService;
@@ -71,8 +68,7 @@ public class FeatureCreationJob extends AbstractJob<Void> {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
-        featureCreationRequests = this.featureCreationRequestRepo
-                .findAllById(getValue(parameters, IDS_PARAMETER, type));
+        featureCreationRequestIds = getValue(parameters, IDS_PARAMETER, type);
     }
 
     @Override
@@ -80,15 +76,15 @@ public class FeatureCreationJob extends AbstractJob<Void> {
         logger.info("[{}] Feature creation job starts", jobInfoId);
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
-        Set<FeatureEntity> created = featureService.processRequests(featureCreationRequests, this);
+        Set<FeatureEntity> created = featureService.processRequests(featureCreationRequestIds, this);
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         created.forEach(e -> metrics.count(e.getProviderId(), e.getUrn(), FeatureCreationState.FEATURE_CREATED));
         logger.info("[{}]{}{} creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
-                    featureCreationRequests.size(), System.currentTimeMillis() - start);
+                    created.size(), System.currentTimeMillis() - start);
     }
 
     @Override
     public int getCompletionCount() {
-        return featureCreationRequests.size();
+        return featureCreationRequestIds.size();
     }
 }

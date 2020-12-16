@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
@@ -54,4 +56,9 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
             + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
     Page<ILightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
             @Param("now") OffsetDateTime now, Pageable page);
+
+    List<FeatureCreationRequest> findAllByIdIn(Iterable<Long> ids);
+
+    @Override
+    List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
 }
