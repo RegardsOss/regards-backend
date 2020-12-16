@@ -39,6 +39,7 @@ import io.vavr.collection.HashSet;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import io.vavr.control.Try;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -202,7 +204,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             odf.setUrl(url);
             odf.setState(FileState.AVAILABLE);
             odf.setChecksum(outputFile.getChecksumValue());
-            odf.setFilename(outputFile.getName());
+            odf.setFilename(fileName(outputFile));
             odf.setFilesize(outputFile.getSize());
             updatedDataFiles.add(odf);
         }
@@ -248,7 +250,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                 odf.setUrl(url);
                 odf.setState(FileState.AVAILABLE);
                 odf.setChecksum(outputFile.getChecksumValue());
-                odf.setFilename(outputFile.getName());
+                odf.setFilename(fileName(outputFile));
                 odf.setFilesize(outputFile.getSize());
                 updatedDataFiles.add(odf);
             }).onEmpty(() -> {
@@ -288,7 +290,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             odf.setUrl(url);
             odf.setState(FileState.AVAILABLE);
             odf.setChecksum(outputFile.getChecksumValue());
-            odf.setFilename(outputFile.getName());
+            odf.setFilename(fileName(outputFile));
             odf.setFilesize(outputFile.getSize());
         }
         return orderDataFiles;
@@ -362,6 +364,10 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
     private String getUrlPrefix(BatchSuborderCorrelationIdentifier batchSuborderIdentifier, Option<String> featureId) {
         return featureId.map(fid -> ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier, fid))
                 .getOrElse(() -> ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier));
+    }
+
+    private String fileName(POutputFileDTO dto) {
+        return Try.of(() -> Paths.get(dto.getName()).getFileName().toString()).getOrElse(dto::getName);
     }
 
 }

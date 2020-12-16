@@ -172,10 +172,10 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
     @Override public OrderProcessInfo processInfo() {
         return new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
+                Scope.valueOf(scope),
+                Cardinality.valueOf(cardinality),
                 requiredDataTypes().toList(),
-                new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
+                new SizeLimit(SizeLimit.Type.FEATURES, maxFeaturesInInput),
                 this.sizeForecast().get()
         );
     }

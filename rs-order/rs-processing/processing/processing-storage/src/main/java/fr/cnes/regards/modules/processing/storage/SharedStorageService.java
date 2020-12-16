@@ -126,7 +126,7 @@ public class SharedStorageService implements ISharedStorageService {
         });
     }
 
-    private Mono<POutputFile> createOutputFile(UUID execId, Path outputtedFile, Path storageExecPath) {
+    private Mono<POutputFile> createOutputFile(UUID execId, ExecutionLocalWorkdir workdir, Path outputtedFile, Path storageExecPath) {
         return Mono.fromCallable(() -> {
             long size = outputtedFile.toFile().length();
             POutputFile.Digest checksum = checksum(outputtedFile);
@@ -136,7 +136,7 @@ public class SharedStorageService implements ISharedStorageService {
             return new POutputFile(
                 UUID.randomUUID(),
                 execId,
-                outputtedFile.getFileName().toString(),
+                workdir.outputFolder().relativize(outputtedFile).normalize().toString(),
                 checksum,
                 storedFilePath.toUri().toURL(),
                 size,

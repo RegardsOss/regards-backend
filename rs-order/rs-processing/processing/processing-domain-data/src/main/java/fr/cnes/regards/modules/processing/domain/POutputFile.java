@@ -76,7 +76,6 @@ public class POutputFile {
      * for this instance. */
     transient boolean persisted;
 
-
     public static POutputFile markDownloaded(POutputFile pOutputFile) {
         return pOutputFile.withDownloaded(true);
     }

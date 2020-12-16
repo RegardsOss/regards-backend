@@ -21,6 +21,7 @@ import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
+import io.vavr.control.Try;
 
 import java.nio.file.Paths;
 
@@ -90,7 +91,7 @@ public interface IOutputToInputMapper {
     }
 
     static String parentName(String name) {
-        return Paths.get(name).getParent().getFileName().toString();
+        return Try.of(() -> Paths.get(name).getParent().getFileName().toString()).getOrElse(name);
     }
 
 
