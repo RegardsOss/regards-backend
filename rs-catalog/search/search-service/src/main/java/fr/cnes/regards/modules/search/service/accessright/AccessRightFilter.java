@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -97,8 +98,12 @@ public class AccessRightFilter implements IAccessRightFilter {
         Assert.notNull(role, "Unknown request user role!");
 
         // For default ROLE, avoid feign request
-        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString()) || role
-                .equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString())
+                || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+            return true;
+        }
+
+        if (RoleAuthority.isSysRole(role)) {
             return true;
         }
 
@@ -122,17 +127,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
-                                                                                              .getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String.format(
-                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                        authResolver.getUser());
+                String errorMessage = String
+                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                                authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }
@@ -145,7 +150,7 @@ public class AccessRightFilter implements IAccessRightFilter {
             searchCriterion.add(ICriterion.or(groupCriterions));
 
             // Add user criterion (theorically, userCriterion should not be null at this point but...)
-            if (userCriterion != null && !userCriterion.equals(ICriterion.all())) {
+            if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
                 searchCriterion.add(userCriterion);
             }
 
@@ -162,17 +167,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
-                                                                                              .getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String.format(
-                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                        authResolver.getUser());
+                String errorMessage = String
+                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                                authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }
@@ -185,7 +190,7 @@ public class AccessRightFilter implements IAccessRightFilter {
             searchCriterion.add(ICriterion.or(groupCriterions));
 
             // Add user criterion (theorically, userCriterion should not be null at this point but...)
-            if (userCriterion != null && !userCriterion.equals(ICriterion.all())) {
+            if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
                 searchCriterion.add(userCriterion);
             }
 
@@ -201,17 +206,17 @@ public class AccessRightFilter implements IAccessRightFilter {
         if (!isAdmin()) {
 
             // Retrieve public groups
-            Set<AccessGroup> accessGroups = new HashSet<>(cache.getPublicAccessGroups(runtimeTenantResolver
-                                                                                              .getTenant()));
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
 
             // Add explicitly associated group
             accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
             // Throw an error if no access group
             if (accessGroups.isEmpty()) {
-                String errorMessage = String.format(
-                        CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
-                        authResolver.getUser());
+                String errorMessage = String
+                        .format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                                authResolver.getUser());
                 LOGGER.error(errorMessage);
                 throw new AccessRightFilterException(errorMessage);
             }
