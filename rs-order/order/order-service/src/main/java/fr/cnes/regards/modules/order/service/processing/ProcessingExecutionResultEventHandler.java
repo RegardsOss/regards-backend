@@ -278,7 +278,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                         logPrefix(evt));
         }
         POutputFileDTO outputFile = outputs.head();
-        String orderDataFileUrl = ProcessInputCorrelationIdentifier.repr(batchSuborderIdentifier);
+        String orderDataFileUrl = getUrlPrefix(batchSuborderIdentifier, execCorrId.getFeatureId());
         List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
         int orderDataFileCount = orderDataFiles.size();
         if (orderDataFileCount != 1) {
