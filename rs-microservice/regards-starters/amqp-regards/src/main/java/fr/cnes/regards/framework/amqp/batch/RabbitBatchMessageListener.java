@@ -243,7 +243,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         for (BatchMessage message : validMessages) {
 
             try {
-                channel.basicNack(message.getOrigin().getMessageProperties().getDeliveryTag(), false, true);
+                channel.basicNack(message.getOrigin().getMessageProperties().getDeliveryTag(), false, false);
             } catch (IOException e) {
                 LOGGER.error("Fail to nack valid message with processing error", e);
             }
