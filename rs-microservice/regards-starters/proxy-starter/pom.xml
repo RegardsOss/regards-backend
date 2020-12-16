@@ -65,14 +65,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.jproxy</groupId>
-			<artifactId>jproxy</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.13</version>
 		</dependency>
 	</dependencies>
 </project>

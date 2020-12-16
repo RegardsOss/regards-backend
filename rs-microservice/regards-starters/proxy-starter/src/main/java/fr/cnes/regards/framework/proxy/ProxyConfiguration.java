@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.proxy;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -30,7 +29,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
-import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -48,14 +46,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import fr.cnes.httpclient.HttpClientFactory;
-
 /**
  * Creates a {@link HttpClient} with proxy configuration.
- * Proxy configuration is set with spring properties with the possibilities of the JSPNego library.
- * This configuration is mained used for CNES specific proxy authorization.
  *
- * @see "https://github.com/CNES/JSPNego"
  * @author sbinda
  *
  */
@@ -146,39 +139,6 @@ public class ProxyConfiguration {
             return httpClientBuilder.setProxy(proxy).build();
         } else {
             return httpClientBuilder.build();
-        }
-    }
-
-    /**
-     * Method to use jspNego CNES library to create an httpclient whish can connect throught kerberos auth proxy
-     * Not used anymore as it leads to http connections never closed.
-     * @return
-     */
-    private HttpClient buildJspNegoClient() {
-        // https://github.com/CNES/JSPNego
-        if ((proxyHost != null) && !proxyHost.isEmpty()) {
-            LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}",
-                        proxyHost,
-                        proxyPort,
-                        proxyLogin);
-            if (proxyPort != null) {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
-            } else {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
-            }
-            if ((noProxy != null) && !noProxy.isEmpty()) {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY
-                        .setValue(noProxy.stream().collect(Collectors.joining(",")));
-            }
-            if ((proxyLogin != null) && (proxyPassword != null)) {
-                fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
-                fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
-            }
-
-            return HttpClientFactory.create(HttpClientFactory.Type.PROXY_BASIC);
-        } else {
-            LOGGER.info("No HTTP Proxy configured.");
-            return HttpClientFactory.create(HttpClientFactory.Type.NO_PROXY);
         }
     }
 
