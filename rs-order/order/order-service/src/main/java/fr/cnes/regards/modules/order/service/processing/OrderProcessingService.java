@@ -308,13 +308,13 @@ public class OrderProcessingService implements IOrderProcessingService {
             List<EntityFeature> features,
             OrderProcessInfo processInfo
     ) {
-
+        Scope scope = processInfo.getScope();
         Cardinality cardinality = processInfo.getCardinality();
         List<DataType> requiredDataTypes = processInfo.getRequiredDatatypes();
         IResultSizeForecast sizeForecast = processInfo.getSizeForecast();
         Long orderId = batchSuborderIdentifier.getOrderId();
 
-        if (cardinality == Cardinality.ONE_PER_EXECUTION) {
+        if (scope == Scope.SUBORDER && cardinality == Cardinality.ONE_PER_EXECUTION) {
             List<DataFile> applicableDataFilesIn = features.flatMap(f -> List.ofAll(f.getFiles().values()))
                     .filter(f -> requiredDataTypes.contains(f.getDataType()));
 
@@ -338,7 +338,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                     .toJavaArray(Long[]::new);
         } else {
             return features.flatMap(feature -> {
-                if (cardinality == Cardinality.ONE_PER_FEATURE) {
+                if (cardinality == Cardinality.ONE_PER_EXECUTION || cardinality == Cardinality.ONE_PER_FEATURE) {
                     List<DataFile> applicableDataFilesIn = List.ofAll(feature.getFiles().values())
                             .filter(f -> requiredDataTypes.contains(f.getDataType()));
                     long expectedSize = sizeForecast.expectedResultSizeInBytes(

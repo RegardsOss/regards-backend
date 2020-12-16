@@ -47,7 +47,7 @@ public class POutputFile {
     /** The execution this file has been generated for */
     UUID execId;
 
-    /** The file name */
+    /** The file name, or relative path, to the execution workdir */
     String name;
 
     /** The file checksum */
