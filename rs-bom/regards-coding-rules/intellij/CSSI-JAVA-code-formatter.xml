@@ -1,20 +1,22 @@
 <code_scheme name="CSSI-JAVA-code-formatter">
-  <option name="LAYOUT_STATIC_IMPORTS_SEPARATELY" value="false" />
-  <option name="IMPORT_LAYOUT_TABLE">
-    <value>
-      <emptyLine />
-      <package name="javax" withSubpackages="true" static="false" />
-      <package name="java" withSubpackages="true" static="false" />
-      <emptyLine />
-      <package name="org" withSubpackages="true" static="false" />
-      <emptyLine />
-      <package name="" withSubpackages="true" static="false" />
-    </value>
-  </option>
-  <option name="ENABLE_JAVADOC_FORMATTING" value="false" />
   <option name="FORMATTER_TAGS_ENABLED" value="true" />
   <JavaCodeStyleSettings>
     <option name="ANNOTATION_PARAMETER_WRAP" value="1" />
+    <option name="LAYOUT_STATIC_IMPORTS_SEPARATELY" value="false" />
+    <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="9999" />
+    <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="9999" />
+    <option name="IMPORT_LAYOUT_TABLE">
+      <value>
+        <emptyLine />
+        <package name="javax" withSubpackages="true" static="false" />
+        <package name="java" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="org" withSubpackages="true" static="false" />
+        <emptyLine />
+        <package name="" withSubpackages="true" static="false" />
+      </value>
+    </option>
+    <option name="ENABLE_JAVADOC_FORMATTING" value="false" />
   </JavaCodeStyleSettings>
   <codeStyleSettings language="JAVA">
     <option name="KEEP_LINE_BREAKS" value="false" />
