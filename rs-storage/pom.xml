@@ -53,8 +53,8 @@
     </parent>
 
     <modules>
-        <module>bootstrap-storage</module>
     	<module>storage</module>
+        <module>bootstrap-storage</module>
   </modules>
 
 </project>
