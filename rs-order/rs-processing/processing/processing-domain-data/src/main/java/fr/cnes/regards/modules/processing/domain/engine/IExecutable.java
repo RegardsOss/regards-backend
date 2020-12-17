@@ -30,7 +30,7 @@ import java.util.function.Function;
  * This interface defines an executable which is a function taking a context
  * and returning an updated context.
  *
- * Executables can be chained using {@link #andThen(IExecutable)}.
+ * Executables can be chained using {@link #andThen(String, IExecutable)}.
  *
  * This interface also defines several basic constructors for executables.
  *
@@ -69,7 +69,10 @@ public interface IExecutable {
      * @return a new executable with this and next in sequence.
      */
     default IExecutable andThen(String name, IExecutable next) {
-        return ctx1 -> execute(ctx1).flatMap(next::execute);
+        return ctx1 -> execute(ctx1)
+            .doOnNext(c -> LOGGER.debug("Starting execution of '{}'", name))
+            .flatMap(next::execute)
+            .doOnNext(c -> LOGGER.debug("Finished execution of '{}'", name));
     }
 
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {

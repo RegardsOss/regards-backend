@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.processing.ProcessingConstants;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
+import fr.cnes.regards.modules.processing.domain.PInputFile;
 import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
@@ -226,8 +227,48 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
             .andThen("send running", sendEvent(runningEvent()))
             .andThen("simple shell", new SimpleShellProcessExecutable())
             .andThen("store output", storeOutputFiles())
+            .andThen("send result", sendResultBasedOnOutputFileCount())
             .andThen("clean workdir", cleanWorkdir())
             .onErrorThen(sendFailureEventThenClean());
+    }
+
+    private IExecutable sendResultBasedOnOutputFileCount() {
+        return ctx -> ctx
+            .getParam(CumulativeOutputFiles.class)
+            .map(CumulativeOutputFiles::getOutFiles)
+            .flatMap(outFiles -> {
+                int size = outFiles.size();
+                int correctSize = correctSize(ctx);
+                if (size == correctSize) {
+                    return ctx.sendEvent(event(success(""), outFiles));
+                }
+                else {
+                    String message = String.format("Wrong number of output files: expected %d, got %d",
+                        correctSize,
+                        size
+                    );
+                    return ctx.sendEvent(event(failure(message), outFiles));
+                }
+            })
+            .onErrorResume(t -> {
+                LOGGER.error(t.getMessage(), t);
+                return ctx.sendEvent(event(failure(t.getMessage())));
+            })
+            .switchIfEmpty(Mono.defer(() -> ctx.sendEvent(event(failure("No output files found")))));
+    }
+
+    private int correctSize(ExecutionContext ctx) {
+        Cardinality cardinality = Cardinality.valueOf(this.cardinality);
+        switch (cardinality) {
+            case ONE_PER_EXECUTION: return 1;
+            case ONE_PER_INPUT_FILE: return ctx.getExec().getInputFiles().size();
+            case ONE_PER_FEATURE: return countFeatures(ctx.getExec().getInputFiles());
+            default: throw new NotImplementedException("Cardinality value missing: " + cardinality);
+        }
+    }
+
+    private int countFeatures(Seq<PInputFile> inputFiles) {
+        return getDistinctFeatureIds(inputFiles).size();
     }
 
     protected Seq<DataType> requiredDataTypes() {
