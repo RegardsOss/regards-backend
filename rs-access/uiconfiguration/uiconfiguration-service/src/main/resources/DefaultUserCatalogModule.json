@@ -101,10 +101,9 @@
         "MAP": {
           "enabled": false,
           "attributes": [],
-          "backgroundLayer": {
-            "url": null,
-            "type": "AsynchroneWMS"
-          }
+          "initialViewMode": "3D",
+          "mapEngine": "CESIUM",
+          "layers": []
         }
       }
     },

@@ -21,6 +21,9 @@ package scripts.uiconfiguration;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -75,14 +78,39 @@ public class V1_4_0__update extends BaseJavaMigration {
     }
 
     /**
-     * Updates search results configuration: add restriction onData
+     * Updates search results configuration: update map
      *
      * @param initialConfiguration initial configuration
      * @return updated configuration as map
      */
     public static Map<String, Object> updateSearchResultsConfiguration(Map<String, Object> initialConfiguration) {
-        // TODO Theo : successive gets "viewsGroups", "DATA", "views", "MAP" then put new params
-        //        mapConfig.put("initialViewMode", "2D")
+        Map<String, Object> viewsGroups = (Map<String, Object>) initialConfiguration.get("viewsGroups");
+        Map<String, Object> data = (Map<String, Object>) viewsGroups.get("DATA");
+        Map<String, Object> views = (Map<String, Object>) data.get("views");
+        Map<String, Object> map = (Map<String, Object>) views.get("MAP");
+        map.putIfAbsent("initialViewMode", "3D");
+        map.putIfAbsent("mapEngine", "CESIUM");
+
+        List<Map<String, Object>> layers = new ArrayList<>();
+        map.put("layers", layers);
+
+        Map<String, String> backgroundLayer = (Map<String, String>) map.remove("backgroundLayer");
+        if( backgroundLayer != null ) {
+            String url = backgroundLayer.get("url");
+            String type = backgroundLayer.get("type");
+            if( url != null && type != null ) {
+                Map<String, Object> bgLayer = new HashMap<>();
+                bgLayer.put("url", url);
+                bgLayer.put("layerName", "backgroundLayer");
+                bgLayer.put("enabled", true);
+                bgLayer.put("background", true);
+                bgLayer.put("layerViewMode", "3D");
+                bgLayer.put("type", type);
+                bgLayer.put("conf", "");
+                bgLayer.put("layersName", "");
+                layers.add(bgLayer);
+            }
+        }
         return initialConfiguration; // return initial configuration (updated by reference)
     }
 
