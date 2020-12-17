@@ -232,7 +232,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
     private void handleBatchException(String tenant, List<BatchMessage> validMessages, Channel channel, Exception ex) {
 
         // Message not properly wrapped! Unknown tenant!
-        String errorMessage = String.format("[%s] All messages are requeued for handler %s : %s",
+        String errorMessage = String.format("[%s] All messages are routed to DLQ for handler %s : %s",
                                             BATCH_PROCESSING_FAILURE_TITLE, batchHandler.getClass().getName(),
                                             ex.getMessage());
         LOGGER.error(errorMessage, ex);
