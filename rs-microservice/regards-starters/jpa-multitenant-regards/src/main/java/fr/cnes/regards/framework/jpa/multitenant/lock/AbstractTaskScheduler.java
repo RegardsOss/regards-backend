@@ -18,21 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
-import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Base class utilities for task schedulers based on {@link LockingTaskExecutors} locking.
@@ -44,9 +33,6 @@ public abstract class AbstractTaskScheduler {
     protected static final String INSTANCE_RANDOM_ID = "------------------------------> "
             + UUID.randomUUID().toString();
 
-    @Autowired
-    private IPublisher publisher;
-
     @Value("${spring.application.name}")
     private String applicationName;
 
@@ -56,13 +42,7 @@ public abstract class AbstractTaskScheduler {
 
     protected void handleSchedulingError(String type, String title, Throwable e) {
         String errorMessage = String.format("Error scheduling %s", type);
-        getLogger().error(errorMessage, e);
-        // Notify all ADMIN (cannot use notification client here)
-        Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.ADMIN.toString()));
-        NotificationEvent event = NotificationEvent
-                .build(new NotificationDtoBuilder(errorMessage, title, NotificationLevel.ERROR, applicationName)
-                        .toRoles(roles));
-        publisher.publish(event);
+        getLogger().warn(errorMessage, e);
     }
 
     abstract protected Logger getLogger();
