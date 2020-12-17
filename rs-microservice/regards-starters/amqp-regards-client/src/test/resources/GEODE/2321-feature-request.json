@@ -26,7 +26,7 @@
                 "filesize": 2321,
                 "ingestion_date": "2020-04-03T00:00:00Z",
                 "change_date": "2020-04-03T00:00:00Z",
-                "gpfs_url": "file://home/geode/test.tar",
+                "gpfs_url": null,
                 "filename": "test.tar",
                 "extension": "tar"
             },

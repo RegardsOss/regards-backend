@@ -31,6 +31,8 @@ public class GsonProperties {
 
     private Boolean prettyPrint = Boolean.FALSE;
 
+    private Boolean serializeNulls = Boolean.FALSE;
+
     public String getScanPrefix() {
         return scanPrefix;
     }
@@ -45,6 +47,14 @@ public class GsonProperties {
 
     public void setPrettyPrint(Boolean prettyPrint) {
         this.prettyPrint = prettyPrint;
+    }
+
+    public Boolean getSerializeNulls() {
+        return serializeNulls;
+    }
+
+    public void setSerializeNulls(Boolean serializeNulls) {
+        this.serializeNulls = serializeNulls;
     }
 
 }
