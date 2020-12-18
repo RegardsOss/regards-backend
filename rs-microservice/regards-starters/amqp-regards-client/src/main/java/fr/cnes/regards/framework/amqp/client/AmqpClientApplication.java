@@ -72,7 +72,7 @@ public class AmqpClientApplication implements ApplicationRunner {
      * In case of template, generation number
      */
     @Value("#{${" + ARG_ITERATIONS + ":10}}")
-    private Integer iterarions;
+    private Integer iterations;
 
     @Autowired
     private AmqpClientPublisher publisher;
@@ -97,6 +97,6 @@ public class AmqpClientApplication implements ApplicationRunner {
         if ((queueName != null) && !queueName.isEmpty()) {
             queue = Optional.of(queueName);
         }
-        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, iterarions);
+        publisher.publish(exchangeName, queue, priority, headers, jsonPathString, iterations);
     }
 }
