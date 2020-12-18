@@ -1,14 +1,16 @@
 package fr.cnes.regards.modules.processing.service;
 
-
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
+import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
+import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
+import fr.cnes.regards.modules.processing.utils.TimeUtils;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import org.junit.Test;
@@ -17,13 +19,13 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.SUCCESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ExecutionServiceImplTest extends AbstractProcessingServiceTest {
+public class ExecutionEventNotifierImplTest extends AbstractProcessingServiceTest {
 
     @Test
-    public void testLaunchExecution() {
-
+    public void testNotifyEvent() {
         AtomicReference<ExecutionContext> ctxRef = new AtomicReference<>();
         configureProcessUpdater(p -> p.withExecutable(ctx -> { ctxRef.set(ctx); return Mono.just(ctx); }));
 
@@ -45,18 +47,20 @@ public class ExecutionServiceImplTest extends AbstractProcessingServiceTest {
 
         PExecutionRequestEvent execReq = new PExecutionRequestEvent("ecid", batch.getId(), List.empty());
 
-        // Launch exec
+        // Launch exec to get the execution context
         PExecution exec = executionService.launchExecution(execReq).block();
-        assertThat(exec.getExecutionCorrelationId()).isEqualTo(execReq.getExecutionCorrelationId());
 
-        // Make sure it's in database
-        ExecutionEntity execEntity = execEntityRepo.findById(exec.getId()).block();
-        assertThat(execEntity.getId()).isEqualTo(exec.getId());
+        PStepFinal finalStep = new PStepFinal(SUCCESS, TimeUtils.nowUtc(), "yes");
+        ExecutionEvent.FinalEvent finalEvent = new ExecutionEvent.FinalEvent(finalStep, List.empty());
 
-        assertThat(ctxRef.get()).isNotNull();
-        assertThat(ctxRef.get().getExec()).isEqualTo(exec);
-        assertThat(ctxRef.get().getBatch()).isEqualTo(batch);
+        // Get the notifier from the context
+        IExecutionEventNotifier notifier = ctxRef.get().getEventNotifier();
+        assertThat(notifier).isInstanceOf(ExecutionEventNotifierImpl.class);
+
+        // Ensure that the step has been added to the execution
+        PExecution notifiedExec = notifier.notifyEvent(finalEvent).block();
+        assertThat(notifiedExec.getSteps().last().getStatus()).isEqualTo(finalStep.getStatus());
+        assertThat(notifiedExec.getSteps().last().getMessage()).isEqualTo(finalStep.getMessage());
 
     }
-
 }

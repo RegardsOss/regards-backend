@@ -17,8 +17,81 @@
 */
 package fr.cnes.regards.modules.processing.service;
 
-public class BatchServiceImplTest {
+import fr.cnes.regards.modules.processing.domain.PBatch;
+import fr.cnes.regards.modules.processing.domain.PUserAuth;
+import fr.cnes.regards.modules.processing.domain.constraints.ConstraintChecker;
+import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
+import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
+import fr.cnes.regards.modules.processing.service.exception.ProcessConstraintViolationsException;
+import fr.cnes.regards.modules.processing.testutils.servlet.TestSpringConfiguration;
+import io.vavr.collection.HashMap;
+import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
+import reactor.core.scheduler.Schedulers;
 
-    // FIXME do the test
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
+@ContextConfiguration(
+        classes = { TestSpringConfiguration.class, AbstractProcessingServiceTest.Config.class }
+)
+public class BatchServiceImplTest extends AbstractProcessingServiceTest {
+
+    @Test
+    public void checkAndCreateBatch() {
+        UUID processBusinessId = UUID.randomUUID();
+
+        PBatchRequest batchRequest = new PBatchRequest(
+            "bcid",
+            processBusinessId,
+                THE_TENANT,
+                THE_USER,
+                THE_ROLE,
+            HashMap.empty(),
+            HashMap.of("dataset1", new FileSetStatistics("dataset1", 5, 123456L))
+        );
+
+        PBatch batch = batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN), batchRequest).block();
+
+        assertThat(batch.getCorrelationId()).isEqualTo(batchRequest.getCorrelationId());
+
+        PBatch inDatabase = batchRepo.findById(batch.getId()).block();
+        assertThat(inDatabase.getCorrelationId()).isEqualTo(batchRequest.getCorrelationId());
+    }
+
+    @Test
+    public void checkAndCreateBatchError() {
+
+        configureProcessUpdater(p -> p.withBatchChecker(ConstraintChecker.violation(() -> "wrong for some reason")));
+
+        UUID processBusinessId = UUID.randomUUID();
+
+        PBatchRequest batchRequest = new PBatchRequest(
+                "bcid",
+                processBusinessId,
+                THE_TENANT,
+                THE_USER,
+                THE_ROLE,
+                HashMap.empty(),
+                HashMap.of("dataset1", new FileSetStatistics("dataset1", 5, 123456L))
+        );
+
+        AtomicReference<Throwable> throwableRef = new AtomicReference<>();
+
+        batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN), batchRequest)
+            .subscribeOn(Schedulers.immediate())
+            .subscribe(
+                b -> fail("Should not return a value"),
+                e -> throwableRef.set(e));
+
+        assertThat(throwableRef.get()).isNotNull();
+        assertThat(throwableRef.get()).isInstanceOf(ProcessConstraintViolationsException.class);
+        assertThat(((ProcessConstraintViolationsException)throwableRef.get()).getViolations()).anyMatch(v -> v.getMessage().equals("wrong for some reason"));
+
+        assertThat(batchEntityRepo.findAll().collectList().block()).isEmpty();
+    }
 
 }

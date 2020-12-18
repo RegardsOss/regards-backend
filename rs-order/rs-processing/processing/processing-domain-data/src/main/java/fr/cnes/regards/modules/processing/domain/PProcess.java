@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDe
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import lombok.Value;
+import lombok.With;
 
 import java.util.UUID;
 
@@ -93,7 +94,7 @@ public interface PProcess {
     /**
      * This class is a default immutable concrete implementation for {@link PProcess}.
      */
-    @Value
+    @Value @With
     class ConcretePProcess implements PProcess {
         UUID processId;
         String processName;

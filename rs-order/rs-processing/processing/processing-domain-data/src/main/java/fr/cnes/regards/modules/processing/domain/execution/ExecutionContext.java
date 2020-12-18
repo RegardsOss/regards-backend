@@ -24,14 +24,15 @@ import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
-import io.vavr.control.Option;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
+import java.util.function.BiFunction;
 
 /**
  * This class corresponds to all the context for an execution:
@@ -52,10 +53,10 @@ public class ExecutionContext {
 
     IExecutionEventNotifier eventNotifier;
 
-    @With HashMap<Class<?>, Object> params; // FIXME: make this map immutable, but it caused problems in SimpleShellProcessPlugin
+    @With Map<Class<?>, Object> params;
 
     public ExecutionContext(PExecution exec, PBatch batch, PProcess process, IExecutionEventNotifier notifierFor) {
-        this(exec, batch, process, notifierFor, new HashMap<>());
+        this(exec, batch, process, notifierFor, HashMap.empty());
     }
 
     public Mono<ExecutionContext> sendEvent(ExecutionEvent event) {
@@ -64,14 +65,30 @@ public class ExecutionContext {
                 .map(this::withExec);
     }
 
+    public <T> ExecutionContext withParam(Class<T> type, T newValue, BiFunction<T, T, T> mergeFn) {
+        return withParam(
+            type,
+            params.get(type)
+                .map(t -> {
+                    try {
+                        T t1 = (T) t;
+                        return mergeFn.apply(t1, newValue);
+                    }
+                    catch(Exception e) {
+                        return newValue;
+                    }
+                })
+                .getOrElse(newValue)
+        );
+    }
+
     public <T> ExecutionContext withParam(Class<T> type, T value) {
-        params.put(type, value);
-        return withParams(params);
+        return withParams(params.put(type, value));
     }
 
     @SuppressWarnings("unchecked")
     public <T> Mono<T> getParam(Class<T> type) {
-        return Option.of(params.get(type))
+        return params.get(type)
             .map(o -> (T)o)
             .map(Mono::just)
             .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '" + type.getSimpleName() + "' not found")));

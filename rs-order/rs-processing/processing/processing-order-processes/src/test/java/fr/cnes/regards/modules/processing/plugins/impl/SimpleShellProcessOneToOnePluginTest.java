@@ -269,7 +269,7 @@ public class SimpleShellProcessOneToOnePluginTest {
         shellProcessPlugin.setStorageService(storageService);
 
         shellProcessPlugin.setScope(Scope.SUBORDER);
-        shellProcessPlugin.setCardinality(Cardinality.ONE_PER_EXECUTION);
+        shellProcessPlugin.setCardinality(Cardinality.ONE_PER_INPUT_FILE);
 
         // TODO: try removing these two setters to fix a cast exception
         shellProcessPlugin.setDurationForecast("10min");
