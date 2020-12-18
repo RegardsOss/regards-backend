@@ -25,6 +25,12 @@ public class FeatureCreationRequestEventValidation
             return true;
         }
 
+        // Check if feature is not null (cause not null constraint on feature may be detected after
+        if (value.getFeature() == null) {
+            // Skip validation ... not null constraint on feature will fail
+            return true;
+        }
+
         // If there are files and at least one does not have a storage, request is invalid!
         // A null storage id can only exist with storage metadata!
         if (value.getFeature().hasFiles()) {

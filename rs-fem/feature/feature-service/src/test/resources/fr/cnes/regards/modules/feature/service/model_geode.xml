@@ -55,6 +55,14 @@
 				</enumeration>
 			</restriction>
 		</attribute>
+		<attribute optional="true">
+			<label>GPFS URL</label>
+			<name>gpfs_url</name>
+			<type>STRING</type>
+			<restriction>
+				<pattern>^(https?|ftp|file|gpfs)://[-a-zA-Z0-9+&#38;@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&#38;@#/%=~_|]</pattern>
+			</restriction>
+		</attribute>
 	</fragment>
 	<!-- File infos -->
 	<fragment>

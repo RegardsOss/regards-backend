@@ -47,6 +47,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureValidationService.class);
 
+    private static final String FEATURE = "self";
+
     private static final String URN_FIELD = "urn";
 
     private static final String ID_FIELD = "id";
@@ -69,14 +71,22 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         String objectName = Feature.class.getName();
         Errors errors = new MapBindingResult(new HashMap<>(), objectName);
 
+        // Null check
+        if (feature == null) {
+            // Error might be detected before and so might be reported twice
+            errors.rejectValue(FEATURE, "feature.null.error.message", "Feature must not be null");
+            return errors;
+        }
+
         // Validate feature
         validator.validate(feature, errors);
 
-        if (feature.getId() == null && mode != ValidationMode.PATCH) {
-            errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id mustn't be null");
+        if ((feature.getId() == null) && (mode != ValidationMode.PATCH)) {
+            errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id must not be null");
         } else {
             if (feature.getId().length() > ID_LENGTH) {
-                errors.rejectValue(ID_FIELD, "feature.id.length.error.message",
+                errors.rejectValue(ID_FIELD,
+                                   "feature.id.length.error.message",
                                    String.format("Feature id must not exceed %s characters", ID_LENGTH));
             }
         }
@@ -85,14 +95,16 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         switch (mode) {
             case CREATION:
                 if (feature.getUrn() != null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.unexpected.error.message",
+                    errors.rejectValue(URN_FIELD,
+                                       "feature.urn.unexpected.error.message",
                                        "Unexpected URN in feature creation");
                 }
                 break;
             case UPDATE:
             case PATCH:
                 if (feature.getUrn() == null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message",
+                    errors.rejectValue(URN_FIELD,
+                                       "feature.urn.required.error.message",
                                        "URN is required in feature update");
                 }
                 break;
@@ -106,7 +118,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         }
 
         if (errors.hasErrors()) {
-            LOGGER.error("Error validating feature \"{}\" : {}", feature.getId(),
+            LOGGER.error("Error validating feature \"{}\" : {}",
+                         feature.getId(),
                          ErrorTranslator.getErrorsAsString(errors));
         }
 
