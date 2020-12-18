@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class RequestInfo<ID> {
      */
     private Multimap<ID, String> denied = ArrayListMultimap.create();
 
-    private List<String> messages;
+    private List<String> messages = new ArrayList<>();
 
     public List<String> getMessages() {
         return messages;

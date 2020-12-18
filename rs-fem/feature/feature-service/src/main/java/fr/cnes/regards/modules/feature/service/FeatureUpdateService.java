@@ -38,6 +38,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
@@ -50,7 +51,12 @@ import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -158,8 +164,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         validator.validate(item, errors);
         validateRequest(item, errors);
 
-        if (existingRequestIds.contains(item.getRequestId()) || grantedRequests.stream()
-                .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+        if (existingRequestIds.contains(item.getRequestId())
+                || grantedRequests.stream().anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
@@ -181,7 +187,12 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                                                         item.getFeature() != null ? item.getFeature().getUrn() : null,
                                                         RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
-            requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
+            if (item.getFeature() == null) {
+                requestInfo.getMessages()
+                        .add(String.format("Request {} without feature has been rejected", item.getRequestId()));
+            } else {
+                requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
+            }
             metrics.count(item.getFeature() != null ? item.getFeature().getId() : null,
                           null,
                           FeatureUpdateState.UPDATE_REQUEST_DENIED);
@@ -221,11 +232,12 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     public int scheduleRequests() {
 
         long scheduleStart = System.currentTimeMillis();
-        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo.findRequestsToSchedule(
-                FeatureRequestStep.LOCAL_DELAYED,
-                OffsetDateTime.now(),
-                PageRequest.of(0, this.properties.getMaxBulkSize()),
-                OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
+        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo
+                .findRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
+                                        OffsetDateTime.now(),
+                                        PageRequest.of(0, this.properties.getMaxBulkSize()),
+                                        OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing()))
+                .getContent();
 
         if (!requestsToSchedule.isEmpty()) {
 
@@ -247,11 +259,8 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
                 jobParameters.add(new JobParameter(FeatureUpdateJob.IDS_PARAMETER, requestIds));
 
                 // the job priority will be set according the priority of the first request to schedule
-                JobInfo jobInfo = new JobInfo(false,
-                                              requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                                              jobParameters,
-                                              authResolver.getUser(),
-                                              FeatureUpdateJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                        jobParameters, authResolver.getUser(), FeatureUpdateJob.class.getName());
                 jobInfoService.createAsQueued(jobInfo);
 
                 LOGGER.trace("------------->>> {} update requests scheduled in {} ms",
@@ -378,9 +387,10 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         featureUpdateRequestRepo.saveAll(errorRequests);
 
         // if notifications are required
-        if(notificationSettingsService.retrieve().isActiveNotification()) {
-            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, successfulRequest.stream().map(
-                    AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+        if (notificationSettingsService.retrieve().isActiveNotification()) {
+            featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                successfulRequest.stream().map(AbstractFeatureRequest::getId)
+                                                        .collect(Collectors.toSet()));
         } else {
             featureUpdateRequestRepo.deleteInBatch(successfulRequest);
         }
