@@ -88,6 +88,11 @@
 			<groupId>fr.cnes.regards.modules.processing</groupId>
 			<artifactId>processing-test</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-dao</artifactId>
+			<scope>test</scope>
+		</dependency>
 
     </dependencies>
 
