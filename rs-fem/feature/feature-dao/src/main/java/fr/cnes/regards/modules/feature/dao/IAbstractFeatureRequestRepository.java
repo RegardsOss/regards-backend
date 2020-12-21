@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -53,4 +54,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Modifying
     @Query("update AbstractFeatureRequest afr set afr.state = :newState where afr.id in :ids ")
     void updateState(@Param("newState") RequestState requestState, @Param("ids") Set<Long> ids);
+
+    void deleteByUrnIn(Set<FeatureUniformResourceName> collect);
 }

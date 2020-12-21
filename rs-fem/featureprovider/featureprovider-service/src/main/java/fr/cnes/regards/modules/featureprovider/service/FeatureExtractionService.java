@@ -360,15 +360,24 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         if (!denied.isEmpty()) {
             Map<String, FeatureRequestEvent> deniedRequestPerRequestId = denied.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
-            List<FeatureExtractionResponseEvent> events = new ArrayList<>();
-            for (Map.Entry<String, FeatureRequestEvent> request : deniedRequestPerRequestId.entrySet()) {
-                events.add(new FeatureExtractionResponseEvent(request.getKey(), request.getValue().getRequestOwner(),
-                        RequestState.ERROR, request.getValue().getErrors()));
+            // Filter requests associated to an existing FeatureExtractionResponseEvent
+            Set<String> extractRequestIds = featureExtractionRequestRepo
+                    .findByRequestIdIn(deniedRequestPerRequestId.keySet());
+
+            if (!extractRequestIds.isEmpty()) {
+                List<FeatureExtractionResponseEvent> events = new ArrayList<>();
+                // For each, send an extraction error event
+                for (String extractRequestId : extractRequestIds) {
+                    FeatureRequestEvent extractRequest = deniedRequestPerRequestId.get(extractRequestId);
+                    events.add(new FeatureExtractionResponseEvent(extractRequestId, extractRequest.getRequestOwner(),
+                            RequestState.ERROR, extractRequest.getErrors()));
+                }
+                publisher.publish(events);
+                // Update FeatureExtractionResponseEvent with error state
+                featureExtractionRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR,
+                                                                     extractRequestIds);
+                featureExtractionRequestRepo.updateState(RequestState.ERROR, extractRequestIds);
             }
-            publisher.publish(events);
-            featureExtractionRequestRepo.updateStepByRequestIdIn(FeatureRequestStep.REMOTE_CREATION_ERROR,
-                                                                 deniedRequestPerRequestId.keySet());
-            featureExtractionRequestRepo.updateState(RequestState.ERROR, deniedRequestPerRequestId.keySet());
         }
 
     }
@@ -378,13 +387,22 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         if (!granted.isEmpty()) {
             Map<String, FeatureRequestEvent> grantedRequestPerRequestId = granted.stream()
                     .collect(Collectors.toMap(FeatureRequestEvent::getRequestId, Function.identity()));
-            List<FeatureExtractionResponseEvent> events = new ArrayList<>();
-            for (Map.Entry<String, FeatureRequestEvent> request : grantedRequestPerRequestId.entrySet()) {
-                events.add(new FeatureExtractionResponseEvent(request.getKey(), request.getValue().getRequestOwner(),
-                        RequestState.SUCCESS, new HashSet<>()));
+            // Filter requests associated to an existing FeatureExtractionResponseEvent
+            Set<String> extractRequestIds = featureExtractionRequestRepo
+                    .findByRequestIdIn(grantedRequestPerRequestId.keySet());
+
+            if (!extractRequestIds.isEmpty()) {
+                List<FeatureExtractionResponseEvent> events = new ArrayList<>();
+                // For each, send an extraction success event
+                for (String extractRequestId : extractRequestIds) {
+                    events.add(new FeatureExtractionResponseEvent(extractRequestId,
+                            grantedRequestPerRequestId.get(extractRequestId).getRequestOwner(), RequestState.SUCCESS,
+                            new HashSet<>()));
+                }
+                publisher.publish(events);
+                // Delete all success FeatureExtractionResponseEvent
+                featureExtractionRequestRepo.deleteAllByRequestIdIn(extractRequestIds);
             }
-            publisher.publish(events);
-            featureExtractionRequestRepo.deleteAllByRequestIdIn(grantedRequestPerRequestId.keySet());
         }
     }
 }
