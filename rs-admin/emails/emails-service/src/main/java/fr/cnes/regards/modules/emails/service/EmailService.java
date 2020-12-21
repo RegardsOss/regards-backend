@@ -186,7 +186,11 @@ public class EmailService extends AbstractEmailService {
         if (message.getSentDate() != null) {
             email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));
         }
-        email.setSubject(message.getSubject());
+        if (message.getSubject().length() > Email.MAX_SUBJECT_SIZE) {
+            email.setSubject(message.getSubject().substring(0, Email.MAX_SUBJECT_SIZE - 1));
+        } else {
+            email.setSubject(message.getSubject());
+        }
         email.setText(message.getText());
         email.setTo(message.getTo());
 

@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.emails.domain;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -8,7 +10,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.validation.constraints.NotEmpty;
-import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Type;
 import org.springframework.util.ObjectUtils;
@@ -26,12 +27,14 @@ import fr.cnes.regards.framework.jpa.converters.StringArrayConverter;
 @Entity(name = "t_email")
 @SequenceGenerator(name = "emailSequence", initialValue = 1, sequenceName = "seq_email")
 public class Email implements IIdentifiable<Long> {
-    private static final int MAX_EMAIL_ADDRESS_SIZE = 320;
 
-    private static final int MAX_SUBJECT_SIZE = 78;
+    public static final int MAX_EMAIL_ADDRESS_SIZE = 320;
+
+    public static final int MAX_SUBJECT_SIZE = 78;
 
     // completely arbitrary but @Type("text") cannot be used conjointly with @Convert
-    private static final int MAX_ARRAY_STRING_SIZE = 1000;
+    public static final int MAX_ARRAY_STRING_SIZE = 1000;
+
     /**
      * Id of the email
      */
@@ -39,7 +42,6 @@ public class Email implements IIdentifiable<Long> {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "emailSequence")
     @Column(name = "id")
     private Long id;
-
 
     /**
      * Array of bcc recipients' email address
@@ -96,7 +98,7 @@ public class Email implements IIdentifiable<Long> {
     @Column(name = "att_name", length = 100) // reasonable size for a filename
     private String attName;
 
-//    @Lob
+    //    @Lob
     @Column(name = "attachment")
     private byte[] attachment;
 
@@ -273,12 +275,14 @@ public class Email implements IIdentifiable<Long> {
             return false;
         }
         final Email otherMessage = (Email) pOther;
-        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from) && ObjectUtils
-                .nullSafeEquals(this.replyTo, otherMessage.replyTo) && java.util.Arrays.equals(this.to, otherMessage.to)
-                && java.util.Arrays.equals(this.cc, otherMessage.cc) && java.util.Arrays
-                .equals(this.bcc, otherMessage.bcc) && ObjectUtils.nullSafeEquals(this.sentDate, otherMessage.sentDate)
-                && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject) && ObjectUtils
-                .nullSafeEquals(this.text, otherMessage.text));
+        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from)
+                && ObjectUtils.nullSafeEquals(this.replyTo, otherMessage.replyTo)
+                && java.util.Arrays.equals(this.to, otherMessage.to)
+                && java.util.Arrays.equals(this.cc, otherMessage.cc)
+                && java.util.Arrays.equals(this.bcc, otherMessage.bcc)
+                && ObjectUtils.nullSafeEquals(this.sentDate, otherMessage.sentDate)
+                && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject)
+                && ObjectUtils.nullSafeEquals(this.text, otherMessage.text));
     }
 
     @Override

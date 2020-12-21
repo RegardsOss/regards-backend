@@ -124,9 +124,8 @@ public class NotificationService implements INotificationService {
 
         notification.setRoleRecipients(getAllRecipientRoles(dto.getRoleRecipients()));
 
-        // check the notification type and send it immediately if FATAL or ERROR
-        if ((notification.getLevel() == NotificationLevel.FATAL)
-                || (notification.getLevel() == NotificationLevel.ERROR)) {
+        // check the notification type and send it immediately if FATAL
+        if ((notification.getLevel() == NotificationLevel.FATAL)) {
             applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
         }
 
@@ -251,7 +250,8 @@ public class NotificationService implements INotificationService {
     @Override
     public Long countUnreadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.countByStatus(NotificationStatus.UNREAD.toString(), authenticationResolver.getUser(),
+            return notificationRepository.countByStatus(NotificationStatus.UNREAD.toString(),
+                                                        authenticationResolver.getUser(),
                                                         authenticationResolver.getRole());
         } else {
             return notificationRepository.countByStatus(NotificationStatus.UNREAD);
@@ -264,7 +264,8 @@ public class NotificationService implements INotificationService {
     @Override
     public Long countReadNotifications() {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.countByStatus(NotificationStatus.READ.toString(), authenticationResolver.getUser(),
+            return notificationRepository.countByStatus(NotificationStatus.READ.toString(),
+                                                        authenticationResolver.getUser(),
                                                         authenticationResolver.getRole());
         } else {
             return notificationRepository.countByStatus(NotificationStatus.READ);
