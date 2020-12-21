@@ -21,21 +21,14 @@ package fr.cnes.regards.modules.feature.domain.request;
 import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
 /**
  * Contain a storage path to add to a {@link Feature} of a {@link FeatureEntity}

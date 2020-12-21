@@ -18,18 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 
 /**
  * @author Kevin Marchois
