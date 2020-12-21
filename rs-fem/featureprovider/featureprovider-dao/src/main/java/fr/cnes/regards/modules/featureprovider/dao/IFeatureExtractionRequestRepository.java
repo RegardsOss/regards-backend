@@ -30,9 +30,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 
 /**
  * @author Kevin Marchois
@@ -50,6 +50,9 @@ public interface IFeatureExtractionRequestRepository extends JpaRepository<Featu
     List<FeatureExtractionRequest> findByStep(@Param("localDelayed") FeatureRequestStep localDelayed,
             @Param("now") OffsetDateTime now, Pageable page);
 
+    @Query("select frr.requestId from FeatureExtractionRequest frr where frr.requestId in :requestIds")
+    Set<String> findByRequestIdIn(@Param("requestIds") Set<String> requestIds);
+
     /**
      * Update {@link FeatureRequestStep} step
      * @param step new {@link FeatureRequestStep}
@@ -64,7 +67,8 @@ public interface IFeatureExtractionRequestRepository extends JpaRepository<Featu
 
     @Modifying
     @Query("update FeatureExtractionRequest frr set frr.step = :newStep where frr.requestId in :requestIds")
-    void updateStepByRequestIdIn(@Param("newStep") FeatureRequestStep step, @Param("requestIds") Set<String> requestIds);
+    void updateStepByRequestIdIn(@Param("newStep") FeatureRequestStep step,
+            @Param("requestIds") Set<String> requestIds);
 
     @Modifying
     @Query("update FeatureExtractionRequest frr set frr.state = :newState where frr.requestId in :requestIds")
