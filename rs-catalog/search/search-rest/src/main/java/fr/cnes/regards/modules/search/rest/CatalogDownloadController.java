@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import feign.Response;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -101,16 +102,17 @@ public class CatalogDownloadController {
             // To download through storage client we must be authenticate as user in order to
             // impact the download quotas, but we upgrade the privileges so that the request passes.
             FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+            Response response = null;
             try {
-                Response response = storageRestClient.downloadFile(checksum);
+                response = storageRestClient.downloadFile(checksum);
                 InputStreamResource isr = null;
                 if (response.status() == HttpStatus.OK.value()) {
-                    isr = new InputStreamResource(response.body().asInputStream());
+                    isr = new InputStreamResource(new ResponseStreamProxy(response));
                 } else {
                     LOGGER.error("Error downloading file {} from storage", checksum);
                     // if body is not null, forward the error content too
                     if (response.body() != null) {
-                        isr = new InputStreamResource(response.body().asInputStream());
+                        isr = new InputStreamResource(new ResponseStreamProxy(response));
                     }
                 }
                 HttpHeaders headers = new HttpHeaders();
