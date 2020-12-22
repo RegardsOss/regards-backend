@@ -135,8 +135,10 @@ public class DownloadService implements IDownloadService {
                 if (httpStatus.is2xxSuccessful()) {
                     return new ResponseStreamProxy(response);
                 } else if (httpStatus == HttpStatus.TOO_MANY_REQUESTS) {
+                    response.close();
                     throw new DownloadQuotaExceededException(user, checksum);
                 } else {
+                    response.close();
                     throw new IOException(String
                             .format("Internal download failed for user %s for checksum %s, storage answered with status %s",
                                     user, checksum, response.status()));
