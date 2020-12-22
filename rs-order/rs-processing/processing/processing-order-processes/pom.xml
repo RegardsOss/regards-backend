@@ -53,6 +53,10 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>urn-regards</artifactId>
         </dependency>
         <dependency>
