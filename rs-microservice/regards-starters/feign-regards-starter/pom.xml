@@ -66,6 +66,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards</artifactId>
+        </dependency>
         <!-- Starter feign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
