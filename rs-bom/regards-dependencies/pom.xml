@@ -283,6 +283,11 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>feign-regards</artifactId>
+				<version>${feign.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>feign-regards-starter</artifactId>
 				<version>${feign.starter.version}</version>
 			</dependency>
