@@ -62,7 +62,6 @@ import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
-import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
@@ -258,6 +257,9 @@ public class OrderDataFileService implements IOrderDataFileService {
                                 + copiedBytes + "/" + dataFile.getFilesize() + " bytes");
                     }
                 }
+            }
+            if (response != null) {
+                response.close();
             }
         }
         // Update OrderDataFile state
