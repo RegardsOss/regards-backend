@@ -18,39 +18,12 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
-
 /**
  * Interface to define a Catalog service plugin. This plugins applies on multiple entities.
- * The multiple entities can be :
- *  - Directly provided with a list of identifiers.
- *  - Provided throught an opensearch request (used to manage a big volume of entities)
  *
  * @author Sébastien Binda
  *
  */
 public interface IEntitiesServicePlugin extends IService {
-
-    /**
-     * Apply the current service to the provided list of entities.
-     * @param pEntitiesId Identifier of each entity
-     */
-    ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId, HttpServletResponse response);
-
-    /**
-     * Apply the current service with a given openSearch request and an entityType to apply on.
-     * @param pOpenSearchQuery OpenSearch query
-     * @param pEntityType Entity type
-     */
-    ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
-            HttpServletResponse response);
 
 }

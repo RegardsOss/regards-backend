@@ -72,6 +72,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -233,7 +235,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", TestService.EXPECTED_VALUE);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
@@ -247,7 +251,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     private void validateTestPluginResponse(ResultActions resultActions, File expectedFileResult) throws IOException {
         File resultFile = File.createTempFile("result.json", "");
 
-        resultFile.deleteOnExit();
+        // resultFile.deleteOnExit();
 
         try (FileOutputStream fos = new FileOutputStream(resultFile)) {
             // Wait for availability
@@ -289,7 +293,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         dynamicParameters.put("q", "truc");
         dynamicParameters.put("para", "HelloWorld");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
         ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
@@ -304,7 +310,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_JSON);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
@@ -323,7 +331,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_XML);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
@@ -342,7 +352,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_IMG);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
@@ -361,7 +373,9 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         HashMap<String, String> dynamicParameters = new HashMap<>();
         dynamicParameters.put(SampleServicePlugin.RESPONSE_TYPE_PARAMETER, SampleServicePlugin.RESPONSE_TYPE_OTHER);
 
-        ServicePluginParameters parameters = new ServicePluginParameters("ENTITY_ID", null, null, null,
+        ServicePluginParameters parameters = new ServicePluginParameters(EntityType.DATA,
+                new SearchRequest(SearchEngineMappings.LEGACY_PLUGIN_ID, null, null, Sets.newHashSet("ENTITY_ID"), null,
+                        null),
                 dynamicParameters);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
@@ -27,13 +25,13 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 @Plugin(description = "Example many plugin.", id = "OneManyTestPlugin", version = "1.0.0", author = "REGARDS Team",
         contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
@@ -41,14 +39,7 @@ import fr.cnes.regards.modules.search.domain.SearchRequest;
 public class ExampleOneManyPlugin extends AbstractCatalogServicePlugin implements IEntitiesServicePlugin {
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
-            HttpServletResponse response) {
-        return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                  "Response example !");
-    }
-
-    @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse response) {
         return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
                                                                   "Response example !");

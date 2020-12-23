@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -40,19 +39,7 @@ public interface IService {
      * @param pParameters plugin parameters {@link ServicePluginParameters}
      * @return @{link ResponseEntity}
      */
-    public default ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse response) {
-        if ((this instanceof ISingleEntityServicePlugin) && (pParameters.getEntityId() != null)) {
-            return ((ISingleEntityServicePlugin) this).applyOnEntity(pParameters.getEntityId(), response);
-        } else if (this instanceof IEntitiesServicePlugin) {
-            if (pParameters.getSearchRequest() != null) {
-                return ((IEntitiesServicePlugin) this).applyOnQuery(pParameters.getSearchRequest(),
-                                                                    pParameters.getEntityType(), response);
-            } else {
-                return ((IEntitiesServicePlugin) this).applyOnEntities(pParameters.getEntitiesId(), response);
-            }
-        }
-        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-    }
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
+            HttpServletResponse response);
 
 }

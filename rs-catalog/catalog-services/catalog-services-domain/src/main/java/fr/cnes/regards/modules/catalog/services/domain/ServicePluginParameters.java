@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain;
 
-import java.util.List;
 import java.util.Map;
 
 import fr.cnes.regards.framework.urn.EntityType;
@@ -31,16 +30,6 @@ import fr.cnes.regards.modules.search.domain.SearchRequest;
  *
  */
 public class ServicePluginParameters {
-
-    /**
-     * Entity identifier to apply plugin service on (case of ONE catalog service plugin type)
-     */
-    private String entityId;
-
-    /**
-     * Entities ids to apply plugin service on (case of MANY catalog service plugin type)
-     */
-    private List<String> entitiesId;
 
     /**
      * Entities type to apply plugin service on (case of MANY catalog service plugin type)
@@ -61,22 +50,12 @@ public class ServicePluginParameters {
         super();
     }
 
-    public ServicePluginParameters(String entityId, List<String> entitiesId, EntityType entityType,
-            SearchRequest searchRequest, Map<String, String> dynamicParameters) {
+    public ServicePluginParameters(EntityType entityType, SearchRequest searchRequest,
+            Map<String, String> dynamicParameters) {
         super();
-        this.entityId = entityId;
-        this.entitiesId = entitiesId;
         this.entityType = entityType;
         this.searchRequest = searchRequest;
         this.dynamicParameters = dynamicParameters;
-    }
-
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public List<String> getEntitiesId() {
-        return entitiesId;
     }
 
     public EntityType getEntityType() {

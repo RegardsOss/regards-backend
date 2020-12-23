@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.ISingleEntityServicePlugin;
@@ -38,7 +39,8 @@ import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePl
 public class ExampleOnePlugin extends AbstractCatalogServicePlugin implements ISingleEntityServicePlugin {
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response) {
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
+            HttpServletResponse response) {
         return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
                                                                   "Response example !");
     }

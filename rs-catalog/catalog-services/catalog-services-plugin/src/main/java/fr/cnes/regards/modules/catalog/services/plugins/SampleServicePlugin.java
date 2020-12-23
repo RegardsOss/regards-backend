@@ -19,26 +19,30 @@
 package fr.cnes.regards.modules.catalog.services.plugins;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 
 /**
  * SampleServicePlugin
@@ -90,6 +94,9 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
             optional = false, label = "Response type")
     private String responseType;
 
+    @Autowired
+    private ServiceHelper helper;
+
     /**
      * Init method
      */
@@ -99,23 +106,23 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse response) {
-        if ((pEntitiesId == null) || pEntitiesId.isEmpty()) {
+        Page<DataObject> results;
+        try {
+            results = helper.getDataObjects(pParameters.getSearchRequest(), 0, 500);
+        } catch (ModuleException e) {
+            return apply("Error during data search !" + e.getMessage(), response);
+        }
+        if ((results != null) && results.hasContent() && !results.getContent().isEmpty()) {
+            if ((results.getSize() == 1) && (results.getContent().get(0).getId() != null)) {
+                return apply(results.getContent().get(0).getIpId().toString(), response);
+            } else {
+                return apply(String.format("Number of entities %d", results.getContent().size()), response);
+            }
+        } else {
             return apply("no entities", response);
         }
-        return apply(String.format("Number of entities %d", pEntitiesId.size()), response);
-    }
-
-    @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
-            HttpServletResponse response) {
-        return apply("exemple response", response);
-    }
-
-    @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response) {
-        return apply(pEntityId, response);
     }
 
     /**

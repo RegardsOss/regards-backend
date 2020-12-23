@@ -18,24 +18,13 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 /**
- * Interface to define a Catalog service plugin. This plugins applies on a single entity provided by is identifier.
+ * Interface to define a Catalog service plugin. This plugins applies on a single entity.
  *
  * @author Sébastien Binda
  *
  */
 @FunctionalInterface
 public interface ISingleEntityServicePlugin extends IService {
-
-    /**
-     * Apply the current service for the given entity identifier.
-     * @param pEntityId entity identifier
-     */
-    ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response);
 
 }

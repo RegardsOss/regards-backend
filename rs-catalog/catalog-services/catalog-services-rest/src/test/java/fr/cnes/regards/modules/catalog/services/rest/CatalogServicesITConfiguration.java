@@ -18,24 +18,33 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * Module-wide configuration for integration tests.
@@ -92,6 +101,18 @@ public class CatalogServicesITConfiguration {
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean("plop")
+    @Primary
+    public ServiceHelper serviceHelper() throws ModuleException {
+        List<DataObject> objects = new ArrayList<>();
+        DataObject dbo = new DataObject();
+        objects.add(dbo);
+        ServiceHelper mock = Mockito.mock(ServiceHelper.class);
+        Mockito.when(mock.getDataObjects(Mockito.any(SearchRequest.class), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(new PageImpl<DataObject>(objects));
+        return mock;
     }
 
 }
