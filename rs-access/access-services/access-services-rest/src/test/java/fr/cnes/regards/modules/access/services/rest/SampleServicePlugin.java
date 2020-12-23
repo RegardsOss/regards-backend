@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -31,9 +29,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 /**
  * SampleServicePlugin
@@ -92,33 +90,8 @@ public class SampleServicePlugin implements ISampleServicePlugin {
     }
 
     @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntities(List<String> pEntitiesId,
+    public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
             HttpServletResponse response) {
-        if ((pEntitiesId == null) || pEntitiesId.isEmpty()) {
-            return apply("no entities", response);
-        }
-        return apply(String.format("Number of entities %d", pEntitiesId.size()), response);
-    }
-
-    @Override
-    public ResponseEntity<StreamingResponseBody> applyOnQuery(SearchRequest searchRequest, EntityType pEntityType,
-            HttpServletResponse response) {
-        return apply("query", response);
-    }
-
-    @Override
-    public ResponseEntity<StreamingResponseBody> applyOnEntity(String pEntityId, HttpServletResponse response) {
-        return apply(pEntityId, response);
-    }
-
-    /**
-     * Sample method to return a result for the current service.
-     *
-     * @param pResultValue String to return in JSON or XML format
-     * @param response HttpResponse
-     * @return {@link ResponseEntity}
-     */
-    private ResponseEntity<StreamingResponseBody> apply(String pResultValue, HttpServletResponse response) {
         return null;
     }
 
