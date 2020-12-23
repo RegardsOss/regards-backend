@@ -115,7 +115,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
             return apply("Error during data search !" + e.getMessage(), response);
         }
         if ((results != null) && results.hasContent() && !results.getContent().isEmpty()) {
-            if ((results.getSize() == 1) && (results.getContent().get(0).getId() != null)) {
+            if ((results.getContent().size() == 1) && (results.getContent().get(0).getId() != null)) {
                 return apply(results.getContent().get(0).getIpId().toString(), response);
             } else {
                 return apply(String.format("Number of entities %d", results.getContent().size()), response);
