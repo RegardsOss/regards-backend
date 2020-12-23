@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -21,18 +21,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework</groupId>
-    <artifactId>regards-utils</artifactId>
-    <description>REGARDS core</description>
-    <packaging>pom</packaging>
-
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <artifactId>regards-parent</artifactId>
         <version>1.4.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
+    <groupId>fr.cnes.regards.framework.utils</groupId>
+    <artifactId>query-parser</artifactId>
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -54,13 +51,21 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>plugin-utils</module>
-        <module>file-utils</module>
-        <module>exception-utils</module>
-        <module>encryption-standalone</module>
-        <module>spring-utils</module>
-        <module>metalink-utils</module>
-        <module>query-parser</module>
-    </modules>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>8.7.0</version>
+		</dependency>
+		<dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 </project>
