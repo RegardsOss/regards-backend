@@ -29,6 +29,7 @@ public class BulkSaveLightResult {
     private int inErrorDocsCount = 0;
 
     public BulkSaveLightResult() {
+        super();
     }
 
     public void addSavedDocId() {

@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +54,7 @@ public class BulkSaveResult {
     private String detailedErrorMsg;
 
     public BulkSaveResult() {
+        super();
     }
 
     /**

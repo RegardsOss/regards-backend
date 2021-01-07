@@ -104,8 +104,8 @@ public abstract class AbstractAttributeMapping {
         this.name = name;
         this.namespace = nameSpace;
         this.nameDS = mappingDS;
-        if (type == null && isMappedToStaticProperty()) {
-            this.type = getStaticAttributeType(name);
+        if ((type == null) && isMappedToStaticProperty()) {
+            this.type = AbstractAttributeMapping.getStaticAttributeType(name);
         } else {
             this.type = type;
         }
@@ -122,7 +122,7 @@ public abstract class AbstractAttributeMapping {
      *            <li>{@value #GEOMETRY}
      * @return the {@link PropertyType}
      */
-    protected PropertyType getStaticAttributeType(String staticAttrName) {
+    public static PropertyType getStaticAttributeType(String staticAttrName) {
         switch (staticAttrName) {
             case PRIMARY_KEY:
                 // case RAW_DATA_SIZE:
@@ -203,7 +203,9 @@ public abstract class AbstractAttributeMapping {
     }
 
     public final boolean isMappedToStaticProperty() {
-        return isPrimaryKey() || isLastUpdate() || isLabel() || isRawData() /* || isRawDataSize() */ || isThumbnail()
-                || isGeometry();
+        boolean result = isPrimaryKey() || isLastUpdate();
+        result |= isLabel() || isRawData();
+        result |= isThumbnail() || isGeometry();
+        return result;
     }
 }

@@ -41,7 +41,7 @@ public class StaticAttributeMapping extends AbstractAttributeMapping {
     @Override
     public PropertyType getType() {
         if (super.type == null) {
-            super.type = getStaticAttributeType(getName());
+            super.type = AbstractAttributeMapping.getStaticAttributeType(getName());
         }
         return super.type;
     }
