@@ -1,31 +1,8 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.annotations.VisibleForTesting;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
-import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
-import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
-import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
-import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.env.Environment;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.RATE_EXPIRATION_TICKING_SCHEDULER;
+import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.SYNC_TICKING_SCHEDULER;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -37,14 +14,36 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.RATE_EXPIRATION_TICKING_SCHEDULER;
-import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfiguration.QuotaManagerConfiguration.SYNC_TICKING_SCHEDULER;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.annotations.VisibleForTesting;
+
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
+import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
+import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
+import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 
 @Component
 @MultitenantTransactional
 public class QuotaManagerImpl implements IQuotaManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImpl.class);
 
     private long rateExpirationTick;
 
@@ -77,30 +76,24 @@ public class QuotaManagerImpl implements IQuotaManager {
 
     // not final because tests use the setter to assert
     // not volatile because under normal conditions (i.e. not tests) this field is never reassigned
-    private Map<String, Cache<String, UserDiffs>> userDiffsByTenant=
-        new ConcurrentHashMap<>();
+    private Map<String, Cache<String, UserDiffs>> userDiffsByTenant = new ConcurrentHashMap<>();
 
     // not final because tests use the setter to assert
     // not volatile because under normal conditions (i.e. not tests) this field is never reassigned
-    private Map<String, Map<String, DiffSync>> diffsAccumulatorByTenant =
-        new java.util.HashMap<>();
+    private Map<String, Map<String, DiffSync>> diffsAccumulatorByTenant = new ConcurrentHashMap<>();
 
-    public QuotaManagerImpl() {}
+    public QuotaManagerImpl() {
+    }
 
     @Autowired
-    public QuotaManagerImpl(
-        @Value("${regards.storage.rate.expiration.tick:120}") long rateExpirationTick,
-        @Value("${regards.storage.quota.sync.tick:30}") long syncTick,
-        @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
-        @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler,
-        IDownloadQuotaRepository quotaRepository,
-        ITenantResolver tenantResolver,
-        IRuntimeTenantResolver runtimeTenantResolver,
-        ApplicationContext applicationContext,
-        Environment env
-    ) {
+    public QuotaManagerImpl(@Value("${regards.storage.rate.expiration.tick:120}") long rateExpirationTick,
+            @Value("${regards.storage.quota.sync.tick:30}") long syncTick,
+            @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
+            @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler,
+            IDownloadQuotaRepository quotaRepository, ITenantResolver tenantResolver,
+            IRuntimeTenantResolver runtimeTenantResolver, ApplicationContext applicationContext, Environment env) {
         this.rateExpirationTick = rateExpirationTick;
-        this.syncTick = 2*syncTick;
+        this.syncTick = 2 * syncTick;
         this.rateExpirationTickingScheduler = rateExpirationTickingScheduler;
         this.syncTickingScheduler = syncTickingScheduler;
         this.quotaRepository = quotaRepository;
@@ -115,17 +108,13 @@ public class QuotaManagerImpl implements IQuotaManager {
         self = applicationContext.getBean(QuotaManagerImpl.class);
 
         // init diffs and diffsAcc by tenant
-        tenantResolver.getAllActiveTenants()
-            .forEach(tenant -> {
-                getUserDiffsCache(tenant);
-                diffsAccumulatorByTenant.put(tenant, new java.util.HashMap<>());
-            })
-        ;
+        tenantResolver.getAllActiveTenants().forEach(tenant -> {
+            getUserDiffsCache(tenant);
+            diffsAccumulatorByTenant.put(tenant, new java.util.HashMap<>());
+        });
 
         // start schedulers only if not in "noschedule" profile (i.e. disable schedulers for tests)
-        boolean shouldStartSchedulers =
-            Arrays.stream(env.getActiveProfiles())
-                .distinct() // maybe useless but I don't trust
+        boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles()).distinct() // maybe useless but I don't trust
                 .noneMatch(profile -> profile.equals("noschedule"));
         if (shouldStartSchedulers) {
             startGaugeExpirationScheduler();
@@ -135,34 +124,27 @@ public class QuotaManagerImpl implements IQuotaManager {
 
     private void startGaugeExpirationScheduler() {
         rateExpirationTickingScheduler.setThreadNamePrefix("gauge-expiration-");
-        rateExpirationTickingScheduler.scheduleWithFixedDelay(() ->
-            tenantResolver.getAllActiveTenants()
-                .forEach(tenant -> {
+        rateExpirationTickingScheduler
+                .scheduleWithFixedDelay(() -> tenantResolver.getAllActiveTenants().forEach(tenant -> {
                     runtimeTenantResolver.forceTenant(tenant);
                     try {
                         self.purgeExpiredGauges();
                     } finally {
                         runtimeTenantResolver.clearTenant();
                     }
-                }),
-            Duration.ofSeconds(rateExpirationTick)
-        );
+                }), Duration.ofSeconds(rateExpirationTick));
     }
 
     private void startQuotasSyncScheduler() {
         syncTickingScheduler.setThreadNamePrefix("quotas-sync-");
-        syncTickingScheduler.scheduleWithFixedDelay(() ->
-            tenantResolver.getAllActiveTenants()
-                .forEach(tenant -> {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    try {
-                        self.syncGauges(tenant);
-                    } finally {
-                        runtimeTenantResolver.clearTenant();
-                    }
-                }),
-            Duration.ofSeconds(syncTick/2)
-        );
+        syncTickingScheduler.scheduleWithFixedDelay(() -> tenantResolver.getAllActiveTenants().forEach(tenant -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.syncGauges(tenant);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }), Duration.ofSeconds(syncTick / 2));
     }
 
     // public just to let Spring do its proxy-thing without messing up my transactions
@@ -173,14 +155,13 @@ public class QuotaManagerImpl implements IQuotaManager {
     // public just to let Spring do its proxy-thing without messing up my transactions
     public void syncGauges(String tenant) {
         // create critical section, just in case because logic not thread-safe
-        while(!inSync.compareAndSet(false, true)) {
+        while (!inSync.compareAndSet(false, true)) {
             // wait until we get the lock
         }
 
         try {
             // sync will start, diffsAcc should be initialized if not found
-            diffsAccumulatorByTenant.computeIfAbsent(tenant, t ->
-                new java.util.HashMap<>());
+            diffsAccumulatorByTenant.computeIfAbsent(tenant, t -> new java.util.HashMap<>());
 
             // swap current instance diff counters for tenant users to 0 and get previous value
             ConcurrentMap<String, UserDiffs> userDiffs = getUserDiffsCache(tenant).asMap();
@@ -195,22 +176,16 @@ public class QuotaManagerImpl implements IQuotaManager {
             Map<String, DiffSync> diffsAcc = diffsAccumulatorByTenant.get(tenant);
             currentSync.forEach((q, u) -> {
                 DiffSync r = new DiffSync(u.rateDiff, u.quotaDiff);
-                diffsAcc.compute(q, (ignored, l) ->
-                    (l == null) ? r : DiffSync.combine(l, r)
-                );
+                diffsAcc.compute(q, (ignored, l) -> (l == null) ? r : DiffSync.combine(l, r));
             });
 
             // do sync quota/rate with db
-            Map<String, UserDiffs> newUserDiffs =
-                self.flushSyncAndRefreshQuotas(
-                    diffsAccumulatorByTenant.get(tenant)//.get()
-                );
+            Map<String, UserDiffs> newUserDiffs = self.flushSyncAndRefreshQuotas(diffsAccumulatorByTenant.get(tenant)//.get()
+            );
 
             // swap user gauges for fresh global gauge but keep working instance counter diff
-            newUserDiffs.forEach((q, r) ->
-                userDiffs.compute(q, (ignored, l) ->
-                    (r == null) ? l : UserDiffs.refresh(l, r)
-                ));
+            newUserDiffs
+                    .forEach((q, r) -> userDiffs.compute(q, (ignored, l) -> (r == null) ? l : UserDiffs.refresh(l, r)));
 
             // sync is finished, diffsAcc for current tenant can be cleared for next sync
             diffsAccumulatorByTenant.put(tenant, new HashMap<>());
@@ -222,10 +197,7 @@ public class QuotaManagerImpl implements IQuotaManager {
 
     private Cache<String, UserDiffs> getUserDiffsCache(String tenant) {
         return userDiffsByTenant.computeIfAbsent(tenant, t -> Caffeine.newBuilder()
-            .expireAfterAccess(30, TimeUnit.MINUTES)
-            .maximumSize(10_000)
-            .build()
-        );
+                .expireAfterAccess(30, TimeUnit.MINUTES).maximumSize(10_000).build());
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -235,7 +207,8 @@ public class QuotaManagerImpl implements IQuotaManager {
         diffSyncs.forEach((email, sync) -> {
             // sync current instance quota/rate for user
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, sync.quotaDiff);
-            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, sync.rateDiff, LocalDateTime.now().plusSeconds(syncTick));
+            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, sync.rateDiff,
+                                                        LocalDateTime.now().plusSeconds(syncTick));
 
             // and refresh its global quota/rate (select across all instances gauges)
             UserQuotaAggregate globalQuota = quotaRepository.fetchDownloadQuotaSum(email);
@@ -259,29 +232,19 @@ public class QuotaManagerImpl implements IQuotaManager {
         UserDiffs diffs = gaugeSyncs.get(email, ignored -> {
             // create its current instance quota/rate if not exist (diff = 0L so operation is idempotent and thus CAS-loop safe)
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, 0L);
-            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, 0L, LocalDateTime.now().plusSeconds(syncTick));
+            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, 0L,
+                                                        LocalDateTime.now().plusSeconds(syncTick));
             // and get its global quota/rate (select across all instances gauges)
             UserQuotaAggregate globalQuota = quotaRepository.fetchDownloadQuotaSum(email);
             UserRateAggregate globalRate = quotaRepository.fetchDownloadRatesSum(email);
-            return new UserDiffs(
-                globalRate,
-                0L,
-                globalQuota,
-                0L);
+            return new UserDiffs(globalRate, 0L, globalQuota, 0L);
         });
 
         //noinspection ConstantConditions
         long counter = diffs.quota.getCounter() + diffs.quotaDiff;
         long gauge = diffs.rate.getGauge() + diffs.rateDiff;
 
-        return Tuple.of(
-            new UserQuotaAggregate(
-                counter
-            ),
-            new UserRateAggregate(
-                gauge
-            )
-        );
+        return Tuple.of(new UserQuotaAggregate(counter), new UserRateAggregate(gauge));
     }
 
     @Override
@@ -292,15 +255,14 @@ public class QuotaManagerImpl implements IQuotaManager {
         if (userDiffs.getIfPresent(email) == null) {
             throw new IllegalStateException("Cannot incr before get");
         }
-        userDiffs.asMap()
-            .computeIfPresent(email, (q, u) -> {
-                if (u.getTotalRate() >= quota.getRateLimit() && quota.getRateLimit() >= 0) {
-                    // nice try little thread, but no, you're too late
-                    throw DownloadLimitExceededException.buildDownloadRateExceededException(email, quota.getRateLimit(), u.getTotalRate());
-                }
-                return UserDiffs.incrementQuotaAndRateDiffs(u);
-                }
-            );
+        userDiffs.asMap().computeIfPresent(email, (q, u) -> {
+            if ((u.getTotalRate() >= quota.getRateLimit()) && (quota.getRateLimit() >= 0)) {
+                // nice try little thread, but no, you're too late
+                throw DownloadLimitExceededException.buildDownloadRateExceededException(email, quota.getRateLimit(),
+                                                                                        u.getTotalRate());
+            }
+            return UserDiffs.incrementQuotaAndRateDiffs(u);
+        });
     }
 
     @Override
@@ -311,10 +273,7 @@ public class QuotaManagerImpl implements IQuotaManager {
         if (userDiffs.getIfPresent(email) == null) {
             throw new IllegalStateException("Cannot decr before get");
         }
-        userDiffs.asMap()
-            .computeIfPresent(email, (q, u) ->
-                UserDiffs.decrementRateDiff(u)
-            );
+        userDiffs.asMap().computeIfPresent(email, (q, u) -> UserDiffs.decrementRateDiff(u));
     }
 
     @VisibleForTesting
@@ -343,6 +302,7 @@ public class QuotaManagerImpl implements IQuotaManager {
     }
 
     public static class UserDiffs {
+
         private final UserRateAggregate rate;
 
         private final Long rateDiff;
@@ -379,7 +339,8 @@ public class QuotaManagerImpl implements IQuotaManager {
         }
 
         public static UserDiffs renew(UserDiffs old) {
-            return new UserDiffs(new UserRateAggregate(old.rate.getGauge() + old.rateDiff), 0L, new UserQuotaAggregate(old.quota.getCounter() + old.quotaDiff), 0L);
+            return new UserDiffs(new UserRateAggregate(old.rate.getGauge() + old.rateDiff), 0L,
+                    new UserQuotaAggregate(old.quota.getCounter() + old.quotaDiff), 0L);
         }
 
         public static UserDiffs refresh(UserDiffs old, UserDiffs fresh) {
@@ -419,17 +380,13 @@ public class QuotaManagerImpl implements IQuotaManager {
             return rateDiff;
         }
 
-
         @VisibleForTesting
         public Long getQuotaDiff() {
             return quotaDiff;
         }
 
         public static DiffSync combine(DiffSync left, DiffSync right) {
-            return new DiffSync(
-                left.rateDiff + right.rateDiff,
-                left.quotaDiff + right.quotaDiff
-            );
+            return new DiffSync(left.rateDiff + right.rateDiff, left.quotaDiff + right.quotaDiff);
         }
     }
 }

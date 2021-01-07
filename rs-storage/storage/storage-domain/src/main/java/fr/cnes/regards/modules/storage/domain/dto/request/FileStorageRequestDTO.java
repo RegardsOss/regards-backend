@@ -169,17 +169,16 @@ public class FileStorageRequestDTO {
 
     @Override
     public String toString() {
-        return "FileStorageRequestDTO ["
-            + (fileName != null ? "fileName=" + fileName + ", " : "")
-            + (checksum != null ? "checksum=" + checksum + ", " : "")
-            + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
-            + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
-            + (owner != null ? "owner=" + owner + ", " : "")
-            + (type != null ? "type=" + type + ", " : "")
-            + (originUrl != null ? "originUrl=" + originUrl + ", " : "")
-            + (storage != null ? "storage=" + storage + ", " : "")
-            + (subDirectory != null ? "subDirectory=" + subDirectory : "")
-            + "]";
+        String fn = (fileName != null ? "fileName=" + fileName + ", " : "");
+        String cs = (checksum != null ? "checksum=" + checksum + ", " : "");
+        String algo = (algorithm != null ? "algorithm=" + algorithm + ", " : "");
+        String mt = (mimeType != null ? "mimeType=" + mimeType + ", " : "");
+        String ow = (owner != null ? "owner=" + owner + ", " : "");
+        String t = (type != null ? "type=" + type + ", " : "");
+        String url = (originUrl != null ? "originUrl=" + originUrl + ", " : "");
+        String sto = (storage != null ? "storage=" + storage + ", " : "");
+        String sd = (subDirectory != null ? "subDirectory=" + subDirectory : "");
+        return "FileStorageRequestDTO [" + fn + cs + algo + mt + ow + t + url + sto + sd + "]";
     }
 
 }

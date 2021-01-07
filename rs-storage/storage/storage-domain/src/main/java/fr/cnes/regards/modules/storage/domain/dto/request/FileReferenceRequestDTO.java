@@ -173,19 +173,18 @@ public class FileReferenceRequestDTO {
 
     @Override
     public String toString() {
-        return "FileReferenceRequestDTO ["
-            + (fileName != null ? "fileName=" + fileName + ", " : "")
-            + (checksum != null ? "checksum=" + checksum + ", " : "")
-            + (algorithm != null ? "algorithm=" + algorithm + ", " : "")
-            + (mimeType != null ? "mimeType=" + mimeType + ", " : "")
-            + (fileSize != null ? "fileSize=" + fileSize + ", " : "")
-            + (height != null ? "height=" + height + ", " : "")
-            + (width != null ? "width=" + width + ", " : "")
-            + (owner != null ? "owner=" + owner + ", " : "")
-            + (storage != null ? "storage=" + storage + ", " : "")
-            + (url != null ? "url=" + url + ", " : "")
-            + (type != null ? "type=" + type : "")
-            + "]";
+        String fn = (fileName != null ? "fileName=" + fileName + ", " : "");
+        String cs = (checksum != null ? "checksum=" + checksum + ", " : "");
+        String algo = (algorithm != null ? "algorithm=" + algorithm + ", " : "");
+        String mt = (mimeType != null ? "mimeType=" + mimeType + ", " : "");
+        String fs = (fileSize != null ? "fileSize=" + fileSize + ", " : "");
+        String h = (height != null ? "height=" + height + ", " : "");
+        String w = (width != null ? "width=" + width + ", " : "");
+        String ow = (owner != null ? "owner=" + owner + ", " : "");
+        String sto = (storage != null ? "storage=" + storage + ", " : "");
+        String u = (url != null ? "url=" + url + ", " : "");
+        String t = (type != null ? "type=" + type : "");
+        return "FileReferenceRequestDTO [" + fn + cs + algo + mt + fs + h + w + ow + sto + u + t + "]";
     }
 
 }

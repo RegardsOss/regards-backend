@@ -135,14 +135,13 @@ public class FileReferenceEvent implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileReferenceEvent ["
-            + (checksum != null ? "checksum=" + checksum + ", " : "")
-            + (type != null ? "type=" + type + ", " : "")
-            + (message != null ? "message=" + message + ", " : "")
-            + (owners != null ? "owners=" + owners + ", " : "")
-            + (location != null ? "location=" + location + ", " : "")
-            + (groupIds != null ? "groupIds=" + groupIds : "")
-            + "]";
+        String cs = (checksum != null ? "checksum=" + checksum + ", " : "");
+        String t = (type != null ? "type=" + type + ", " : "");
+        String m = (message != null ? "message=" + message + ", " : "");
+        String ow = (owners != null ? "owners=" + owners + ", " : "");
+        String loc = (location != null ? "location=" + location + ", " : "");
+        String gids = (groupIds != null ? "groupIds=" + groupIds : "");
+        return "FileReferenceEvent [" + cs + t + m + ow + loc + gids + "]";
     }
 
 }
