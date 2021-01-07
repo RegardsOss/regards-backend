@@ -64,10 +64,12 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes") AbstractGeometry other = (AbstractGeometry) obj;
+        @SuppressWarnings("rawtypes")
+        AbstractGeometry other = (AbstractGeometry) obj;
         if (coordinates == null) {
             return other.coordinates == null;
-        } else
+        } else {
             return coordinates.equals(other.coordinates);
+        }
     }
 }

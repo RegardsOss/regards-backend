@@ -70,8 +70,9 @@ public class GeometryCollection extends AbstractGeoJsonObject implements IGeomet
         GeometryCollection other = (GeometryCollection) obj;
         if (geometries == null) {
             return other.geometries == null;
-        } else
+        } else {
             return geometries.equals(other.geometries);
+        }
     }
 
     @Override

@@ -152,7 +152,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                     invokeBatchHandler(tenant, validMessages);
                     // Acknowledge all valid messages
                     handleValidMessage(tenant, validMessages, channel);
-                } catch (Exception ex) {
+                } catch (Exception ex) { // NOSONAR
                     // Re-queue all valid messages
                     handleBatchException(tenant, validMessages, channel, ex);
                 }

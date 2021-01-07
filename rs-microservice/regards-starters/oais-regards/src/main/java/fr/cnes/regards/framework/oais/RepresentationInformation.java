@@ -100,8 +100,9 @@ public class RepresentationInformation {
         }
         if (syntax == null) {
             return other.syntax == null;
-        } else
+        } else {
             return syntax.equals(other.syntax);
+        }
     }
 
 }
