@@ -28,19 +28,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
 
-import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.emails.service.IEmailService;
@@ -63,8 +61,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final IEmailService emailService;
 
-    private final IAccountsClient accountsClient;
-
     private final IStorageRestClient storageClient;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
@@ -77,14 +73,12 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
-                                         IAccountsClient accountsClient, IStorageRestClient storageClient,
-                                         IRuntimeTenantResolver runtimeTenantResolver,
-                                         IEmailVerificationTokenService emailVerificationTokenService,
+            IStorageRestClient storageClient, IRuntimeTenantResolver runtimeTenantResolver,
+            IEmailVerificationTokenService emailVerificationTokenService,
             @Value("${regards.mails.noreply.address:regards@noreply.fr}") String noreply) {
         super();
         this.templateService = templateService;
         this.emailService = emailService;
-        this.accountsClient = accountsClient;
         this.storageClient = storageClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.emailVerificationTokenService = emailVerificationTokenService;
@@ -136,13 +130,11 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             } else {
                 LOGGER.error("Could not find the associated quota limits for templating the email content.");
             }
-        } catch (Exception e) {
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
             LOGGER.debug("Could not add quota paragraph to the email content.", e);
         } finally {
             FeignSecurityManager.reset();
         }
-
-
 
         String message;
         try {

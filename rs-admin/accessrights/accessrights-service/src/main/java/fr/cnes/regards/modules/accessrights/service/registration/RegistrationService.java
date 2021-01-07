@@ -128,8 +128,11 @@ public class RegistrationService implements IRegistrationService {
                 return;
             } else {
                 // Check that all information are provided to create account
-                if (accountDto.getEmail() == null || accountDto.getFirstName() == null
-                        || accountDto.getLastName() == null || accountDto.getPassword() == null && !isExternalAccess) {
+                boolean isNotValid = accountDto.getEmail() == null;
+                isNotValid |= accountDto.getFirstName() == null;
+                isNotValid |= accountDto.getLastName() == null;
+                isNotValid |= (accountDto.getPassword() == null) && !isExternalAccess;
+                if (isNotValid) {
                     LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
                               accountDto.getEmail());
                     throw new EntityNotFoundException(accountDto.getEmail(), Account.class);

@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -38,14 +42,11 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import javax.validation.constraints.Email;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -354,8 +355,9 @@ public class ProjectUser implements IIdentifiable<Long> {
         final ProjectUser other = (ProjectUser) obj;
         if (email == null) {
             return other.email == null;
-        } else
+        } else {
             return email.equals(other.email);
+        }
     }
 
     @Override

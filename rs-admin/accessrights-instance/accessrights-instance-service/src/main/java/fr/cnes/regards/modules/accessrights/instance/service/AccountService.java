@@ -63,7 +63,7 @@ public class AccountService implements IAccountService {
     /**
      * Class logger
      */
-    private static Logger LOG = LoggerFactory.getLogger(AccountService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Regex that the password should respect. Provided by property file.
@@ -320,7 +320,7 @@ public class AccountService implements IAccountService {
         // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
         toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
         // lets check issues with the invalidity date
-        if (accountValidityDuration != null && !accountValidityDuration.equals(0L)) {
+        if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
             LocalDateTime now = LocalDateTime.now();
             toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
                     .peek(a -> a.setStatus(AccountStatus.INACTIVE))
@@ -330,11 +330,11 @@ public class AccountService implements IAccountService {
         }
 
         // lets check issues with the password
-        if (accountPasswordValidityDuration != null && !accountPasswordValidityDuration.equals(0L)) {
+        if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
             toCheck.stream()
-                    .filter(a -> a.getExternal().equals(false) && a.getPasswordUpdateDate() != null
+                    .filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null)
                             && a.getPasswordUpdateDate().isBefore(minValidityDate))
                     .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD))
                     .peek(a -> LOG.info("Account {} set to {} because of its password validity date", a.getEmail(),

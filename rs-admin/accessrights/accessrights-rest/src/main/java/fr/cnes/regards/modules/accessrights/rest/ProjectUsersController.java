@@ -210,11 +210,12 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail)
             throws EntityNotFoundException {
         ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
-        if (user.getRole().getName().equals(DefaultRole.INSTANCE_ADMIN.toString())
-                || user.getRole().getName().equals(DefaultRole.ADMIN.toString())
-                || user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString())
-                || ((user.getRole().getParentRole() != null)
-                        && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()))) {
+        boolean isAdmin = user.getRole().getName().equals(DefaultRole.INSTANCE_ADMIN.toString());
+        isAdmin |= user.getRole().getName().equals(DefaultRole.ADMIN.toString());
+        isAdmin |= user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString());
+        isAdmin |= ((user.getRole().getParentRole() != null)
+                && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()));
+        if (isAdmin) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         }
         return new ResponseEntity<>(false, HttpStatus.OK);

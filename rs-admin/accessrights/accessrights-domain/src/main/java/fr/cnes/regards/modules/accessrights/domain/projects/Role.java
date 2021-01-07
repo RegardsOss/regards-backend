@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -39,10 +43,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
@@ -141,7 +141,7 @@ public class Role implements IIdentifiable<Long> {
      *
      * Constructor
      *
-
+    
      */
     public Role() {
         super();
@@ -156,7 +156,7 @@ public class Role implements IIdentifiable<Long> {
      */
     public Role(String name) {
         this();
-        this.name=name;
+        this.name = name;
     }
 
     /**
@@ -304,8 +304,9 @@ public class Role implements IIdentifiable<Long> {
         final Role other = (Role) obj;
         if (name == null) {
             return other.name == null;
-        } else
+        } else {
             return name.equals(other.name);
+        }
     }
 
     @Override

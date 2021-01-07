@@ -311,6 +311,7 @@ public class ProjectUserService implements IProjectUserService {
                 accountsClient.createAccount(newAccountWithPassword);
             }
         } catch (HttpServerErrorException | HttpClientErrorException e) {
+            LOG.error(e.getMessage(), e);
             ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
             throw new EntityInvalidException(errorResponse.getMessages());
         }
@@ -319,7 +320,7 @@ public class ProjectUserService implements IProjectUserService {
             // Get role for projectUser to create
             Role role;
             try {
-                if (accessRequestDto.getRoleName() != null && !accessRequestDto.getRoleName().isEmpty()) {
+                if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
                     role = roleService.retrieveRole(accessRequestDto.getRoleName());
                 } else {
                     role = roleService.getDefaultRole();

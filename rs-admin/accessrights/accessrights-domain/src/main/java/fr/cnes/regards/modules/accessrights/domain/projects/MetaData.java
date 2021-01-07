@@ -39,7 +39,8 @@ import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
  */
 @Entity
 // user_id is the JoinColumn defined in ProjectUser
-@Table(name = "t_metadata", uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = { "key", "user_id" }))
+@Table(name = "t_metadata",
+        uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = { "key", "user_id" }))
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
@@ -69,9 +70,9 @@ public class MetaData implements IIdentifiable<Long> {
      * @param visibility
      */
     public MetaData(String key, String value, UserVisibility visibility) {
-        this.key=key;
-        this.value=value;
-        this.visibility=visibility;
+        this.key = key;
+        this.value = value;
+        this.visibility = visibility;
     }
 
     @Override
@@ -129,8 +130,9 @@ public class MetaData implements IIdentifiable<Long> {
         final MetaData other = (MetaData) obj;
         if (id == null) {
             return other.id == null;
-        } else
+        } else {
             return id.equals(other.id);
+        }
     }
 
     @Override
