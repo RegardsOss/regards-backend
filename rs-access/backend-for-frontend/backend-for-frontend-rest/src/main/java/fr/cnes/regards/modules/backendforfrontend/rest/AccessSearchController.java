@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import com.google.gson.JsonParser;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -26,6 +25,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -35,11 +36,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -48,8 +52,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
@@ -58,6 +60,11 @@ import org.springframework.web.client.HttpStatusCodeException;
 @RestController
 @RequestMapping(path = AccessSearchController.ROOT_PATH)
 public class AccessSearchController {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchController.class);
 
     /**
      * Function converting a {@link JsonArray} into a {@link Stream}
@@ -112,7 +119,8 @@ public class AccessSearchController {
             JsonObject entities = searchClient.searchAll(allParams).getBody();
             injectApplicableServices(entities);
             return new ResponseEntity<>(entities, HttpStatus.OK);
-        } catch (HttpServerErrorException exception) {
+        } catch (HttpServerErrorException | HttpClientErrorException exception) {
+            LOGGER.error(exception.getMessage(), exception);
             JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
             HttpStatus statusCode = exception.getStatusCode();
             return new ResponseEntity<>(jsonObject, statusCode);
@@ -139,7 +147,8 @@ public class AccessSearchController {
             JsonObject entities = searchClient.searchCollections(allParams).getBody();
             injectApplicableServices(entities);
             return new ResponseEntity<>(entities, HttpStatus.OK);
-        } catch (HttpServerErrorException exception) {
+        } catch (HttpServerErrorException | HttpClientErrorException exception) {
+            LOGGER.error(exception.getMessage(), exception);
             JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
             HttpStatus statusCode = exception.getStatusCode();
             return new ResponseEntity<>(jsonObject, statusCode);
@@ -166,7 +175,8 @@ public class AccessSearchController {
             JsonObject entities = searchClient.searchDatasets(allParams).getBody();
             injectApplicableServices(entities);
             return new ResponseEntity<>(entities, HttpStatus.OK);
-        } catch (HttpServerErrorException exception) {
+        } catch (HttpServerErrorException | HttpClientErrorException exception) {
+            LOGGER.error(exception.getMessage(), exception);
             JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
             HttpStatus statusCode = exception.getStatusCode();
             return new ResponseEntity<>(jsonObject, statusCode);
@@ -191,7 +201,8 @@ public class AccessSearchController {
             JsonObject entities = searchClient.searchDataObjects(allParams).getBody();
             injectApplicableServices(entities);
             return new ResponseEntity<>(entities, HttpStatus.OK);
-        } catch (HttpServerErrorException exception) {
+        } catch (HttpServerErrorException | HttpClientErrorException exception) {
+            LOGGER.error(exception.getMessage(), exception);
             JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
             HttpStatus statusCode = exception.getStatusCode();
             return new ResponseEntity<>(jsonObject, statusCode);
@@ -224,7 +235,8 @@ public class AccessSearchController {
             JsonObject entities = searchClient.searchDataobjectsReturnDatasets(allParams).getBody();
             injectApplicableServices(entities);
             return new ResponseEntity<>(entities, HttpStatus.OK);
-        } catch (HttpServerErrorException exception) {
+        } catch (HttpServerErrorException | HttpClientErrorException exception) {
+            LOGGER.error(exception.getMessage(), exception);
             JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
             HttpStatus statusCode = exception.getStatusCode();
             return new ResponseEntity<>(jsonObject, statusCode);

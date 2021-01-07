@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -46,6 +48,11 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
  */
 @Component
 public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(UIPluginConfigurationManager.class);
 
     @Autowired
     private IUIPluginDefinitionService pluginDefService;
@@ -93,6 +100,7 @@ public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
                     }
                 }
             } catch (EntityException e) {
+                LOGGER.error(e.getMessage(), e);
                 importErrors.add(e.getMessage());
             }
         }
