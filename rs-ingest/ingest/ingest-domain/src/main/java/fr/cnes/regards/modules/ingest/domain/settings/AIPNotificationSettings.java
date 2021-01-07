@@ -17,15 +17,16 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.ingest.domain.settings;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 
 /**
  * Model to handle optional notifications
@@ -71,12 +72,14 @@ public class AIPNotificationSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
+        }
         AIPNotificationSettings that = (AIPNotificationSettings) o;
-        return activeNotification == that.activeNotification && Objects.equals(id, that.id);
+        return (activeNotification == that.activeNotification) && Objects.equals(id, that.id);
     }
 
     @Override

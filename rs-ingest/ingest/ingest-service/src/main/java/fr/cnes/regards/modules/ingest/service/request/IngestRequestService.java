@@ -101,6 +101,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 public class IngestRequestService implements IIngestRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestService.class);
+
     public static final String UNEXPECTED_STEP_S_TEMPLATE = "Unexpected step \"%s\"";
 
     @Autowired
@@ -307,8 +308,11 @@ public class IngestRequestService implements IIngestRequestService {
      */
     private Map<String, AIPEntity> preloadLastVersions(Set<IngestRequest> requests,
             Map<String, AIPEntity> aipEntities) {
-        Set<AIPEntity> lastVersions = aipService
-                .findLastByProviderIds(requests.stream().map(r -> r.getProviderId()).collect(Collectors.toSet()));
+        Set<AIPEntity> lastVersions = Sets.newHashSet();
+        if (requests != null) {
+            lastVersions = aipService
+                    .findLastByProviderIds(requests.stream().map(r -> r.getProviderId()).collect(Collectors.toSet()));
+        }
         return lastVersions.stream().collect(Collectors.toMap(AIPEntity::getProviderId, aip -> aip));
     }
 
