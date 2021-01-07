@@ -273,14 +273,8 @@ public final class PluginUtils {
             returnPlugin = (T) Class.forName(pluginClass).newInstance();
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, conf, instantiatedPlugins, dynamicParams);
-            // Autowired Spring bean in Spring IOC context
-            if (PluginUtilsBean.getInstance() != null) {
-                try {
-                    PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
-                } catch (Exception e) {
-                    throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
-                }
-            }
+            // Autowire beans
+            autowirePlugin(returnPlugin);
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);
@@ -291,6 +285,17 @@ public final class PluginUtils {
         }
 
         return returnPlugin;
+    }
+
+    private static <T> void autowirePlugin(T plugin) {
+        // Autowire Spring bean in Spring IOC context
+        if (PluginUtilsBean.getInstance() != null) {
+            try {
+                PluginUtilsBean.getInstance().processAutowiredBean(plugin);
+            } catch (Exception e) {
+                throw new PluginUtilsRuntimeException("Error during plugin instanciation", e);
+            }
+        }
     }
 
     //    /**
