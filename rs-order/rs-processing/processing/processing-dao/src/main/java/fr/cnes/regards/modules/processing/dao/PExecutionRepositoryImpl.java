@@ -17,8 +17,19 @@
 */
 package fr.cnes.regards.modules.processing.dao;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.r2dbc.core.DatabaseClient;
+import org.springframework.stereotype.Component;
+
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.repository.IPExecutionRepository;
@@ -28,17 +39,8 @@ import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.r2dbc.core.DatabaseClient;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class is a bridge between execution domain entities and database entities.
@@ -49,6 +51,8 @@ import java.util.concurrent.TimeUnit;
 public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     // @formatter:off
+
+    private static final String TENANT_COLUMN = "tenant";
 
     private static Cache<UUID, PExecution> cache = Caffeine
         .newBuilder()
@@ -138,7 +142,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         );
 
         execute = execute.bind("ignoreTenant", tenant == null);
-        execute = tenant == null ? execute.bindNull("tenant", String.class) : execute.bind("tenant", tenant);
+        execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
         execute = execute.bind("ignoreProcessBid", processBid == null);
         execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
@@ -178,7 +182,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         );
 
         execute = execute.bind("ignoreTenant", tenant == null);
-        execute = tenant == null ? execute.bindNull("tenant", String.class) : execute.bind("tenant", tenant);
+        execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
         execute = execute.bind("ignoreProcessBid", processBid == null);
         execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
