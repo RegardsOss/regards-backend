@@ -18,54 +18,44 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.*;
-import com.google.common.io.ByteStreams;
-import feign.Response;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.file.DownloadUtils;
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
-import fr.cnes.regards.modules.order.dao.OrderSpecifications;
-import fr.cnes.regards.modules.order.domain.*;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.domain.exception.*;
-import fr.cnes.regards.modules.order.metalink.schema.*;
-import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
-import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
-import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
-import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
-import fr.cnes.regards.modules.order.service.utils.OrderCounts;
-import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
-import fr.cnes.regards.modules.templates.service.TemplateService;
-import freemarker.template.TemplateException;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -85,29 +75,77 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-import java.io.*;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.google.common.base.Strings;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
+import com.google.common.io.ByteStreams;
+
+import feign.Response;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.dao.IBasketRepository;
+import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.dao.OrderSpecifications;
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FileState;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderStatus;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
+import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
+import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
+import fr.cnes.regards.modules.order.metalink.schema.FileType;
+import fr.cnes.regards.modules.order.metalink.schema.FilesType;
+import fr.cnes.regards.modules.order.metalink.schema.MetalinkType;
+import fr.cnes.regards.modules.order.metalink.schema.ObjectFactory;
+import fr.cnes.regards.modules.order.metalink.schema.ResourcesType;
+import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
+import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
+import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
+import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
+import fr.cnes.regards.modules.order.service.utils.OrderCounts;
+import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.templates.service.TemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * @author oroussel
@@ -137,9 +175,6 @@ public class OrderService implements IOrderService {
             .ofPattern("yyyy/MM/dd 'at' HH:mm:ss");
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
-
-    @Autowired
-    private IPublisher publisher;
 
     @Autowired
     private IOrderRepository repos;
@@ -335,7 +370,7 @@ public class OrderService implements IOrderService {
                 order.setWaitingForUser(true);
                 // No need to set order as waitingForUser because these files do not block anything
             }
-        } catch (Exception e) {
+        } catch (ModuleException e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
             order.setExpirationDate(OffsetDateTime.now().plusDays(orderValidationPeriodDays));
@@ -357,7 +392,7 @@ public class OrderService implements IOrderService {
         if (order.getStatus() != OrderStatus.FAILED) {
             try {
                 sendOrderCreationEmail(order);
-            } catch (Exception e) {
+            } catch (ModuleException e) {
                 LOGGER.warn("Error while attempting to send order creation email (order has been created anyway)", e);
             }
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
@@ -497,39 +532,43 @@ public class OrderService implements IOrderService {
                                         Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
     }
 
-    private void sendOrderCreationEmail(Order order) {
+    private void sendOrderCreationEmail(Order order) throws ModuleException {
         // Generate token
         String tokenRequestParam = ORDER_TOKEN + "=" + generateToken4PublicEndpoint(order);
 
         FeignSecurityManager.asSystem();
-        Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
-        String host = project.getHost();
-        FeignSecurityManager.reset();
-
-        String urlStart = host + urlPrefix + "/" + encode4Uri(microserviceName);
-
-        // Metalink file public url
-        Map<String, String> dataMap = new HashMap<>();
-        dataMap.put("expiration_date", order.getExpirationDate().toString());
-        dataMap.put("project", runtimeTenantResolver.getTenant());
-        dataMap.put("order_label", order.getId().toString());
-        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
-                + "&scope=" + runtimeTenantResolver.getTenant());
-        dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
-        dataMap.put("orders_url", host + order.getFrontendUrl());
-
-        // Create mail
-        String message;
         try {
-            message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
-        } catch (TemplateException e) {
-            throw new RsRuntimeException(e);
-        }
+            Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
+            String host = project.getHost();
+            FeignSecurityManager.reset();
 
-        // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(message, String.format("Order number %d is confirmed", order.getId()), null,
-                              order.getOwner());
+            String urlStart = host + urlPrefix + "/" + encode4Uri(microserviceName);
+
+            // Metalink file public url
+            Map<String, String> dataMap = new HashMap<>();
+            dataMap.put("expiration_date", order.getExpirationDate().toString());
+            dataMap.put("project", runtimeTenantResolver.getTenant());
+            dataMap.put("order_label", order.getId().toString());
+            dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
+                    + "&scope=" + runtimeTenantResolver.getTenant());
+            dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
+            dataMap.put("orders_url", host + order.getFrontendUrl());
+
+            // Create mail
+            String message;
+            try {
+                message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
+            } catch (TemplateException e) {
+                throw new RsRuntimeException(e);
+            }
+
+            // Send it
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, String.format("Order number %d is confirmed", order.getId()), null,
+                                  order.getOwner());
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            throw new ModuleException(e);
+        }
         FeignSecurityManager.reset();
     }
 

@@ -137,6 +137,7 @@ public class ProcessPluginConfigController implements IResourceController<Proces
             rightsConfigService.delete(processBusinessId);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (DeleteAttemptOnUsedProcessException | ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
