@@ -44,6 +44,7 @@ public class Configuration {
     private String language = "en";
 
     public Configuration() {
+        // Empty constructor needed for Spring
     }
 
     public String getQueryParameterName() {

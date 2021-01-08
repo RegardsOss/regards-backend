@@ -255,10 +255,11 @@ public class GeoTimeExtension extends AbstractExtension {
 
     @Override
     protected boolean supportsSearchParameter(SearchParameter parameter) {
-        return parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER)
-                || parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER)
-                || parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
-                        && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
+        boolean supports = parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER);
+        supports |= parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER);
+        supports |= parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
+                && TIME_NS.equals(parameter.getConfiguration().getNamespace()));
+        return supports;
     }
 
     private Module getAtomEntityResponseBuilder(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,

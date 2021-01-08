@@ -44,6 +44,7 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
                 try {
                     searchEngineConfigurationService.deleteConf(conf.getId());
                 } catch (ModuleException e) {
+                    LOGGER.error(e.getMessage(), e);
                     errors.add(e.getMessage());
                 }
             }
