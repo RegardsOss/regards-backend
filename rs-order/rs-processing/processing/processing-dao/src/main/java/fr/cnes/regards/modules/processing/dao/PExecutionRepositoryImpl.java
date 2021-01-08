@@ -54,6 +54,10 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     private static final String TENANT_COLUMN = "tenant";
 
+    private static final String PROCESS_BID_COLUMN = "processBid";
+
+    private static final String USER_EMAIL_COLUMN = "userEmail";
+
     private static Cache<UUID, PExecution> cache = Caffeine
         .newBuilder()
         .expireAfterAccess(30, TimeUnit.MINUTES)
@@ -144,9 +148,9 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         execute = execute.bind("ignoreTenant", tenant == null);
         execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
         execute = execute.bind("ignoreProcessBid", processBid == null);
-        execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
+        execute = processBid == null ? execute.bindNull(PROCESS_BID_COLUMN, UUID.class) : execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
-        execute = userEmail == null ? execute.bindNull("userEmail", String.class) : execute.bind("userEmail", userEmail);
+        execute = userEmail == null ? execute.bindNull(USER_EMAIL_COLUMN, String.class) : execute.bind(USER_EMAIL_COLUMN, userEmail);
         execute = execute.bind("status", status);
         execute = execute.bind("lastUpdatedFrom", from);
         execute = execute.bind("lastUpdatedTo", to);
@@ -184,9 +188,9 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         execute = execute.bind("ignoreTenant", tenant == null);
         execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
         execute = execute.bind("ignoreProcessBid", processBid == null);
-        execute = processBid == null ? execute.bindNull("processBid", UUID.class) : execute.bind("processBid", UUID.fromString(processBid));
+        execute = processBid == null ? execute.bindNull(PROCESS_BID_COLUMN, UUID.class) : execute.bind(PROCESS_BID_COLUMN, UUID.fromString(processBid));
         execute = execute.bind("ignoreUserEmail", userEmail == null);
-        execute = userEmail == null ? execute.bindNull("userEmail", String.class) : execute.bind("userEmail", userEmail);
+        execute = userEmail == null ? execute.bindNull(USER_EMAIL_COLUMN, String.class) : execute.bind(USER_EMAIL_COLUMN, userEmail);
         execute = execute.bind("status", status);
         execute = execute.bind("lastUpdatedFrom", from);
         execute = execute.bind("lastUpdatedTo", to);

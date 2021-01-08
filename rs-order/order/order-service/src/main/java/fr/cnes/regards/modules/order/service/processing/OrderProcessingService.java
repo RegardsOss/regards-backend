@@ -168,6 +168,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                 throw new ModuleException("Error retrieving  process infor for id " + processIdStr) ;
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(e.getMessage(),e);
             throw new ModuleException(e.getMessage());
         }
     }

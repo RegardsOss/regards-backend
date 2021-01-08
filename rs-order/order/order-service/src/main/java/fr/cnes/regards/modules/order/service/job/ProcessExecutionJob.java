@@ -18,7 +18,24 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -29,7 +46,16 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import fr.cnes.regards.modules.order.service.job.parameters.*;
+import fr.cnes.regards.modules.order.service.job.parameters.BasketDatasetSelectionJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessBatchCorrelationIdJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessDTOJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeature;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeatureJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFeatureDesc;
+import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.TenantJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ExecutionCorrelationIdentifier;
@@ -43,28 +69,17 @@ import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.order.*;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
+import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
+import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
+import fr.cnes.regards.modules.processing.order.Scope;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
 
 /**
  * This class allows to launch the execution for a processed dataset selection.
@@ -150,7 +165,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                             "A Scope case implementation is missing in " + this.getClass().getName());
             }
         }
-        catch(Exception e) {
+        catch(NotImplementedException e) {
             UUID errorCorrelationId = UUID.randomUUID();
             STATIC_LOGGER.error("errorCid={} dFailure to create executions for suborder {}",
                 errorCorrelationId, batchCorrelationId.repr(), e
@@ -270,6 +285,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
             return batchResponse.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
+            STATIC_LOGGER.error(e.getMessage(),e);
             throw new CouldNotCreateBatchException(jobInfoId, dsSelId,
                     processDatasetDescription.getProcessBusinessId());
         }
