@@ -766,16 +766,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 Path filePath = filePaths.next();
                 if (registerFile(filePath, info, scanningDate)) {
                     countRegistered++;
-                    OffsetDateTime lmd;
-                    try {
-                        lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC);
-                        if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
-                            lastUpdateDate = lmd;
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(),
-                                     e.getMessage());
-                    }
+                    lastUpdateDate = getLastUpdateDate(filePath, lastUpdateDate);
                 }
             } catch (Exception e) { // NOSONAR
                 LOGGER.error("Error parsing file. {}", e.getMessage());
@@ -784,6 +775,26 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         }
         return RegisterFilesResponse.build(countRegistered, lastUpdateDate, filePaths.hasNext());
+    }
+
+    /**
+     * Calculate last file update date
+     * @param filePath file  to check
+     * @param lastUpdateDate current last update date
+     * @return filePath last update date if after given current lastUpdateDate
+     */
+    private OffsetDateTime getLastUpdateDate(Path filePath, OffsetDateTime lastUpdateDate) {
+        OffsetDateTime result = lastUpdateDate;
+        try {
+            OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
+                                                          ZoneOffset.UTC);
+            if ((lastUpdateDate == null) || lmd.isAfter(lastUpdateDate)) {
+                result = lmd;
+            }
+        } catch (IOException e) {
+            LOGGER.error("Error getting last update date for file {} cause : {}.", filePath.toString(), e.getMessage());
+        }
+        return result;
     }
 
     @Override
