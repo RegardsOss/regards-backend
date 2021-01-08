@@ -84,17 +84,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                 try {
                     // Launch post processing plugin if present
                     if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
-                        // Get an instance of the plugin
-                        ISipPostProcessingPlugin postProcessPlugin;
-                        try {
-                            postProcessPlugin = pluginService
-                                    .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
-                            postProcessPlugin.postProcess(product);
-                        } catch (NotAvailablePluginConfigurationException e) {
-                            logger.warn("Unable to run postprocess plugin as it is disabled");
-                            logger.warn(e.getMessage(), e);
-                        }
-
+                        doPostProcess(acqProcessingChain, product);
                     }
                 } finally {
                     if (Thread.currentThread().isInterrupted()) {
@@ -108,6 +98,23 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         } catch (ModuleException pse) {
             logger.error("Business error", pse);
             throw new JobRuntimeException(pse);
+        }
+    }
+
+    /**
+     * Execute plugin post process action
+     * @param acqProcessingChain
+     * @param product
+     * @throws ModuleException
+     */
+    private void doPostProcess(AcquisitionProcessingChain acqProcessingChain, Product product) throws ModuleException {
+        try {
+            ISipPostProcessingPlugin postProcessPlugin = pluginService
+                    .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
+            postProcessPlugin.postProcess(product);
+        } catch (NotAvailablePluginConfigurationException e) {
+            logger.warn("Unable to run postprocess plugin as it is disabled");
+            logger.warn(e.getMessage(), e);
         }
     }
 
