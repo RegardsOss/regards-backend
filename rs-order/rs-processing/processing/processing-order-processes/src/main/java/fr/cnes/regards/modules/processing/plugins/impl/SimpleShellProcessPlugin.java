@@ -175,7 +175,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         return new OrderProcessInfo(
                 Scope.valueOf(scope),
                 Cardinality.valueOf(cardinality),
-                requiredDataTypes().toList(),
+                getRequiredDataTypes().toList(),
                 new SizeLimit(SizeLimit.Type.FEATURES, maxFeaturesInInput),
                 this.sizeForecast().get()
         );
@@ -271,7 +271,7 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         return getDistinctFeatureIds(inputFiles).size();
     }
 
-    protected Seq<DataType> requiredDataTypes() {
+    protected Seq<DataType> getRequiredDataTypes() {
         return io.vavr.collection.List.of(requiredDataTypes.split(","))
             .map(String::trim)
             .flatMap(str -> Try.of(() -> DataType.valueOf(str)));

@@ -571,11 +571,9 @@ public class OrderProcessingService implements IOrderProcessingService {
             boolean countExceedsProcessFeatureLimit = processLimitType == SizeLimit.Type.FEATURES && sizeLimit.isExceededBy(featureCount);
             boolean sizeExceedsProcessBytesLimit = processLimitType == SizeLimit.Type.BYTES && sizeLimit.isExceededBy(size);
 
-            boolean result = countExceedsMaxExternalBucketSize
-                    || sizeExceedsStorageBucketSize
-                    || countExceedsProcessFilesLimit
-                    || countExceedsProcessFeatureLimit
-                    || sizeExceedsProcessBytesLimit;
+            boolean result = countExceedsMaxExternalBucketSize || sizeExceedsStorageBucketSize;
+            result |= countExceedsProcessFilesLimit || countExceedsProcessFeatureLimit || sizeExceedsProcessBytesLimit;
+            
             if (result) {
                 LOGGER.info("order={} processUuid={} Suborder interrupted for reason: " +
                         " max external bucket = {}," +
