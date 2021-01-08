@@ -870,10 +870,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     inProgressFile.setState(AcquisitionFileState.VALID);
                     validFiles.add(inProgressFile);
                 } else {
-                    // FIXME move invalid files? Might be delegated to validation plugin!
+                    String errorMessage = "File not valid according to plugin "
+                            + validationPlugin.getClass().getSimpleName();
+                    LOGGER.error(errorMessage);
                     inProgressFile.setState(AcquisitionFileState.INVALID);
-                    inProgressFile.setError("File not valid according to plugin "
-                            + validationPlugin.getClass().getSimpleName());
+                    inProgressFile.setError(errorMessage);
                     acqFileRepository.save(inProgressFile);
                     invalidFiles.add(inProgressFile);
                 }
