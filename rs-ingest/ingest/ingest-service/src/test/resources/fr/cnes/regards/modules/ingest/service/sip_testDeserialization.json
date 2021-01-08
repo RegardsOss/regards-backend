@@ -1,0 +1,78 @@
+{
+  "id": "ISO_DENS_20710906_0628",
+  "type": "Feature",
+  "ipType": "DATA",
+  "geometry": null,
+  "properties": {
+    "pdi": {
+      "fixityInformation": {},
+      "contextInformation": {
+        "tags": [
+          "MockSTAF"
+        ]
+      },
+      "referenceInformation": {},
+      "provenanceInformation": {
+        "history": [
+          {
+            "date": "2018-10-09T11:26:03.116Z",
+            "comment": "Product SIP generation"
+          }
+        ]
+      },
+      "accessRightInformation": {}
+    },
+    "miscInformation": {},
+    "contentInformations": [
+      {
+        "dataObject": {
+          "urls": [
+            "file:/regards-input/PREPROD/cdpp/DA_TC_ARC_ISO_DENSITE/data/ISO_DENS_20710906_0628"
+          ],
+          "checksum": "9e06eceb77f636ec91665762b0a06733",
+          "filename": "ISO_DENS_20710906_0628",
+          "algorithm": "MD5",
+          "reference": false,
+          "regardsDataType": "RAWDATA"
+        },
+        "representationInformation": {
+          "syntax": {
+            "mimeType": "text/plain"
+          }
+        }
+      },
+      {
+        "dataObject": {
+          "urls": [
+            "file:/regards-input/PREPROD/cdpp/DA_TC_ARC_ISO_DENSITE/browse/iso_nete_20710906_0628B.png"
+          ],
+          "checksum": "7727b6554ebd3fd6feb9c429508471e3",
+          "filename": "iso_nete_20710906_0628B.png",
+          "algorithm": "MD5",
+          "reference": false,
+          "regardsDataType": "QUICKLOOK_SD"
+        },
+        "representationInformation": {
+          "syntax": {
+            "mimeType": "image/png"
+          }
+        }
+      }
+    ],
+    "descriptiveInformation": {
+      "productName": "ISO_DENS_20710906_0628",
+      "time_period": {
+        "stop_date": "2071-09-07T11:18:21.000Z",
+        "start_date": "2071-09-06T06:28:38.000Z"
+      },
+      "cycle_range": {
+        "min_cycle": 0,
+        "max_cycle": 100
+      },
+      "coordinates": {
+        "min_coordinates": -5.5523,
+        "max_coordinates": 83.263414
+      }
+    }
+  }
+}
