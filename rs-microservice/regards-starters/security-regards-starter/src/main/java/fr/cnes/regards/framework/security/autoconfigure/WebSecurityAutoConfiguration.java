@@ -29,11 +29,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.HeaderWriterFilter;
 
 import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -88,29 +90,36 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     private String corsRequestAuthorizedClientAddresses;
 
     @Override
-    protected void configure(final HttpSecurity pHttp) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
 
-        //lets disable frame options by default and then add our writer that will set DENY by default and let any other
+        http.headers(headers->headers.withObjectPostProcessor(new ObjectPostProcessor<HeaderWriterFilter>() {
+            @Override
+            public HeaderWriterFilter postProcess(HeaderWriterFilter headerWriterFilter) {
+                headerWriterFilter.setShouldWriteHeadersEagerly(true);
+                return headerWriterFilter;
+            }
+        }));
+        // lets disable frame options by default and then add our writer that will set DENY by default and let any other
         // value if the devs choose one
-        pHttp.headers().frameOptions().disable();
-        pHttp.headers().addHeaderWriter(new XFrameOptionsHeaderWriterDefault());
+        http.headers().frameOptions().disable();
+        http.headers().addHeaderWriter(new XFrameOptionsHeaderWriterDefault());
 
         // Disable CSRF
         // Force authentication for all requests
-        pHttp.csrf().disable().authorizeRequests().anyRequest().authenticated();
+        http.csrf().disable().authorizeRequests().anyRequest().authenticated();
 
         // Add public filter
         // TODO set in gateway
-        pHttp.addFilterBefore(new PublicAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new PublicAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
 
         // Add JWT Authentication filter
-        pHttp.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
+        http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
                              PublicAuthenticationFilter.class);
-        pHttp.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
-        pHttp.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
+        http.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
+        http.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
-        pHttp.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
+        http.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
 
         // Add CORS filter
         final List<String> authorizedIp = new ArrayList<>();
@@ -121,12 +130,12 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
                 }
             }
         }
-        pHttp.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
+        http.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
 
         // Add custom configurations if any
         if (customConfigurers != null) {
             for (final ICustomWebSecurityConfiguration customConfigurer : customConfigurers) {
-                customConfigurer.configure(pHttp);
+                customConfigurer.configure(http);
             }
         }
 
