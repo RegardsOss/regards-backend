@@ -105,46 +105,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
             Thread.sleep(1000);
             cpt++;
         } while ((cpt < 100) && (featureNumberInDatabase != 3));
-
         List<FeatureEntity> entities = super.featureRepo.findAll();
-        FeatureEntity toUpdate = entities.get(0);
-        FeatureEntity updatingByScheduler = entities.get(1);
+        // features have been created. now lets simulate a deletion of one of them
         FeatureEntity toDelete = entities.get(2);
-
         FeatureDeletionRequestEvent featureDeletionRequest = FeatureDeletionRequestEvent
                 .build("TEST", toDelete.getUrn(), PriorityLevel.NORMAL);
         this.featureDeletionService.registerRequests(Lists.list(featureDeletionRequest));
         this.featureDeletionService.scheduleRequests();
-
-        // prepare and save update request
-        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
-                                                               "owner",
-                                                               OffsetDateTime.now(),
-                                                               RequestState.GRANTED,
-                                                               null,
-                                                               toUpdate.getFeature(),
-                                                               PriorityLevel.NORMAL,
-                                                               FeatureRequestStep.LOCAL_DELAYED);
-
-        FeatureUpdateRequest fur2 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
-                                                               "owner",
-                                                               OffsetDateTime.now(),
-                                                               RequestState.GRANTED,
-                                                               null,
-                                                               updatingByScheduler.getFeature(),
-                                                               PriorityLevel.NORMAL,
-                                                               FeatureRequestStep.LOCAL_SCHEDULED);
-
-        //this update cannot be scheduled because fur2 is already scheduled and on the same feature
-        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
-                                                               "owner",
-                                                               OffsetDateTime.now(),
-                                                               RequestState.GRANTED,
-                                                               null,
-                                                               updatingByScheduler.getFeature(),
-                                                               PriorityLevel.NORMAL,
-                                                               FeatureRequestStep.LOCAL_DELAYED);
-
+        // simulate an update request on a feature being deleted
         FeatureUpdateRequest fur4 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
                                                                "owner",
                                                                OffsetDateTime.now(),
@@ -154,13 +122,45 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                                                                PriorityLevel.NORMAL,
                                                                FeatureRequestStep.LOCAL_DELAYED);
 
-        // create a deletion request
+        // simulate an update request
+        FeatureEntity toUpdate = entities.get(0);
+        FeatureUpdateRequest fur1 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                               "owner",
+                                                               OffsetDateTime.now(),
+                                                               RequestState.GRANTED,
+                                                               null,
+                                                               toUpdate.getFeature(),
+                                                               PriorityLevel.NORMAL,
+                                                               FeatureRequestStep.LOCAL_DELAYED);
+
+        // simulate an update request that has already been scheduled
+        FeatureEntity updatingByScheduler = entities.get(1);
+        FeatureUpdateRequest fur2 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                               "owner",
+                                                               OffsetDateTime.now(),
+                                                               RequestState.GRANTED,
+                                                               null,
+                                                               updatingByScheduler.getFeature(),
+                                                               PriorityLevel.NORMAL,
+                                                               FeatureRequestStep.LOCAL_SCHEDULED);
+        // Simulate one more update request that just arrived.
+        // this update cannot be scheduled because fur2 is already scheduled and on the same feature
+        FeatureUpdateRequest fur3 = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                               "owner",
+                                                               OffsetDateTime.now(),
+                                                               RequestState.GRANTED,
+                                                               null,
+                                                               updatingByScheduler.getFeature(),
+                                                               PriorityLevel.NORMAL,
+                                                               FeatureRequestStep.LOCAL_DELAYED);
+
+        // bypass registration to help simulate the state we want
         fur1 = super.featureUpdateRequestRepo.save(fur1);
         fur2 = super.featureUpdateRequestRepo.save(fur2);
         fur3 = super.featureUpdateRequestRepo.save(fur3);
         fur4 = super.featureUpdateRequestRepo.save(fur4);
 
-        // wait 5 second to delay
+        // wait 5 second to delay so that deletion job can be executed
         Thread.sleep(properties.getDelayBeforeProcessing() * 1000);
 
         this.featureUpdateService.scheduleRequests();
@@ -191,7 +191,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
     public void testFeaturePriority() throws InterruptedException {
         // create features
         int featureToCreateNumber = properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2);
-        List<FeatureCreationRequestEvent> events = prepareCreationTestData(true, featureToCreateNumber, this.isToNotify, true);
+        List<FeatureCreationRequestEvent> events = prepareCreationTestData(true,
+                                                                           featureToCreateNumber,
+                                                                           this.isToNotify,
+                                                                           true);
 
         // create update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
@@ -225,7 +228,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         this.featureUpdateService.scheduleRequests();
 
         // in case notification are active, mock their successes
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             // wait until request are in state LOCAL_TO_BE_NOTIFIED
             int cpt = 0;
             while (cpt < 10 && featureUpdateRequestRepository
@@ -236,12 +239,11 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                 Thread.sleep(1000);
                 cpt++;
             }
-            if(cpt == 10) {
+            if (cpt == 10) {
                 fail("Update request where not handled in less than 10_000 ms");
             }
             mockNotificationSuccess();
         }
-
 
         List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(
                 FeatureRequestStep.LOCAL_DELAYED,

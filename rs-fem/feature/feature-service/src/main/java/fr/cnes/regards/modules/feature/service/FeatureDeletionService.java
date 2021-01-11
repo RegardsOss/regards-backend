@@ -305,17 +305,6 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
     private void sendFeedbacksAndClean(Map<FeatureDeletionRequest, FeatureEntity> sucessfullRequests,
             boolean isToNotify, FeatureDeletionJob featureDeletionJob) {
-        // PREPARE PROPAGATION to NOTIFIER if required
-        if (isToNotify) {
-            for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
-                entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                entry.getKey().setAlreadyDeleted(false);
-                entry.getKey().setToNotify(entry.getValue().getFeature());
-            }
-            deletionRepo.saveAll(sucessfullRequests.keySet());
-        } else {
-            this.deletionRepo.deleteInBatch(sucessfullRequests.keySet());
-        }
 
         // PROPAGATE to CATALOG
         sucessfullRequests.values()
@@ -337,8 +326,18 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
                                                         fdr.getRequestOwner(), entity.getProviderId(), fdr.getUrn(),
                                                         RequestState.SUCCESS));
         }
-        requestRepo.deleteByUrnIn(sucessfullRequests.values().stream().map(FeatureEntity::getUrn)
-                .collect(Collectors.toSet()));
+
+        // PREPARE PROPAGATION to NOTIFIER if required
+        if (isToNotify) {
+            for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : sucessfullRequests.entrySet()) {
+                entry.getKey().setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                entry.getKey().setAlreadyDeleted(false);
+                entry.getKey().setToNotify(entry.getValue().getFeature());
+            }
+            deletionRepo.saveAll(sucessfullRequests.keySet());
+        } else {
+            this.deletionRepo.deleteInBatch(sucessfullRequests.keySet());
+        }
 
         // Delete all features without files, related requests will be deleted once we know notifier has successfully sent the notification about it
         this.featureRepo.deleteAll(sucessfullRequests.values());

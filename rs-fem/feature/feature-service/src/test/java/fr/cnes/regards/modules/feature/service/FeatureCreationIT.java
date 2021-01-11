@@ -45,7 +45,6 @@ import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
@@ -91,8 +90,6 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequestEvent> events = super
                 .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
-        // lets add one feature which is the same as the first to test versioning code
-        events.addAll(super.initFeatureCreationRequestEvent(1, false));
         // clear file to test notifications without files
         events.forEach(request -> request.getFeature().getFiles().clear());
         this.featureCreationService.registerRequests(events);
@@ -116,7 +113,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
             fail("Doesn't have all features at the end of time");
         }
 
-        if(initDefaultNotificationSettings()) {
+        if (initDefaultNotificationSettings()) {
             testNotification();
         }
 
@@ -150,6 +147,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
                 .findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0"));
         Assert.assertTrue(featureRepo.findByUrn(urnsForId1.get(0).getUrn()).getFeature().isLast());
         Assert.assertFalse(featureRepo.findByUrn(urnsForId1.get(1).getUrn()).getFeature().isLast());
+
+        List<FeatureCreationRequest> requests = featureCreationRequestRepo.findAll();
+        Assert.assertFalse(requests.isEmpty());
+        Assert.assertTrue(
+                "All feature creation request should have urn and feature entity set to ensure proper notification processing",
+                requests.stream()
+                        .allMatch(fcr -> fcr.getUrn() != null && fcr.getFeatureEntity() != null));
     }
 
     private void testNotification() {

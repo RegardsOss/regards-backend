@@ -74,7 +74,7 @@ public class FeatureUniformResourceName extends UniformResourceName {
 
     public static boolean isValidUrn(String urn) {
         return UniformResourceName.isValidUrn(urn)
-                && (FeatureIdentifier.FEATURE.toString() == (urn.split(DELIMITER)[1]));
+                && (FeatureIdentifier.FEATURE.toString().equals(urn.split(DELIMITER)[1]));
     }
 
     /**
