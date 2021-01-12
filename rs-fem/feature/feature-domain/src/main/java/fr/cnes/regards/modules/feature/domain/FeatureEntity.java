@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 public class FeatureEntity {
 
     @Id
-    @SequenceGenerator(name = "featureSequence", initialValue = 1, sequenceName = "seq_feature")
+    @SequenceGenerator(name = "featureSequence", initialValue = 1, sequenceName = "seq_feature", allocationSize = 1000)
     @GeneratedValue(generator = "featureSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 

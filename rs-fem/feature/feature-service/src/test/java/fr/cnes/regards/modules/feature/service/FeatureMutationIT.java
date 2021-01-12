@@ -33,6 +33,7 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
@@ -40,6 +41,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 /**
@@ -67,8 +69,17 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private FeatureConfigurationProperties conf;
 
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
+
     @Test
     public void createAndUpdateTest() {
+
+
+        FeatureNotificationSettings settings = notificationSettingsService.retrieve();
+        settings.setActiveNotification(false);
+        notificationSettingsService.update(settings);
+
 
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
                 .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);

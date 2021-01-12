@@ -178,7 +178,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                        new FileReferenceDTO(), null);
 
         info.getSuccessRequests().add(resultInfo);
-        this.listener.onCopySuccess(Sets.newHashSet(info));
+        listener.onCopySuccess(Sets.newHashSet(info));
         // we should have 1 copy request in database
         assertEquals(1, this.featureCopyRepo.count());
         // wait that this request is treated

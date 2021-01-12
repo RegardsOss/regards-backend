@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +60,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
@@ -137,6 +140,9 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Autowired
     private IFeatureNotificationSettingsService notificationSettingsService;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public RequestInfo<String> registerRequests(List<FeatureCreationRequestEvent> events) {
@@ -327,9 +333,15 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                                                   urnByProviders.get(request.getProviderId()),
                                                   featureCreationJob))
                 .collect(Collectors.toSet());
-        entities.stream().filter(entity -> entity.getPreviousVersionUrn() != null)
-                .forEach(entity -> entity.getFeature().setLast(false));
+        // get previous versions to set last to false
+        Set<String> previousUrns = entities.stream().filter(entity -> entity.getPreviousVersionUrn() != null)
+                .map(entity -> entity.getPreviousVersionUrn().toString()).collect(Collectors.toSet());
+
+        // save new features
         this.featureRepo.saveAll(entities);
+        if (!previousUrns.isEmpty()) {
+            featureCreationRequestRepo.updateLastByUrnIn(false, previousUrns);
+        }
         LOGGER.trace("------------->>> {} feature saved in {} ms",
                      entities.size(),
                      System.currentTimeMillis() - subProcessStart);
@@ -396,8 +408,12 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                     featureCreationRequestRepo.save(request);
                 }
             } else {
+                for(FeatureCreationRequest fcr: requests) {
+                    em.detach(fcr);
+                }
                 // Successful requests are deleted now!
-                featureCreationRequestRepo.deleteInBatch(requests);
+                featureCreationRequestRepo.deleteByUrnIn(requests.stream().map(AbstractFeatureRequest::getUrn)
+                                                                 .collect(Collectors.toSet()));
                 LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
                              requests.size(),
                              System.currentTimeMillis() - startSuccessProcess);

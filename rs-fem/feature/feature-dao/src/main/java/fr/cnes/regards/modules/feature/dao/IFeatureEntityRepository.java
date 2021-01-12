@@ -41,11 +41,7 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
 
     FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
-    void deleteByUrnIn(Set<FeatureUniformResourceName> urns);
-
     List<FeatureEntity> findByUrnIn(List<FeatureUniformResourceName> urn);
-
-    void deleteByIdIn(Set<Long> ids);
 
     // FIXME remove just for test
     long countByLastUpdateGreaterThan(OffsetDateTime from);
@@ -53,15 +49,12 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     /**
      * List existing provider identifiers in specified list
      */
-    List<IUrnVersionByProvider> findByProviderIdInOrderByVersionDesc(List<String> providerIds);
+    @Query("select f.urn as urn, f.providerId as providerId, f.version as version from FeatureEntity f where f.providerId in :providerIds order by f.version desc")
+    List<IUrnVersionByProvider> findByProviderIdInOrderByVersionDesc(@Param("providerIds") List<String> providerIds);
 
     Page<FeatureEntity> findByModelAndLastUpdateAfter(String model, OffsetDateTime date, Pageable page);
 
     Page<FeatureEntity> findByModel(String model, Pageable page);
-
-    @Modifying
-    @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
-    void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
 
     /**
      * For dump purposes
