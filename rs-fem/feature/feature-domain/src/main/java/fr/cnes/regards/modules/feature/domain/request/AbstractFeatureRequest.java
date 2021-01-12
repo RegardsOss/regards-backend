@@ -82,7 +82,7 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     protected static final String FEATURE_SAVE_METADATA = "SAVE_METADATA";
 
     @Id
-    @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request")
+    @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request", allocationSize = 1000)
     @GeneratedValue(generator = "featureRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 

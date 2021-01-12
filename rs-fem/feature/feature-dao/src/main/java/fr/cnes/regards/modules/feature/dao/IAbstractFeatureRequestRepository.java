@@ -55,5 +55,7 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Query("update AbstractFeatureRequest afr set afr.state = :newState where afr.id in :ids ")
     void updateState(@Param("newState") RequestState requestState, @Param("ids") Set<Long> ids);
 
-    void deleteByUrnIn(Set<FeatureUniformResourceName> collect);
+    @Modifying
+    @Query("delete from AbstractFeatureRequest req where urn in :urns")
+    void deleteByUrnIn(@Param("urns") Set<FeatureUniformResourceName> urns);
 }

@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
@@ -337,20 +338,12 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
         // get previous versions to set last to false
         Set<String> previousUrns = entities.stream().filter(entity -> entity.getPreviousVersionUrn() != null)
                 .map(entity -> entity.getPreviousVersionUrn().toString()).collect(Collectors.toSet());
-        if(!previousUrns.isEmpty()) {
-            // FeatureCreationRequests have to be detached so that we can only update previous FeatureEntities.
-            // Indeed JPA tries to flush hibernate cache with the native query and doing so has transient entities linked
-            // to FeatureCreationRequests (which are in JPA cache because they are loaded in the beginning of this method),
-            // that is the newly created FeatureEntity (which have not yet been saved and so are without ids for now).
-            for (FeatureCreationRequest entity : requests) {
-                em.detach(entity);
-            }
-            em.createNativeQuery(
-                    "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
-                    FeatureEntity.class).setParameter("last", false).setParameter("urns", previousUrns).executeUpdate();
-        }
+
         // save new features
         this.featureRepo.saveAll(entities);
+        if (!previousUrns.isEmpty()) {
+            featureCreationRequestRepo.updateLastByUrnIn(false, previousUrns);
+        }
         LOGGER.trace("------------->>> {} feature saved in {} ms",
                      entities.size(),
                      System.currentTimeMillis() - subProcessStart);
@@ -416,8 +409,12 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                     featureCreationRequestRepo.save(request);
                 }
             } else {
+                for(FeatureCreationRequest fcr: requests) {
+                    em.detach(fcr);
+                }
                 // Successful requests are deleted now!
-                featureCreationRequestRepo.deleteInBatch(requests);
+                featureCreationRequestRepo.deleteByUrnIn(requests.stream().map(AbstractFeatureRequest::getUrn)
+                                                                 .collect(Collectors.toSet()));
                 LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
                              requests.size(),
                              System.currentTimeMillis() - startSuccessProcess);

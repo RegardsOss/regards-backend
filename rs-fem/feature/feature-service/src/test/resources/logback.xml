@@ -18,23 +18,23 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <configuration scan="true" scanPeriod="30 seconds">
-        <property name="APP_NAME" value="rs-fem"/>
-        <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/logs}}/}spring.log}"/>
-        <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml" />
-        <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml" />
-        <include resource="fr/cnes/regards/framework/logbackappender/file_appender.xml" />
-    	<logger name="fr.cnes.regards.modules.model.dto.properties.logger" level="INFO"/>
-<!--    	<logger name="fr.cnes.regards.modules.feature.service.FeatureNotificationService" level="DEBUG"/>-->
-<!--        <logger name="fr.cnes.regards.modules.feature.service.request.FeatureNotfierListener" level="DEBUG"/>-->
-<!--         	<logger name="org.hibernate.SQL" level="DEBUG" />-->
-        <!-- <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/> <logger
-            name="org.hibernate.event.internal" level="TRACE"/> <logger name="org.hibernate.persister.entity"
-            level="TRACE"/> -->
-        <logger name="fr.cnes.regards.modules.feature.service.FeatureCreationService" level="TRACE"/>
-        <logger name="fr.cnes.regards.modules.feature.service.logger.FeatureLogger" level="ERROR"/>
-		<logger name="fr.cnes.regards.modules.model.service.validation" level="DEBUG"/>
-        <root level="INFO">
-                <appender-ref ref="STDOUT"/>
-                <!-- <appender-ref ref="FILE" /> -->
-        </root>
+    <property name="APP_NAME" value="rs-fem"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/logs}}/}spring.log}"/>
+    <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml"/>
+    <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml"/>
+    <include resource="fr/cnes/regards/framework/logbackappender/file_appender.xml"/>
+    <logger name="fr.cnes.regards.modules.model.dto.properties.logger" level="INFO"/>
+    <!-- <logger name="fr.cnes.regards.modules.feature.service.FeatureNotificationService" level="DEBUG"/>-->
+    <!--<logger name="fr.cnes.regards.modules.feature.service.request.FeatureNotfierListener" level="DEBUG"/>-->
+<!--    <logger name="org.hibernate.SQL" level="DEBUG"/>-->
+<!--    <logger name="org.hibernate.type.descriptor.sql" level="TRACE"/>-->
+<!--    <logger name="org.hibernate.event.internal" level="TRACE"/>-->
+<!--    <logger name="org.hibernate.persister.entity" level="TRACE"/>-->
+    <logger name="fr.cnes.regards.modules.feature.service.FeatureCreationService" level="TRACE"/>
+    <logger name="fr.cnes.regards.modules.feature.service.logger.FeatureLogger" level="ERROR"/>
+    <logger name="fr.cnes.regards.modules.model.service.validation" level="INFO"/>
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <!-- <appender-ref ref="FILE" /> -->
+    </root>
 </configuration>

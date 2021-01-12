@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -60,6 +62,9 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
     @Autowired
     private IFeatureCreationService featureService;
 
+    @Autowired
+    private IFeatureNotificationSettingsService notificationSettingsService;
+
     /**
      * Test creation of EVENTS_NUMBER features Check if
      * {@link FeatureCreationRequest} and {@link FeatureEntity}are stored in
@@ -70,6 +75,11 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
      */
     @Test
     public void createFeatures() throws InterruptedException {
+
+
+//        FeatureNotificationSettings settings = notificationSettingsService.retrieve();
+//        settings.setActiveNotification(false);
+//        notificationSettingsService.update(settings);
 
         String format = "F%05d";
 
