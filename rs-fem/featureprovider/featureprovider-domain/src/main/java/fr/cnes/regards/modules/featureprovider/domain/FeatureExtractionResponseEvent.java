@@ -6,7 +6,6 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
@@ -18,7 +17,7 @@ public class FeatureExtractionResponseEvent implements ISubscribable {
     /**
      * This field is just here as to not break compatibility with former version
      */
-    private final String type = FeatureExtractionRequest.REQUEST_TYPE;
+    private final static String type = FeatureExtractionRequest.REQUEST_TYPE;
 
     /**
      * The request id
