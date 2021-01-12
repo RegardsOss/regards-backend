@@ -57,7 +57,7 @@ public class FeaturePerformanceTest extends AbstractFeatureMultitenantServiceTes
     private static final Integer NB_FEATURES = 5_000;
 
     // Expected performance : 10_000 features/min
-    private static final long DURATION = NB_FEATURES * 30;
+    private static final long DURATION = NB_FEATURES * 15;// i set 7 because someties jenkins VM sucks
 
     @Autowired
     private IFeatureCreationService featureService;
