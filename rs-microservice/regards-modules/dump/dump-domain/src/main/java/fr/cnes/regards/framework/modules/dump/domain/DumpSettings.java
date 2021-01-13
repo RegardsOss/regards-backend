@@ -19,13 +19,15 @@
 
 package fr.cnes.regards.framework.modules.dump.domain;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import java.time.OffsetDateTime;
 import java.util.Objects;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.OffsetDateTime;
+
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 
 /**
  * Model to handle dump settings
@@ -40,7 +42,7 @@ public class DumpSettings {
 
     @ConfigIgnore
     @Id
-    @Column(name ="id", unique = true)
+    @Column(name = "id", unique = true)
     private Long id;
 
     @Column(name = "active_module", nullable = false)
@@ -55,8 +57,7 @@ public class DumpSettings {
     @Column(name = "last_dump_req_date")
     private OffsetDateTime lastDumpReqDate;
 
-    public DumpSettings(boolean activeModule, String cronTrigger, String dumpLocation,
-            OffsetDateTime lastDumpReqDate) {
+    public DumpSettings(boolean activeModule, String cronTrigger, String dumpLocation, OffsetDateTime lastDumpReqDate) {
         this.id = DUMP_CONF_ID;
         this.activeModule = activeModule;
         this.cronTrigger = cronTrigger;
@@ -109,14 +110,16 @@ public class DumpSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
+        }
         DumpSettings that = (DumpSettings) o;
-        return activeModule == that.activeModule && Objects.equals(id, that.id) && Objects
-                .equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation) && Objects
-                .equals(lastDumpReqDate, that.lastDumpReqDate);
+        return (activeModule == that.activeModule) && Objects.equals(id, that.id)
+                && Objects.equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation)
+                && Objects.equals(lastDumpReqDate, that.lastDumpReqDate);
     }
 
     @Override

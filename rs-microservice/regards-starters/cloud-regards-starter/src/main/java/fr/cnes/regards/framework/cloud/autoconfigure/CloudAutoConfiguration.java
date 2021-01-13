@@ -34,7 +34,7 @@ public class CloudAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudAutoConfiguration.class);
 
-    public CloudAutoConfiguration() {
+    public CloudAutoConfiguration() { // NOSONAR
         LOGGER.info("-----/^^^^^\\----- Discovery client enabled");
     }
 }

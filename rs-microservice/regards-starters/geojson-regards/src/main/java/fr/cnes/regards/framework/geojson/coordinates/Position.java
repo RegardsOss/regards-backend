@@ -105,8 +105,9 @@ public class Position {
         }
         if (longitude == null) {
             return other.longitude == null;
-        } else
+        } else {
             return longitude.equals(other.longitude);
+        }
     }
 
     @Override

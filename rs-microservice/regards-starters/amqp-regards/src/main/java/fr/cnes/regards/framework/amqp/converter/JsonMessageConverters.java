@@ -157,7 +157,7 @@ public class JsonMessageConverters implements MessageConverter {
             JsonMessageConverter converterTypeEnum = JsonMessageConverter.valueOf((String) converterType);
             return selectConverter(converterTypeEnum);
 
-        } catch (Exception e) {
+        } catch (Exception e) { // NOSONAR
             String errorMessage = String.format("Cannot determine JSON converter for type \"%s\"", converterType);
             LOGGER.error(errorMessage, e);
             throw new MessageConversionException(errorMessage, e);

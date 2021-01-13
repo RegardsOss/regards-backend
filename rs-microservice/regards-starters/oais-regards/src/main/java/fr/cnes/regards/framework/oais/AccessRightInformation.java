@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * OAIS Access Right Information object
@@ -89,8 +90,9 @@ public class AccessRightInformation {
         }
         if (publicReleaseDate == null) {
             return other.publicReleaseDate == null;
-        } else
+        } else {
             return publicReleaseDate.equals(other.publicReleaseDate);
+        }
     }
 
 }

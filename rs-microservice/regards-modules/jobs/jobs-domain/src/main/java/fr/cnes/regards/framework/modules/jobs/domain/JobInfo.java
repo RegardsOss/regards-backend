@@ -19,11 +19,11 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -173,7 +173,8 @@ public class JobInfo {
         switch (status) {
             case QUEUED:
                 this.status.setQueuedDate(OffsetDateTime.now());
-                // There is not break because either being QUEUED or PENDING or TO_BE_RUN completion is 0
+                this.status.setPercentCompleted(0);
+                break;
             case PENDING:
             case TO_BE_RUN:
                 this.status.setPercentCompleted(0);
@@ -190,6 +191,7 @@ public class JobInfo {
                 this.status.setPercentCompleted(100);
                 break;
             default:
+                break;
         }
     }
 
@@ -241,7 +243,7 @@ public class JobInfo {
      * {@link JobParameter}
      */
     public Map<String, JobParameter> getParametersAsMap() {
-        Map<String, JobParameter> parameterMap = new HashMap<>();
+        Map<String, JobParameter> parameterMap = new ConcurrentHashMap<>();
         if (parameters != null) {
             parameters.forEach(param -> parameterMap.put(param.getName(), param));
         }

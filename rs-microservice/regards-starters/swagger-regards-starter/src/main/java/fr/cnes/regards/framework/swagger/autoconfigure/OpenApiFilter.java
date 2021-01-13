@@ -115,9 +115,7 @@ public class OpenApiFilter implements Filter {
 
     static class ByteRequestWrapper extends HttpServletRequestWrapper {
 
-        byte[] requestBytes = null;
-
-        private ByteInputStream byteInputStream;
+        private final ByteInputStream byteInputStream;
 
         public ByteRequestWrapper(HttpServletRequest request) throws IOException {
             super(request);
@@ -131,7 +129,7 @@ public class OpenApiFilter implements Filter {
                 baos.write(buffer, 0, read);
             }
 
-            replaceRequestPayload(baos.toByteArray());
+            byteInputStream = new ByteInputStream(new ByteArrayInputStream(baos.toByteArray()));
         }
 
         @Override
@@ -144,10 +142,6 @@ public class OpenApiFilter implements Filter {
             return byteInputStream;
         }
 
-        public void replaceRequestPayload(byte[] newPayload) {
-            requestBytes = newPayload;
-            byteInputStream = new ByteInputStream(new ByteArrayInputStream(requestBytes));
-        }
     }
 
     static class ByteOutputStream extends ServletOutputStream {

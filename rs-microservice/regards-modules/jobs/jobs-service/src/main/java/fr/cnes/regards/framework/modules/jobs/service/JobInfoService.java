@@ -45,6 +45,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ImmutableList;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -105,6 +106,7 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
                 self = applicationContext.getBean(IJobInfoService.class);
             } catch (NoSuchBeanDefinitionException e) {
                 // in this case there is nothing to do but wait for the next event
+                LOGGER.warn(e.getMessage(), e);
             }
         }
     }
@@ -194,10 +196,8 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository.updateCompletion(status.getPercentCompleted(),
-                                               status.getEstimatedCompletion(),
-                                               jobInfo.getId(),
-                                               OffsetDateTime.now());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
+                                               jobInfo.getId(), OffsetDateTime.now());
         }
     }
 
@@ -238,12 +238,10 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
         OffsetDateTime deadLimitDate = OffsetDateTime.now().minus(deadAfter, ChronoUnit.MILLIS);
         for (JobInfo job : jobs) {
             // if last heartbeat date is null it means job has been started but not yet pinged by job engine
-            if (job.getLastHeartbeatDate() != null && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
+            if ((job.getLastHeartbeatDate() != null) && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
                 job.updateStatus(JobStatus.FAILED);
                 LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
-                            job.getId(),
-                            job.getClassName(),
-                            deadAfter);
+                            job.getId(), job.getClassName(), deadAfter);
                 failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
             }
         }

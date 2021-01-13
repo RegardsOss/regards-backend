@@ -127,8 +127,9 @@ public class DatabaseModule {
         }
         if (name == null) {
             return other.name == null;
-        } else
+        } else {
             return name.equals(other.name);
+        }
     }
 
     public int getWeight() {

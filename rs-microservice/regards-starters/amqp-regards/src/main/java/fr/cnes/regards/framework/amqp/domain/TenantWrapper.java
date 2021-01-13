@@ -110,7 +110,7 @@ public class TenantWrapper<T> implements Cloneable {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public TenantWrapper<T> clone() {
+    public TenantWrapper<T> clone() { // NOSONAR
         try {
             return (TenantWrapper<T>) super.clone();
         } catch (CloneNotSupportedException e) {

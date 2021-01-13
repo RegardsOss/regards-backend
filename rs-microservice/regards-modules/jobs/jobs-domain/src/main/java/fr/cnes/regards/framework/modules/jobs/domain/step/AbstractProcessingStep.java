@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
  * @param <I> input object
  * @param <O> output object
  * @param <J> associated processing job
- * FIXME Write the doc please !!!!!
  * @author Marc Sordi
  */
 public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements IProcessingStep<I, O> {
@@ -49,15 +48,13 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
             job.advanceCompletion();
             error = false;
             return out;
-        } catch (Exception e) {
+        } catch (Exception e) { // NOSONAR
             LOGGER.error(e.getMessage(), e);
             throw e;
         } finally {
             if (error) {
                 // Always run this method even if exception occurs
                 doAfterError(in);
-            } else {
-                //
             }
         }
     }

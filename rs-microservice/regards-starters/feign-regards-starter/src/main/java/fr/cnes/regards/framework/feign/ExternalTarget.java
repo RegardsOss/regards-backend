@@ -60,7 +60,7 @@ public class ExternalTarget<T> implements Target<T> {
             }
             this.headers.put(HttpHeaders.HOST, Collections.singletonList(host));
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Could not instantiate external target as URL is invalid", e);
+            throw new RuntimeException("Could not instantiate external target as URL is invalid", e); // NOSONAR
         }
         // 3 - Add any user header (override default ones if there are specified)
         if (headers != null) {
