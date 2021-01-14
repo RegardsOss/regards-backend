@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.opensearch.service;
 
+import fr.cnes.regards.modules.opensearch.service.parser.IToponymClient;
+import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,10 +78,13 @@ public class OpenSearchService implements IOpenSearchService {
     @Autowired
     private HttpClient httpClient;
 
+    @Autowired
+    private IToponymClient toponymClient;
+    
     public OpenSearchService(IAttributeFinder finder) {
-        OpenSearchService.parsersHolder = ThreadLocal
-                .withInitial(() -> Lists.newArrayList(new QueryParser(finder), new GeometryParser(), new CircleParser(),
-                                                      new FieldExistsParser(), new ImageOnlyParser()));
+        OpenSearchService.parsersHolder = ThreadLocal.withInitial(() -> Lists
+                .newArrayList(new QueryParser(finder), new GeometryParser(), new CircleParser(),
+                              new FieldExistsParser(), new ImageOnlyParser(), new ToponymParser(toponymClient)));
     }
 
     @Override
