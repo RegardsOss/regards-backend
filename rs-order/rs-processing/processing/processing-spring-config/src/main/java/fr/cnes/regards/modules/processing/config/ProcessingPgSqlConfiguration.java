@@ -31,27 +31,32 @@ public class ProcessingPgSqlConfiguration {
 
     @Value("${regards.processing.r2dbc.host}")
     private String r2dbcHost;
+
     @Value("${regards.processing.r2dbc.port}")
     private Integer r2dbcPort;
+
     @Value("${regards.processing.r2dbc.username}")
     private String r2dbcUsername;
+
     @Value("${regards.processing.r2dbc.password}")
     private String r2dbcPassword;
+
     @Value("${regards.processing.r2dbc.dbname}")
     private String r2dbcDbname;
-    @Value("${regards.processing.r2dbc.schema}")
+
+    @Value("${regards.processing.r2dbc.schema:#{null}}")
     private String r2dbcSchema;
+
+    @Value("${regards.processing.r2dbc.pool.size.min:#{1}}")
+    private int poolMinSize;
+
+    @Value("${regards.processing.r2dbc.pool.size.max:#{2}}")
+    private int poolMaxSize;
 
     @Bean
     public PgSqlProperties r2dbcPgSqlConfig() {
-        return new PgSqlProperties(
-                r2dbcHost,
-                r2dbcPort,
-                r2dbcDbname,
-                r2dbcSchema,
-                r2dbcUsername,
-                r2dbcPassword
-        );
+        return new PgSqlProperties(r2dbcHost, r2dbcPort, r2dbcDbname, r2dbcSchema, r2dbcUsername, r2dbcPassword,
+                poolMinSize, poolMaxSize);
     }
 
 }

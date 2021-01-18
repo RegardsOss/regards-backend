@@ -32,5 +32,7 @@ public class PgSqlProperties {
     String schema;
     String user;
     String password;
+    int poolMinSize;
+    int poolMaxSize;
 
 }
