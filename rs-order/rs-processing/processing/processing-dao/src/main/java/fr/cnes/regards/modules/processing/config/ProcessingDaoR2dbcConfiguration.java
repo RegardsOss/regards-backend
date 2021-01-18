@@ -18,9 +18,11 @@
 package fr.cnes.regards.modules.processing.config;
 
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.INITIAL_SIZE;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_IDLE_TIME;
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_LIFE_TIME;
+import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_SIZE;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
 import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
 import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
@@ -60,6 +62,8 @@ import fr.cnes.regards.modules.processing.entity.BatchEntity;
 import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
 import fr.cnes.regards.modules.processing.entity.converter.DaoCustomConverters;
 import fr.cnes.regards.modules.processing.entity.mapping.BatchMapper;
+import io.r2dbc.pool.ConnectionPool;
+import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions.Builder;
@@ -102,14 +106,25 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
                 .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5)).option(MAX_LIFE_TIME, Duration.ofMinutes(10))
                 .option(MAX_IDLE_TIME, Duration.ofMinutes(5)).option(HOST, pgSqlProperties.getHost())
                 .option(PORT, pgSqlProperties.getPort()).option(DATABASE, pgSqlProperties.getDbname())
-                .option(SCHEMA, pgSqlProperties.getSchema());
+                .option(MAX_SIZE, pgSqlProperties.getPoolMaxSize())
+                .option(INITIAL_SIZE, pgSqlProperties.getPoolMinSize());
+        if ((pgSqlProperties.getSchema() != null) && !pgSqlProperties.getSchema().isEmpty()) {
+            builder = builder.option(SCHEMA, pgSqlProperties.getSchema());
+        }
         if (pgSqlProperties.getUser() != null) {
             builder = builder.option(USER, pgSqlProperties.getUser());
         }
         if (pgSqlProperties.getPassword() != null) {
             builder = builder.option(PASSWORD, pgSqlProperties.getPassword());
         }
-        return ConnectionFactories.get(builder.build());
+
+        ConnectionFactory connectionFactory = ConnectionFactories.get(builder.build());
+
+        ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(connectionFactory)
+                .maxIdleTime(Duration.ofMinutes(5)).initialSize(pgSqlProperties.getPoolMinSize())
+                .maxSize(pgSqlProperties.getPoolMaxSize()).maxCreateConnectionTime(Duration.ofSeconds(1)).build();
+
+        return new ConnectionPool(configuration);
     }
 
     @Override
