@@ -88,27 +88,30 @@ public class V1_4_0__update extends BaseJavaMigration {
         Map<String, Object> data = (Map<String, Object>) viewsGroups.get("DATA");
         Map<String, Object> views = (Map<String, Object>) data.get("views");
         Map<String, Object> map = (Map<String, Object>) views.get("MAP");
-        map.putIfAbsent("initialViewMode", "3D");
-        map.putIfAbsent("mapEngine", "CESIUM");
 
-        List<Map<String, Object>> layers = new ArrayList<>();
-        map.put("layers", layers);
+        if (map != null) {
+            map.putIfAbsent("initialViewMode", "3D");
+            map.putIfAbsent("mapEngine", "CESIUM");
 
-        Map<String, String> backgroundLayer = (Map<String, String>) map.remove("backgroundLayer");
-        if( backgroundLayer != null ) {
-            String url = backgroundLayer.get("url");
-            String type = backgroundLayer.get("type");
-            if( url != null && type != null ) {
-                Map<String, Object> bgLayer = new HashMap<>();
-                bgLayer.put("url", url);
-                bgLayer.put("layerName", "backgroundLayer");
-                bgLayer.put("enabled", true);
-                bgLayer.put("background", true);
-                bgLayer.put("layerViewMode", "3D");
-                bgLayer.put("type", type);
-                bgLayer.put("conf", "");
-                bgLayer.put("layersName", "");
-                layers.add(bgLayer);
+            List<Map<String, Object>> layers = new ArrayList<>();
+            map.put("layers", layers);
+
+            Map<String, String> backgroundLayer = (Map<String, String>) map.remove("backgroundLayer");
+            if (backgroundLayer != null) {
+                String url = backgroundLayer.get("url");
+                String type = backgroundLayer.get("type");
+                if ((url != null) && (type != null)) {
+                    Map<String, Object> bgLayer = new HashMap<>();
+                    bgLayer.put("url", url);
+                    bgLayer.put("layerName", "backgroundLayer");
+                    bgLayer.put("enabled", true);
+                    bgLayer.put("background", true);
+                    bgLayer.put("layerViewMode", "3D");
+                    bgLayer.put("type", type);
+                    bgLayer.put("conf", "");
+                    bgLayer.put("layersName", "");
+                    layers.add(bgLayer);
+                }
             }
         }
         return initialConfiguration; // return initial configuration (updated by reference)
@@ -128,8 +131,7 @@ public class V1_4_0__update extends BaseJavaMigration {
                     String updatedConf = null;
                     switch (type) {
                         case "search-results":
-                            updatedConf = withParsedMap(conf,
-                                                        V1_4_0__update::updateSearchResultsConfiguration);
+                            updatedConf = withParsedMap(conf, V1_4_0__update::updateSearchResultsConfiguration);
                             break;
                         default:
                             // No update for other module types
@@ -139,7 +141,7 @@ public class V1_4_0__update extends BaseJavaMigration {
                         LOG.info(String.format("Updating module %s (type %s)", id, type));
                         String sqlRequest = "UPDATE t_ui_module SET conf=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                                                          .prepareStatement(sqlRequest)) {
+                                .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();
@@ -170,7 +172,7 @@ public class V1_4_0__update extends BaseJavaMigration {
 
                         String sqlRequest = "UPDATE t_ui_configuration SET configuration=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                                                          .prepareStatement(sqlRequest)) {
+                                .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();
