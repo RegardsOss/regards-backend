@@ -74,7 +74,7 @@
         <sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
         <spring.hibernate.version>5.3.12.Final</spring.hibernate.version>
 		<spring.version>5.1.4.RELEASE</spring.version>
-        <regards.bom.version>1.4.0-SNAPSHOT</regards.bom.version>
+        <regards.bom.version>1.4.1-SNAPSHOT</regards.bom.version>
 		<org.mapstruct.version>1.3.0.Final</org.mapstruct.version>
 		<!-- Test properties -->
 		<regards.maven.test.env>-Duser.timezone=GMT0</regards.maven.test.env>

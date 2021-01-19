@@ -41,7 +41,7 @@
 	</developers>
 
     <properties>
-		<regards.version>1.4.0-SNAPSHOT</regards.version>
+		<regards.version>1.4.1-SNAPSHOT</regards.version>
 
         <!-- Framework starters -->
 		<amqp.starter.version>${regards.version}</amqp.starter.version>
