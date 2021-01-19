@@ -102,7 +102,7 @@ public class EmailService extends AbstractEmailService {
         // Create the saveable DTO
         Email email = createEmailFromSimpleMailMessage(msg);
         email = emailRepository.save(email);
-        sendMailWithSender(msg);
+        sendMailWithSender(msg, defaultSender);
         return email;
     }
 
@@ -110,7 +110,7 @@ public class EmailService extends AbstractEmailService {
     public Email sendEmail(SimpleMailMessage msg, String attName, InputStreamSource attSource) {
         Email email = createEmailFromSimpleMailMessage(msg, attName, attSource);
         email = emailRepository.save(email);
-        sendMailWithSender(msg, attName, attSource);
+        sendMailWithSender(msg, attName, attSource, defaultSender);
         return email;
     }
 
@@ -181,7 +181,7 @@ public class EmailService extends AbstractEmailService {
         final Email email = new Email();
         email.setBcc(message.getBcc());
         email.setCc(message.getCc());
-        email.setFrom(message.getFrom() == null ? defaultSender : message.getFrom());
+        email.setFrom((message.getFrom() == null) || message.getFrom().isEmpty() ? defaultSender : message.getFrom());
         email.setReplyTo(message.getReplyTo());
         if (message.getSentDate() != null) {
             email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));

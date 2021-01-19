@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
@@ -55,6 +56,9 @@ public class SimpleEmailService extends AbstractEmailService {
      */
     private final JavaMailSender mailSender;
 
+    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
+    private String defaultSender;
+
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
      *
@@ -74,14 +78,14 @@ public class SimpleEmailService extends AbstractEmailService {
 
     @Override
     public Email sendEmail(final SimpleMailMessage pEmail) {
-        sendMailWithSender(pEmail);
+        sendMailWithSender(pEmail, defaultSender);
         // no Email entity
         return null;
     }
 
     @Override
     public Email sendEmail(SimpleMailMessage email, String attName, InputStreamSource attSource) {
-        sendMailWithSender(email, attName, attSource);
+        sendMailWithSender(email, attName, attSource, defaultSender);
         // no Email entity
         return null;
     }

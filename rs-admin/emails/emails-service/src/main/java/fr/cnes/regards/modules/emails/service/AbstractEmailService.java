@@ -56,8 +56,8 @@ public abstract class AbstractEmailService implements IEmailService {
      * @return {@link SimpleMailMessage} sent
 
      */
-    public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message) {
-        return sendMailWithSender(message, null, null);
+    public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message, String defaultSender) {
+        return sendMailWithSender(message, null, null, defaultSender);
     }
 
     /**
@@ -67,7 +67,7 @@ public abstract class AbstractEmailService implements IEmailService {
 
      */
     public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message, String attachmentName,
-            InputStreamSource attSource) {
+            InputStreamSource attSource, String defaultSender) {
         final MimeMessage mimeMsg = getMailSender().createMimeMessage();
         try {
             boolean withAttachment = (attachmentName != null) && (attSource != null);
@@ -80,8 +80,10 @@ public abstract class AbstractEmailService implements IEmailService {
             if (message.getCc() != null) {
                 helper.setCc(message.getCc());
             }
-            if (message.getFrom() != null) {
+            if ((message.getFrom() != null) && !message.getFrom().isEmpty()) {
                 helper.setFrom(message.getFrom());
+            } else {
+                helper.setFrom(defaultSender);
             }
             if (message.getReplyTo() != null) {
                 helper.setReplyTo(message.getReplyTo());
