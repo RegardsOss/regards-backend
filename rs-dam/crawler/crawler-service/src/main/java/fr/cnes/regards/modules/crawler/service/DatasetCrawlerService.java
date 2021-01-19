@@ -82,7 +82,7 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
     }
 
     @Override
-    @Async
+    @Async(CrawlerTaskExecutorConfiguration.CRAWLER_EXECUTOR_BEAN)
     public void crawl() {
         super.crawl(self::doPoll);
     }

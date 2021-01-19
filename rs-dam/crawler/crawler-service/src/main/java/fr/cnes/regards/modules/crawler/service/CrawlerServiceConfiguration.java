@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.util.concurrent.Executor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -34,17 +32,14 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @author Marc Sordi
  */
 @Configuration
+@ConditionalOnMissingBean(AsyncConfigurer.class)
 @EnableAsync
 @Profile("!nocrawl")
 public class CrawlerServiceConfiguration implements AsyncConfigurer {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerService.class);
 
     private static final String HR = "*****************************************************";
-
-    @Override
-    public Executor getAsyncExecutor() {
-        return new SimpleAsyncTaskExecutor("crawler-task");
-    }
 
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
