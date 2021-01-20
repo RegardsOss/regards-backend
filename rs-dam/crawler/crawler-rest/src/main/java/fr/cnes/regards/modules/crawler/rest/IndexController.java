@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.crawler.rest;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,9 +31,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.IDatasourceIngesterService;
 import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
+import fr.cnes.regards.modules.crawler.service.job.CatalogResetService;
 
 @RestController
 @RequestMapping(IndexController.TYPE_MAPPING)
@@ -50,7 +48,7 @@ public class IndexController {
     protected IEntityIndexerService entityIndexerService;
 
     @Autowired
-    private IDatasourceIngesterService dataSourceIngesterService;
+    private CatalogResetService catalogResetService;
 
     /**
      * Current tenant resolver
@@ -65,23 +63,8 @@ public class IndexController {
      */
     @ResourceAccess(description = "Delete and recreate curent index.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Void> recreateIndex() throws ModuleException {
-
-        String tenant = runtimeTenantResolver.getTenant();
-
-        entityIndexerService.deleteIndexNRecreateEntities(tenant);
-
-        // Clear all datasources ingestion
-        //2. Then re-create all entities
-        entityIndexerService.updateAllDatasets(tenant, OffsetDateTime.now());
-        entityIndexerService.updateAllCollections(tenant, OffsetDateTime.now());
-
-        //3. Clear all datasources ingestion
-        List<DatasourceIngestion> datasources = dataSourceIngesterService.getDatasourceIngestions();
-        if ((datasources != null) && !datasources.isEmpty()) {
-            datasources.forEach(ds -> dataSourceIngesterService.deleteDatasourceIngestion(ds.getId()));
-        }
-
+    public ResponseEntity<Void> recreateIndex()  {
+        catalogResetService.scheduleCatalogReset();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

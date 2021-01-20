@@ -89,6 +89,10 @@
 			<groupId>org.locationtech.spatial4j</groupId>
 			<artifactId>spatial4j</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+			<artifactId>jobs-service</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
