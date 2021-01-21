@@ -59,7 +59,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
 
     public static final String TOPONYM_ID = "/{businessId}";
 
-    public static final String SEARCH = "/searchtoponyms";
+    public static final String SEARCH = "/search";
 
     @Autowired
     private ToponymsService service;
