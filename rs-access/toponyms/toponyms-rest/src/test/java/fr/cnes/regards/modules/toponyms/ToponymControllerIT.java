@@ -41,7 +41,7 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     public void findOne() {
 
         performDefaultGet(ToponymsController.ROOT_MAPPING + ToponymsController.TOPONYM_ID,
-                          customizer().expectStatusOk(), "France toponym should be retried", "France");
+                          customizer().expectStatusOk(), "Martinique toponym should be retried", "Martinique");
 
         performDefaultGet(ToponymsController.ROOT_MAPPING + ToponymsController.TOPONYM_ID,
                           customizer().expectStatus(HttpStatus.NOT_FOUND), "Somewhere toponym should not exists",
