@@ -72,6 +72,11 @@
 			<artifactId>uiconfiguration-rest</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.toponyms</groupId>
+			<artifactId>toponyms-rest</artifactId>
+			<version>1.4.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards-starter</artifactId>
 		</dependency>
