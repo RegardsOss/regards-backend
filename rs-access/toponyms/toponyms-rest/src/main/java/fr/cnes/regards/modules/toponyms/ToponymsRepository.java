@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -30,5 +32,9 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  */
 @InstanceEntity
 public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaSpecificationExecutor<Toponym> {
+
+    Page<Toponym> findByLabelFrContainingIgnoreCase(String partialLabel, Pageable page);
+
+    Page<Toponym> findByLabelContainingIgnoreCase(String partialLabel, Pageable page);
 
 }

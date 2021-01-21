@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,6 +58,8 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     public static final String ROOT_MAPPING = "/toponyms";
 
     public static final String TOPONYM_ID = "/{businessId}";
+
+    public static final String SEARCH = "/searchtoponyms";
 
     @Autowired
     private ToponymsService service;
@@ -85,6 +89,15 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
         } else {
             throw new EntityNotFoundException(businessId, ToponymDTO.class);
         }
+    }
+
+    @RequestMapping(value = SEARCH, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
+    public HttpEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = true) String partialLabel,
+            @RequestParam(required = true) String locale) throws EntityNotFoundException {
+        List<ToponymDTO> toponymes = service.search(partialLabel, locale, 100);
+        return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
     }
 
     @Override

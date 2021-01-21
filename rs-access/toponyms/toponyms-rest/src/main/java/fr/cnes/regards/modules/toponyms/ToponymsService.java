@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -84,6 +85,19 @@ public class ToponymsService {
         } else {
             return Optional.empty();
         }
+    }
+
+    public List<ToponymDTO> search(String partialLabel, String locale, int limit) {
+        Page<Toponym> page;
+        if (locale.equals("fr")) {
+            page = repository.findByLabelFrContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));
+        } else {
+            page = repository.findByLabelContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));
+        }
+        return page
+                .getContent().stream().map(t -> ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null,
+                                                                 t.getCopyright(), t.getDescription()))
+                .collect(Collectors.toList());
     }
 
     public static IGeometry parse(Geometry<Position> geometry, int samplingMax) {

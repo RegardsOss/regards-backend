@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.toponyms;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,8 +32,6 @@ import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.modules.toponyms.ToponymDTO;
-import fr.cnes.regards.modules.toponyms.ToponymsService;
 
 /**
  *
@@ -56,6 +55,18 @@ public class ToponymServiceTest extends AbstractRegardsIT {
         Page<ToponymDTO> results = service.findAll(PageRequest.of(0, 100));
         Assert.assertEquals(251, results.getTotalElements());
         Assert.assertEquals(100, results.getSize());
+    }
+
+    @Test
+    public void search() {
+        List<ToponymDTO> toponyms = service.search("Fran", "en", 100);
+        Assert.assertEquals(1, toponyms.size());
+
+        toponyms = service.search("fr", "en", 100);
+        Assert.assertEquals(6, toponyms.size());
+
+        toponyms = service.search("e", "en", 100);
+        Assert.assertEquals(100, toponyms.size());
     }
 
 }
