@@ -115,7 +115,7 @@ public class ToponymeService {
             case POINT:
             case SURFACE:
             default:
-                LOGGER.info("Geometry type {} not handled yet !", geometry.getGeometryType());
+                LOGGER.error("Geometry type {} not handled yet !", geometry.getGeometryType());
                 break;
         }
         return geo;
@@ -131,7 +131,6 @@ public class ToponymeService {
         polygonPostions.add(0, exteriorRingPostions);
         // Loop over internal rings to add assiociated positions
         for (int j = 0; j < polygon.getNumInteriorRing(); j++) {
-            LOGGER.info("Adding  interior ring");
             fr.cnes.regards.framework.geojson.coordinates.Positions ineriorRing = new fr.cnes.regards.framework.geojson.coordinates.Positions();
             addPositionsToRing(polygon.getInteriorRingN(j).getPositions(), ineriorRing, samplingMax);
             polygonPostions.add(j + 1, ineriorRing);
@@ -152,7 +151,7 @@ public class ToponymeService {
         if (!last) {
             addPositionToRing(positions.getPositionN(positions.size() - 1), ring);
         }
-        LOGGER.info("Ring sampled {}/{} (step={})", ring.size(), positions.size(), step);
+        LOGGER.debug("Ring sampled {}/{} (step={})", ring.size(), positions.size(), step);
     }
 
     private static void addPositionToRing(Position position,

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.toponymes;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -32,7 +30,5 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
  */
 @InstanceEntity
 public interface ToponymesRepository extends JpaRepository<Toponyme, String>, JpaSpecificationExecutor<Toponyme> {
-
-    List<Toponyme> findByLabelLike(String Label);
 
 }
