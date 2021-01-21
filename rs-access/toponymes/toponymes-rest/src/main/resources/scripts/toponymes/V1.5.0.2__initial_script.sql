@@ -1,0 +1,2 @@
+create sequence seq_toponymes start 1 increment 50;
+create table t_toponymes (bid varchar(16) not null UNIQUE, label varchar(256) NOT NULL, label_fr varchar(256) NOT NULL, copyright varchar(512), geom geometry(Geometry,4326), primary key (bid));
