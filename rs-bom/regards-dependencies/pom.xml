@@ -169,7 +169,7 @@
 
         <!-- COTS -->
         <!-- Flywaydb dependency from spring-boot -->
-		<flyway.version>6.1.0</flyway.version>
+		<flyway.version>7.5.0</flyway.version>
 		<io.jsonwebtoken.jjwt.version>0.10.7</io.jsonwebtoken.jjwt.version>
 		<springdoc-openapi.version>1.3.0</springdoc-openapi.version>
 		<io.springfox.springfox-swagger2.version>2.9.2</io.springfox.springfox-swagger2.version>
