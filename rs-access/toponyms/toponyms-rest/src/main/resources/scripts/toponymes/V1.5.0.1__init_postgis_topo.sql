@@ -1,1 +1,0 @@
-create extension POSTGIS_TOPOLOGY;
