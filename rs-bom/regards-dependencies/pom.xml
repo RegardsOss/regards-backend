@@ -136,6 +136,7 @@
 		<modules.access-services.version>${regards.version}</modules.access-services.version>
 		<modules.backend-for-frontend.version>${regards.version}</modules.backend-for-frontend.version>
         <modules.processing.version>${regards.version}</modules.processing.version>
+        <modules.toponyms.version>${regards.version}</modules.toponyms.version>
 
 		<!-- FRONTEND -->
 		<fr.cnes.regards.frontend-webapp.version>${regards.version}</fr.cnes.regards.frontend-webapp.version>
@@ -1055,6 +1056,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.storage</groupId>
 				<artifactId>storage-dao</artifactId>
+				<version>${modules.storage.version}</version>
+			</dependency>
+			<!--  Toponyms -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.toponyms</groupId>
+				<artifactId>toponyms-rest</artifactId>
+				<version>${modules.storage.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.toponyms</groupId>
+				<artifactId>toponyms-client</artifactId>
+				<version>${modules.storage.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.toponyms</groupId>
+				<artifactId>toponyms-service</artifactId>
+				<version>${modules.storage.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.toponyms</groupId>
+				<artifactId>toponyms-domain</artifactId>
+				<version>${modules.storage.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.toponyms</groupId>
+				<artifactId>toponyms-dao</artifactId>
 				<version>${modules.storage.version}</version>
 			</dependency>
             <!-- Data provider -->
