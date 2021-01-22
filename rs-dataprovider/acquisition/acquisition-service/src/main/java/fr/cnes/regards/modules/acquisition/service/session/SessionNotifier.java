@@ -146,6 +146,8 @@ public class SessionNotifier {
         if (nbAcquiredFiles > 0) {
             notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                    nbAcquiredFiles);
+            //FIXME: there is a possible double increment with classic process that scan new files using notifyFileAcquired
+            // This is not fixed because PM65 should change everything. Be careful with the new way.
             notifyIncrementSession(newSessionOwner, newSession, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                    nbAcquiredFiles);
         }
