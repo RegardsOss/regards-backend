@@ -56,7 +56,11 @@
 	</parent>
 
 	<modules>
+		<module>toponyms-domain</module>
+		<module>toponyms-dao</module>
+		<module>toponyms-service</module>
 		<module>toponyms-rest</module>
+		<module>toponyms-client</module>
 	</modules>
 
 	<dependencyManagement>

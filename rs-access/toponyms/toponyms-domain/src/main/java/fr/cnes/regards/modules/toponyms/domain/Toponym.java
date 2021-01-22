@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.toponyms;
+package fr.cnes.regards.modules.toponyms.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +32,9 @@ import com.sun.istack.NotNull;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
- *
+ * POJO for Toponym object
+ * Geometry field is handled by hibernate-spatial and postgres POSTGIS extension.
+ * *
  * @author Sébastien Binda
  *
  */
@@ -41,11 +43,17 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 @Table(name = "t_toponyms", uniqueConstraints = @UniqueConstraint(name = "uk_toponym_bid", columnNames = { "bid" }))
 public class Toponym {
 
+    /**
+     * Unique business id
+     */
     @Id
     @NotNull
     @Column(name = "bid", nullable = false)
     String businessId;
 
+    /**
+     * English label
+     */
     @NotNull
     @Column(name = "label", nullable = false)
     String label;

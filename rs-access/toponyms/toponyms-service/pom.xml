@@ -22,11 +22,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules.toponyms</groupId>
-	<artifactId>toponyms-rest</artifactId>
+	<artifactId>toponyms-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms REST</name>
-	<description>Controller layer of the UI Configuration module</description>
+	<name>Toponyms service</name>
+	<description>Toponyms services</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>
 	<licenses>
@@ -58,16 +58,12 @@
 		<!-- Starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards-starter</artifactId>
+			<artifactId>module-regards-starter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-        <!-- Module dependencies -->
+		 <!-- Module dependencies -->
         <dependency>
 			<groupId>fr.cnes.regards.modules.toponyms</groupId>
-			<artifactId>toponyms-service</artifactId>
+			<artifactId>toponyms-dao</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

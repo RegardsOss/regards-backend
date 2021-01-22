@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.toponyms;
+package fr.cnes.regards.modules.toponyms.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +37,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
+import fr.cnes.regards.modules.toponyms.domain.Toponym;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 
 /**
+ * Service to search {@link ToponymDTO}s from a postgis database
  *
  * @author Sébastien Binda
  *
@@ -54,17 +59,25 @@ public class ToponymsService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
 
+    /**
+     * Maximum number of points to retrieve for each polygon of a geometry
+     */
     private static final int POINT_SAMPLING_FINDALL = 50;
 
     @Autowired
     private ToponymsRepository repository;
 
+    /**
+     * Maximum number of points to retrieve for each polygon of a geometry
+     */
     @Value("${regards.Toponyms.geo.sampling.max:0}")
     private int samplingMax;
 
     /**
+     * Retrieve {@link Page} of {@link ToponymDTO}s
+     *
      * @param pageable
-     * @return
+     * @return {@link ToponymDTO}s
      */
     public Page<ToponymDTO> findAll(Pageable pageable) {
         Page<Toponym> page = repository.findAll(pageable);
@@ -75,6 +88,11 @@ public class ToponymsService {
         }).collect(Collectors.toList()), page.getPageable(), page.getTotalElements());
     }
 
+    /**
+     * Retrieve  one {@link ToponymDTO}s by his business unique identifier
+     * @param businessId
+     * @return {@link ToponymDTO}
+     */
     public Optional<ToponymDTO> findOne(String businessId) {
         Optional<Toponym> Toponym = repository.findById(businessId);
         if (Toponym.isPresent()) {
@@ -87,6 +105,14 @@ public class ToponymsService {
         }
     }
 
+    /**
+     * Search for toponyms matching the label and the locale given.
+     * Returned {@link ToponymDTO}s are geometry free.
+     * @param partialLabel
+     * @param locale
+     * @param limit maximum number of results to retrieve
+     * @return {@link ToponymDTO}s without geometry
+     */
     public List<ToponymDTO> search(String partialLabel, String locale, int limit) {
         Page<Toponym> page;
         if (locale.equals("fr")) {
@@ -100,7 +126,13 @@ public class ToponymsService {
                 .collect(Collectors.toList());
     }
 
-    public static IGeometry parse(Geometry<Position> geometry, int samplingMax) {
+    /**
+     * Parse a {@link Geometry} to build a {@link IGeometry}
+     * @param geometry
+     * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
+     * @return {@link IGeometry}
+     */
+    private static IGeometry parse(Geometry<Position> geometry, int samplingMax) {
         IGeometry geo = null;
         switch (geometry.getGeometryType()) {
             case POLYGON:
@@ -136,6 +168,12 @@ public class ToponymsService {
         return geo;
     }
 
+    /**
+     * Parse a {@link org.geolatte.geom.Polygon} to build a {@link PolygonPositions}
+     * @param polygon
+     * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
+     * @return {@link PolygonPositions}
+     */
     private static PolygonPositions parsePolygon(org.geolatte.geom.Polygon<Position> polygon, int samplingMax) {
         // Create result IGeometry#Polygon
         PolygonPositions polygonPostions = new PolygonPositions();
@@ -153,8 +191,13 @@ public class ToponymsService {
         return polygonPostions;
     }
 
-    private static void addPositionsToRing(PositionSequence<Position> positions,
-            fr.cnes.regards.framework.geojson.coordinates.Positions ring, int maxSampling) {
+    /**
+     * Parse a {@link PositionSequence} to add each included {@link Position} in the given {@link Positions}
+     * @param positions {@link PositionSequence} to  parse
+     * @param ring {@link Positions}
+     * @param maxSampling Maximum number of points to retrieve for each polygon of a geometry
+     */
+    private static void addPositionsToRing(PositionSequence<Position> positions, Positions ring, int maxSampling) {
         int step = (maxSampling > 2) && (maxSampling < positions.size()) ? ((positions.size() / maxSampling)) : 1;
         int index;
         boolean last = false;
@@ -169,8 +212,12 @@ public class ToponymsService {
         LOGGER.debug("Ring sampled {}/{} (step={})", ring.size(), positions.size(), step);
     }
 
-    private static void addPositionToRing(Position position,
-            fr.cnes.regards.framework.geojson.coordinates.Positions ringPosition) {
+    /**
+     * Parse a {@link Position} to build a {@link fr.cnes.regards.framework.geojson.coordinates.Position} and add it in the given {@link Positions}
+     * @param position {@link Position} to parse
+     * @param ringPosition {@link Positions} to add the built {@link fr.cnes.regards.framework.geojson.coordinates.Position}
+     */
+    private static void addPositionToRing(Position position, Positions ringPosition) {
         // Add  positions with right dimension
         if (position.getCoordinateDimension() == 2) {
             ringPosition.add(new fr.cnes.regards.framework.geojson.coordinates.Position(position.getCoordinate(0),

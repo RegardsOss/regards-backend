@@ -22,11 +22,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules.toponyms</groupId>
-	<artifactId>toponyms-rest</artifactId>
+	<artifactId>toponyms-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms REST</name>
-	<description>Controller layer of the UI Configuration module</description>
+	<name>Toponyms domain</name>
+	<description>Toponyms domain</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>
 	<licenses>
@@ -55,30 +55,17 @@
 	</parent>
 
 	<dependencies>
-		<!-- Starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards-starter</artifactId>
+			<artifactId>geojson-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-        <!-- Module dependencies -->
-        <dependency>
-			<groupId>fr.cnes.regards.modules.toponyms</groupId>
-			<artifactId>toponyms-service</artifactId>
-		</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-instance-regards-starter</artifactId>
-			<scope>test</scope>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-spatial</artifactId>
         </dependency>
     </dependencies>
 </project>

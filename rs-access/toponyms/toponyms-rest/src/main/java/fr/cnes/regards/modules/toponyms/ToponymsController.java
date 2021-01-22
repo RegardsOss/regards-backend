@@ -29,7 +29,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,32 +44,41 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
+import fr.cnes.regards.modules.toponyms.service.ToponymsService;
 
 /**
+ * REST Controller for {@link ToponymDTO} entities
  *
  * @author Sébastien Binda
  *
  */
 @RestController
-@RequestMapping(ToponymsController.ROOT_MAPPING)
+@RequestMapping(ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController implements IResourceController<ToponymDTO> {
 
-    public static final String ROOT_MAPPING = "/toponyms";
-
-    public static final String TOPONYM_ID = "/{businessId}";
-
-    public static final String SEARCH = "/search";
-
+    /**
+     * Toponym service
+     */
     @Autowired
     private ToponymsService service;
 
     @Autowired
     private IResourceService resourceService;
 
+    /**
+     * Endpoint to retrieve all toponyms with pagination
+     *
+     * @param pageable
+     * @param assembler
+     * @return {@link ToponymDTO}s
+     * @throws EntityNotFoundException
+     */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
-    public HttpEntity<PagedModel<EntityModel<ToponymDTO>>> retrieve(
+    @ResourceAccess(description = "Endpoint to retrieve all toponyms with pagination", role = DefaultRole.PUBLIC)
+    public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(
             @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
         Page<ToponymDTO> toponyms = service.findAll(pageable);
@@ -78,10 +86,18 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @RequestMapping(value = TOPONYM_ID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Endpoint to retrieve one toponym by his identifier
+     *
+     * @param businessId
+     * @return {@link ToponymDTO}
+     * @throws EntityNotFoundException
+     */
+    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
-    public HttpEntity<EntityModel<ToponymDTO>> retrieve(@PathVariable("businessId") String businessId)
+    @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
+    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId)
             throws EntityNotFoundException {
         Optional<ToponymDTO> toponym = service.findOne(businessId);
         if (toponym.isPresent()) {
@@ -91,10 +107,21 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
         }
     }
 
-    @RequestMapping(value = SEARCH, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.
+     *
+     * @param partialLabel
+     * @param locale
+     * @return {@link ToponymDTO}s
+     * @throws EntityNotFoundException
+     */
+    @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
-    public HttpEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = true) String partialLabel,
+    @ResourceAccess(
+            description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
+            role = DefaultRole.PUBLIC)
+    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = true) String partialLabel,
             @RequestParam(required = true) String locale) throws EntityNotFoundException {
         List<ToponymDTO> toponymes = service.search(partialLabel, locale, 100);
         return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);

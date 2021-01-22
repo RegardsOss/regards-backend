@@ -16,34 +16,66 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.toponyms;
+package fr.cnes.regards.modules.toponyms.domain;
+
+import org.geolatte.geom.Geometry;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 
 /**
+ *
+ * DTO to transfer {@link Toponym} objects with {@link IGeometry} in place of {@link Geometry}
  *
  * @author Sébastien Binda
  *
  */
 public class ToponymDTO {
 
+    /**
+     * Business unique identifier
+     */
     private String businessId;
 
+    /**
+     * English label
+     */
     private String labelEn;
 
+    /**
+     * French label
+     */
     private String labelFr;
 
+    /**
+     * Description
+     */
     private String Description;
 
+    /**
+     * Geojson geomtry
+     */
     private IGeometry geometry;
 
+    /**
+     * Owner
+     */
     private String copyright;
 
-    public static ToponymDTO build(String businessId, String label, String labelFr, IGeometry geometry,
+    /**
+     * Creates a new {@link ToponymDTO}
+     * @param businessId unique identifier
+     * @param labelEn English label
+     * @param labelFr French label
+     * @param geometry
+     * @param copyright owner
+     * @param description
+     * @return
+     */
+    public static ToponymDTO build(String businessId, String labelEn, String labelFr, IGeometry geometry,
             String copyright, String description) {
         ToponymDTO dto = new ToponymDTO();
         dto.setBusinessId(businessId);
-        dto.setLabelEn(label);
+        dto.setLabelEn(labelEn);
         dto.setLabelFr(labelFr);
         dto.setGeometry(geometry);
         dto.setCopyright(copyright);

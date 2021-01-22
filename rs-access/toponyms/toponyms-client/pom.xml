@@ -22,11 +22,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules.toponyms</groupId>
-	<artifactId>toponyms-rest</artifactId>
+	<artifactId>toponyms-client</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms REST</name>
-	<description>Controller layer of the UI Configuration module</description>
+	<name>Toponyms Client</name>
+	<description>Client for toponyms interfaces</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>
 	<licenses>
@@ -55,30 +55,39 @@
 	</parent>
 
 	<dependencies>
-		<!-- Starters -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards-starter</artifactId>
+			<artifactId>feign-regards-starter</artifactId>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
+			<artifactId>geojson-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>gson-regards-starter</artifactId>
 		</dependency>
         <!-- Module dependencies -->
         <dependency>
 			<groupId>fr.cnes.regards.modules.toponyms</groupId>
-			<artifactId>toponyms-service</artifactId>
+			<artifactId>toponyms-domain</artifactId>
 		</dependency>
-		<!-- Test -->
+		<!-- Tests -->
+		 <dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-integration-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-instance-regards-starter</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
+			<groupId>fr.cnes.regards.modules.toponyms</groupId>
+			<artifactId>toponyms-rest</artifactId>
 			<scope>test</scope>
-        </dependency>
+		</dependency>
     </dependencies>
 </project>

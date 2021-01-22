@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 
 /**
  *
@@ -32,7 +33,7 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void findAll() {
-        performDefaultGet(ToponymsController.ROOT_MAPPING, customizer().expectStatusOk()
+        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING, customizer().expectStatusOk()
                 .expectToHaveSize(JSON_PATH_CONTENT, 10).addParameter("page", "0").addParameter("size", "10"),
                           "should be  ok");
     }
@@ -40,10 +41,10 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void findOne() {
 
-        performDefaultGet(ToponymsController.ROOT_MAPPING + ToponymsController.TOPONYM_ID,
+        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
                           customizer().expectStatusOk(), "Martinique toponym should be retried", "Martinique");
 
-        performDefaultGet(ToponymsController.ROOT_MAPPING + ToponymsController.TOPONYM_ID,
+        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
                           customizer().expectStatus(HttpStatus.NOT_FOUND), "Somewhere toponym should not exists",
                           "Somewhere");
     }
