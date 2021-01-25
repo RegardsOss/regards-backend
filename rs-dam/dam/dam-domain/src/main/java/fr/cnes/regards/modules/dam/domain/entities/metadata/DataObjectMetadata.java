@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -14,75 +15,6 @@ import com.google.common.collect.Multimap;
  * @author oroussel
  */
 public class DataObjectMetadata {
-
-    /**
-     * Multimap { groupName, (datasetIpIds) }
-     */
-    private final Multimap<String, DatasetAccessRight> groups = HashMultimap.create();
-
-    /**
-     * Multimap { modelName, (datasetIpIds) }
-     */
-    private final Multimap<String, String> modelNames = HashMultimap.create();
-
-    /**
-     * @param groupName
-     * @param datasetIpId
-     * @param dataAccessGranted true if data access is granted for (group, dataset ip id)
-     */
-    public void addGroup(String groupName, String datasetIpId, boolean dataAccessGranted) {
-        groups.put(groupName, new DatasetAccessRight(datasetIpId, dataAccessGranted));
-    }
-
-    public void removeGroup(String groupName, String datasetIpId) {
-        // accessRight value doesn't count, DatasetAccessRight only use datasetIpId for equality
-        groups.remove(groupName, new DatasetAccessRight(datasetIpId, true));
-    }
-
-    /**
-     * Remove given ipId from all values (groups multimap AND modelNames multimap)
-     * @param datasetIpId
-     */
-    public void removeDatasetIpId(String datasetIpId) {
-        for (Iterator<DatasetAccessRight> i = groups.values().iterator(); i.hasNext();) {
-            if (i.next().getDataset().equals(datasetIpId)) {
-                i.remove();
-            }
-        }
-        for (Iterator<String> i = modelNames.values().iterator(); i.hasNext();) {
-            if (i.next().equals(datasetIpId)) {
-                i.remove();
-            }
-        }
-
-    }
-
-    public Set<String> getGroups() {
-        return groups.keySet();
-    }
-
-    /**
-     * Retrieve a map of { group -> data access}. data access is a true boolean if at least one associated dataset
-     * grants
-     * data access, false otherwise
-     * @return {@link Map} bteween group name and associated Access
-     */
-    public Map<String, Boolean> getGroupsAccessRightsMap() {
-        return Maps.transformValues(groups
-                .asMap(), rights -> rights.stream().anyMatch(datasetAccessRight -> datasetAccessRight.isAccessRight()));
-    }
-
-    public void addModelName(String modelName, String datasetIpId) {
-        modelNames.put(modelName, datasetIpId);
-    }
-
-    public void removeModelName(String modelName, String datasetIpId) {
-        modelNames.remove(modelName, datasetIpId);
-    }
-
-    public Set<String> getModelNames() {
-        return modelNames.keySet();
-    }
 
     @SuppressWarnings("unused")
     private static final class DatasetAccessRight {
@@ -135,5 +67,85 @@ public class DataObjectMetadata {
 
             return Objects.hash(dataset);
         }
+    }
+
+    /**
+     * Multimap { groupName, (datasetIpIds) }
+     */
+    private final Multimap<String, DatasetAccessRight> groups = HashMultimap.create();
+
+    /**
+     * Multimap { modelName, (datasetIpIds) }
+     */
+    private final Multimap<String, String> modelNames = HashMultimap.create();
+
+    /**
+     * @param groupName
+     * @param datasetIpId
+     * @param dataAccessGranted true if data access is granted for (group, dataset ip id)
+     */
+    public void addGroup(String groupName, String datasetIpId, boolean dataAccessGranted) {
+        groups.put(groupName, new DatasetAccessRight(datasetIpId, dataAccessGranted));
+    }
+
+    public void removeGroup(String groupName, String datasetIpId) {
+        // accessRight value doesn't count, DatasetAccessRight only use datasetIpId for equality
+        groups.remove(groupName, new DatasetAccessRight(datasetIpId, true));
+    }
+
+    /**
+     * Remove given ipId from all values (groups multimap AND modelNames multimap)
+     * @param datasetIpId
+     */
+    public void removeDatasetIpId(String datasetIpId) {
+        for (Iterator<DatasetAccessRight> i = groups.values().iterator(); i.hasNext(); ) {
+            if (i.next().getDataset().equals(datasetIpId)) {
+                i.remove();
+            }
+        }
+        for (Iterator<String> i = modelNames.values().iterator(); i.hasNext(); ) {
+            if (i.next().equals(datasetIpId)) {
+                i.remove();
+            }
+        }
+
+    }
+
+    public Set<String> getGroups() {
+        return groups.keySet();
+    }
+
+    /**
+     * Retrieve a map of { group -> data access}. data access is a true boolean if at least one associated dataset
+     * grants
+     * data access, false otherwise
+     * @return {@link Map} bteween group name and associated Access
+     */
+    public Map<String, Boolean> getGroupsAccessRightsMap() {
+        return Maps.transformValues(groups.asMap(),
+                                    rights -> rights.stream()
+                                            .anyMatch(datasetAccessRight -> datasetAccessRight.isAccessRight()));
+    }
+
+    public void addModelName(String modelName, String datasetIpId) {
+        modelNames.put(modelName, datasetIpId);
+    }
+
+    public void removeModelName(String modelName, String datasetIpId) {
+        modelNames.remove(modelName, datasetIpId);
+    }
+
+    public Set<String> getModelNames() {
+        return modelNames.keySet();
+    }
+
+    public Set<String> getGroupsWithAccess() {
+        Set<String> groupsWithAccess = new HashSet<>();
+        groups.forEach((group, datasetAccessRight) -> {
+            if (datasetAccessRight.isAccessRight()) {
+                groupsWithAccess.add(group);
+            }
+        });
+        return groupsWithAccess;
     }
 }
