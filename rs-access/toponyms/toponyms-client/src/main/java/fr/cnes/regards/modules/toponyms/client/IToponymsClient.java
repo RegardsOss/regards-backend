@@ -35,10 +35,12 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 
 /**
  *
+ * Client to search for Toponyms.
+ *
  * @author Sébastien Binda
  *
  */
-@RestClient(name = "rs-access-instance", contextId = "rs-access-project.service-agg-client")
+@RestClient(name = "rs-access-instance", contextId = "rs-access-project.toponyms-client")
 @RequestMapping(value = ToponymsRestConfiguration.ROOT_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IToponymsClient {

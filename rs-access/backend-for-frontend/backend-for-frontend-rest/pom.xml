@@ -66,10 +66,18 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
 		<!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.toponyms</groupId>
+			<artifactId>toponyms-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules</groupId>
