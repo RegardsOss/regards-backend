@@ -139,7 +139,7 @@ public class DataObjectMetadata {
         return modelNames.keySet();
     }
 
-    public Set<String> getGroupsWithAccess() {
+    public Set<String> getGroupsWithMetadataAccess() {
         Set<String> groupsWithAccess = new HashSet<>();
         groups.forEach((group, datasetAccessRight) -> {
             if (datasetAccessRight.isAccessRight()) {

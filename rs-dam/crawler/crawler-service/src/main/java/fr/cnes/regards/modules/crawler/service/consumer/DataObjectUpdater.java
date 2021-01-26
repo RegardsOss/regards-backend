@@ -48,7 +48,7 @@ public class DataObjectUpdater extends AbstractDataObjectBulkSaver implements Co
         // set current modelNames on metadata for this datasetIpId
         object.getMetadata().addModelName(datasetModelName, datasetIpId);
         // update groupsMap from metadata
-        object.setGroups(object.getMetadata().getGroupsWithAccess());
+        object.setGroups(object.getMetadata().getGroupsWithMetadataAccess());
         // update modelNames from metadata
         object.setDatasetModelNames(object.getMetadata().getModelNames());
         object.setLastUpdate(updateDate);
