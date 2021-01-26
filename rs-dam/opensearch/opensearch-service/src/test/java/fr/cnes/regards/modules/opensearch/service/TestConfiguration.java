@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.parser.IToponymClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * @author sbinda
@@ -59,11 +59,11 @@ public class TestConfiguration {
     IAttributeHelper helper() {
         return Mockito.mock(IAttributeHelper.class);
     }
-    
+
     @Bean
     @Primary
-    IToponymClient toponymClient() {
-        return Mockito.mock(IToponymClient.class);
+    IToponymsClient toponymClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
 }

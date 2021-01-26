@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,8 +17,15 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.opensearch.service.parser;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -27,9 +34,8 @@ import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceExceptio
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 
 /**
  * This {@link IParser} implementation only handles toponyms of the OpenSearch request and returns an
@@ -39,14 +45,16 @@ import org.springframework.util.MultiValueMap;
 
 public class ToponymParser implements IParser {
 
+    // Class logger
+    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymParser.class);
+
     /** Parameter to retrieve from the opensearch query parameters */
     public static final String TOPONYM_BUSINESS_ID = "toponym";
-    
-    /** Client to get toponyms */
-    private final IToponymClient toponymClient;
 
-    
-    public ToponymParser(IToponymClient toponymClient) {
+    /** Client to get toponyms */
+    private final IToponymsClient toponymClient;
+
+    public ToponymParser(IToponymsClient toponymClient) {
         this.toponymClient = toponymClient;
     }
 
@@ -73,11 +81,14 @@ public class ToponymParser implements IParser {
      * @throws EntityNotFoundException thrown if the corresponding toponym was not found in the toponym database
      */
     public IGeometry getToponymGeometry(String businessId) throws DataSourceException, EntityNotFoundException {
-        ResponseEntity<EntityModel<IGeometry>> response;
+        ResponseEntity<EntityModel<ToponymDTO>> response;
         try {
-            FeignSecurityManager.asSystem();
+            FeignSecurityManager.asInstance();
             // remote request to toponym server
-            response = toponymClient.retrieveToponym(businessId);
+            response = toponymClient.get(businessId);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityNotFoundException(businessId, ToponymDTO.class);
         } finally {
             FeignSecurityManager.reset();
         }
@@ -89,11 +100,11 @@ public class ToponymParser implements IParser {
         }
 
         // check if toponym was found in the toponym server, if not throw exception
-        EntityModel<IGeometry> toponymGeometry = response.getBody();
-        if (response.getBody() == null || toponymGeometry == null) {
+        EntityModel<ToponymDTO> toponym = response.getBody();
+        if ((toponym == null) || (toponym.getContent() == null) || (toponym.getContent().getGeometry() == null)) {
             throw new EntityNotFoundException(businessId, IGeometry.class);
         }
         // Return toponym geometry
-        return toponymGeometry.getContent();
+        return toponym.getContent().getGeometry();
     }
 }

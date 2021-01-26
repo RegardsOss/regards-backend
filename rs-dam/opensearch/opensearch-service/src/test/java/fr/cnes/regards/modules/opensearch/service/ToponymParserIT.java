@@ -17,23 +17,16 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.opensearch.service;
 
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.OrCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.parser.IToponymClient;
-import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +36,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.OrCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 
 /**
  * Unit test for {@link ToponymParser}
@@ -55,7 +57,7 @@ import static org.mockito.Mockito.when;
 public class ToponymParserIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
-    IToponymClient toponymClient;
+    IToponymsClient toponymClient;
 
     public ToponymParser parser;
 
@@ -69,10 +71,11 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
     public void testRetrievePolygon() throws UnsupportedEncodingException, OpenSearchParseException {
         // Initialize polygon
         Polygon polygon = Polygon.fromArray(generatePolygon(1, 1, 5));
+        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", polygon, "test", "test");
 
         // Build toponym mock
-        when(toponymClient.retrieveToponym(anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(polygon), HttpStatus.OK));
+        when(toponymClient.get(anyString()))
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");
@@ -93,10 +96,11 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
         multiPolygonArray[0] = generatePolygon(1, 1, 3);
         multiPolygonArray[1] = generatePolygon(10, 2, 4);
         MultiPolygon multiPolygon = MultiPolygon.fromArray(multiPolygonArray);
+        ToponymDTO toponym = ToponymDTO.build("test", "test", "test", multiPolygon, "test", "test");
 
         // Build toponym mock
-        when(toponymClient.retrieveToponym(anyString()))
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(multiPolygon), HttpStatus.OK));
+        when(toponymClient.get(anyString()))
+                .thenReturn(new ResponseEntity<>(new EntityModel<>(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");
@@ -117,9 +121,9 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
     public double[][][] generatePolygon(int startIndex, int nbInteriorRings, int nbPointsPerRing) {
         double[][][] polygon = new double[nbInteriorRings + 1][][];
 
-        for (int ring = 0; ring < nbInteriorRings + 1; ring++) {
+        for (int ring = 0; ring < (nbInteriorRings + 1); ring++) {
             polygon[ring] = new double[nbPointsPerRing][2];
-            for (int i = 0; i < nbPointsPerRing - 1; i++) {
+            for (int i = 0; i < (nbPointsPerRing - 1); i++) {
                 polygon[ring][i][0] = i + startIndex;
                 polygon[ring][i][1] = i + startIndex + 1;
             }
