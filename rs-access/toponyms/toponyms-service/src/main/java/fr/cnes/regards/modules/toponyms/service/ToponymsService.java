@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
@@ -44,6 +45,7 @@ import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 
 /**
  * Service to search {@link ToponymDTO}s from a postgis database
@@ -115,7 +117,9 @@ public class ToponymsService {
      */
     public List<ToponymDTO> search(String partialLabel, String locale, int limit) {
         Page<Toponym> page;
-        if (locale.equals("fr")) {
+        Assert.notNull("locale is mandatory for toponyls search by label", locale);
+        Assert.notNull("partialLabel is  mandatory for toponyms search by label", partialLabel);
+        if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
             page = repository.findByLabelFrContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));
         } else {
             page = repository.findByLabelContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));

@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -45,6 +46,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
 
@@ -57,6 +59,8 @@ import fr.cnes.regards.modules.toponyms.service.ToponymsService;
 @RestController
 @RequestMapping(ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController implements IResourceController<ToponymDTO> {
+
+    private final static int MAX_SEARCH_RESULTS = 100;
 
     /**
      * Toponym service
@@ -121,10 +125,24 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     @ResourceAccess(
             description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = true) String partialLabel,
-            @RequestParam(required = true) String locale) throws EntityNotFoundException {
-        List<ToponymDTO> toponymes = service.search(partialLabel, locale, 100);
-        return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
+    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
+            @RequestParam(required = false) String locale) throws EntityNotFoundException {
+        if ((partialLabel != null) && !partialLabel.isEmpty()) {
+            List<ToponymDTO> toponymes;
+            if (locale != null) {
+                toponymes = service.search(partialLabel, locale, MAX_SEARCH_RESULTS);
+            } else {
+                toponymes = service.search(partialLabel, ToponymLocaleEnum.EN.getLocale(), MAX_SEARCH_RESULTS);
+            }
+            return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
+        } else {
+            Page<ToponymDTO> page = service.findAll(PageRequest.of(0, MAX_SEARCH_RESULTS));
+            if ((page != null) && (page.getContent() != null)) {
+                return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
     }
 
     @Override

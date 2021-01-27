@@ -100,8 +100,8 @@ public class ToponymsController {
     @ResourceAccess(
             description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = true) String partialLabel,
-            @RequestParam(required = true) String locale) throws EntityNotFoundException {
+    public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
+            @RequestParam(required = false) String locale) throws EntityNotFoundException {
         FeignSecurityManager.asInstance();
         try {
             return client.search(partialLabel, locale);

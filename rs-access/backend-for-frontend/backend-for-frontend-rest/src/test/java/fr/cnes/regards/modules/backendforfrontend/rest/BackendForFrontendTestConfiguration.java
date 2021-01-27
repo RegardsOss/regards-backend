@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Primary;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -62,5 +63,10 @@ public class BackendForFrontendTestConfiguration {
         Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         return mock;
+    }
+
+    @Bean
+    public IToponymsClient toponymsClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 }
