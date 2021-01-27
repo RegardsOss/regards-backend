@@ -93,7 +93,8 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     /**
      * Endpoint to retrieve one toponym by his identifier
      *
-     * @param businessId
+     * @param businessId Unique identifier of toponym to search for
+     * @param simplified True for simplified geometry (minimize size)
      * @return {@link ToponymDTO}
      * @throws EntityNotFoundException
      */
@@ -101,9 +102,15 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
-    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId)
-            throws EntityNotFoundException {
-        Optional<ToponymDTO> toponym = service.findOne(businessId);
+    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
+            @RequestParam(required = false) Boolean simplified) throws EntityNotFoundException {
+        Optional<ToponymDTO> toponym;
+        if (simplified == null) {
+            toponym = service.findOne(businessId, false);
+        } else {
+            toponym = service.findOne(businessId, simplified);
+        }
+
         if (toponym.isPresent()) {
             return new ResponseEntity<>(toResource(toponym.get()), HttpStatus.OK);
         } else {

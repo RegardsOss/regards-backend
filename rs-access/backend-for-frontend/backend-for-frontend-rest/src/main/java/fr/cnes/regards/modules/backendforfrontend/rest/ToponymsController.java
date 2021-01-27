@@ -65,7 +65,8 @@ public class ToponymsController {
     /**
      * Endpoint to retrieve one toponym by his identifier
      *
-     * @param businessId
+     * @param businessId Unique identifier of toponym to search for
+     * @param simplified True for simplified geometry (minimize size)
      * @return {@link ToponymDTO}
      * @throws EntityNotFoundException
      */
@@ -73,11 +74,15 @@ public class ToponymsController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
-    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId)
-            throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
+            @RequestParam(required = false) Boolean simplified) throws EntityNotFoundException {
         FeignSecurityManager.asInstance();
         try {
-            return client.get(businessId);
+            if (simplified != null) {
+                return client.get(businessId, simplified);
+            } else {
+                return client.get(businessId);
+            }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);

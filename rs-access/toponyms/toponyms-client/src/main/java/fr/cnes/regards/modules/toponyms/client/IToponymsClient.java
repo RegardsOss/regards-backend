@@ -54,6 +54,10 @@ public interface IToponymsClient {
             @RequestParam(name = "size") int size);
 
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
+    public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
+            @RequestParam(required = false) Boolean simplified);
+
+    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId);
 
 }

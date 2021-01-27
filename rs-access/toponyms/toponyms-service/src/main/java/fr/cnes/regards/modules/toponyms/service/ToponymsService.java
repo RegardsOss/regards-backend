@@ -70,10 +70,18 @@ public class ToponymsService {
     private ToponymsRepository repository;
 
     /**
-     * Maximum number of points to retrieve for each polygon of a geometry
+     * Tolerance (unit: meter) to generate simplified geometry through  ST_Simplify Postgis function
+     * @see https://postgis.net/docs/ST_Simplify.html
      */
-    @Value("${regards.Toponyms.geo.sampling.max:0}")
-    private int samplingMax;
+    @Value("${regards.Toponyms.geo.sampling.tolerance:0.1}")
+    private double tolerance;
+
+    /**
+     * Maximum number of points to retrieve for each polygon of a geometry
+     * Default 0 for no sampling
+     */
+    @Value("${regards.Toponyms.geo.sampling.max.points:0}")
+    private int sampling;
 
     /**
      * Retrieve {@link Page} of {@link ToponymDTO}s
@@ -95,15 +103,28 @@ public class ToponymsService {
      * @param businessId
      * @return {@link ToponymDTO}
      */
-    public Optional<ToponymDTO> findOne(String businessId) {
-        Optional<Toponym> Toponym = repository.findById(businessId);
-        if (Toponym.isPresent()) {
-            Toponym t = Toponym.get();
-            return Optional.of(ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
-                                                ToponymsService.parse(t.getGeometry(), samplingMax), t.getCopyright(),
-                                                t.getDescription()));
+    public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
+        if (!simplified) {
+            Optional<Toponym> toponym = repository.findById(businessId);
+            if (toponym.isPresent()) {
+                Toponym t = toponym.get();
+                return Optional.of(ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
+                                                    ToponymsService.parse(t.getGeometry(), sampling), t.getCopyright(),
+                                                    t.getDescription()));
+            } else {
+                return Optional.empty();
+            }
         } else {
-            return Optional.empty();
+            // Optional<ISimplifiedToponym> toponym = repository.findOneSimplified(businessId);
+            Optional<Toponym> toponym = repository.findOneSimplified(businessId, tolerance);
+            if (toponym.isPresent()) {
+                Toponym t = toponym.get();
+                return Optional.of(ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
+                                                    ToponymsService.parse(t.getGeometry(), sampling), t.getCopyright(),
+                                                    t.getDescription()));
+            } else {
+                return Optional.empty();
+            }
         }
     }
 

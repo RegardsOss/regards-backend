@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.toponyms.service;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -60,6 +62,7 @@ public class ToponymServiceTest extends AbstractRegardsIT {
 
     @Test
     public void search() {
+
         List<ToponymDTO> toponyms = service.search("Fran", "en", 100);
         Assert.assertEquals(1, toponyms.size());
 
@@ -68,6 +71,22 @@ public class ToponymServiceTest extends AbstractRegardsIT {
 
         toponyms = service.search("e", "en", 100);
         Assert.assertEquals(100, toponyms.size());
+
+        toponyms = service.search(null, null, 100);
+        Assert.assertEquals(100, toponyms.size());
+    }
+
+    @Test
+    public void searchSimplifiedGeo() {
+        Optional<ToponymDTO> result = service.findOne("France", true);
+        int size = ((MultiPolygon) result.get().getGeometry()).getCoordinates().stream()
+                .map(c -> c.stream().map(p -> p.size()).reduce(0, Integer::sum)).reduce(0, Integer::sum);
+        Assert.assertEquals("With simplify algorithm france should contains 141 positions", 141, size);
+
+        result = service.findOne("France", false);
+        size = ((MultiPolygon) result.get().getGeometry()).getCoordinates().stream()
+                .map(c -> c.stream().map(p -> p.size()).reduce(0, Integer::sum)).reduce(0, Integer::sum);
+        Assert.assertEquals("Without simplify algorithm france should contains 1042 positions", 1042, size);
     }
 
 }

@@ -113,6 +113,18 @@ public class ToponymsClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals(result.getBody().getContent().getLabelFr(), id);
     }
 
+    @Test
+    public void getSimplified() {
+        String id = "France";
+        ResponseEntity<EntityModel<ToponymDTO>> result = client.get(id, true);
+        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertNotNull(result.getBody());
+        Assert.assertNotNull(result.getBody().getContent());
+        Assert.assertEquals(result.getBody().getContent().getBusinessId(), id);
+        Assert.assertEquals(result.getBody().getContent().getLabelEn(), id);
+        Assert.assertEquals(result.getBody().getContent().getLabelFr(), id);
+    }
+
     @Override
     protected Logger getLogger() {
         return LOG;
