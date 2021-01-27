@@ -18,6 +18,27 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -33,20 +54,6 @@ import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.NoSuchElementException;
 
 /**
  * @author oroussel
@@ -71,6 +78,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     private IOrderDataFileService dataFileService;
 
     @Autowired
+    private IOrderService orderService;
+
+    @Autowired
     private JWTService jwtService;
 
     @Value("${regards.order.secret}")
@@ -89,17 +99,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
             HttpServletResponse response) throws NoSuchElementException {
-        // Throws a NoSuchElementException if not found
-        OrderDataFile dataFile = dataFileService.load(dataFileId);
-        // External files haven't necessarily a file name (but they have an URL)
-        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
-                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
-        response.addHeader("Content-disposition", "attachment;filename=" + filename);
-        if (dataFile.getMimeType() != null) {
-            response.setContentType(dataFile.getMimeType().toString());
-        }
-
-        return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
+        return manageFile(Boolean.TRUE, dataFileId, Optional.empty(), response);
     }
 
     @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
@@ -107,7 +107,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.TRUE, dataFileId, token, response);
+        return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token), response);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
@@ -116,28 +116,29 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.FALSE, dataFileId, token, response);
+        return manageFile(Boolean.FALSE, dataFileId, Optional.ofNullable(token), response);
     }
 
     /**
      * Above controller endpoints are duplicated to fit security single endpoint policy.
      * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
      */
-    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId, String token,
-            HttpServletResponse response) throws NoSuchElementException {
+    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId,
+            Optional<String> validityToken, HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
-        String user;
-        String role;
-        try {
-            Claims claims = jwtService.parseToken(token, secret);
-            Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
-            user = claims.get(JWTService.CLAIM_SUBJECT).toString();
-            role = claims.get(JWTService.CLAIM_ROLE).toString();
-            // Throws a NoSuchElementException if not found
-            dataFile = dataFileService.load(dataFileId);
-        } catch (JwtException | InvalidJwtException e) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        String user = null;
+        if (validityToken.isPresent()) {
+            try {
+                Claims claims = jwtService.parseToken(validityToken.get(), secret);
+                Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+                user = claims.get(JWTService.CLAIM_SUBJECT).toString();
+            } catch (JwtException | InvalidJwtException e) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
         }
+
+        // Throws a NoSuchElementException if not found
+        dataFile = dataFileService.load(dataFileId);
 
         switch (dataFile.getState()) {
             case PENDING:
@@ -157,11 +158,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     if (dataFile.getMimeType() != null) {
                         response.setContentType(dataFile.getMimeType().toString());
                     }
+                    final Optional<String> asUser = Optional.ofNullable(user);
                     // Stream the response
                     return new ResponseEntity<>(os -> {
-                        FeignSecurityManager.asUser(user, role);
                         try {
-                            dataFileService.downloadFile(dataFile, os);
+                            dataFileService.downloadFile(dataFile, asUser, os);
                         } finally {
                             FeignSecurityManager.reset();
                         }

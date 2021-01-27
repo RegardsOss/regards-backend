@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
+
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
  * OrderDataFile specific service (OrderDataFiles are detached entities from Order, DatasetTasks and FilesTasks)
@@ -80,10 +81,11 @@ public interface IOrderDataFileService {
     /**
      * Copy asked file from storage to HttpServletResponse
      * @param dataFile
+     * @param asUser Download file as the given user or empty to use security context user
      * @param os
      * @throws IOException
      */
-    void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException;
+    void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException;
 
     /**
      * Search all current orders (ie not finished), compute and update completion values (percentCompleted and files in

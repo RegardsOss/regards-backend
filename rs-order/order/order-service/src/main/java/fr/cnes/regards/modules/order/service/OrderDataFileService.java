@@ -216,7 +216,7 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
+    public void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException {
         Response response = null;
         dataFile.setDownloadError(null);
         boolean error = false;
@@ -236,7 +236,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             try {
                 // To download through storage client we must be authenticate as user in order to
                 // impact the download quotas, but we upgrade the privileges so that the request passes.
-                FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+                FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
                 response = storageClient.downloadFile(dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
@@ -258,6 +258,8 @@ public class OrderDataFileService implements IOrderDataFileService {
                                 + copiedBytes + "/" + dataFile.getFilesize() + " bytes");
                     }
                 }
+            } else {
+                LOGGER.error("download response from storage failed. Cause : ", response.status());
             }
             if (response != null) {
                 response.close();
