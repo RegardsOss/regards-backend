@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -30,8 +32,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,7 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -48,6 +54,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IDatasetTaskService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
@@ -59,14 +67,9 @@ import io.jsonwebtoken.JwtException;
  * @author oroussel
  */
 @RestController
-@RequestMapping("")
 public class OrderDataFileController implements IResourceController<OrderDataFile> {
 
-    public static final String ORDERS_AIPS_AIP_ID_FILES_ID = "/orders/aips/{aipId}/files/{dataFileId}";
-
-    public static final String ORDERS_FILES_DATA_FILE_ID = "/orders/files/{dataFileId}";
-
-    public static final String ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES = "/orders/{orderId}/dataset/{datasetId}/files";
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileController.class);
 
     @Autowired
     private IResourceService resourceService;
@@ -81,13 +84,17 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     private IOrderService orderService;
 
     @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
     private JWTService jwtService;
 
     @Value("${regards.order.secret}")
     private String secret;
 
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
+    @RequestMapping(method = RequestMethod.GET,
+            path = OrderControllerEndpointConfiguration.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
     public ResponseEntity<PagedModel<EntityModel<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
             @PathVariable("datasetId") Long datasetId, Pageable pageRequest,
             PagedResourcesAssembler<OrderDataFile> assembler) {
@@ -96,27 +103,29 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = ORDERS_FILES_DATA_FILE_ID)
+    @RequestMapping(method = RequestMethod.GET, path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
             HttpServletResponse response) throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.empty(), response);
     }
 
     @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.HEAD, path = ORDERS_AIPS_AIP_ID_FILES_ID)
-    public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
-            HttpServletResponse response) throws NoSuchElementException {
+    @RequestMapping(method = RequestMethod.HEAD,
+            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
+    public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
+            @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
+            throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token), response);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
-    public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
-            HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.FALSE, dataFileId, Optional.ofNullable(token), response);
+    @RequestMapping(method = RequestMethod.GET,
+            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
+    public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
+            @RequestParam(name = IOrderService.ORDER_TOKEN, required = true) String token, HttpServletResponse response)
+            throws NoSuchElementException {
+        return manageFile(Boolean.FALSE, dataFileId, Optional.of(token), response);
     }
 
     /**
@@ -137,9 +146,17 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             }
         }
 
+        final Optional<String> asUser = Optional.ofNullable(user);
+
         // Throws a NoSuchElementException if not found
         dataFile = dataFileService.load(dataFileId);
 
+        // Check if order owner of the file is the authentified user
+        Order order = orderService.getOrder(dataFile.getOrderId());
+        if (!order.getOwner().equals(asUser.orElse(authResolver.getUser()))) {
+            LOGGER.error("Ordered file does not belongs to current user {}", asUser.orElse(authResolver.getUser()));
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         switch (dataFile.getState()) {
             case PENDING:
                 // For JDownloader : status 202 when file not yet available
@@ -154,19 +171,17 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 } else {
                     String filename = dataFile.getFilename() != null ? dataFile.getFilename()
                             : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
-                    response.addHeader("Content-disposition", "attachment;filename=" + filename);
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentLength(dataFile.getFilesize());
                     if (dataFile.getMimeType() != null) {
-                        response.setContentType(dataFile.getMimeType().toString());
+                        headers.setContentType(asMediaType(dataFile.getMimeType()));
                     }
-                    final Optional<String> asUser = Optional.ofNullable(user);
+                    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename)
+                            .size(dataFile.getFilesize()).build());
                     // Stream the response
-                    return new ResponseEntity<>(os -> {
-                        try {
-                            dataFileService.downloadFile(dataFile, asUser, os);
-                        } finally {
-                            FeignSecurityManager.reset();
-                        }
-                    }, HttpStatus.OK);
+                    return new ResponseEntity<StreamingResponseBody>(os -> {
+                        dataFileService.downloadFile(dataFile, asUser, os);
+                    }, headers, HttpStatus.OK);
                 }
         }
     }
@@ -178,5 +193,12 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                                 MethodParamFactory.build(Long.class, dataFile.getId()),
                                 MethodParamFactory.build(HttpServletResponse.class));
         return resource;
+    }
+
+    private static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType) {
+            return (MediaType) mimeType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 }

@@ -83,6 +83,7 @@ public interface IOrderDataFileService {
      * @param dataFile
      * @param asUser Download file as the given user or empty to use security context user
      * @param os
+     * @return
      * @throws IOException
      */
     void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException;

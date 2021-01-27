@@ -251,7 +251,6 @@ public class OrderDataFileService implements IOrderDataFileService {
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);
-                    os.flush();
                     // File has not completly been copied
                     if (copiedBytes != dataFile.getFilesize()) {
                         error = true;
@@ -273,10 +272,11 @@ public class OrderDataFileService implements IOrderDataFileService {
             if (dataFile.getState() == FileState.AVAILABLE) {
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
             } else {
-                LOGGER.warn("File download error. File staus not set  to DOWNLOAD_ERROR as current status is {}",
+                LOGGER.warn("File download error. File status not set  to DOWNLOAD_ERROR as current status is {}",
                             dataFile.getState().toString());
             }
             dataFile.setDownloadError(errorMessage);
+            LOGGER.error("Error downloading file as user {}", asUser.orElse(authResolver.getUser()));
             LOGGER.error(errorMessage);
         } else { // Set State as DOWNLOADED, even if it is online
             dataFile.setState(FileState.DOWNLOADED);
