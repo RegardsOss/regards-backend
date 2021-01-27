@@ -103,7 +103,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
-    @RequestMapping(method = RequestMethod.GET, path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID)
+    @RequestMapping(method = RequestMethod.GET, path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
+            produces = MediaType.ALL_VALUE)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
             HttpServletResponse response) throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.empty(), response);
@@ -121,7 +122,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET,
-            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
+            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
+            produces = MediaType.ALL_VALUE)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
             @RequestParam(name = IOrderService.ORDER_TOKEN, required = true) String token, HttpServletResponse response)
             throws NoSuchElementException {
@@ -176,8 +178,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     if (dataFile.getMimeType() != null) {
                         headers.setContentType(asMediaType(dataFile.getMimeType()));
                     }
-                    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename)
-                            .size(dataFile.getFilesize()).build());
+                    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
                     // Stream the response
                     return new ResponseEntity<StreamingResponseBody>(os -> {
                         dataFileService.downloadFile(dataFile, asUser, os);
