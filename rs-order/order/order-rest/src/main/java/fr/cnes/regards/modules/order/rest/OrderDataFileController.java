@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.io.OutputStream;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -180,9 +181,14 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     }
                     headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
                     // Stream the response
-                    return new ResponseEntity<StreamingResponseBody>(os -> {
-                        dataFileService.downloadFile(dataFile, asUser, os);
-                    }, headers, HttpStatus.OK);
+                    StreamingResponseBody stream = out -> {
+                        try (OutputStream outs = response.getOutputStream()) {
+                            dataFileService.downloadFile(dataFile, asUser, outs);
+                        } catch (Exception e) {
+                            LOGGER.error(e.getMessage(), e);
+                        }
+                    };
+                    return new ResponseEntity<>(stream, headers, HttpStatus.OK);
                 }
         }
     }
