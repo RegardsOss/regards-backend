@@ -71,9 +71,6 @@ public class ToponymServiceTest extends AbstractRegardsIT {
 
         toponyms = service.search("e", "en", 100);
         Assert.assertEquals(100, toponyms.size());
-
-        toponyms = service.search(null, null, 100);
-        Assert.assertEquals(100, toponyms.size());
     }
 
     @Test
