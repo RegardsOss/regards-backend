@@ -55,7 +55,7 @@ public interface IToponymsClient {
 
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
-            @RequestParam(required = false) Boolean simplified);
+            @RequestParam(name = "simplified", required = false) Boolean simplified);
 
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId);
