@@ -20,9 +20,6 @@ package fr.cnes.regards.modules.order.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
@@ -42,15 +39,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
 
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -64,6 +62,7 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.OrderDownloadResponse;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
@@ -216,75 +215,53 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException {
+    public OrderDownloadResponse downloadFile(final OrderDataFile dataFile, Optional<String> asUser)
+            throws IOException {
+        OrderDownloadResponse donwloadFile = null;
         Response response = null;
         dataFile.setDownloadError(null);
-        boolean error = false;
-        String errorMessage = null;
         int timeout = 10_000;
         if (dataFile.isReference()) {
-            try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                           noProxyHosts, timeout)) {
-                ByteStreams.copy(is, os);
-                os.flush();
-            } catch (IOException e) {
-                LOGGER.error("Error while downloading file", e);
-                StringWriter sw = new StringWriter();
-                e.printStackTrace(new PrintWriter(sw));
-                dataFile.setDownloadError("Error while downloading file\n" + sw.toString());
-            }
+            donwloadFile = OrderDownloadResponse.build(HttpStatus.OK, new InputStreamResource(DownloadUtils
+                    .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, timeout)));
         } else {
-            try {
-                // To download through storage client we must be authenticate as user in order to
-                // impact the download quotas, but we upgrade the privileges so that the request passes.
-                FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-                response = storageClient.downloadFile(dataFile.getChecksum());
-            } catch (RuntimeException e) {
-                LOGGER.error("Error while downloading file from Archival Storage", e);
-                StringWriter sw = new StringWriter();
-                e.printStackTrace(new PrintWriter(sw));
-                errorMessage = "Error while downloading file from Archival Storage\n" + sw.toString();
-            } finally {
-                FeignSecurityManager.reset();
-            }
-            error = (response == null) || (response.status() != HttpStatus.OK.value());
-            if (!error) {
-                try (InputStream is = response.body().asInputStream()) {
-                    long copiedBytes = ByteStreams.copy(is, os);
-                    // File has not completly been copied
-                    if (copiedBytes != dataFile.getFilesize()) {
-                        error = true;
-                        errorMessage = String
-                                .format("Cannot completely retrieve data file from storage, only %s/%s bytes",
-                                        copiedBytes, dataFile.getFilesize());
-                    }
-                }
-            } else if (response != null) {
-                errorMessage = String.format("Error while downloading file from Archival Storage. Cause : %s (Code=%d)",
-                                             response.reason(), response.status());
-            }
-            if (response != null) {
-                response.close();
-            }
-        }
-        // Update OrderDataFile state
-        if (error) { // set State as DOWNLOAD_ERROR ONLY IF file wasn't previously DOWLOADED (ie. AVAILABLE)
-            if (dataFile.getState() == FileState.AVAILABLE) {
+            FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
+            response = storageClient.downloadFile(dataFile.getChecksum());
+            if (response.status() != HttpStatus.OK.value()) {
+                LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
+                             response.status(), response.reason());
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
-            } else {
-                LOGGER.warn("File download error. File status not set  to DOWNLOAD_ERROR as current status is {}",
-                            dataFile.getState().toString());
+                dataFile.setDownloadError(response.reason());
             }
-            dataFile.setDownloadError(errorMessage);
-            LOGGER.error("Error downloading file as user {}", asUser.orElse(authResolver.getUser()));
-            LOGGER.error(errorMessage);
-        } else { // Set State as DOWNLOADED, even if it is online
-            dataFile.setState(FileState.DOWNLOADED);
-            processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+            Function<InputStream, Void> plop = (InputStream stream) -> {
+                try {
+                    if (stream.read() > 0) {
+                        String errorMessage = String
+                                .format("Download of  file %s not finished. Stream closed before downad ends.",
+                                        dataFile.getFilename());
+                        LOGGER.error(errorMessage);
+                        if (dataFile.getState() == FileState.AVAILABLE) {
+                            dataFile.setState(FileState.DOWNLOAD_ERROR);
+                        }
+                        dataFile.setDownloadError(errorMessage);
+                    } else {
+                        LOGGER.info("Download of file {} succeeded", dataFile.getFilename());
+                        dataFile.setState(FileState.DOWNLOADED);
+                        processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+                    }
+                    self.save(dataFile);
+                    Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+                    orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                return null;
+            };
+            donwloadFile = OrderDownloadResponse
+                    .build(HttpStatus.valueOf(response.status()),
+                           new InputStreamResource(new ResponseStreamProxy(response, plop)));
         }
-        dataFile = self.save(dataFile);
-        Order order = orderRepository.findSimpleById(dataFile.getOrderId());
-        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+        return donwloadFile;
     }
 
     @Override

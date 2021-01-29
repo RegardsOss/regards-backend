@@ -32,32 +32,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>multitenant-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.utils</groupId>
-			<artifactId>exception-utils</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.order</groupId>
 			<artifactId>order-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.order</groupId>
-			<artifactId>order-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-order-commons</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.processing</groupId>
-			<artifactId>processing-domain-data</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
@@ -68,26 +44,42 @@
 			<artifactId>module-regards</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-			<scope>provided</scope>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-order-commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.search</groupId>
-			<artifactId>search-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-domain-data</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.model</groupId>
   			<artifactId>model-gson-helper</artifactId>
 		</dependency>
-		<!-- To make feign decoding Json properly -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-gson</artifactId>
+		</dependency>
+				<dependency>
+			<groupId>fr.cnes.regards.modules.templates</groupId>
+			<artifactId>templates-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+			<version>0.10.3</version>
+		</dependency>
+		<!-- REGARDS clients -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.processing</groupId>
+			<artifactId>processing-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.search</groupId>
+			<artifactId>search-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
@@ -98,42 +90,23 @@
 			<artifactId>model-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>notification-regards-starter</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.modules.storage</groupId>
        		<artifactId>storage-client</artifactId>
 		</dependency>
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>geojson-starter</artifactId>
+			<artifactId>jpa-multitenant-regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>io.vavr</groupId>
-			<artifactId>vavr</artifactId>
-			<version>0.10.3</version>
-		</dependency>
-
-		<!-- Test dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
