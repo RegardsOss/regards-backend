@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.OutputStream;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -44,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -106,15 +106,15 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
             produces = MediaType.ALL_VALUE)
-    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("dataFileId") Long dataFileId,
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("dataFileId") Long dataFileId,
             HttpServletResponse response) throws NoSuchElementException {
-        return manageFile(Boolean.TRUE, dataFileId, Optional.empty(), response);
+        return manageFile(Boolean.FALSE, dataFileId, Optional.empty(), response);
     }
 
     @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.HEAD,
             path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
-    public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
+    public ResponseEntity<InputStreamResource> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
             @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
             throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token), response);
@@ -125,7 +125,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @RequestMapping(method = RequestMethod.GET,
             path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
             produces = MediaType.ALL_VALUE)
-    public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
+    public ResponseEntity<InputStreamResource> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
             @RequestParam(name = IOrderService.ORDER_TOKEN, required = true) String token, HttpServletResponse response)
             throws NoSuchElementException {
         return manageFile(Boolean.FALSE, dataFileId, Optional.of(token), response);
@@ -135,7 +135,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
      * Above controller endpoints are duplicated to fit security single endpoint policy.
      * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
      */
-    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, Long dataFileId,
+    private ResponseEntity<InputStreamResource> manageFile(Boolean headRequest, Long dataFileId,
             Optional<String> validityToken, HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user = null;
@@ -175,20 +175,18 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     String filename = dataFile.getFilename() != null ? dataFile.getFilename()
                             : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
                     HttpHeaders headers = new HttpHeaders();
-                    headers.setContentLength(dataFile.getFilesize());
+                    if (dataFile.getFilesize() != null) {
+                        headers.setContentLength(dataFile.getFilesize());
+                    }
                     if (dataFile.getMimeType() != null) {
                         headers.setContentType(asMediaType(dataFile.getMimeType()));
                     }
                     headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
-                    // Stream the response
-                    StreamingResponseBody stream = out -> {
-                        try (OutputStream outs = response.getOutputStream()) {
-                            dataFileService.downloadFile(dataFile, asUser, outs);
-                        } catch (Exception e) {
-                            LOGGER.error(e.getMessage(), e);
-                        }
-                    };
-                    return new ResponseEntity<>(stream, headers, HttpStatus.OK);
+                    try {
+                        return dataFileService.downloadFile(dataFile, asUser).toResponseEntity(headers);
+                    } catch (IOException e) {
+                        return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+                    }
                 }
         }
     }

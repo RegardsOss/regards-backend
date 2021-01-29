@@ -81,7 +81,6 @@ import io.jsonwebtoken.MalformedJwtException;
  * @author oroussel
  */
 @RestController
-@RequestMapping("")
 public class OrderController implements IResourceController<OrderDto> {
 
     public static class OrderRequest {
