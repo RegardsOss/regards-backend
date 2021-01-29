@@ -153,9 +153,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccessSuccess() {
-        MetaData metadata = new MetaData("plop",
-                "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-                UserVisibility.READABLE);
+        MetaData metadata = new MetaData("plop", "test", UserVisibility.READABLE);
         List<MetaData> metas = new ArrayList<>();
         metas.add(metadata);
         AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, metas, PASSWORD,
