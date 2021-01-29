@@ -286,6 +286,9 @@ public class AttributeModelService implements IAttributeModelService {
      * @throws ModuleException if conflict detected
      */
     private AttributeModel manageAttributeModel(AttributeModel inAttributeModel) throws ModuleException {
+        if(inAttributeModel.getType() == PropertyType.OBJECT) {
+            throw new EntityOperationForbiddenException("No Attribute of type OBJECT can be created!");
+        }
         if (!inAttributeModel.isIdentifiable()) {
             // Check potential conflict
             AttributeModel attributeModel = attModelRepository
