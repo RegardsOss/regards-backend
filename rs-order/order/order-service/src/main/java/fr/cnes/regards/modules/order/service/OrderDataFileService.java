@@ -216,10 +216,11 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException {
+    public void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException {
         Response response = null;
         dataFile.setDownloadError(null);
         boolean error = false;
+        String errorMessage = null;
         int timeout = 10_000;
         if (dataFile.isReference()) {
             try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
@@ -236,13 +237,13 @@ public class OrderDataFileService implements IOrderDataFileService {
             try {
                 // To download through storage client we must be authenticate as user in order to
                 // impact the download quotas, but we upgrade the privileges so that the request passes.
-                FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+                FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
                 response = storageClient.downloadFile(dataFile.getChecksum());
             } catch (RuntimeException e) {
                 LOGGER.error("Error while downloading file from Archival Storage", e);
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
-                dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
+                errorMessage = "Error while downloading file from Archival Storage\n" + sw.toString();
             } finally {
                 FeignSecurityManager.reset();
             }
@@ -250,14 +251,17 @@ public class OrderDataFileService implements IOrderDataFileService {
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);
-                    os.flush();
                     // File has not completly been copied
                     if (copiedBytes != dataFile.getFilesize()) {
                         error = true;
-                        dataFile.setDownloadError("Cannot completely retrieve data file from storage, only "
-                                + copiedBytes + "/" + dataFile.getFilesize() + " bytes");
+                        errorMessage = String
+                                .format("Cannot completely retrieve data file from storage, only %s/%s bytes",
+                                        copiedBytes, dataFile.getFilesize());
                     }
                 }
+            } else if (response != null) {
+                errorMessage = String.format("Error while downloading file from Archival Storage. Cause : %s (Code=%d)",
+                                             response.reason(), response.status());
             }
             if (response != null) {
                 response.close();
@@ -267,7 +271,13 @@ public class OrderDataFileService implements IOrderDataFileService {
         if (error) { // set State as DOWNLOAD_ERROR ONLY IF file wasn't previously DOWLOADED (ie. AVAILABLE)
             if (dataFile.getState() == FileState.AVAILABLE) {
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
+            } else {
+                LOGGER.warn("File download error. File status not set  to DOWNLOAD_ERROR as current status is {}",
+                            dataFile.getState().toString());
             }
+            dataFile.setDownloadError(errorMessage);
+            LOGGER.error("Error downloading file as user {}", asUser.orElse(authResolver.getUser()));
+            LOGGER.error(errorMessage);
         } else { // Set State as DOWNLOADED, even if it is online
             dataFile.setState(FileState.DOWNLOADED);
             processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
