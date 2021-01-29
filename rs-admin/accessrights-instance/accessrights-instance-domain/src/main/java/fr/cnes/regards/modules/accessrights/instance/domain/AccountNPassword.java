@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.accessrights.instance.domain;
 
 import javax.validation.Valid;
 
+import org.hibernate.validator.constraints.Length;
+
 /**
  * DTO used to comunicate between rs-admin and rs-admin-instance. This allows us to pass the password for account creation which is not serialized otherwise.
  *
@@ -12,6 +14,8 @@ public class AccountNPassword {
     @Valid
     private Account account;
 
+    @Valid
+    @Length(max = 255)
     private String password;
 
     public AccountNPassword() {

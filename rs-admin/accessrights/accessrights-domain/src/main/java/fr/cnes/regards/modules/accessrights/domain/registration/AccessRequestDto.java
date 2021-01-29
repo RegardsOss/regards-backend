@@ -2,6 +2,11 @@ package fr.cnes.regards.modules.accessrights.domain.registration;
 
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+
+import org.hibernate.validator.constraints.Length;
+
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 
 /**
@@ -14,16 +19,25 @@ public class AccessRequestDto {
     /**
      * The email
      */
+    @Valid
+    @NotBlank
+    @Length(max = 128)
     private String email;
 
     /**
      * The first name
      */
+    @Valid
+    @NotBlank
+    @Length(max = 128)
     private String firstName;
 
     /**
      * The last name
      */
+    @Valid
+    @NotBlank
+    @Length(max = 128)
     private String lastName;
 
     /**
@@ -34,11 +48,15 @@ public class AccessRequestDto {
     /**
      * The list of meta data
      */
+    @Valid
     private List<MetaData> metadata;
 
     /**
      * The password
      */
+    @Valid
+    @NotBlank
+    @Length(max = 255)
     private String password;
 
     /**

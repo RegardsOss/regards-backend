@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +38,8 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
+import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
@@ -150,8 +153,13 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_510")
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccessSuccess() {
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(),
-                PASSWORD, ORIGIN_URL, REQUEST_LINK);
+        MetaData metadata = new MetaData("plop",
+                "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+                UserVisibility.READABLE);
+        List<MetaData> metas = new ArrayList<>();
+        metas.add(metadata);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, metas, PASSWORD,
+                ORIGIN_URL, REQUEST_LINK);
         requestAccess(newAccessRequest);
 
     }

@@ -28,6 +28,9 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.Length;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
@@ -52,6 +55,8 @@ public class MetaData implements IIdentifiable<Long> {
     @Column(name = "key", length = 64)
     private String key;
 
+    @Valid
+    @Length(max = 255)
     @Column(name = "value", length = 255)
     private String value;
 

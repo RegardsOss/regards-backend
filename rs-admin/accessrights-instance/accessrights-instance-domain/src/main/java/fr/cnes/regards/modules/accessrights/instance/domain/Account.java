@@ -31,9 +31,12 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -58,16 +61,22 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "id")
     private Long id;
 
+    @Valid
+    @Length(max = 128)
     @Email
-    @Column(name = "email", length = 100)
+    @Column(name = "email", length = 128)
     private String email;
 
+    @Valid
+    @Length(max = 128)
     @NotBlank
-    @Column(name = "firstName", length = 100)
+    @Column(name = "firstName", length = 128)
     private String firstName;
 
+    @Valid
+    @Length(max = 128)
     @NotBlank
-    @Column(name = "lastName", length = 100)
+    @Column(name = "lastName", length = 128)
     private String lastName;
 
     /**
@@ -85,8 +94,10 @@ public class Account implements IIdentifiable<Long> {
     @Column(name = "authentication_failed_counter")
     private Long authenticationFailedCounter = 0L;
 
+    @Valid
+    @Length(max = 255)
     @GsonIgnore
-    @Column(name = "password", length = 200)
+    @Column(name = "password", length = 255)
     private String password;
 
     /**
