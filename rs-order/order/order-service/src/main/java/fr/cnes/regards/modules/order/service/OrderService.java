@@ -116,6 +116,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -279,6 +280,11 @@ public class OrderService implements IOrderService {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
         }
 
+    }
+
+    @Override
+    public Order getOrder(Long orderId) {
+        return repos.findCompleteById(orderId);
     }
 
     @Override
@@ -977,8 +983,8 @@ public class OrderService implements IOrderService {
             StringBuilder buff = new StringBuilder();
             buff.append(host);
             buff.append(urlPrefix).append("/").append(encode4Uri(microserviceName));
-            buff.append("/orders/aips/").append(encode4Uri(file.getIpId().toString())).append("/files/");
-            buff.append(file.getId()).append("?").append(tokenRequestParam);
+            buff.append(OrderControllerEndpointConfiguration.ORDERS_PUBLIC_FILES_MAPPING);
+            buff.append("/").append(file.getId()).append("?").append(tokenRequestParam);
             buff.append("&").append(scopeRequestParam);
             xmlUrl.setValue(buff.toString());
             xmlResources.getUrl().add(xmlUrl);

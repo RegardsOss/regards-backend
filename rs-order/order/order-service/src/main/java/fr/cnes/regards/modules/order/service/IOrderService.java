@@ -18,6 +18,18 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -28,17 +40,6 @@ import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Order service
@@ -249,4 +250,11 @@ public interface IOrderService {
 
     /** Tells if this order involves processing on some dataset selection */
     boolean hasProcessing(Order order);
+
+    /**
+     * Get {@link Order} by id
+     * @param orderId
+     * @return
+     */
+    Order getOrder(Long orderId);
 }
