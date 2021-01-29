@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.feign;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,18 @@ public class ResponseStreamProxy extends InputStream {
 
     private final InputStream stream;
 
+    private final Function<InputStream, Void> beforeClose;
+
     public ResponseStreamProxy(feign.Response response) throws IOException {
         this.response = response;
         this.stream = response.body().asInputStream();
+        this.beforeClose = null;
+    }
+
+    public ResponseStreamProxy(feign.Response response, Function<InputStream, Void> beforeClose) throws IOException {
+        this.response = response;
+        this.stream = response.body().asInputStream();
+        this.beforeClose = beforeClose;
     }
 
     @Override
@@ -55,6 +65,9 @@ public class ResponseStreamProxy extends InputStream {
     @Override
     public void close() throws IOException {
         LOGGER.trace("Close feign http response");
+        if (this.beforeClose != null) {
+            this.beforeClose.apply(this.stream);
+        }
         this.stream.close();
         this.response.close();
     }
