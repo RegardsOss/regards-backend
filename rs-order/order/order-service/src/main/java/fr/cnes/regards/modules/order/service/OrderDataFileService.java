@@ -20,16 +20,15 @@ package fr.cnes.regards.modules.order.service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -42,15 +41,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
 
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -216,78 +223,90 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public void downloadFile(OrderDataFile dataFile, Optional<String> asUser, OutputStream os) throws IOException {
-        Response response = null;
-        dataFile.setDownloadError(null);
-        boolean error = false;
-        String errorMessage = null;
-        int timeout = 10_000;
+    public ResponseEntity<InputStreamResource> downloadFile(final OrderDataFile dataFile, Optional<String> asUser) {
         if (dataFile.isReference()) {
-            try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                           noProxyHosts, timeout)) {
-                ByteStreams.copy(is, os);
-                os.flush();
-            } catch (IOException e) {
-                LOGGER.error("Error while downloading file", e);
-                StringWriter sw = new StringWriter();
-                e.printStackTrace(new PrintWriter(sw));
-                dataFile.setDownloadError("Error while downloading file\n" + sw.toString());
-            }
+            return downloadReferenceFile(dataFile);
         } else {
             try {
-                // To download through storage client we must be authenticate as user in order to
-                // impact the download quotas, but we upgrade the privileges so that the request passes.
                 FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-                response = storageClient.downloadFile(dataFile.getChecksum());
-            } catch (RuntimeException e) {
-                LOGGER.error("Error while downloading file from Archival Storage", e);
-                StringWriter sw = new StringWriter();
-                e.printStackTrace(new PrintWriter(sw));
-                errorMessage = "Error while downloading file from Archival Storage\n" + sw.toString();
+                return donwloadStoredFile(dataFile);
             } finally {
                 FeignSecurityManager.reset();
             }
-            error = (response == null) || (response.status() != HttpStatus.OK.value());
-            if (!error) {
-                try (InputStream is = response.body().asInputStream()) {
-                    long copiedBytes = ByteStreams.copy(is, os);
-                    // File has not completly been copied
-                    if (copiedBytes != dataFile.getFilesize()) {
-                        error = true;
-                        errorMessage = String
-                                .format("Cannot completely retrieve data file from storage, only %s/%s bytes",
-                                        copiedBytes, dataFile.getFilesize());
-                    }
-                }
-            } else if (response != null) {
-                errorMessage = String.format("Error while downloading file from Archival Storage. Cause : %s (Code=%d)",
-                                             response.reason(), response.status());
-            }
-            if (response != null) {
-                response.close();
-            }
-            if (response != null) {
-                response.close();
-            }
         }
-        // Update OrderDataFile state
-        if (error) { // set State as DOWNLOAD_ERROR ONLY IF file wasn't previously DOWLOADED (ie. AVAILABLE)
-            if (dataFile.getState() == FileState.AVAILABLE) {
+    }
+
+    /**
+     * Download a file not stored with storage microservice.
+     * @param dataFile
+     * @return {@link InputStreamResource} of the file
+     */
+    private ResponseEntity<InputStreamResource> downloadReferenceFile(OrderDataFile dataFile) {
+        HttpHeaders headers = new HttpHeaders();
+        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
+        if (dataFile.getFilesize() != null) {
+            headers.setContentLength(dataFile.getFilesize());
+        }
+        if (dataFile.getMimeType() != null) {
+            headers.setContentType(asMediaType(dataFile.getMimeType()));
+        }
+        InputStream stream;
+        try {
+            stream = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, 10_000);
+            return new ResponseEntity<InputStreamResource>(new InputStreamResource(stream), headers, HttpStatus.OK);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    /**
+     * Download a file stored on storage microservice
+     * @param dataFile
+     * @return {@link InputStreamResource} of the file
+     */
+    private ResponseEntity<InputStreamResource> donwloadStoredFile(OrderDataFile dataFile) {
+        try {
+            InputStreamResource isr = null;
+            Response response = storageClient.downloadFile(dataFile.getChecksum());
+            if (response.status() != HttpStatus.OK.value()) {
+                LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
+                             response.status(), response.reason());
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
+                dataFile.setDownloadError(response.reason());
+                if (response.body() != null) {
+                    isr = new InputStreamResource(new ResponseStreamProxy(response));
+                }
             } else {
-                LOGGER.warn("File download error. File status not set  to DOWNLOAD_ERROR as current status is {}",
-                            dataFile.getState().toString());
+                Function<InputStream, Void> beforeClose = (InputStream stream) -> {
+                    LOGGER.info("Download of file {} succeeded", dataFile.getFilename());
+                    dataFile.setState(FileState.DOWNLOADED);
+                    processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+                    self.save(dataFile);
+                    Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+                    orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+                    return null;
+                };
+
+                isr = new InputStreamResource(new ResponseStreamProxy(response, beforeClose));
             }
-            dataFile.setDownloadError(errorMessage);
-            LOGGER.error("Error downloading file as user {}", asUser.orElse(authResolver.getUser()));
-            LOGGER.error(errorMessage);
-        } else { // Set State as DOWNLOADED, even if it is online
-            dataFile.setState(FileState.DOWNLOADED);
-            processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+            HttpHeaders headers = new HttpHeaders();
+            for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
+                h.getValue().forEach(v -> headers.add(h.getKey(), v));
+            }
+            return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(response.status()));
+        } catch (HttpServerErrorException | HttpClientErrorException | IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            dataFile.setState(FileState.DOWNLOAD_ERROR);
+            dataFile.setDownloadError(e.getMessage());
+            self.save(dataFile);
+            Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+            orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        dataFile = self.save(dataFile);
-        Order order = orderRepository.findSimpleById(dataFile.getOrderId());
-        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
     }
 
     @Override
@@ -363,5 +382,12 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public void removeAll(Long orderId) {
         repos.deleteByOrderId(orderId);
+    }
+
+    private static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType) {
+            return (MediaType) mimeType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 }

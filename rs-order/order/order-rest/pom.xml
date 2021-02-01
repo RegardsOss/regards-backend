@@ -44,18 +44,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards-starter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-			<scope>provided</scope>
-		</dependency>
+		 <!-- Module dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.order</groupId>
 			<artifactId>order-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.model</groupId>
-			<artifactId>model-gson-helper</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

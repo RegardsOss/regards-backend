@@ -17,6 +17,24 @@
 */
 package fr.cnes.regards.modules.order.rest.mock;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
+
+import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import feign.Request;
 import feign.Response;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
@@ -24,20 +42,6 @@ import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimit
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import javax.validation.Valid;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Component
 @Primary
@@ -45,17 +49,27 @@ public class StorageClientMock implements IStorageRestClient {
 
     public static final String NO_QUOTA_MSG_STUB = "No quota to download this file";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageClientMock.class);
+    public static String TEST_FILE_CHECKSUM = "checusm_test_storage_client_mock";
 
     @Override
     public Response downloadFile(String checksum) {
+
         Map<String, Collection<String>> map = new HashMap<>();
         Request request = Request.create(Request.HttpMethod.GET, "test", map, Request.Body.empty());
-        return Response.builder()
-            .status(HttpStatus.TOO_MANY_REQUESTS.value())
-            .body(NO_QUOTA_MSG_STUB, StandardCharsets.UTF_8)
-            .request(request)
-            .build();
+        if (TEST_FILE_CHECKSUM.equals(checksum)) {
+            try {
+                File testFile = new File("src/test/resources/files/file1.txt");
+                InputStream stream = new FileInputStream(testFile);
+                return Response.builder().status(HttpStatus.OK.value()).body(stream, (int) testFile.length())
+                        .request(request).build();
+            } catch (IOException e) {
+                return Response.builder().status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .body(e.getMessage(), StandardCharsets.UTF_8).request(request).build();
+            }
+        } else {
+            return Response.builder().status(HttpStatus.TOO_MANY_REQUESTS.value())
+                    .body(NO_QUOTA_MSG_STUB, StandardCharsets.UTF_8).request(request).build();
+        }
     }
 
     @Override
@@ -74,7 +88,8 @@ public class StorageClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
+    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(
+            @Valid DefaultDownloadQuotaLimits newDefaults) {
         return null;
     }
 
@@ -84,7 +99,8 @@ public class StorageClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
+            @Valid DownloadQuotaLimitsDto quotaLimits) {
         return null;
     }
 
