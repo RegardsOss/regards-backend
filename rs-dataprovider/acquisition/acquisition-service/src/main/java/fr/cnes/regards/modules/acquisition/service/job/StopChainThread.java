@@ -94,15 +94,14 @@ public class StopChainThread extends Thread {
                         .notify(String.format("Acquisition processing chain \"%s\" was properly stopped and cleaned.",
                                               processingChain.getLabel()),
                                 NOTIFICATION_TITLE, NotificationLevel.INFO, DefaultRole.ADMIN);
-                // Unlock chain
-                processingService.unlockChain(processingChainId);
             } else {
                 notificationClient.notify(String
                         .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. You have to retry stopping the chain before restarting properly!",
                                 processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.ERROR,
                                           DefaultRole.ADMIN);
             }
-
+            // Unlock chain in any case because this thread will stop so someone else can do things to this chain.
+            processingService.unlockChain(processingChainId);
         } catch (ModuleException | InterruptedException ex) {
             LOGGER.error("Processing chain clean thread failure", ex);
             String processingNameOrId;
