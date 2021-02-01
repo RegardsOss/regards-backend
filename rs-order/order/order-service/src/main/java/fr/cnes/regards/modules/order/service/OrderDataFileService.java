@@ -24,9 +24,11 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -40,8 +42,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
@@ -62,7 +71,6 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderDownloadResponse;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
@@ -215,53 +223,90 @@ public class OrderDataFileService implements IOrderDataFileService {
     }
 
     @Override
-    public OrderDownloadResponse downloadFile(final OrderDataFile dataFile, Optional<String> asUser)
-            throws IOException {
-        OrderDownloadResponse donwloadFile = null;
-        Response response = null;
-        dataFile.setDownloadError(null);
-        int timeout = 10_000;
+    public ResponseEntity<InputStreamResource> downloadFile(final OrderDataFile dataFile, Optional<String> asUser) {
         if (dataFile.isReference()) {
-            donwloadFile = OrderDownloadResponse.build(HttpStatus.OK, new InputStreamResource(DownloadUtils
-                    .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, timeout)));
+            return downloadReferenceFile(dataFile);
         } else {
-            FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-            response = storageClient.downloadFile(dataFile.getChecksum());
+            try {
+                FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
+                return donwloadStoredFile(dataFile);
+            } finally {
+                FeignSecurityManager.reset();
+            }
+        }
+    }
+
+    /**
+     * Download a file not stored with storage microservice.
+     * @param dataFile
+     * @return {@link InputStreamResource} of the file
+     */
+    private ResponseEntity<InputStreamResource> downloadReferenceFile(OrderDataFile dataFile) {
+        HttpHeaders headers = new HttpHeaders();
+        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
+        if (dataFile.getFilesize() != null) {
+            headers.setContentLength(dataFile.getFilesize());
+        }
+        if (dataFile.getMimeType() != null) {
+            headers.setContentType(asMediaType(dataFile.getMimeType()));
+        }
+        InputStream stream;
+        try {
+            stream = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, 10_000);
+            return new ResponseEntity<InputStreamResource>(new InputStreamResource(stream), headers, HttpStatus.OK);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    /**
+     * Download a file stored on storage microservice
+     * @param dataFile
+     * @return {@link InputStreamResource} of the file
+     */
+    private ResponseEntity<InputStreamResource> donwloadStoredFile(OrderDataFile dataFile) {
+        try {
+            InputStreamResource isr = null;
+            Response response = storageClient.downloadFile(dataFile.getChecksum());
             if (response.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
                              response.status(), response.reason());
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
                 dataFile.setDownloadError(response.reason());
-            }
-            Function<InputStream, Void> plop = (InputStream stream) -> {
-                try {
-                    if (stream.read() > 0) {
-                        String errorMessage = String
-                                .format("Download of  file %s not finished. Stream closed before downad ends.",
-                                        dataFile.getFilename());
-                        LOGGER.error(errorMessage);
-                        if (dataFile.getState() == FileState.AVAILABLE) {
-                            dataFile.setState(FileState.DOWNLOAD_ERROR);
-                        }
-                        dataFile.setDownloadError(errorMessage);
-                    } else {
-                        LOGGER.info("Download of file {} succeeded", dataFile.getFilename());
-                        dataFile.setState(FileState.DOWNLOADED);
-                        processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
-                    }
+                if (response.body() != null) {
+                    isr = new InputStreamResource(new ResponseStreamProxy(response));
+                }
+            } else {
+                Function<InputStream, Void> beforeClose = (InputStream stream) -> {
+                    LOGGER.info("Download of file {} succeeded", dataFile.getFilename());
+                    dataFile.setState(FileState.DOWNLOADED);
+                    processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
                     self.save(dataFile);
                     Order order = orderRepository.findSimpleById(dataFile.getOrderId());
                     orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-                return null;
-            };
-            donwloadFile = OrderDownloadResponse
-                    .build(HttpStatus.valueOf(response.status()),
-                           new InputStreamResource(new ResponseStreamProxy(response, plop)));
+                    return null;
+                };
+
+                isr = new InputStreamResource(new ResponseStreamProxy(response, beforeClose));
+            }
+            HttpHeaders headers = new HttpHeaders();
+            for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
+                h.getValue().forEach(v -> headers.add(h.getKey(), v));
+            }
+            return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(response.status()));
+        } catch (HttpServerErrorException | HttpClientErrorException | IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            dataFile.setState(FileState.DOWNLOAD_ERROR);
+            dataFile.setDownloadError(e.getMessage());
+            self.save(dataFile);
+            Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+            orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return donwloadFile;
     }
 
     @Override
@@ -337,5 +382,12 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Override
     public void removeAll(Long orderId) {
         repos.deleteByOrderId(orderId);
+    }
+
+    private static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType) {
+            return (MediaType) mimeType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 }
