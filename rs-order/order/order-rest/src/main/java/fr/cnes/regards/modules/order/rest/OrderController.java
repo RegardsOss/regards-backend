@@ -73,7 +73,9 @@ import fr.cnes.regards.modules.order.service.IBasketService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.io.Encoders;
 
 /**
  * Order controller
@@ -291,11 +293,12 @@ public class OrderController implements IResourceController<OrderDto> {
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
     public ResponseEntity<StreamingResponseBody> publicDownloadMetalinkFile(
-            @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
+            @RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
             throws EntityNotFoundException {
         Long orderId;
         try {
-            Claims claims = jwtService.parseToken(token, secret);
+            Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).parse(validityToken);
+            Claims claims = jwtService.parseToken(validityToken, secret);
             orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

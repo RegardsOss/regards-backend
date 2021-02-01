@@ -59,6 +59,8 @@ import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Encoders;
 
 /**
  * @author oroussel
@@ -137,6 +139,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         String user = null;
         if (validityToken.isPresent()) {
             try {
+                Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).parse(validityToken.get());
                 Claims claims = jwtService.parseToken(validityToken.get(), secret);
                 Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
                 user = claims.get(JWTService.CLAIM_SUBJECT).toString();
