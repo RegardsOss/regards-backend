@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -34,12 +33,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -169,24 +165,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
                 if (headRequest) {
-                    // Omit payload, just send an OK response
                     return new ResponseEntity<>(HttpStatus.OK);
                 } else {
-                    String filename = dataFile.getFilename() != null ? dataFile.getFilename()
-                            : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
-                    HttpHeaders headers = new HttpHeaders();
-                    if (dataFile.getFilesize() != null) {
-                        headers.setContentLength(dataFile.getFilesize());
-                    }
-                    if (dataFile.getMimeType() != null) {
-                        headers.setContentType(asMediaType(dataFile.getMimeType()));
-                    }
-                    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
-                    try {
-                        return dataFileService.downloadFile(dataFile, asUser).toResponseEntity(headers);
-                    } catch (IOException e) {
-                        return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
-                    }
+                    return dataFileService.downloadFile(dataFile, asUser);
                 }
         }
     }
@@ -200,10 +181,4 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         return resource;
     }
 
-    private static MediaType asMediaType(MimeType mimeType) {
-        if (mimeType instanceof MediaType) {
-            return (MediaType) mimeType;
-        }
-        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
-    }
 }

@@ -24,10 +24,12 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
+
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.domain.OrderDownloadResponse;
 
 /**
  * OrderDataFile specific service (OrderDataFiles are detached entities from Order, DatasetTasks and FilesTasks)
@@ -86,7 +88,7 @@ public interface IOrderDataFileService {
      * @return
      * @throws IOException
      */
-    OrderDownloadResponse downloadFile(OrderDataFile dataFile, Optional<String> asUser) throws IOException;
+    ResponseEntity<InputStreamResource> downloadFile(OrderDataFile dataFile, Optional<String> asUser);
 
     /**
      * Search all current orders (ie not finished), compute and update completion values (percentCompleted and files in
