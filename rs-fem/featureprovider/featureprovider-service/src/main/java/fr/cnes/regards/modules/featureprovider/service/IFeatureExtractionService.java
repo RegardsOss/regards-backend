@@ -70,4 +70,6 @@ public interface IFeatureExtractionService extends IRequestDeniedService, IReque
      * Request are now feature module property so we just delete them from feature provider module
      */
     void handleGranted(List<FeatureRequestEvent> granted);
+
+    void handleProcessingUnexpectedException(List<FeatureExtractionRequest> featureExtractionRequests);
 }

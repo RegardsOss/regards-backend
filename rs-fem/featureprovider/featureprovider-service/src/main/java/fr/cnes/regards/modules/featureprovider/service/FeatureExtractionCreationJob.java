@@ -22,6 +22,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,7 +75,13 @@ public class FeatureExtractionCreationJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         Timer.Sample sample = Timer.start(registry);
 
-        featureService.processRequests(featureExtractionRequests);
+        try {
+            featureService.processRequests(featureExtractionRequests);
+        } catch (Exception e) {
+            logger.error(String.format("Unforeseen issue(s) occurred while processing extraction requests %s :", featureExtractionRequests.stream().map(FeatureExtractionRequest::getRequestId).collect(
+                    Collectors.joining(", "))), e);
+            featureService.handleProcessingUnexpectedException(featureExtractionRequests);
+        }
 
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         logger.info("[{}]{} reference creation request(s) processed in {} ms", jobInfoId, INFO_TAB,
