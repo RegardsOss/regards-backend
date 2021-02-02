@@ -146,16 +146,5 @@
             <groupId>fr.cnes.regards.modules.notifier</groupId>
             <artifactId>notifier-client</artifactId>
         </dependency>
-
-        <!-- FIXME -->
-        <!-- 		<dependency>
-                    <groupId>net.logstash.logback</groupId>
-                    <artifactId>logstash-logback-encoder</artifactId>
-                    <version>6.2</version>
-                </dependency> -->
-        <!--  		<dependency>
-                    <groupId>io.micrometer</groupId>
-                    <artifactId>micrometer-registry-elastic</artifactId>
-                </dependency> -->
     </dependencies>
 </project>
