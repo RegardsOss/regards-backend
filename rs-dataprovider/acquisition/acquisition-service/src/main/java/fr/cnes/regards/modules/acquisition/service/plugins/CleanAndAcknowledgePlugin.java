@@ -27,10 +27,14 @@ import java.time.OffsetDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -50,8 +54,6 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
         url = "https://github.com/RegardsOss")
 public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
-
     public static final String CLEAN_FILE_PARAM = "cleanFile";
 
     public static final String CREATE_ACK_PARAM = "createAck";
@@ -59,6 +61,8 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
     public static final String FOLDER_ACK_PARAM = "folderAck";
 
     public static final String EXTENSION_ACK_PARAM = "extensionAck";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CleanAndAcknowledgePlugin.class);
 
     @PluginParameter(name = CLEAN_FILE_PARAM, label = "Enable product files removal", defaultValue = "false",
             optional = true)
@@ -78,34 +82,58 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
             defaultValue = ".regards", optional = true)
     public String extensionAck;
 
+    @Autowired
+    private INotificationClient notificationClient;
+
     @Override
     public void postProcess(Product product) throws ModuleException {
 
         // Manage acknowledgement
         if (createAck) {
-            product.getAcquisitionFiles().forEach(acqFile -> createAck(acqFile));
+            int nbAckNotCreated = product.getAcquisitionFiles().stream().map(acqFile -> createAck(acqFile))
+                    .reduce(0, Integer::sum);
+            if (nbAckNotCreated > 0) {
+                notificationClient.notify(String.format("%d acknowledgement could not be created for product %s",
+                                                        nbAckNotCreated,
+                                                        product.getProductName()),
+                                          "Issues creating acknowledgement",
+                                          NotificationLevel.ERROR,
+                                          DefaultRole.EXPLOIT);
+            }
         }
 
         // Manage file cleaning
         if (cleanFile) {
-            product.getAcquisitionFiles().forEach(acqFile -> {
+            int nbDeletionIssues = product.getAcquisitionFiles().stream().map(acqFile -> {
                 try {
                     Files.delete(acqFile.getFilePath());
+                    return 0;
                 } catch (IOException e) {
                     // Skipping silently
                     String msg = String.format("Deletion failure for product \"%s\" and  file \"%s\"",
-                                               product.getProductName(), acqFile.getFilePath().toString());
+                                               product.getProductName(),
+                                               acqFile.getFilePath().toString());
                     LOGGER.warn(msg, e);
+                    return 1;
                 }
-            });
+            }).reduce(0, Integer::sum);
+            if (nbDeletionIssues > 0) {
+                notificationClient.notify(String.format("%s acquisition file could not be cleaned up for product %s",
+                                                        nbDeletionIssues,
+                                                        product.getProductName()),
+                                          "Issues cleaning up files",
+                                          NotificationLevel.ERROR,
+                                          DefaultRole.EXPLOIT);
+            }
         }
     }
 
     /**
      * Create the acknowledgement for an {@link AcquisitionFile}
      * @param acqFile the current {@link AcquisitionFile}
+     * @return number of ack that could not be created
      */
-    private void createAck(AcquisitionFile acqFile) {
+    private int createAck(AcquisitionFile acqFile) {
 
         try {
             // Create acknowledgement directory (if necessary)
@@ -116,12 +144,14 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
             Path ackFilePath = ackDirPath.resolve(acqFile.getFilePath().getFileName() + extensionAck);
             Files.createFile(ackFilePath);
             Files.setLastModifiedTime(ackFilePath, FileTime.from(OffsetDateTime.now().toInstant()));
+            return 0;
         } catch (IOException e) {
             // Skipping silently
-            // FIXME notify error!
-            String msg = String.format("Cannot create acknowledgement for  file \"%s\"",
-                                       acqFile.getFilePath().toString());
+            String msg = String.format("Cannot create acknowledgement for  file \"%s\" because %s",
+                                       acqFile.getFilePath().toString(),
+                                       e.getClass().getSimpleName());
             LOGGER.warn(msg, e);
+            return 1;
         }
     }
 }
