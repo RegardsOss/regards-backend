@@ -48,49 +48,41 @@ public class RoleClientMock implements IRolesClient {
 
     @Override
     public ResponseEntity<List<EntityModel<Role>>> getAllRoles() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<List<EntityModel<Role>>> getBorrowableRoles() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<List<EntityModel<Role>>> getRolesAccesingResource(Long pResourceId) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<EntityModel<Role>> createRole(Role pNewRole) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<EntityModel<Role>> retrieveRole(String pRoleName) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Set<Role>> retrieveRoleDescendants(String roleName) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<EntityModel<Role>> updateRole(String pRoleName, @Valid Role pUpdatedRole) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ResponseEntity<Void> removeRole(String pRoleName) {
-        // TODO Auto-generated method stub
         return null;
     }
 
