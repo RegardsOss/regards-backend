@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.time.OffsetDateTime;
 
 /**
- * Object containing acquisition files registration informations
+ * Object containing acquisition files registration information
  *
  * @author Sébastien Binda
  *
