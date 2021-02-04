@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client.cache;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -26,10 +29,6 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * SPRING Cache autoconfiguration class
@@ -51,8 +50,15 @@ public class AccessRightsClientCacheAutoConfiguration {
     @Bean(RolesHierarchyKeyGenerator.KEY_GENERATOR)
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     IRolesHierarchyKeyGenerator rolesHierarchyKeyGenerator(IAuthenticationResolver oauthResolver,
-            IRuntimeTenantResolver resolver) {
+                                                           IRuntimeTenantResolver resolver) {
         return new RolesHierarchyKeyGenerator(oauthResolver, resolver);
+    }
+
+    @Bean(AccessSettingsKeyGenerator.KEY_GENERATOR)
+    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
+    IAccessSettingsKeyGenerator accessSettingsKeyGenerator(IAuthenticationResolver oauthResolver,
+                                                           IRuntimeTenantResolver resolver) {
+        return new AccessSettingsKeyGenerator(oauthResolver, resolver);
     }
 
     @Bean

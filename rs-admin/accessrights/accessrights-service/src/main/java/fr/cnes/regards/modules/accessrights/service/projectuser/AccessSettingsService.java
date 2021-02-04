@@ -18,15 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsEvent;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
+import org.springframework.stereotype.Service;
 
 /**
  * {@link IAccessSettingsService} implementation
@@ -41,27 +45,46 @@ public class AccessSettingsService implements IAccessSettingsService {
      */
     private final IAccessSettingsRepository accessSettingsRepository;
 
+    private final IRoleRepository roleRepository;
+
+    private final IPublisher publisher;
+
     /**
      * Creates an {@link AccessSettingsService} wired to the given {@link IProjectUserRepository}.
      * @param pAccessSettingsRepository Autowired by Spring. Must not be {@literal null}.
      */
-    public AccessSettingsService(IAccessSettingsRepository pAccessSettingsRepository) {
+    public AccessSettingsService(IAccessSettingsRepository pAccessSettingsRepository, IRoleRepository pRoleRepository, IPublisher pPublisher) {
         super();
         accessSettingsRepository = pAccessSettingsRepository;
+        roleRepository = pRoleRepository;
+        publisher = pPublisher;
     }
 
     @Override
     public AccessSettings retrieve() {
-        List<AccessSettings> list = accessSettingsRepository.findAll();
-        AccessSettings result;
-        if (list.isEmpty()) {
-            result = new AccessSettings();
-            result.setId(0L);
-            result = accessSettingsRepository.save(result);
-        } else {
-            result = list.get(0);
-        }
-        return result;
+        return List.ofAll(accessSettingsRepository.findAll())
+            .headOption()
+            .orElse(() -> {
+                AccessSettings alt = new AccessSettings();
+                alt.setId(0L);
+                return Option.some(alt);
+            })
+            .map(result -> {
+                if (result.getDefaultRole() != null && result.getDefaultGroups() != null) {
+                    return result;
+                } else {
+                    if (result.getDefaultRole() == null) {
+                        roleRepository
+                            .findOneByName(DefaultRole.REGISTERED_USER.toString())
+                            .ifPresent(result::setDefaultRole);
+                    }
+                    if (result.getDefaultGroups() == null) {
+                        result.setDefaultGroups(Lists.newArrayList());
+                    }
+                    return accessSettingsRepository.save(result);
+                }
+            })
+            .get();
     }
 
     @Override
@@ -69,7 +92,21 @@ public class AccessSettingsService implements IAccessSettingsService {
         if (!accessSettingsRepository.existsById(accessSettings.getId())) {
             throw new EntityNotFoundException(accessSettings.getId().toString(), AccessSettings.class);
         }
-        return accessSettingsRepository.save(accessSettings);
+        if (accessSettings.getDefaultRole() == null) {
+            roleRepository
+                .findOneByName(DefaultRole.REGISTERED_USER.toString())
+                .ifPresent(accessSettings::setDefaultRole);
+        }
+        if (accessSettings.getDefaultGroups() == null) {
+            accessSettings.setDefaultGroups(Lists.newArrayList());
+        }
+        AccessSettings result = accessSettingsRepository.save(accessSettings);
+        publisher.publish(new AccessSettingsEvent(
+            accessSettings.getMode(),
+            accessSettings.getDefaultRole().getName(),
+            accessSettings.getDefaultGroups()
+        ));
+        return result;
     }
 
 }

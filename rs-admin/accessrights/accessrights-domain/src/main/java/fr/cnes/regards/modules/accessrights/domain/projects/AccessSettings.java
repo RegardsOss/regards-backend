@@ -18,16 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
+import com.vladmihalcea.hibernate.type.array.ListArrayType;
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Models the different access settings.<br>
@@ -37,6 +39,10 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 @Entity
 @Table(name = "t_access_settings")
 @SequenceGenerator(name = "accessSettingsSequence", initialValue = 1, sequenceName = "seq_access_settings")
+@TypeDef(
+    name = "string-array",
+    typeClass = ListArrayType.class
+)
 public class AccessSettings implements IIdentifiable<Long> {
 
     /**
@@ -64,6 +70,18 @@ public class AccessSettings implements IIdentifiable<Long> {
     @Column(name = "mode")
     private String mode = AUTO_ACCEPT_MODE;
 
+    @Valid
+    @ManyToOne
+    @JoinColumn(name = "default_role_id", foreignKey = @ForeignKey(name = "fk_access_settings_default_role"))
+    private Role defaultRole;
+
+    @Type(type = "string-array")
+    @Column(
+        name = "default_groups",
+        columnDefinition = "text[]"
+    )
+    private List<String> defaultGroups;
+
     @Override
     public Long getId() {
         return id;
@@ -75,6 +93,14 @@ public class AccessSettings implements IIdentifiable<Long> {
      */
     public String getMode() {
         return mode;
+    }
+
+    public Role getDefaultRole() {
+        return defaultRole;
+    }
+
+    public List<String> getDefaultGroups() {
+        return defaultGroups;
     }
 
     /**
@@ -93,22 +119,31 @@ public class AccessSettings implements IIdentifiable<Long> {
         this.mode = mode;
     }
 
+    public void setDefaultRole(Role defaultRole) {
+        this.defaultRole = defaultRole;
+    }
+
+    public void setDefaultGroups(List<String> defaultGroups) {
+        this.defaultGroups = defaultGroups;
+    }
+
     @Override
-    public boolean equals(Object obj) {
-        return (obj instanceof AccessSettings) && (((AccessSettings) obj).getMode().equals(mode));
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AccessSettings that = (AccessSettings) o;
+        return Objects.equals(id, that.id)
+            && Objects.equals(mode, that.mode)
+            && Objects.equals(defaultRole, that.defaultRole)
+            && Objects.equals(defaultGroups, that.defaultGroups);
     }
 
     @Override
     public int hashCode() {
-        int prime = 31;
-        int result = 1;
-
-        result = prime * result;
-        if (mode != null) {
-            result += mode.hashCode();
-        }
-
-        return result;
+        return Objects.hash(id, mode, defaultRole, defaultGroups);
     }
-
 }

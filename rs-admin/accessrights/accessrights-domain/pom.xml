@@ -67,6 +67,11 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-config</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.vladmihalcea</groupId>
+			<artifactId>hibernate-types-52</artifactId>
+			<version>2.9.13</version>
+		</dependency>
 		<!-- Tests dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

@@ -18,20 +18,29 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsEvent;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.AccessSettingsService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Test class for {@link AccessSettingsService}.
@@ -60,13 +69,19 @@ public class AccessSettingsServiceTest {
      */
     private IAccessSettingsRepository accessSettingsRepository;
 
+    private IRoleRepository roleRepository;
+
+    private IPublisher publisher;
+
     /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         accessSettingsRepository = Mockito.mock(IAccessSettingsRepository.class);
-        accessSettingsService = new AccessSettingsService(accessSettingsRepository);
+        roleRepository = Mockito.mock(IRoleRepository.class);
+        publisher = Mockito.mock(IPublisher.class);
+        accessSettingsService = new AccessSettingsService(accessSettingsRepository, roleRepository, publisher);
     }
 
     /**
@@ -80,6 +95,8 @@ public class AccessSettingsServiceTest {
         final AccessSettings expected = new AccessSettings();
         expected.setId(0L);
         expected.setMode(MANUAL);
+        expected.setDefaultRole(new Role(DefaultRole.REGISTERED_USER.toString()));
+        expected.setDefaultGroups(Lists.newArrayList());
 
         // Mock the repository returned value
         final List<AccessSettings> asList = new ArrayList<>();
@@ -94,6 +111,37 @@ public class AccessSettingsServiceTest {
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(accessSettingsRepository).findAll();
+    }
+
+    /**
+     * Check that the system allows to retrieve the access settings.
+     */
+    @Test
+    @Requirement("?")
+    @Purpose("Check that the system creates access settings lazily on retrieve.")
+    public void findOrCreate() {
+        // Define expected
+        final Role role = new Role(DefaultRole.REGISTERED_USER.toString());
+        final AccessSettings expected = new AccessSettings();
+        expected.setId(0L);
+        expected.setMode(AUTO_ACCEPT);
+        expected.setDefaultRole(role);
+        expected.setDefaultGroups(Lists.newArrayList());
+
+        // Mock the repository returned value
+        Mockito.when(accessSettingsRepository.findAll()).thenReturn(Lists.newArrayList());
+        Mockito.when(roleRepository.findOneByName(eq(DefaultRole.REGISTERED_USER.toString()))).thenReturn(Optional.of(role));
+        ArgumentCaptor<AccessSettings> capture = ArgumentCaptor.forClass(AccessSettings.class);
+
+        // Retrieve (returns null because of mock but we're only interested in the argument capture)
+        accessSettingsService.retrieve();
+
+        // Check that the repository's method was called with right arguments
+        Mockito.verify(accessSettingsRepository).findAll();
+        Mockito.verify(accessSettingsRepository).save(capture.capture());
+
+        // Check that the expected and actual role have same values
+        Assert.assertEquals(expected, capture.getValue());
     }
 
     /**
@@ -134,27 +182,31 @@ public class AccessSettingsServiceTest {
     public void update() throws EntityNotFoundException {
         // Define expected
         final Long id = 0L;
+        final Role role = new Role(DefaultRole.REGISTERED_USER.toString());
         final AccessSettings expected = new AccessSettings();
         expected.setId(id);
         expected.setMode(AUTO_ACCEPT);
+        expected.setDefaultRole(new Role(DefaultRole.REGISTERED_USER.toString()));
+        expected.setDefaultGroups(Lists.newArrayList());
 
         // Mock the repository returned value
         final List<AccessSettings> asList = new ArrayList<>();
         asList.add(expected);
         Mockito.when(accessSettingsRepository.existsById(id)).thenReturn(true);
-        Mockito.when(accessSettingsRepository.findAll()).thenReturn(asList);
+        Mockito.when(roleRepository.findOneByName(eq(DefaultRole.REGISTERED_USER.toString()))).thenReturn(Optional.of(role));
+        ArgumentCaptor<AccessSettings> capture = ArgumentCaptor.forClass(AccessSettings.class);
 
         // Perform the update
         accessSettingsService.update(expected);
 
-        // Retrieve the updated value
-        final AccessSettings actual = accessSettingsService.retrieve();
+        Mockito.verify(accessSettingsRepository).save(capture.capture());
 
         // Check that the expected and actual role have same values
-        Assert.assertEquals(expected, actual);
+        Assert.assertEquals(expected, capture.getValue());
 
         // Check that the repository's method was called with right arguments
         Mockito.verify(accessSettingsRepository).existsById(id);
+        Mockito.verify(publisher).publish(new AccessSettingsEvent(expected.getMode(), expected.getDefaultRole().getName(), expected.getDefaultGroups()));
     }
 
 }

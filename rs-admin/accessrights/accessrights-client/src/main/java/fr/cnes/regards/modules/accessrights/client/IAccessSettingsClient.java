@@ -19,7 +19,10 @@
 package fr.cnes.regards.modules.accessrights.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.accessrights.client.cache.AccessSettingsKeyGenerator;
+import fr.cnes.regards.modules.accessrights.client.cache.RolesHierarchyKeyGenerator;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +46,8 @@ public interface IAccessSettingsClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
+    @Cacheable(cacheNames = AccessSettingsKeyGenerator.CACHE_NAME,
+        keyGenerator = AccessSettingsKeyGenerator.KEY_GENERATOR, sync = true)
     ResponseEntity<EntityModel<AccessSettings>> retrieveAccessSettings();
 
     /**

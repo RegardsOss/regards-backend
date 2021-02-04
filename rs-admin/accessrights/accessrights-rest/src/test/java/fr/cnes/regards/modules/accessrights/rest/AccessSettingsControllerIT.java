@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -9,6 +11,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -22,15 +27,18 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IAccessSettingsRepository accessSettingsRepository;
 
+    @Before
+    @After
+    public final void setUp() {
+        accessSettingsRepository.deleteAll();
+    }
+
     /**
      * Check that the system allows to retrieve the access settings.
      */
     @Test
     @Purpose("Check that the system allows to retrieve the access settings.")
     public void getAccessSettings() {
-        // Populate
-        accessSettingsRepository.save(new AccessSettings());
-
         performDefaultGet(AccessSettingsController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(), ERROR_MESSAGE);
     }
 
@@ -55,18 +63,17 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the system allows to update access settings in regular case.")
     public void updateAccessSettings() {
+        performDefaultGet(AccessSettingsController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(), ERROR_MESSAGE);
 
         // First save settings
-        final AccessSettings settings = new AccessSettings();
-        accessSettingsRepository.save(settings);
-
-        // Then update them
+        final AccessSettings settings = accessSettingsRepository.findAll().get(0);
         settings.setMode("manual");
 
         performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT,
-                          settings,
-                          customizer().expectStatusOk(),
-                          "TODO Error message");
+            settings,
+            customizer().expectStatusOk(),
+            "TODO Error message"
+        );
     }
 
 }
