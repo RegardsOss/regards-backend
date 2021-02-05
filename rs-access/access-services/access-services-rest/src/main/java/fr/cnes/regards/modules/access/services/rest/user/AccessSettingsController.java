@@ -135,6 +135,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
                         AccessSettings accessSettings = new AccessSettings();
                         accessSettings.setId(accessSettingsDto.getId());
                         accessSettings.setMode(accessSettingsDto.getMode());
+                        accessSettings.setDefaultRole(accessSettingsDto.getRole());
+                        accessSettings.setDefaultGroups(accessSettingsDto.getGroups());
                         return accessSettings;
                     })
                         .map(accessSettingsClient::updateAccessSettings)
