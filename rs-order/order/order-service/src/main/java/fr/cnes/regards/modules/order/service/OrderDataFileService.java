@@ -224,16 +224,21 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public ResponseEntity<InputStreamResource> downloadFile(final OrderDataFile dataFile, Optional<String> asUser) {
+        ResponseEntity<InputStreamResource> response;
         if (dataFile.isReference()) {
-            return downloadReferenceFile(dataFile);
+            response = downloadReferenceFile(dataFile);
         } else {
             try {
                 FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-                return donwloadStoredFile(dataFile);
+                response = donwloadStoredFile(dataFile);
             } finally {
                 FeignSecurityManager.reset();
             }
         }
+        self.save(dataFile);
+        Order order = orderRepository.findSimpleById(dataFile.getOrderId());
+        orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
+        return response;
     }
 
     /**
@@ -281,10 +286,19 @@ public class OrderDataFileService implements IOrderDataFileService {
                     isr = new InputStreamResource(new ResponseStreamProxy(response));
                 }
             } else {
-                Function<InputStream, Void> beforeClose = (InputStream stream) -> {
-                    LOGGER.info("Download of file {} succeeded", dataFile.getFilename());
-                    dataFile.setState(FileState.DOWNLOADED);
-                    processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+                Function<ResponseStreamProxy, Void> beforeClose = (ResponseStreamProxy stream) -> {
+                    LOGGER.info("Download of file {} succeeded with {}bytes", dataFile.getFilename(),
+                                stream.getStreamReadCount());
+                    if (stream.getStreamReadCount() >= dataFile.getFilesize()) {
+                        dataFile.setState(FileState.DOWNLOADED);
+                        processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
+                    } else {
+                        String message = "Cannot completely retrieve data file from storage, only "
+                                + stream.getStreamReadCount() + "/" + dataFile.getFilesize() + " bytes";
+                        dataFile.setState(FileState.DOWNLOAD_ERROR);
+                        dataFile.setDownloadError(message);
+                        LOGGER.error(message);
+                    }
                     self.save(dataFile);
                     Order order = orderRepository.findSimpleById(dataFile.getOrderId());
                     orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
@@ -302,9 +316,6 @@ public class OrderDataFileService implements IOrderDataFileService {
             LOGGER.error(e.getMessage(), e);
             dataFile.setState(FileState.DOWNLOAD_ERROR);
             dataFile.setDownloadError(e.getMessage());
-            self.save(dataFile);
-            Order order = orderRepository.findSimpleById(dataFile.getOrderId());
-            orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

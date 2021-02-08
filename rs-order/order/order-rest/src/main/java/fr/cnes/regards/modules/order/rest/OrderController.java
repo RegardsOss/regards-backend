@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
@@ -251,7 +250,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
             role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
-    public ResponseEntity<StreamingResponseBody> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
+    public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
@@ -266,20 +265,20 @@ public class OrderController implements IResourceController<OrderDto> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
+        try {
+            orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, response.getOutputStream());
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         // Stream the response
-        return new ResponseEntity<>(os -> {
-            try {
-                orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os);
-            } catch (RuntimeException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
-            }
-        }, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<StreamingResponseBody> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
+    public ResponseEntity<Void> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
@@ -292,7 +291,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<StreamingResponseBody> publicDownloadMetalinkFile(
+    public ResponseEntity<Void> publicDownloadMetalinkFile(
             @RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
             throws EntityNotFoundException {
         Long orderId;
@@ -316,8 +315,8 @@ public class OrderController implements IResourceController<OrderDto> {
      * Fill Response headers and create streaming response
      * @throws EntityNotFoundException
      */
-    private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(Order order,
-            HttpServletResponse response) throws EntityNotFoundException {
+    private ResponseEntity<Void> createMetalinkDownloadResponse(Order order, HttpServletResponse response)
+            throws EntityNotFoundException {
         String error = null;
         switch (order.getStatus()) {
             case DELETED:
@@ -342,21 +341,19 @@ public class OrderController implements IResourceController<OrderDto> {
                 break;
         }
         if (error != null) {
-            final byte[] errorMessage = error.getBytes();
-            return new ResponseEntity<>(os -> os.write(errorMessage), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
             response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_"
                     + OffsetDateTime.now().toString() + ".metalink");
             response.setContentType("application/metalink+xml");
+            try {
+                orderService.downloadOrderMetalink(order.getId(), response.getOutputStream());
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             // Stream the response
-            return new ResponseEntity<>(os -> {
-                try {
-                    orderService.downloadOrderMetalink(order.getId(), os);
-                } catch (RuntimeException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    throw e;
-                }
-            }, HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
     }
 
