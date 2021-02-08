@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
@@ -97,7 +99,7 @@ public class PMonitoringController implements IResourceController<ExecutionMonit
         OffsetDateTime from = TimeUtils.parseUtc(fromStr);
         OffsetDateTime to = TimeUtils.parseUtc(toStr);
 
-        PageRequest paged = PageRequest.of(page, size);
+        PageRequest paged = PageRequest.of(page, size, Sort.by(Direction.DESC, "created"));
         return monitoringService.getExecutionsPageForCriteria(tenant, status, processBid, userEmail, from, to, paged)
                 .map(p -> new ResponseEntity<>(this.toPagedResources(p, assembler), HttpStatus.OK)).block();
     }
