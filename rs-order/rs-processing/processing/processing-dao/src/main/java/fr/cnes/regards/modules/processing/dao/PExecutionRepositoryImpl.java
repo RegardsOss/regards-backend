@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 
@@ -133,6 +134,18 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             OffsetDateTime to,
             Pageable page
     ) {
+        String orderBy = "";
+        if (page.getSort() != null) {
+            int count = 0;
+            orderBy = "ORDER BY ";
+            for (Order o  : page.getSort().toList()) {
+                count ++;
+                orderBy+= o.getProperty() + " " + o.getDirection().toString();
+                if ((count > 1) && (count < page.getSort().toList().size())) {
+                    orderBy += ",";
+                }
+            }
+        }
         DatabaseClient.GenericExecuteSpec execute = databaseClient.execute(
                 " SELECT E.* " +
                 " FROM t_execution AS E " +
@@ -142,6 +155,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                 "   AND  E.current_status IN (:status) " +
                 "   AND  E.last_updated >= :lastUpdatedFrom " +
                 "   AND  E.last_updated <= :lastUpdatedTo " +
+                orderBy +
                 " LIMIT :limit OFFSET :offset"
         );
 
