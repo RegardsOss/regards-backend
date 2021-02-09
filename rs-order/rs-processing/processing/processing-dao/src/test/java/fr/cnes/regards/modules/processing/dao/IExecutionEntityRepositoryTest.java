@@ -45,8 +45,8 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
     public void test_timedout_executions() throws Exception {
 
         // First delete previous executions if any
-        entityBatchRepo.deleteAll();
-        entityExecRepo.deleteAll();
+        entityBatchRepo.deleteAll().block();
+        entityExecRepo.deleteAll().block();
 
         assertThat(entityExecRepo.count().block()).isEqualTo(0L);
 
