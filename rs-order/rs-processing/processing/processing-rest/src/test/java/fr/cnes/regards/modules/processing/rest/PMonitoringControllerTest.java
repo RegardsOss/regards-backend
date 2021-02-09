@@ -17,7 +17,44 @@
 */
 package fr.cnes.regards.modules.processing.rest;
 
-import feign.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.CANCELLED;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.FAILURE;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
+import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.test.context.ContextConfiguration;
+
+import feign.Feign;
+import feign.Headers;
+import feign.Param;
+import feign.QueryMap;
+import feign.RequestLine;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -32,7 +69,12 @@ import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParam
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
-import fr.cnes.regards.modules.processing.entity.*;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import fr.cnes.regards.modules.processing.entity.FileStatsByDataset;
+import fr.cnes.regards.modules.processing.entity.ParamValues;
+import fr.cnes.regards.modules.processing.entity.StepEntity;
+import fr.cnes.regards.modules.processing.entity.Steps;
 import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingTest;
 import fr.cnes.regards.modules.processing.testutils.servlet.TestSpringConfiguration;
 import fr.cnes.regards.modules.processing.utils.gson.GsonLoggingDecoder;
@@ -41,47 +83,25 @@ import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.test.context.ContextConfiguration;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.MONITORING_EXECUTIONS_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PAGE_PARAM;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.SIZE_PARAM;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
-import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomList;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-@ContextConfiguration(
-        classes = { TestSpringConfiguration.class, PMonitoringControllerTest.Config.class }
-)
+@ContextConfiguration(classes = { TestSpringConfiguration.class, PMonitoringControllerTest.Config.class })
 public class PMonitoringControllerTest extends AbstractProcessingTest {
 
-    @Autowired private IBatchEntityRepository batchRepo;
-    @Autowired private IExecutionEntityRepository execRepo;
-    @Autowired private IPProcessRepository processRepository;
+    @Autowired
+    private IBatchEntityRepository batchRepo;
 
-    @Test public void executions() {
+    @Autowired
+    private IExecutionEntityRepository execRepo;
+
+    @Autowired
+    private IPProcessRepository processRepository;
+
+    @Test
+    public void executions() {
+
+        // reset db
+        execRepo.deleteAll().block();
 
         // GIVEN
         UUID processId = UUID.randomUUID();
@@ -97,7 +117,7 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
 
         // WHEN
         PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client
-            .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
+                .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
 
@@ -105,10 +125,9 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
         assertThat(response.getMetadata().getTotalElements()).isEqualTo(35);
         assertThat(response.getContent()).hasSize(10);
 
-
         // WHEN
         PagedModel<EntityModel<ExecutionMonitoringDTO>> responseEmpty = client
-            .executions(TENANT_PROJECTA, asList(CANCELLED), toMap(PageRequest.of(2, 10)));
+                .executions(TENANT_PROJECTA, asList(CANCELLED), toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
 
@@ -119,24 +138,12 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
 
     private void createBatches(UUID batchAId, UUID batchBId) {
 
-        BatchEntity batchA = new BatchEntity(
-                batchAId,
-                UUID.randomUUID(),
-                "",
-                TENANT_PROJECTA,
-                "a@a.a",
-                "EXPLOIT",
-                new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
-                new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
-        BatchEntity batchB = new BatchEntity(
-                batchBId,
-                UUID.randomUUID(),
-                "",
-                TENANT_PROJECTB,
-                "a@a.a",
-                "EXPLOIT",
-                new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
-                new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty().toJavaMap()));
+        BatchEntity batchA = new BatchEntity(batchAId, UUID.randomUUID(), "", TENANT_PROJECTA, "a@a.a", "EXPLOIT",
+                new ParamValues(List.<ExecutionStringParameterValue> empty().asJava()),
+                new FileStatsByDataset(HashMap.<String, FileSetStatistics> empty().toJavaMap()));
+        BatchEntity batchB = new BatchEntity(batchBId, UUID.randomUUID(), "", TENANT_PROJECTB, "a@a.a", "EXPLOIT",
+                new ParamValues(List.<ExecutionStringParameterValue> empty().asJava()),
+                new FileStatsByDataset(HashMap.<String, FileSetStatistics> empty().toJavaMap()));
 
         batchRepo.saveAll(List.of(batchA, batchB)).collectList().block();
     }
@@ -146,51 +153,31 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
         Random r = new Random();
         long now = System.currentTimeMillis();
 
-        List<ExecutionEntity> failures = randomList(ExecutionEntity.class, 20).map(e -> e
-                .withId(UUID.randomUUID())
-                .withBatchId(batchAId)
-                .withProcessBusinessId(processId)
-                .withTenant(TENANT_PROJECTA)
-                .withCurrentStatus(FAILURE)
-                .withVersion(0)
-                .withPersisted(false)
-                .withSteps(new Steps(List.of(new StepEntity(FAILURE, now, "")).asJava()))
-        );
+        List<ExecutionEntity> failures = randomList(ExecutionEntity.class, 20)
+                .map(e -> e.withId(UUID.randomUUID()).withBatchId(batchAId).withProcessBusinessId(processId)
+                        .withTenant(TENANT_PROJECTA).withCurrentStatus(FAILURE).withVersion(0).withPersisted(false)
+                        .withSteps(new Steps(List.of(new StepEntity(FAILURE, now, "")).asJava())));
 
-        List<ExecutionEntity> entities = randomList(ExecutionEntity.class, 35).map(e -> e
-                .withId(UUID.randomUUID())
-                .withBatchId(batchAId)
-                .withProcessBusinessId(processId)
-                .withTenant(TENANT_PROJECTA)
-                .withCurrentStatus(r.nextBoolean() ? RUNNING : PREPARE)
-                .withVersion(0)
-                .withPersisted(false)
-                .withSteps(new Steps(List.of(new StepEntity(RUNNING, now, "")).asJava()))
-        );
+        List<ExecutionEntity> entities = randomList(ExecutionEntity.class, 35).map(e -> e.withId(UUID.randomUUID())
+                .withBatchId(batchAId).withProcessBusinessId(processId).withTenant(TENANT_PROJECTA)
+                .withCurrentStatus(r.nextBoolean() ? RUNNING : PREPARE).withVersion(0).withPersisted(false)
+                .withSteps(new Steps(List.of(new StepEntity(RUNNING, now, "")).asJava())));
 
-        List<ExecutionEntity> otherTenants = randomList(ExecutionEntity.class, 20).map(e -> e
-                .withId(UUID.randomUUID())
-                .withBatchId(batchBId)
-                .withProcessBusinessId(processId)
-                .withTenant(TENANT_PROJECTB)
-                .withCurrentStatus(PREPARE)
-                .withVersion(0)
-                .withPersisted(false)
-                .withSteps(new Steps(List.of(new StepEntity(PREPARE, now, "")).asJava()))
-        );
+        List<ExecutionEntity> otherTenants = randomList(ExecutionEntity.class, 20)
+                .map(e -> e.withId(UUID.randomUUID()).withBatchId(batchBId).withProcessBusinessId(processId)
+                        .withTenant(TENANT_PROJECTB).withCurrentStatus(PREPARE).withVersion(0).withPersisted(false)
+                        .withSteps(new Steps(List.of(new StepEntity(PREPARE, now, "")).asJava())));
 
-        execRepo.saveAll(otherTenants.appendAll(failures).appendAll(entities))
-                .collectList()
-                .block();
+        execRepo.saveAll(otherTenants.appendAll(failures).appendAll(entities)).collectList().block();
 
         return entities;
     }
 
-    private Map<String, String> toMap(Pageable page, Tuple2<String,String>... rest) {
-        return Stream.of(rest).foldLeft(HashMap.of(
-            PAGE_PARAM, "" + page.getPageNumber(),
-            SIZE_PARAM, "" + page.getPageSize()
-        ), (acc, t) -> acc.put(t)).toJavaMap();
+    private Map<String, String> toMap(Pageable page, Tuple2<String, String>... rest) {
+        return Stream.of(rest)
+                .foldLeft(HashMap.of(PAGE_PARAM, "" + page.getPageNumber(), SIZE_PARAM, "" + page.getPageSize()),
+                          (acc, t) -> acc.put(t))
+                .toJavaMap();
     }
 
     //==================================================================================================================
@@ -204,10 +191,9 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
 
     @Before
     public void init() throws IOException, ModuleException {
-        client = Feign.builder()
-                .decoder(new GsonLoggingDecoder(gson))
-                .encoder(new GsonLoggingEncoder(gson))
-                .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port, feignSecurityManager));
+        client = Feign.builder().decoder(new GsonLoggingDecoder(gson)).encoder(new GsonLoggingEncoder(gson))
+                .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port,
+                        feignSecurityManager));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         FeignSecurityManager.asUser("regards@cnes.fr", DefaultRole.ADMIN.name());
     }
@@ -215,16 +201,15 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
     @RestClient(name = "rs-processing-config", contextId = "rs-processing.rest.plugin-conf.client")
     @Headers({ "Accept: application/json", "Content-Type: application/json" })
     public interface Client {
+
         @RequestLine("GET " + MONITORING_EXECUTIONS_PATH + "?tenant={tenant}&status={status}")
-        PagedModel<EntityModel<ExecutionMonitoringDTO>> executions(
-                @Param("tenant") String tenant,
-                @Param("status") java.util.List<ExecutionStatus> status,
-                @QueryMap Map<String,String> params
-        );
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> executions(@Param("tenant") String tenant,
+                @Param("status") java.util.List<ExecutionStatus> status, @QueryMap Map<String, String> params);
     }
 
     @Configuration
     static class Config {
+
         @Bean
         public IWorkloadEngineRepository workloadEngineRepository() {
             return mock(IWorkloadEngineRepository.class);
