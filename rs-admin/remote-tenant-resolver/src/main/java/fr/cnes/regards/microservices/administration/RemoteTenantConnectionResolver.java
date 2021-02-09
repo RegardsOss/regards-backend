@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  *
  * Class DefaultMultitenantConnectionsReader
  *
- * Default tenants connections configuration reader. Reads tenants from the microservice "rs-admin". Enabled, only if
+ * Default tenants connections configuration reader. Reads tenants from the microservice "rs-administration". Enabled, only if
  * the microservice is Eureka client.
  *
  * @author Sébastien Binda

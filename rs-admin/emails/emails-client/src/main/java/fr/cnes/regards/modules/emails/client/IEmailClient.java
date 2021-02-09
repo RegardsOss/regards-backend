@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * @author Xavier-Alexandre Brochard
  */
 
-@RestClient(name = "rs-admin", contextId = "rs-admin.emails-client")
+@RestClient(name = "rs-administration", contextId = "rs-administration.emails-client")
 @RequestMapping(value = "/emails", consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IEmailClient {

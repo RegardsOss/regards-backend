@@ -33,12 +33,12 @@ import java.util.List;
 
 /**
  *
- * Feign client for rs-admin Accesses Rest controller. Thanks to Feign facilities, no exception handling is required.
+ * Feign client for rs-administration Accesses Rest controller. Thanks to Feign facilities, no exception handling is required.
  *
  * @author CS
 
  */
-@RestClient(name = "rs-admin", contextId = "rs-admin.registration-client")
+@RestClient(name = "rs-administration", contextId = "rs-administration.registration-client")
 @RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRegistrationClient {

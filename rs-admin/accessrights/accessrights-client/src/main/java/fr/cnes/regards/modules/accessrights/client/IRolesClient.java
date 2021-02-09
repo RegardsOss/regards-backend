@@ -41,12 +41,12 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  * Class IRolesClient
  *
- * Feign client for rs-admin Roles controller.
+ * Feign client for rs-administration Roles controller.
  *
  * @author CS
 
  */
-@RestClient(name = "rs-admin", contextId = "rs-admin.roles-client")
+@RestClient(name = "rs-administration", contextId = "rs-administration.roles-client")
 @RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRolesClient { // NOSONAR

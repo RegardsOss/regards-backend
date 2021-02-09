@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin", contextId = "rs-admin.ms-resources-client")
+@RestClient(name = "rs-administration", contextId = "rs-administration.ms-resources-client")
 @RequestMapping(value = IMicroserviceResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IMicroserviceResourceClient {
