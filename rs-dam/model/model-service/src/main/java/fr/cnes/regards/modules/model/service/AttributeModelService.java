@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import fr.cnes.regards.modules.model.domain.event.AttributeModelUpdated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +54,8 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IRestriction;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelCreated;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelDeleted;
+import fr.cnes.regards.modules.model.domain.event.AttributeModelUpdated;
+import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.event.NewFragmentAttributeEvent;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
@@ -121,7 +122,8 @@ public class AttributeModelService implements IAttributeModelService {
         this.eventPublisher = eventPublisher;
     }
 
-    @Override public List<AttributeModel> getAllAttributes() {
+    @Override
+    public List<AttributeModel> getAllAttributes() {
         return attModelRepository.findAll();
     }
 
@@ -177,6 +179,9 @@ public class AttributeModelService implements IAttributeModelService {
         manageRestriction(attributeModel);
         AttributeModel result = attModelRepository.save(attributeModel);
         publisher.publish(new AttributeModelUpdated(result));
+        // Check if model is associated to this updated attribute. If so send an model changed event
+        modelAttrAssocRepository.findAllByAttributeId(result.getId())
+                .forEach(a -> publisher.publish(ModelChangeEvent.build(a.getModel().getName())));
         return result;
     }
 
@@ -286,7 +291,7 @@ public class AttributeModelService implements IAttributeModelService {
      * @throws ModuleException if conflict detected
      */
     private AttributeModel manageAttributeModel(AttributeModel inAttributeModel) throws ModuleException {
-        if(inAttributeModel.getType() == PropertyType.OBJECT) {
+        if (inAttributeModel.getType() == PropertyType.OBJECT) {
             throw new EntityOperationForbiddenException("No Attribute of type OBJECT can be created!");
         }
         if (!inAttributeModel.isIdentifiable()) {
