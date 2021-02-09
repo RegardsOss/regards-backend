@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-administration", contextId = "rs-administration.role-resource-client")
+@RestClient(name = "rs-admin", contextId = "rs-admin.role-resource-client")
 @RequestMapping(value = IRoleResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
 public interface IRoleResourceClient {

@@ -50,17 +50,17 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  *
  * Class IProjectUsersClient
  *
- * Feign client for rs-administration ProjectUsers controller.
+ * Feign client for rs-admin ProjectUsers controller.
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */
-@RestClient(name = TARGET_NAME, contextId = "rs-administration.project-user-client")
+@RestClient(name = TARGET_NAME, contextId = "rs-admin.project-user-client")
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
 public interface IProjectUsersClient {
 
-    String TARGET_NAME = "rs-administration";
+    String TARGET_NAME = "rs-admin";
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.

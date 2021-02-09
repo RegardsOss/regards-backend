@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 
-@RestClient(name = "rs-administration", contextId = "rs-administration.access-settings-client")
+@RestClient(name = "rs-admin", contextId = "rs-admin.access-settings-client")
 @RequestMapping(
     path = "/accesses/settings",
     produces = MediaType.APPLICATION_JSON_VALUE,

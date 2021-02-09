@@ -42,7 +42,7 @@ public abstract class AbstractProjectDiscoveryClientChecker {
     /**
      * Admin instance id on EUREKA server
      */
-    private static final String ADMIN_INSTANCE_ID = "rs-administration";
+    private static final String ADMIN_INSTANCE_ID = "rs-admin";
 
     /**
      * Discovery client implemented with EUREKA client in this context
