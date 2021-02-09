@@ -46,6 +46,9 @@ public class IExecutionEntityRepositoryTest extends AbstractRepoTest {
 
         // First delete previous executions if any
         entityBatchRepo.deleteAll();
+        entityExecRepo.deleteAll();
+
+        assertThat(entityExecRepo.count().block()).isEqualTo(0L);
 
         // GIVEN
         BatchEntity batch = randomInstance(BatchEntity.class).withPersisted(false);
