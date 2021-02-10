@@ -34,24 +34,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
@@ -110,13 +117,11 @@ public class IngestService implements IIngestService {
      * @param item request to manage
      */
     private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
-        return registerIngestRequest(item.getRequestId(),
-                                     item.getSip(),
+        return registerIngestRequest(item.getRequestId(), item.getSip(),
                                      metadataMapper.dtoToMetadata(item.getMetadata()),
                                      RequestInfoDto.build(item.getMetadata().getSessionOwner(),
                                                           item.getMetadata().getSession()),
-                                     new HashSet<>(),
-                                     item.getSip().getId());
+                                     new HashSet<>(), item.getSip().getId());
     }
 
     /**
@@ -133,20 +138,19 @@ public class IngestService implements IIngestService {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
+        // Check for each feature if storage locations are valide for feature files
+        checkSipStorageLocations(sip, ingestMetadata, errors);
+
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(requestId,
-                                                                         ingestMetadata,
-                                                                         InternalRequestState.ERROR,
-                                                                         IngestRequestStep.LOCAL_DENIED,
-                                                                         sip,
-                                                                         errs));
+            ingestRequestService
+                    .handleRequestDenied(IngestRequest.build(requestId, ingestMetadata, InternalRequestState.ERROR,
+                                                             IngestRequestStep.LOCAL_DENIED, sip, errs));
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(joiner::add);
             LOGGER.debug("Ingest request ({}) rejected for following reason(s) : {}",
-                         requestId == null ? "per REST" : requestId,
-                         joiner.toString());
+                         requestId == null ? "per REST" : requestId, joiner.toString());
             // Trace denied request
             info.addDeniedRequest(sipId, joiner.toString());
 
@@ -154,8 +158,8 @@ public class IngestService implements IIngestService {
         }
 
         // Save granted ingest request, versioning mode is being handled later
-        IngestRequest request = IngestRequest
-                .build(requestId, ingestMetadata, InternalRequestState.CREATED, IngestRequestStep.LOCAL_SCHEDULED, sip);
+        IngestRequest request = IngestRequest.build(requestId, ingestMetadata, InternalRequestState.CREATED,
+                                                    IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
@@ -186,9 +190,9 @@ public class IngestService implements IIngestService {
 
         // Check submission limit / If there are more features than configurated bulk max size, reject request!
         if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
-            throw new EntityInvalidException(String.format(
-                    "Invalid request due to ingest configuration max bulk size set to %s.",
-                    confProperties.getMaxBulkSize()));
+            throw new EntityInvalidException(
+                    String.format("Invalid request due to ingest configuration max bulk size set to %s.",
+                                  confProperties.getMaxBulkSize()));
         }
 
         // Validate and transform ingest metadata
@@ -196,8 +200,7 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(),
-                                                   ingestMetadata.getSession(),
+        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
                                                    "SIP Collection ingestion scheduled");
 
         int count = 1;
@@ -243,6 +246,37 @@ public class IngestService implements IIngestService {
         } catch (JsonIOException | IOException e) {
             LOGGER.error("Cannot read JSON file containing SIP collection", e);
             throw new EntityInvalidException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validate given SIP dataobjects to ensure storage location is configured for each needed {@link DataType} to store
+     * @param sip
+     * @param ingestMetadata
+     * @param errors
+     */
+    private void checkSipStorageLocations(SIP sip, IngestMetadata ingestMetadata, Errors errors) {
+        Assert.notNull(errors, "Errors should not be null");
+        if (((sip != null) & (sip.getProperties() != null)) && (sip.getProperties().getContentInformations() != null)
+                && (ingestMetadata != null)) {
+            Set<DataType> handleTypes = Sets.newHashSet();
+            ingestMetadata.getStorages().stream().map(StorageMetadata::getTargetTypes).forEach(t -> {
+                if (t.isEmpty()) {
+                    handleTypes.addAll(Sets.newHashSet(DataType.values()));
+                } else {
+                    handleTypes.addAll(t);
+                }
+            });
+            for (ContentInformation ci : sip.getProperties().getContentInformations()) {
+                OAISDataObject dobj = ci.getDataObject();
+                // If file needed to be stored check that the data type is well configured
+                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null)
+                        && !handleTypes.contains(dobj.getRegardsDataType())) {
+                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE", String
+                            .format("Data type %s to store is not associated to a configured storage location",
+                                    dobj.getRegardsDataType().toString()));
+                }
+            }
         }
     }
 }
