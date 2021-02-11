@@ -102,6 +102,16 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchCollectionsWithRegexp() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        addCommontMatchers(customizer);
+        addSearchTermQuery(customizer, STAR, "/S[^i]{2}/");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void fullTextSearchCollections() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
