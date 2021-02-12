@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.plugins.identityprovider.ldap.LdapAuthenticationPlugin;
 
 /**
  * Class LdapAuthenticationPluginTest

@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.plugins.identityprovider.regards.RegardsInternalAuthenticationPlugin;
 
 /**
  * Class Oauth2AutoConfiguration

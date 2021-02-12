@@ -16,42 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.authentication.rest;
+package fr.cnes.regards.modules.authentication.service;
 
 import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-
-/**
- * @author Marc Sordi
- */
 @Configuration
 public class FeignMockConfiguration {
-
-    @Bean
-    public IProjectsClient projectsClient() {
-        return Mockito.mock(IProjectsClient.class);
-    }
-
-    @Bean
-    public IProjectUsersClient projectUsersClient() {
-        return Mockito.mock(IProjectUsersClient.class);
-    }
-
-    @Bean
-    public IAccountsClient accountsClient() {
-        return Mockito.mock(IAccountsClient.class);
-    }
 
     @Bean
     public IAccessSettingsClient accessSettingsClient() {
@@ -59,13 +41,8 @@ public class FeignMockConfiguration {
     }
 
     @Bean
-    public IRegistrationClient registrationClient() {
-        return Mockito.mock(IRegistrationClient.class);
-    }
-
-    @Bean
-    public IUserClient userClient() {
-        return Mockito.mock(IUserClient.class);
+    public IAccountsClient accountsClient() {
+        return Mockito.mock(IAccountsClient.class);
     }
 
     @Bean
@@ -81,5 +58,30 @@ public class FeignMockConfiguration {
     @Bean
     public IModelClient modelClient() {
         return Mockito.mock(IModelClient.class);
+    }
+
+    @Bean
+    public IProjectsClient projectsClient() {
+        return Mockito.mock(IProjectsClient.class);
+    }
+
+    @Bean
+    public IProjectUsersClient projectUsersClient() {
+        return Mockito.mock(IProjectUsersClient.class);
+    }
+
+    @Bean
+    public IRegistrationClient registrationClient() {
+        return Mockito.mock(IRegistrationClient.class);
+    }
+
+    @Bean
+    public IRolesClient rolesClient() {
+        return Mockito.mock(IRolesClient.class);
+    }
+
+    @Bean
+    public IUserClient userClient() {
+        return Mockito.mock(IUserClient.class);
     }
 }

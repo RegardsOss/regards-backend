@@ -42,7 +42,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
-import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.plugins.identityprovider.regards.RegardsInternalAuthenticationPlugin;
 
 /**
  * Class RegardsInternalAuthenticationPluginTest
