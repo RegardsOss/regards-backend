@@ -66,6 +66,10 @@
 			<artifactId>model-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.toponyms</groupId>
+			<artifactId>toponyms-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards-starter</artifactId>
 		</dependency>
