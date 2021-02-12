@@ -90,6 +90,41 @@ public class JWTServiceTest {
         }
     }
 
+    /**
+     * Test JWT generation and retrieve all claims
+     * @throws IOException
+     */
+    @Test
+    public void getClaims() throws IOException {
+        Map<String, Object> addParams = new HashMap<String, Object>() {
+
+            {
+                put("toto", "titi");
+            }
+        };
+
+        // Generate token
+        final String jwt = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE, addParams);
+        LOGGER.debug(jwt);
+
+        // Parse token and retrieve user information
+        try {
+            final JWTAuthentication jwtAuth = jwtService.parseToken(new JWTAuthentication(jwt));
+
+            Assert.assertEquals(TENANT, jwtAuth.getTenant());
+
+            final UserDetails user = jwtAuth.getPrincipal();
+            Assert.assertEquals(LOGIN, user.getLogin());
+            Assert.assertEquals(EMAIL, user.getEmail());
+            Assert.assertEquals(ROLE, user.getRole());
+            Assert.assertEquals("titi", jwtAuth.getAdditionalParams().get("toto"));
+        } catch (JwtException e) {
+            final String message = "Error while generating JWT without group";
+            LOGGER.debug(message, e);
+            Assert.fail(message);
+        }
+    }
+
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
         @SuppressWarnings("serial")

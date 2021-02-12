@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.security.utils.jwt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,6 +54,11 @@ public class JWTAuthentication implements Authentication {
      * Whether the user is authenticated
      */
     private Boolean isAuthenticated;
+
+    /**
+     * Additional parameters (user specific)
+     */
+    private Map<String, Object> additionalParams;
 
     /**
      * Constructor
@@ -146,6 +152,14 @@ public class JWTAuthentication implements Authentication {
      */
     public void setUser(UserDetails pUser) {
         user = pUser;
+    }
+
+    public Map<String, Object> getAdditionalParams() {
+        return additionalParams;
+    }
+
+    public void setAdditionalParams(Map<String, Object> additionalParams) {
+        this.additionalParams = additionalParams;
     }
 
     @Override
