@@ -239,6 +239,8 @@ public class AttributeModelController implements IResourceController<AttributeMo
         for (PropertyType type : PropertyType.values()) {
             types.add(type.name());
         }
+        //remove this PropertyType#OBJECT that is not for AttributeModel
+        types.remove(PropertyType.OBJECT.name());
         return ResponseEntity.ok(types);
     }
 

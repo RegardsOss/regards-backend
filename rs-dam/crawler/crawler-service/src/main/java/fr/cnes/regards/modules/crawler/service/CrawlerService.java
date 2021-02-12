@@ -137,25 +137,19 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
      * @return the IpId generated from given parameters
      */
     private static OaisUniformResourceName buildIpId(String tenant, String providerId, Long datasourceId) {
-        return new OaisUniformResourceName(OAISIdentifier.AIP,
-                                           EntityType.DATA,
-                                           tenant,
-                                           UUID.nameUUIDFromBytes((datasourceId + "$$" + providerId).getBytes()),
-                                           1,
-                                           null,
-                                           null);
+        return new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATA, tenant,
+                UUID.nameUUIDFromBytes((datasourceId + "$$" + providerId).getBytes()), 1, null, null);
     }
 
     @Override
-    @Async
+    @Async(CrawlerTaskExecutorConfiguration.CRAWLER_EXECUTOR_BEAN)
     public void crawl() {
         super.crawl(self::doPoll);
     }
 
     @Override
-    public Optional<IngestionResult> ingest(String datasourceIngestionId)
-            throws ModuleException, InterruptedException, ExecutionException, DataSourceException, NotFinishedException,
-            InactiveDatasourceException {
+    public Optional<IngestionResult> ingest(String datasourceIngestionId) throws ModuleException, InterruptedException,
+            ExecutionException, DataSourceException, NotFinishedException, InactiveDatasourceException {
         String tenant = runtimeTenantResolver.getTenant();
         Optional<DatasourceIngestion> odsi = dsIngestionRepos.findById(datasourceIngestionId);
         if (odsi.isPresent()) {
@@ -187,28 +181,18 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             // If index already exist, check if index already contains data objects (if not, no need to merge)
             if (mergeNeeded) {
                 SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),
-                                                                              DataObject.class);
+                        DataObject.class);
                 mergeNeeded = esRepos.count(searchKey, ICriterion.all()) != 0;
             }
             if (mergeNeeded) {
                 // index exists, data objects may also exist
                 sendMessage("Start reading datasource and merging/creating objects...", dsiId);
-                saveResult = readDatasourceAndMergeDataObjects(lastUpdateDate,
-                                                               tenant,
-                                                               dsPlugin,
-                                                               now,
-                                                               datasourceId,
-                                                               dsiId,
-                                                               pageNumber);
+                saveResult = readDatasourceAndMergeDataObjects(lastUpdateDate, tenant, dsPlugin, now, datasourceId,
+                                                               dsiId, pageNumber);
             } else {
                 sendMessage("Start reading datasource and creating objects...", dsiId);
-                saveResult = readDatasourceAndCreateDataObjects(lastUpdateDate,
-                                                                tenant,
-                                                                dsPlugin,
-                                                                now,
-                                                                datasourceId,
-                                                                dsiId,
-                                                                pageNumber);
+                saveResult = readDatasourceAndCreateDataObjects(lastUpdateDate, tenant, dsPlugin, now, datasourceId,
+                                                                dsiId, pageNumber);
             }
             sendMessage(String.format("...End reading datasource %s.", dsi.getLabel()), dsiId);
             // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
@@ -225,7 +209,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                     entityIndexerService.updateDatasets(tenant, datasetsToUpdate, lastUpdateDate, now, true, dsiId);
                 } catch (ModuleException e) {
                     sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
-                                              e.getMessage()), dsiId);
+                                              e.getMessage()),
+                                dsiId);
                 }
                 sendMessage("...End updating datasets.", dsiId);
             }
@@ -250,11 +235,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         Future<BulkSaveResult> task = null;
         try {
             try {
-                page = findAllFromDatasource(lastUpdateDate,
-                                             tenant,
-                                             dsPlugin,
-                                             datasourceId,
-                                             dsiId,
+                page = findAllFromDatasource(lastUpdateDate, tenant, dsPlugin, datasourceId, dsiId,
                                              PageRequest.of(pageNumber, crawlerConf.getMaxBulkSize()));
                 sendMessage(String.format("  ...Found at most %d records from datasource", page.getNumberOfElements()),
                             dsiId);
@@ -264,17 +245,14 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
 
                 while (page.hasNext()) {
                     sendMessage(String.format("  Finding %d records from datasource...",
-                                              page.getPageable().getPageSize()), dsiId);
-                    page = findAllFromDatasource(lastUpdateDate,
-                                                 tenant,
-                                                 dsPlugin,
-                                                 datasourceId,
-                                                 dsiId,
+                                              page.getPageable().getPageSize()),
+                                dsiId);
+                    page = findAllFromDatasource(lastUpdateDate, tenant, dsPlugin, datasourceId, dsiId,
                                                  page.nextPageable());
                     availableRecordsCount += page.getNumberOfElements();
                     sendMessage(String.format("  ...Found %d records from datasource. Total currently found=%d",
-                                              page.getNumberOfElements(),
-                                              availableRecordsCount), dsiId);
+                                              page.getNumberOfElements(), availableRecordsCount),
+                                dsiId);
                     saveResult.append(task.get());
                     final List<DataObject> otherList = page.getContent();
                     task = executor.submit(mergeDataObjectCallable(tenant, now, datasourceId, dsiId, otherList));
@@ -302,8 +280,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             executor.shutdown();
         }
         sendMessage(String.format("  ...Finally indexed %d objects for %d availables records.",
-                                  saveResult.getSavedDocsCount(),
-                                  availableRecordsCount), dsiId);
+                                  saveResult.getSavedDocsCount(), availableRecordsCount),
+                    dsiId);
         return saveResult;
     }
 
@@ -321,11 +299,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         Future<BulkSaveResult> task = null;
         try {
             try {
-                page = findAllFromDatasource(lastUpdateDate,
-                                             tenant,
-                                             dsPlugin,
-                                             datasourceId,
-                                             dsiId,
+                page = findAllFromDatasource(lastUpdateDate, tenant, dsPlugin, datasourceId, dsiId,
                                              PageRequest.of(pageNumber, crawlerConf.getMaxBulkSize()));
                 sendMessage(String.format("  ...Found %d records from datasource", page.getNumberOfElements()), dsiId);
                 availableRecordsCount += page.getNumberOfElements();
@@ -334,17 +308,14 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
 
                 while (page.hasNext()) {
                     sendMessage(String.format("  Finding %d records from datasource...",
-                                              page.getPageable().getPageSize()), dsiId);
-                    page = findAllFromDatasource(lastUpdateDate,
-                                                 tenant,
-                                                 dsPlugin,
-                                                 datasourceId,
-                                                 dsiId,
+                                              page.getPageable().getPageSize()),
+                                dsiId);
+                    page = findAllFromDatasource(lastUpdateDate, tenant, dsPlugin, datasourceId, dsiId,
                                                  page.nextPageable());
                     availableRecordsCount += page.getNumberOfElements();
                     sendMessage(String.format("  ...Found %d records from datasource. Total currently found=%d",
-                                              page.getNumberOfElements(),
-                                              availableRecordsCount), dsiId);
+                                              page.getNumberOfElements(), availableRecordsCount),
+                                dsiId);
                     saveResult.append(task.get());
                     final List<DataObject> otherList = page.getContent();
                     task = executor.submit(createDataObjectsCallable(tenant, now, datasourceId, dsiId, otherList));
@@ -378,8 +349,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         }
 
         sendMessage(String.format("  ...Finally indexed %d distinct objects for %d availables records.",
-                                  saveResult.getSavedDocsCount(),
-                                  availableRecordsCount), dsiId);
+                                  saveResult.getSavedDocsCount(), availableRecordsCount),
+                    dsiId);
         return saveResult;
     }
 
@@ -391,11 +362,10 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         return () -> {
             runtimeTenantResolver.forceTenant(tenant);
             sendMessage(String.format("  Indexing %d objects...", list.size()), datasourceIngestionId);
-            BulkSaveResult bulkSaveResult = entityIndexerService
-                    .createDataObjects(tenant, datasourceId, now, list, datasourceIngestionId);
+            BulkSaveResult bulkSaveResult = entityIndexerService.createDataObjects(tenant, datasourceId, now, list,
+                                                                                   datasourceIngestionId);
             if (bulkSaveResult.getInErrorDocsCount() > 0) {
-                sendMessage(String.format("  ...%d objects cannot be saved:\n%s",
-                                          bulkSaveResult.getInErrorDocsCount(),
+                sendMessage(String.format("  ...%d objects cannot be saved:\n%s", bulkSaveResult.getInErrorDocsCount(),
                                           bulkSaveResult.getDetailedErrorMsg().replace("\n", "\n    ")),
                             datasourceIngestionId);
             }
@@ -413,11 +383,10 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         return () -> {
             runtimeTenantResolver.forceTenant(tenant);
             sendMessage(String.format("  Indexing %d objects...", list.size()), datasourceIngestionId);
-            BulkSaveResult bulkSaveResult = entityIndexerService
-                    .mergeDataObjects(tenant, datasourceId, now, list, datasourceIngestionId);
+            BulkSaveResult bulkSaveResult = entityIndexerService.mergeDataObjects(tenant, datasourceId, now, list,
+                                                                                  datasourceIngestionId);
             if (bulkSaveResult.getInErrorDocsCount() > 0) {
-                sendMessage(String.format("  ...%d objects cannot be saved:\n%s",
-                                          bulkSaveResult.getInErrorDocsCount(),
+                sendMessage(String.format("  ...%d objects cannot be saved:\n%s", bulkSaveResult.getInErrorDocsCount(),
                                           bulkSaveResult.getDetailedErrorMsg().replace("\n", "\n    ")),
                             datasourceIngestionId);
             }
@@ -444,18 +413,15 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             long start = System.currentTimeMillis();
             page = dsPlugin.findAll(tenant, pageable, date);
             LOGGER.info("Searching entities (page={}, size={}, total={}) from datasource plugin took {}ms",
-                        page.getNumber(),
-                        page.getSize(),
-                        page.getTotalElements(),
-                        System.currentTimeMillis() - start);
+                        page.getNumber(), page.getSize(), page.getTotalElements(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             // Catch Exception in order to catch all exceptions from plugins. Plugins can be out of our scope.
             String message = "Error retriving features from datasource " + dsPlugin.getClass().getName();
             if (e.getMessage() != null) {
                 message = message + ". Cause: " + e.getMessage();
             }
-            notificationClient
-                    .notify(message, "Datasource harvesting failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
+            notificationClient.notify(message, "Datasource harvesting failure", NotificationLevel.ERROR,
+                                      DefaultRole.ADMIN);
             LOGGER.error("Cannot retrieve data from datasource", e);
             throw e;
         }
@@ -465,8 +431,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
 
         for (DataObjectFeature feature : page.getContent()) {
             // Wrap each feature into its decorator
-            DataObject dataObject = DataObject
-                    .wrap(model, feature, IAipDataSourcePlugin.class.isAssignableFrom(dsPlugin.getClass()));
+            DataObject dataObject = DataObject.wrap(model, feature,
+                                                    IAipDataSourcePlugin.class.isAssignableFrom(dsPlugin.getClass()));
             dataObject.setDataSourceId(datasourceId);
             // Generate IpId only if datasource plugin hasn't yet generate it
             if (dataObject.getIpId().isRandomEntityId()) {
@@ -483,9 +449,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         }
 
         // Build decorated page
-        return new PageImpl<>(dataObjects,
-                              PageRequest.of(page.getNumber(), page.getSize() == 0 ? 1 : page.getSize()),
-                              page.getTotalElements());
+        return new PageImpl<>(dataObjects, PageRequest.of(page.getNumber(), page.getSize() == 0 ? 1 : page.getSize()),
+                page.getTotalElements());
     }
 
     @Override
