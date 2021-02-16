@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -54,6 +54,8 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IRestriction;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelCreated;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelDeleted;
+import fr.cnes.regards.modules.model.domain.event.AttributeModelUpdated;
+import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.event.NewFragmentAttributeEvent;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
@@ -121,6 +123,11 @@ public class AttributeModelService implements IAttributeModelService {
     }
 
     @Override
+    public List<AttributeModel> getAllAttributes() {
+        return attModelRepository.findAll();
+    }
+
+    @Override
     public List<AttributeModel> getAttributes(PropertyType type, String fragmentName, Set<String> modelNames) {
         return attModelRepository.findAll(AttributeModelSpecifications.search(type, fragmentName, modelNames));
     }
@@ -170,7 +177,12 @@ public class AttributeModelService implements IAttributeModelService {
             throw new EntityNotFoundException(attributeModel.getId(), AttributeModel.class);
         }
         manageRestriction(attributeModel);
-        return attModelRepository.save(attributeModel);
+        AttributeModel result = attModelRepository.save(attributeModel);
+        publisher.publish(new AttributeModelUpdated(result));
+        // Check if model is associated to this updated attribute. If so send an model changed event
+        modelAttrAssocRepository.findAllByAttributeId(result.getId())
+                .forEach(a -> publisher.publish(ModelChangeEvent.build(a.getModel().getName())));
+        return result;
     }
 
     @Override
@@ -279,6 +291,9 @@ public class AttributeModelService implements IAttributeModelService {
      * @throws ModuleException if conflict detected
      */
     private AttributeModel manageAttributeModel(AttributeModel inAttributeModel) throws ModuleException {
+        if (inAttributeModel.getType() == PropertyType.OBJECT) {
+            throw new EntityOperationForbiddenException("No Attribute of type OBJECT can be created!");
+        }
         if (!inAttributeModel.isIdentifiable()) {
             // Check potential conflict
             AttributeModel attributeModel = attModelRepository

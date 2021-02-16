@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.client.entities;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.hateoas.EntityModel;
@@ -32,7 +33,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -53,6 +56,9 @@ public interface IDatasetClient {
     String DATASET_ID_DISSOCIATE_PATH = DATASET_ID_PATH + "/dissociate";
 
     String DATASET_IPID_PATH_FILE = "/{dataset_ipId}/file";
+
+    String ENTITY_ASSOCS_MAPPING = "{datasetUrn}/assocs";
+
 
     /**
      * Retrieve a page of datasets
@@ -106,4 +112,8 @@ public interface IDatasetClient {
     @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_ASSOCIATE_PATH)
     ResponseEntity<EntityModel<Dataset>> associateDataset(@PathVariable("dataset_id") Long datasetId,
             @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);
+
+    @RequestMapping(path = ENTITY_ASSOCS_MAPPING, method = RequestMethod.GET)
+    public ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
+            @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn);
 }

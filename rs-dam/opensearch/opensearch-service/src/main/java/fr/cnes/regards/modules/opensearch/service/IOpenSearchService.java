@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,6 +34,6 @@ public interface IOpenSearchService extends IParser {
 
     OpenSearchDescription readDescriptor(URL url) throws ModuleException;
 
-    UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws Exception;
+    UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws ModuleException;
 
 }

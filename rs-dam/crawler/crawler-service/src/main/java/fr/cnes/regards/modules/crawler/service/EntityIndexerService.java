@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -174,6 +174,9 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Value("${regards.crawler.max.bulk.size:10000}")
     private Integer maxBulkSize;
 
+    @Autowired
+    private IMappingService esMappingService;
+
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
         for (ObjectError objError : errorsObject.getAllErrors()) {
@@ -220,6 +223,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId.toString()), dsiId);
         } else { // entity has been created or updated, it must be saved into ES
             createIndexIfNeeded(tenant);
+            esMappingService.configureMappings(tenant, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
             if (entity instanceof Dataset) {
@@ -748,6 +752,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         deleteIndex(tenant);
         sessionNotifier.notifyIndexDeletion();
         //2. Then re-create all entities
+        createIndexIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate);
         updateAllCollections(tenant, updateDate);

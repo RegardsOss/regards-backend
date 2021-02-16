@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,6 +23,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Strings;
+
 /**
  * @author sbinda
  *
@@ -39,6 +41,18 @@ public class MarkdownURL {
         super();
         this.label = label;
         this.url = url;
+    }
+
+    public static MarkdownURL build(String stringValue) throws MalformedURLException {
+        if (Strings.isNullOrEmpty(stringValue)) {
+            return null;
+        }
+        Matcher m = pattern.matcher(stringValue);
+        if (m.find()) {
+            return new MarkdownURL(m.group(1), new URL(m.group(2)));
+        } else {
+            return new MarkdownURL(null, new URL(stringValue));
+        }
     }
 
     public String getLabel() {
@@ -66,15 +80,6 @@ public class MarkdownURL {
             return url.toString();
         }
         return String.format("[%s](%s)", label, url.toString());
-    }
-
-    public static MarkdownURL build(String stringValue) throws MalformedURLException {
-        Matcher m = pattern.matcher(stringValue);
-        if (m.find()) {
-            return new MarkdownURL(m.group(1), new URL(m.group(2)));
-        } else {
-            return new MarkdownURL(null, new URL(stringValue));
-        }
     }
 
 }

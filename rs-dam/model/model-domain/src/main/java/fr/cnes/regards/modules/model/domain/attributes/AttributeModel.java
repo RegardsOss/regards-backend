@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,10 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.model.domain.attributes;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,6 +41,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import fr.cnes.regards.framework.gson.utils.GSONConstants;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -87,8 +87,9 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     @NotNull(message = "Name cannot be null")
     @Pattern(regexp = Model.NAME_REGEXP,
             message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE, message = "Attribute name must be between "
-            + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
+            message = "Attribute name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE
+                    + " length.")
     @Column(nullable = false, updatable = false, length = Model.NAME_MAX_SIZE)
     private String name;
 
@@ -253,7 +254,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         restriction = pRestriction;
     }
 
-    public Boolean hasRestriction() {
+    public boolean hasRestriction() {
         return (restriction != null) && !restriction.getType().equals(RestrictionType.NO_RESTRICTION);
     }
 
@@ -424,7 +425,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     }
 
     public List<AttributeProperty> getProperties() {
-        return properties;
+        return properties == null ? Collections.emptyList() : properties;
     }
 
     public void setProperties(List<AttributeProperty> pProperties) {

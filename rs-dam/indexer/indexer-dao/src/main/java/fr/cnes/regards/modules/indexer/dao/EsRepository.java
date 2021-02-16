@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,10 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.indexer.dao;
-
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
-import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +45,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -67,6 +64,7 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -99,13 +97,14 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -113,6 +112,8 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.filter.Filter;
+import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.range.Range.Bucket;
 import org.elasticsearch.search.aggregations.bucket.terms.IncludeExclude;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -150,9 +151,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -163,11 +164,22 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.DATE_FACET_SUFFIX;
+import static fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor.NUMERIC_FACET_SUFFIX;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithCircleVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBboxVisitor;
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
+import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.stringMapping;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.array;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import static fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper.AUTHALIC_SPHERE_RADIUS;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -196,6 +208,17 @@ import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
  */
 @Repository
 public class EsRepository implements IEsRepository {
+
+    public static final String TOTAL_PREFIX = "total_";
+    public static final String REF_FILES_COUNT_SUFFIX = "_ref_files_count";
+    public static final String REF_FILES_SIZE_SUFFIX = "_ref_files_size";
+    public static final String REF_SUFFIX = "_ref";
+    public static final String NOT_REF_FILES_COUNT_SUFFIX = "_!ref_files_count";
+    public static final String NOT_REF_FILES_SIZE_SUFFIX = "_!ref_files_size";
+    public static final String NOT_REF_SUFFIX = "_!ref";
+    public static final String FEATURE_FILES_PREFIX = "feature.files.";
+    public static final String FILESIZE_SUFFIX = ".filesize";
+    public static final String REFERENCE_SUFFIX = ".reference";
 
     /**
      * Utility class to create a quadruple key used by loading cache mechanism (yes, it's a lazy how to)
@@ -312,6 +335,11 @@ public class EsRepository implements IEsRepository {
      */
     private final Gson gson;
 
+    @Autowired
+    private final AttrDescToJsonMapping toMapping;
+
+    private RequestOptions options = RequestOptions.DEFAULT;
+
     /**
      * SearchAll cache used by {@link EsRepository#searchAll} to avoid redo same ES request while changing page.
      * SortedSet is necessary to be sure several consecutive calls return same ordered set
@@ -324,12 +352,6 @@ public class EsRepository implements IEsRepository {
                 public Tuple<SortedSet<Object>, Set<IFacet<?>>> load(CacheKey key) throws Exception {
                     // Using method Objects.hashCode(Object) to compare to be sure that the set will always be returned
                     // with same order
-                    //                    Tuple<SortedSet<Object>, Set<IFacet<?>>> results = new TreeSet<>(Comparator.comparing(Objects::hashCode));
-                    //                    results.addAll(searchJoined(key.getSearchKey(),
-                    //                                                key.getCriterion(),
-                    //                                                key.getSourceAttribute(),
-                    //                                                key.getFacetsMap()));
-                    //                    return results;
                     return searchJoined(key.getSearchKey(),
                                         key.getCriterion(),
                                         key.getSourceAttribute(),
@@ -337,18 +359,17 @@ public class EsRepository implements IEsRepository {
                 }
             });
 
-    private RequestOptions options = RequestOptions.DEFAULT;
-
     /**
      * Constructor
      * @param gson JSon mapper bean
+     * @param toMapping
      */
     public EsRepository(@Autowired Gson gson, @Value("${regards.elasticsearch.host:}") String inEsHost,
             @Value("${regards.elasticsearch.address:}") String inEsAddress,
             @Value("${regards.elasticsearch.http.port}") int esPort,
             @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
-            AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor) {
-
+            AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor, AttrDescToJsonMapping toMapping) {
+        this.toMapping = toMapping;
         this.gson = gson;
         String esHost = Strings.isEmpty(inEsHost) ? inEsAddress : inEsHost;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
@@ -365,8 +386,7 @@ public class EsRepository implements IEsRepository {
 
         if (elasticClientBufferLimit > 0) {
             Builder builder = RequestOptions.DEFAULT.toBuilder();
-            builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(
-                    elasticClientBufferLimit));
+            builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(elasticClientBufferLimit));
             options = builder.build();
         }
         client = new RestHighLevelClient(restClientBuilder);
@@ -457,41 +477,138 @@ public class EsRepository implements IEsRepository {
         try {
             CreateIndexRequest request = Requests.createIndexRequest(index.toLowerCase());
             // mapping (properties)
-            request.mapping(TYPE, XContentFactory.jsonBuilder().startObject() // NOSONAR
-                    // XContentFactory.jsonBuilder() of type XContentBuilder is closed by request.mapping()
-                    // Automatic double mapping (dynamic_templates)
-                    .startArray("dynamic_templates").startObject().startObject("doubles")
-                    .field("match_mapping_type", "double").startObject("mapping").field("type", "double").endObject()
-                    .endObject().endObject().endArray()
-                    // Properties mapping for geometry and type
-                    .startObject("properties")
-                    // _doc is now this unique type => add a "type" property containing previous type
-                    .startObject("type").field("type", "keyword").endObject()
-                    // Geometry mapping (field is wgs84 even if two over fields contain geometry, they
-                    // are not mapped as geo_shape, they only bring informations)
-                    .startObject("wgs84").field("type", "geo_shape") // default
-                    // With geohash
-                    .field("tree", "geohash") // precison = 11 km Astro test 13s to fill constellations
-                    // .field("tree_levels", "5") // precision = 3.5 km Astro test 19 s to fill constellations
-                    // .field("tree_levels", "6") // precision = 3.5 km Astro test 41 s to fill constellations
-                    // .field("tree_levels", "7") // precision = 111 m Astro test 2 mn to fill constellations
-                    // .field("tree_levels", "8") // precision = 111 m Astro test 13 mn to fill constellations
-
-                    // With quadtree
-                    //                                    .field("tree", "quadtree") // precison = 11 km Astro test 10s to fill constellations
-                    // .field("tree_levels", "20") // precison = 16 m Astro test 7 mn to fill constellations
-                    // .field("tree_levels", "21") // precision = 7m Astro test 17mn to fill constellations
-
-                    .endObject()
-                    // add feature.session type which should be keyword and not date. Default sessions are UTF-8 date as a string.
-                    .startObject("feature").startObject("properties").startObject("session").field("type", "keyword")
-                    .endObject().endObject().endObject().endObject().endObject());
+            XContentBuilder source = new JsonConverter().toXContentBuilder(baseJsonMapping());
+            request.mapping(TYPE, source);
             CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
+    }
+
+    private JsonObject baseJsonMapping() {
+        //@formatter:off
+        return object(kv("dynamic_templates",
+                         array(object(kv("doubles",
+                                         object(kv("match_mapping_type", "double"),
+                                                kv("mapping", object("type", "double"))))))),
+                      kv("properties",
+                         //These are AbstractEntity standard attributes mappings
+                         object( // first root attributes from AbstractEntity hierrachy
+                                kv("id", object("type", "long")),
+                                kv("creationDate", object(kv("type", "date"),
+                                                          kv("format", "date_optional_time"))
+                                ),
+                                kv("ipId", stringMapping()),
+                                kv("type", stringMapping()),
+                                kv("wgs84", object("type", "geo_shape")),
+                                kv("tags", stringMapping()),
+                                kv("groups", stringMapping()),
+                                kv("lastUpdate", object(kv("type", "date"),
+                                                        kv("format", "date_optional_time"))
+                                ),
+                                // then feature attributes
+                                 kv("feature",
+                                    object(kv("properties", object(
+                                                                   kv("entityType", stringMapping()),
+                                                                   kv("files", object("type", "object")),
+                                                                   kv("id", stringMapping()),
+                                                                   kv("label", stringMapping()),
+                                                                   kv("last", object("type", "boolean")),
+                                                                   kv("model", stringMapping()),
+                                                                   kv("normalizedGeometry", object("type", "geo_shape")),
+                                                                   kv("properties", object("type", "object")),
+                                                                   kv("providerId", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping()),
+                                                                   kv("crs", stringMapping()),
+                                                                   kv("tags", stringMapping()),
+                                                                   kv("virtualId", stringMapping()),
+                                                                   // DataObjectFeature specific attribute
+                                                                   kv("session", stringMapping()),
+                                                                   kv("sessionOwner", stringMapping()),
+                                                                   // DatasetFeature specific attribute
+                                                                   kv("licence", object("type", "text"))
+                                                            )
+                                              )
+                                           )
+                                    ),
+                                 // then model attributes
+                                 kv("model",
+                                    object(kv("properties", object(
+                                                                   kv("description", object("type", "text")),
+                                                                   kv("id", object("type", "long")),
+                                                                   kv("name", stringMapping()),
+                                                                   kv("type", stringMapping()),
+                                                                   kv("version", stringMapping())
+                                                            )
+                                              )
+                                           )
+                                    ),
+                                 // then DataObject specific attributes
+                                 kv("dataSourceId", object("type", "long")),
+                                 kv("internal", object("type", "boolean")),
+                                 kv("datasetModelNames", stringMapping()),
+                                 // then metadata attributes
+                                 // metadata cannot be mapped that easily because it contains maps
+//                                 kv("metadata",
+//                                    object(kv("properties", object(
+//                                            kv("groups", object("type", "object")),
+//                                            kv("modelNames", object("type", "object")),
+//                                            // specific Dataset metadata attribute
+//                                            kv("dataObjectsGroups", object("type", "object"))
+//                                              )
+//                                           )
+//                                    )
+//                                 ),
+                                 // then Dataset specific attributes
+                                 kv("dataModel", stringMapping()),
+                                 kv("openSearchSubsettingClause", object("type", "text")),
+                                 // subsettingClause cannot be mapped that easily
+//                                 kv("subsettingClause", object("type", "object")),
+                                 kv("plgConfDataSource",
+                                    object(kv("properties", object(
+                                                                   kv("active",object("type", "boolean")),
+                                                                   kv("businessId",stringMapping()),
+                                                                   kv("id",object("type", "long")),
+                                                                   kv("label",stringMapping()),
+                                                                   kv("pluginId",stringMapping()),
+                                                                   kv("priorityOrder",object("type", "long")),
+                                                                   kv("parameters",object("type", "nested")),
+                                                                   kv("version",stringMapping())
+                                                            )
+                                           )
+                                    )
+                                 )
+                         )
+                      )
+                      // mappings cannot be strict because of metadata and subsettingClause.
+        );
+        //@formatter:on
+    }
+
+    @Override
+    public boolean putMappings(String index, Set<AttributeDescription> mappings) {
+        JsonMerger merger = new JsonMerger();
+        JsonObject mappingsGson = mappings.stream().map(attrDesc -> toMapping.toJsonMapping(attrDesc))
+                .reduce(new JsonObject(), merger::merge, this::neverCalled);
+        try {
+            JsonConverter converter = new JsonConverter();
+            XContentBuilder mappingBuilder = converter.toXContentBuilder(mappingsGson);
+            PutMappingRequest request = new PutMappingRequest(index.toLowerCase());
+            request.source(mappingBuilder);
+            request.type(TYPE);
+            AcknowledgedResponse putMappingResponse = client.indices().putMapping(request, RequestOptions.DEFAULT);
+            return putMappingResponse.isAcknowledged();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    private <U> U neverCalled(U one, U two) {
+        throw new RsRuntimeException("Should never be called");
     }
 
     @Override
@@ -1016,7 +1133,7 @@ public class EsRepository implements IEsRepository {
                     initialCircleCriterion
                             .setRadius(FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
 
-                                    * AUTHALIC_SPHERE_RADIUS);
+                                               * AUTHALIC_SPHERE_RADIUS);
                 }
                 return searchWithCircleCriterionInProjectedCrs(searchKey, pageRequest, facetsMap, criterion);
             }
@@ -1967,40 +2084,106 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
-            long totalFileSize = 0;
             for (String fileType : fileTypes) {
-                ValueCount valueCount = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += valueCount.getValue();
-                Sum sum = aggs.get("total_" + fileType + "_files_size");
-                totalFileSize += sum.getValue();
+
+                // ref
+                // ref:count
+                String refCountName = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
+                ValueCount refValueCount = ((Filter) aggs.get(refCountName)).getAggregations().get(refCountName);
+                // ref:size
+                String refSumName = TOTAL_PREFIX + fileType + REF_FILES_SIZE_SUFFIX;
+                Sum refSum = ((Filter) aggs.get(refSumName)).getAggregations().get(refSumName);
+                // ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType + REF_SUFFIX, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(refValueCount.getValue(), (long) refSum.getValue());
+                    }
+                    return new FilesSummary(fs.getFilesCount() + refValueCount.getValue(),
+                                            (long) (fs.getFilesSize() + refSum.getValue()));
+                });
+
+                // !ref
+                // !ref:count
+                String notRefCountName = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
+                ValueCount notRefValueCount = ((Filter) aggs.get(notRefCountName)).getAggregations()
+                        .get(notRefCountName);
+                // !ref:size
+                String notRefSumName = TOTAL_PREFIX + fileType + NOT_REF_FILES_SIZE_SUFFIX;
+                Sum notRefSum = ((Filter) aggs.get(notRefSumName)).getAggregations().get(notRefSumName);
+                // !ref:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType + NOT_REF_SUFFIX, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(notRefValueCount.getValue(), (long) notRefSum.getValue());
+                    }
+                    return new FilesSummary(fs.getFilesCount() + notRefValueCount.getValue(),
+                                            (long) (fs.getFilesSize() + notRefSum.getValue()));
+                });
+
+                // total
+                // total:count
+                long totalFileCount = refValueCount.getValue() + notRefValueCount.getValue();
+                // total:size
+                long totalFileSize = (long) (refSum.getValue() + notRefSum.getValue());
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(totalFileCount, totalFileSize);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + totalFileCount, fs.getFilesSize() + totalFileSize);
+                });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
+                summary.addFilesSize(totalFileSize);
             }
-            summary.addFilesCount(totalFileCount);
-            summary.addFilesSize(totalFileSize);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
-                // Usualy discriminant = tag name
+                // Usually discriminant = tag name
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap().put(discriminant,
+                                                     new DocFilesSubSummary(Arrays.stream(fileTypes)
+                                                                                    .flatMap(ft -> Stream.of(ft,
+                                                                                                             ft
+                                                                                                                     + REF_SUFFIX,
+                                                                                                             ft
+                                                                                                                     + NOT_REF_SUFFIX))
+                                                                                    .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
-                long filesSize = 0;
                 for (String fileType : fileTypes) {
-                    ValueCount valueCount = discAggs.get(fileType + "_files_count");
-                    filesCount += valueCount.getValue();
-                    Sum sum = discAggs.get(fileType + "_files_size");
-                    filesSize += sum.getValue();
+                    ValueCount refValueCount = ((Filter) discAggs.get(fileType + REF_FILES_COUNT_SUFFIX)).getAggregations()
+                            .get(fileType + REF_FILES_COUNT_SUFFIX);
+                    Sum refSum = ((Filter) discAggs.get(fileType + REF_FILES_SIZE_SUFFIX)).getAggregations()
+                            .get(fileType + REF_FILES_SIZE_SUFFIX);
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
+                    refFilesSummary.addFilesCount(refValueCount.getValue());
+                    refFilesSummary.addFilesSize((long) refSum.getValue());
+
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                    Sum notRefSum = ((Filter) discAggs.get(fileType + NOT_REF_FILES_SIZE_SUFFIX)).getAggregations()
+                            .get(fileType + NOT_REF_FILES_SIZE_SUFFIX);
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + NOT_REF_SUFFIX);
+                    notRefFilesSummary.addFilesCount(notRefValueCount.getValue());
+                    notRefFilesSummary.addFilesSize((long) notRefSum.getValue());
+
                     FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
-                    filesSummary.addFilesCount(valueCount.getValue());
-                    filesSummary.addFilesSize((long) sum.getValue());
+                    long filesCount = refValueCount.getValue() + notRefValueCount.getValue();
+                    long filesSize = (long) (refSum.getValue() + notRefSum.getValue());
+                    filesSummary.addFilesCount(filesCount);
+                    filesSummary.addFilesSize(filesSize);
+
+                    discSummary.addFilesCount(filesCount);
+                    discSummary.addFilesSize(filesSize);
                 }
-                discSummary.addFilesCount(filesCount);
-                discSummary.addFilesSize(filesSize);
 
             }
         } catch (IOException e) {
@@ -2009,18 +2192,42 @@ public class EsRepository implements IEsRepository {
     }
 
     private <T extends IIndexable & IDocFiles> void addFilesCountAndSumAggs(SearchKey<T, T> searchKey,
-            String discriminantProperty, Optional<String> discriminentPropertyInclude, SearchSourceBuilder builder,
+            String discriminantProperty, Optional<String> discriminantPropertyInclude, SearchSourceBuilder builder,
             String[] fileTypes) throws IOException {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileSizeField = FEATURE_FILES_PREFIX + fileType + FILESIZE_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
+
             // file count
-            builder.aggregation(AggregationBuilders.count("total_" + fileType + "_files_count")
-                                        .field("feature.files." + fileType
-                                                       + ".filesize")); // Only count files with a size
+            String refCount = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCount = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg = AggregationBuilders.filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders.count(refCount).field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg = AggregationBuilders.filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
+
             // file size sum
-            builder.aggregation(AggregationBuilders.sum("total_" + fileType + "_files_size")
-                                        .field("feature.files." + fileType + ".filesize"));
+            String refSum = TOTAL_PREFIX + fileType + REF_FILES_SIZE_SUFFIX;
+            String notRefSum = TOTAL_PREFIX + fileType + NOT_REF_FILES_SIZE_SUFFIX;
+
+            FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg = AggregationBuilders.filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders.sum(notRefSum).field(fileSizeField));
+
+            // add aggs to builder
+            builder.aggregation(refCountAgg);
+            builder.aggregation(notRefCountAgg);
+            builder.aggregation(refSumAgg);
+            builder.aggregation(notRefSumAgg);
         }
 
         // Discriminant distribution aggregator
@@ -2029,20 +2236,45 @@ public class EsRepository implements IEsRepository {
 
         if (isTextMapping(searchKey.getSearchIndex(), discriminantProperty)) {
             termsAggBuilder.field(discriminantProperty + KEYWORD_SUFFIX);
-            if (discriminentPropertyInclude.isPresent()) {
-                termsAggBuilder.includeExclude(new IncludeExclude(discriminentPropertyInclude.get(), null));
+            if (discriminantPropertyInclude.isPresent()) {
+                termsAggBuilder.includeExclude(new IncludeExclude(discriminantPropertyInclude.get(), null));
             }
         } else {
             termsAggBuilder.field(discriminantProperty);
         }
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files count
-            termsAggBuilder.subAggregation(AggregationBuilders.count(fileType + "_files_count")
-                                                   .field("feature.files." + fileType + ".filesize"));
+            String fileSizeField = FEATURE_FILES_PREFIX + fileType + FILESIZE_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
+
+            // file count
+            String refCount = fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCount = fileType + NOT_REF_FILES_COUNT_SUFFIX;
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCountAgg = AggregationBuilders.filter(refCount, refFilter)
+                    .subAggregation(AggregationBuilders.count(refCount).field(fileSizeField));
+
+            FilterAggregationBuilder notRefCountAgg = AggregationBuilders.filter(notRefCount, notRefFilter)
+                    .subAggregation(AggregationBuilders.count(notRefCount).field(fileSizeField));
+
             // file size sum
-            termsAggBuilder.subAggregation(AggregationBuilders.sum(fileType + "_files_size")
-                                                   .field("feature.files." + fileType + ".filesize"));
+            String refSum = fileType + REF_FILES_SIZE_SUFFIX;
+            String notRefSum = fileType + NOT_REF_FILES_SIZE_SUFFIX;
+
+            FilterAggregationBuilder refSumAgg = AggregationBuilders.filter(refSum, refFilter)
+                    .subAggregation(AggregationBuilders.sum(refSum).field(fileSizeField));
+
+            FilterAggregationBuilder notRefSumAgg = AggregationBuilders.filter(notRefSum, notRefFilter)
+                    .subAggregation(AggregationBuilders.sum(notRefSum).field(fileSizeField));
+
+            // add aggs to builder
+            termsAggBuilder.subAggregation(refCountAgg);
+            termsAggBuilder.subAggregation(notRefCountAgg);
+            termsAggBuilder.subAggregation(refSumAgg);
+            termsAggBuilder.subAggregation(notRefSumAgg);
         }
         builder.aggregation(termsAggBuilder);
     }
@@ -2067,29 +2299,76 @@ public class EsRepository implements IEsRepository {
             // First "global" aggregations results
             summary.addDocumentsCount(response.getHits().getTotalHits());
             Aggregations aggs = response.getAggregations();
-            long totalFileCount = 0;
             for (String fileType : fileTypes) {
-                Cardinality cardinality = aggs.get("total_" + fileType + "_files_count");
-                totalFileCount += cardinality.getValue();
+                // ref
+                Cardinality refCardinality = ((Filter) aggs.get(TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX))
+                        .getAggregations().get(TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX);
+                summary.getFileTypesSummaryMap().compute(fileType + REF_SUFFIX, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(refCardinality.getValue(), 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + refCardinality.getValue(), 0);
+                });
+
+                // !ref
+                Cardinality notRefCardinality = ((Filter) aggs.get(TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                        .getAggregations().get(TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                summary.getFileTypesSummaryMap().compute(fileType + NOT_REF_SUFFIX, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(notRefCardinality.getValue(), 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + notRefCardinality.getValue(), 0);
+                });
+
+                // total
+                long totalFileCount = refCardinality.getValue() + notRefCardinality.getValue();
+                // total:expose details in summary
+                summary.getFileTypesSummaryMap().compute(fileType, (k, fs) -> {
+                    if (fs == null) {
+                        return new FilesSummary(totalFileCount, 0);
+                    }
+                    return new FilesSummary(fs.getFilesCount() + totalFileCount, 0);
+                });
+
+                // 2020-10-22: keep this for backward compatibility
+                // In previous version DocFilesSummary did not have fileTypesSummary
+                // Check commit diff for more context.
+                summary.addFilesCount(totalFileCount);
             }
-            summary.addFilesCount(totalFileCount);
             // Then discriminants buckets aggregations results
             Terms buckets = aggs.get(discriminantProperty);
             for (Terms.Bucket bucket : buckets.getBuckets()) {
                 String discriminant = bucket.getKeyAsString();
                 if (!summary.getSubSummariesMap().containsKey(discriminant)) {
-                    summary.getSubSummariesMap().put(discriminant, new DocFilesSubSummary(fileTypes));
+                    summary.getSubSummariesMap().put(discriminant,
+                                                     new DocFilesSubSummary(Arrays.stream(fileTypes)
+                                                                                    .flatMap(ft -> Stream.of(ft,
+                                                                                                             ft
+                                                                                                                     + REF_SUFFIX,
+                                                                                                             ft
+                                                                                                                     + NOT_REF_SUFFIX))
+                                                                                    .toArray(String[]::new)));
                 }
                 DocFilesSubSummary discSummary = summary.getSubSummariesMap().get(discriminant);
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
-                long filesCount = 0;
                 for (String fileType : fileTypes) {
-                    Cardinality cardinality = discAggs.get(fileType + "_files_count");
-                    filesCount += cardinality.getValue();
-                    discSummary.getFileTypesSummaryMap().get(fileType).addFilesCount(cardinality.getValue());
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType + REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + REF_FILES_COUNT_SUFFIX);
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType + NOT_REF_FILES_COUNT_SUFFIX))
+                            .getAggregations().get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
+
+                    FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
+                    refFilesSummary.addFilesCount(refCardinality.getValue());
+
+                    FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + NOT_REF_SUFFIX);
+                    notRefFilesSummary.addFilesCount(notRefCardinality.getValue());
+
+                    FilesSummary filesSummary = discSummary.getFileTypesSummaryMap().get(fileType);
+                    long cardinality = refCardinality.getValue() + notRefCardinality.getValue();
+                    filesSummary.addFilesCount(cardinality);
+                    discSummary.addFilesCount(cardinality);
                 }
-                discSummary.addFilesCount(filesCount);
             }
         } catch (IOException e) {
             throw new RsRuntimeException(e);
@@ -2109,10 +2388,24 @@ public class EsRepository implements IEsRepository {
         // Add aggregations to manage compute summary
         // First "global" aggregations on each asked file types
         for (String fileType : fileTypes) {
+            String fileUriField = FEATURE_FILES_PREFIX + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
+
             // file cardinality
-            builder.aggregation(AggregationBuilders.cardinality("total_" + fileType + "_files_count")
-                                        .field("feature.files." + fileType + ".uri"
-                                                       + KEYWORD_SUFFIX)); // Only count files with a size
+            String refCardinality = TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCardinality = TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX;
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg = AggregationBuilders.filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders.cardinality(refCardinality).field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg = AggregationBuilders.filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders.cardinality(notRefCardinality).field(fileUriField));
+
+            builder.aggregation(refCardinalityAgg);
+            builder.aggregation(notRefCardinalityAgg);
         }
 
         // Discriminant distribution aggregator
@@ -2129,9 +2422,24 @@ public class EsRepository implements IEsRepository {
 
         // and "total" aggregations on each asked file types
         for (String fileType : fileTypes) {
-            // files cardinality
-            termsAggBuilder.subAggregation(AggregationBuilders.cardinality(fileType + "_files_count")
-                                                   .field("feature.files." + fileType + ".uri" + KEYWORD_SUFFIX));
+            String fileUriField = FEATURE_FILES_PREFIX + fileType + ".uri" + KEYWORD_SUFFIX;
+            String fileReferenceField = FEATURE_FILES_PREFIX + fileType + REFERENCE_SUFFIX;
+
+            // file cardinality
+            String refCardinality = fileType + REF_FILES_COUNT_SUFFIX;
+            String notRefCardinality = fileType + NOT_REF_FILES_COUNT_SUFFIX;
+
+            TermQueryBuilder refFilter = QueryBuilders.termQuery(fileReferenceField, true);
+            TermQueryBuilder notRefFilter = QueryBuilders.termQuery(fileReferenceField, false);
+
+            FilterAggregationBuilder refCardinalityAgg = AggregationBuilders.filter(refCardinality, refFilter)
+                    .subAggregation(AggregationBuilders.cardinality(refCardinality).field(fileUriField));
+
+            FilterAggregationBuilder notRefCardinalityAgg = AggregationBuilders.filter(notRefCardinality, notRefFilter)
+                    .subAggregation(AggregationBuilders.cardinality(notRefCardinality).field(fileUriField));
+
+            termsAggBuilder.subAggregation(refCardinalityAgg);
+            termsAggBuilder.subAggregation(notRefCardinalityAgg);
         }
         builder.aggregation(termsAggBuilder);
     }

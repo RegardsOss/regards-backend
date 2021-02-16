@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,17 @@
  */
 package fr.cnes.regards.modules.model.domain.event;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
@@ -44,23 +52,54 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
     /**
      * {@link PropertyType}
      */
-    private PropertyType PropertyType;
+    private PropertyType propertyType;
+
+    /**
+     * {@link RestrictionType}
+     */
+    private RestrictionType restrictionType;
+
+    /**
+     * Full JSON path
+     */
+    private String fullJsonPath;
+
+    /**
+     * Model attribute properties
+     */
+    private Map<String, String> attributeProperties;
 
     public AbstractAttributeModelEvent() {
+        attributeProperties = new HashMap<>();
     }
 
     public AbstractAttributeModelEvent(AttributeModel pAttributeModel) {
         this.fragmentName = pAttributeModel.getFragment().getName();
         this.attributeName = pAttributeModel.getName();
-        this.PropertyType = pAttributeModel.getType();
+        this.propertyType = pAttributeModel.getType();
+        this.fullJsonPath = pAttributeModel.getFullJsonPath();
+        this.restrictionType = Optional.ofNullable(pAttributeModel.getRestriction()).map(AbstractRestriction::getType)
+                .orElse(RestrictionType.NO_RESTRICTION);
+        this.attributeProperties = pAttributeModel.getProperties() == null ?
+                new HashMap<>() :
+                pAttributeModel.getProperties().stream().collect(Collectors.toMap(AttributeProperty::getKey,
+                                                                                  AttributeProperty::getValue));
     }
 
     public PropertyType getPropertyType() {
-        return PropertyType;
+        return propertyType;
+    }
+
+    public void setPropertyType(PropertyType pPropertyType) {
+        propertyType = pPropertyType;
     }
 
     public String getAttributeName() {
         return attributeName;
+    }
+
+    public void setAttributeName(String pAttributeName) {
+        attributeName = pAttributeName;
     }
 
     public String getFragmentName() {
@@ -71,12 +110,27 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
         fragmentName = pFragmentName;
     }
 
-    public void setAttributeName(String pAttributeName) {
-        attributeName = pAttributeName;
+    public RestrictionType getRestrictionType() {
+        return restrictionType;
     }
 
-    public void setPropertyType(PropertyType pPropertyType) {
-        PropertyType = pPropertyType;
+    public void setRestrictionType(RestrictionType restrictionType) {
+        this.restrictionType = restrictionType;
     }
 
+    public String getFullJsonPath() {
+        return fullJsonPath;
+    }
+
+    public void setFullJsonPath(String fullJsonPath) {
+        this.fullJsonPath = fullJsonPath;
+    }
+
+    public Map<String, String> getAttributeProperties() {
+        return attributeProperties;
+    }
+
+    public void setAttributeProperties(Map<String, String> attributeProperties) {
+        this.attributeProperties = attributeProperties;
+    }
 }

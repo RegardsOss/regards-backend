@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +65,10 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     public void test() throws Exception {
         OpenSearchDescription desc = opensearchService
-                .readDescriptor(new URL("https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xml"));
+                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
         LOG.info(desc.getDescription());
         UrlType url = opensearchService.getSearchRequestURL(desc, MediaType.APPLICATION_JSON);
-        Assert.assertNotNull("JSON Opensearch request should not be null from THEIA descriptor", url);
+        Assert.assertNotNull("JSON Opensearch request should not be null from PEPS descriptor", url);
         Assert.assertFalse("There sould be parameters for the search request", url.getParameter().isEmpty());
         url.getParameter().forEach(p -> {
             LOG.info(String.format("Available parameter %s - %s", p.getName(), p.getTitle()));
@@ -77,7 +78,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     @Test(expected = ModuleException.class)
     public void testInvalidUrl() throws MalformedURLException, ModuleException {
         opensearchService
-                .readDescriptor(new URL("https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xmlx"));
+                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xmlx"));
     }
 
     @Test(expected = ModuleException.class)

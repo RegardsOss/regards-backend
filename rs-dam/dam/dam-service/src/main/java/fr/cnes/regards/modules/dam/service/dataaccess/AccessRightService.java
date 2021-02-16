@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -162,7 +162,17 @@ public class AccessRightService implements IAccessRightService {
                         case NO_ACCESS:
                         default:
                             break;
+                    }
 
+                    switch (accessRight.getDataAccessLevel()) {
+                        case CUSTOM_ACCESS:
+                        case INHERITED_ACCESS:
+                            break;
+                        case NO_ACCESS:
+                            dataAccess = false;
+                            break;
+                        default:
+                            break;
                     }
 
                     metadata.addDataObjectGroup(accessRight.getAccessGroup().getName(), datasetAccess, dataAccess,

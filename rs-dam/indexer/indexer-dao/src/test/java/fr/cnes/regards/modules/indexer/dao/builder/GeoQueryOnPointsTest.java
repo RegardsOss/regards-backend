@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.spring.SpringContext;
 import fr.cnes.regards.modules.indexer.dao.EsRepository;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.spatial.AbstractOnPointsTest;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
@@ -81,7 +82,8 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
             gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory())
                     .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe()).create();
             repository = new EsRepository(gson, null, "localhost", 9200, 0,
-                    new AggregationBuilderFacetTypeVisitor(100, 5));
+                                          new AggregationBuilderFacetTypeVisitor(100, 5),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
 
             // This test is not intended to be executed on integration serveur but better locally to test
             // functionnalities during development phase

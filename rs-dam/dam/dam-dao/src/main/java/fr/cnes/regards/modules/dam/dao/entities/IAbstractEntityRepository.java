@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -31,6 +32,7 @@ import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -102,8 +104,18 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
     Page<T> findAll(Specification<T> spec, Pageable pageRequest);
 
     @Override
+    default Page<T> findAll(Pageable pageable) {
+        Page<Long> idPage = findIdPage(pageable);
+        List<T> entities = findAllById(idPage.getContent());
+        return new PageImpl<>(entities, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select ae.id from AbstractEntity ae")
+    Page<Long> findIdPage(Pageable pageable);
+
+    @Override
     @EntityGraph(attributePaths = { "tags", "groups", "model" })
-    Page<T> findAll(Pageable pageRequest);
+    List<T> findAllById(@Param("ids") Iterable<Long> ids);
 
     boolean existsByModel(Model model);
 

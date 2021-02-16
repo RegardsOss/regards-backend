@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.indexer.dao;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
@@ -38,6 +41,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
+import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -65,6 +69,20 @@ public interface IEsRepository {
      * @return true if acknowledged by Elasticsearch, false otherwise.
      */
     boolean createIndex(String index);
+
+    /**
+     * @see #putMappings(String, Set)
+     */
+    default boolean putMappings(String index, AttributeDescription... mappings) {
+        return putMappings(index, Sets.newHashSet(mappings));
+    }
+    /**
+     * Add mappings for the given index
+     * @param index
+     * @param mappings
+     * @return
+     */
+    boolean putMappings(String index, Set<AttributeDescription> mappings);
 
     /**
      * Create an alias for an index

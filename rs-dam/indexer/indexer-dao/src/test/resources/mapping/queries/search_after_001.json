@@ -1,0 +1,8 @@
+GET /%index/_search
+{
+  "size": 100,
+  "sort": {
+    "probability": "desc"
+  },
+  "search_after": [ 0.5 ]
+}

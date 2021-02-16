@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -67,6 +67,8 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 public class DatasourceIngestionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatasourceIngestionService.class);
+
+    private static final int MAX_NOTIFICATION_LENGTH = 512;
 
     /**
      * Only used to delete all data objects from a removed datasource
@@ -286,10 +288,16 @@ public class DatasourceIngestionService {
         // Send admin notification for ingestion ends if something as been done
         if ((dsIngestion.getSavedObjectsCount() != 0) || (dsIngestion.getInErrorObjectsCount() != 0)) {
             String title = String.format("%s indexation ends.", dsIngestion.getLabel());
+            String stackTrace = dsIngestion.getStackTrace();
+            if ((dsIngestion.getStackTrace() != null) && (stackTrace.length() > MAX_NOTIFICATION_LENGTH)) {
+                stackTrace = dsIngestion.getStackTrace()
+                        .substring(0, Math.min(dsIngestion.getStackTrace().length(), MAX_NOTIFICATION_LENGTH))
+                        + " ... [truncated]";
+            }
             switch (dsIngestion.getStatus()) {
                 case ERROR:
-                    notifClient.notify(String.format("Indexation error. Cause : %s", dsIngestion.getStackTrace()),
-                                       title, NotificationLevel.ERROR, DefaultRole.PROJECT_ADMIN);
+                    notifClient.notify(String.format("Indexation error. Cause : %s", stackTrace), title,
+                                       NotificationLevel.ERROR, DefaultRole.PROJECT_ADMIN);
                     break;
                 case FINISHED_WITH_WARNINGS:
                     notifClient.notify(

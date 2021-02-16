@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -125,6 +125,9 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     @Autowired
     private CrawlerPropertiesConfiguration crawlerConf;
 
+    @Autowired
+    private IMappingService esMappingService;
+
     /**
      * Build an URN for a {@link EntityType} of type DATA. The URN contains an UUID builds for a specific value, it used
      * {@link UUID#nameUUIDFromBytes(byte[])}.
@@ -139,7 +142,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     }
 
     @Override
-    @Async
+    @Async(CrawlerTaskExecutorConfiguration.CRAWLER_EXECUTOR_BEAN)
     public void crawl() {
         super.crawl(self::doPoll);
     }
@@ -169,6 +172,12 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             Long datasourceId = pluginConf.getId();
             // If index doesn't exist, just create all data objects
             boolean mergeNeeded = entityIndexerService.createIndexIfNeeded(tenant);
+            // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
+            // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
+            // but it should be reset with attribute updates
+            //lets find the model attributes so that we can have mappings for this model and try to put them.
+            String modelName = dsPlugin.getModelName();
+            esMappingService.configureMappings(tenant, modelName);
             // If index already exist, check if index already contains data objects (if not, no need to merge)
             if (mergeNeeded) {
                 SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),

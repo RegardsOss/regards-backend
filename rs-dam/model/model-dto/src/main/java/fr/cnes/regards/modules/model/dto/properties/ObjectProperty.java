@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -35,6 +35,7 @@ public class ObjectProperty extends AbstractProperty<Set<IProperty<?>>> {
     /**
      * Appends attribute in this attribute set
      * @param attribute to append
+     * @deprecated
      */
     @Deprecated
     public void addAttribute(AbstractProperty<?> attribute) {

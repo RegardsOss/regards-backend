@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.model.gson.helper;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -88,7 +89,7 @@ public class AttributeHelper implements IAttributeHelper {
             runtimeTenantResolver.clearTenant();
             FeignSecurityManager.reset();
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

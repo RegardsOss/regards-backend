@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.opensearch.rest;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(OpensearchController.TYPE_MAPPING + "/descriptor",
                           customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
                                   .addParameter("url",
-                                                "https://theia.cnes.fr/atdistrib/resto2/api/collections/describe.xml"),
+                                                "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
                           "error");
     }
 

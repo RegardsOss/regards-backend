@@ -131,6 +131,8 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> {
                     atLeastOnePoll |= pollMethod.get();
                 } catch (Exception e) {
                     LOGGER.error("Cannot manage entity event message", e);
+                } finally {
+                    runtimeTenantResolver.clearTenant();
                 }
                 // Reset inProgress AFTER transaction
                 inProgress = false;
@@ -202,7 +204,11 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> {
     public void startWork() { // NOSONAR : test purpose
         // If crawler is busy, wait for it
         while (working()) {
-            ;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         }
         scheduledWork = true;
         somethingDone = false;

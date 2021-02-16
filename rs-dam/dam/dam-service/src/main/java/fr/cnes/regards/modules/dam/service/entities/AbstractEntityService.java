@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -120,7 +120,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     private static final String CATALOG_DOWNLOAD_PATH = "/downloads/{aip_id}/files/{checksum}";
 
-    public static final String ENABLED_TO_ACCESS_STORAGE_PLUGIN = "Enabled to access storage plugin";
+    public static final String UNABLE_TO_ACCESS_STORAGE_PLUGIN = "Unable to access storage plugin";
 
     /**
      * Map of {@link Project}s by tenant
@@ -391,10 +391,10 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             if (storageService != null) {
                 storageService.store(entity);
             } else {
-                LOGGER.warn(ENABLED_TO_ACCESS_STORAGE_PLUGIN);
+                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
             }
         } catch (NotAvailablePluginConfigurationException e) {
-            LOGGER.warn("nabled to access storage plugin", e);
+            LOGGER.warn("Unable to access storage plugin", e);
         }
 
         // AMQP event publishing
@@ -571,10 +571,10 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             if (storageService != null) {
                 storageService.update(updated, entityInDb);
             } else {
-                LOGGER.warn(ENABLED_TO_ACCESS_STORAGE_PLUGIN);
+                LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN);
             }
         } catch (NotAvailablePluginConfigurationException e) {
-            LOGGER.warn(ENABLED_TO_ACCESS_STORAGE_PLUGIN, e);
+            LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
         }
 
         // AMQP event publishing
@@ -626,7 +626,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         datasets.remove(toDelete);
         // Remove relate files
         for (Map.Entry<DataType, DataFile> entry : toDelete.getFiles().entries()) {
-            if (localStorageService.isFileLocallyStored(toDelete, entry.getValue())) {
+            if ((entry != null) && (entry.getValue() != null)
+                    && localStorageService.isFileLocallyStored(toDelete, entry.getValue())) {
                 localStorageService.removeFile(toDelete, entry.getValue());
             }
         }

@@ -49,7 +49,7 @@ public abstract class AbstractDataObjectBulkSaver {
      */
     private int objectsCount = 0;
 
-    private Integer maxBulkSize = 10000;
+    private final Integer maxBulkSize;
 
     protected AbstractDataObjectBulkSaver(SaveDataObjectsCallable saveDataObjectsCallable, ExecutorService executor,
             HashSet<DataObject> toSaveObjects, long datasetId, Integer maxBulkSize) {

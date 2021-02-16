@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -78,15 +78,20 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
 
         // Loop over model attributes ... to validate each properties
         for (ModelAttrAssoc modelAttrAssoc : modAtts) {
-            errors.addAllErrors(checkModelAttribute(modelAttrAssoc, objectName, mode, feature, pptyMap,
+            errors.addAllErrors(checkModelAttribute(modelAttrAssoc,
+                                                    objectName,
+                                                    mode,
+                                                    feature,
+                                                    pptyMap,
                                                     toCheckProperties));
         }
 
         // If properties isn't empty it means some properties are unexpected by the model
         if (!toCheckProperties.isEmpty()) {
-            toCheckProperties.forEach(propPath -> errors
-                    .reject("error.unexpected.property.message",
-                            String.format("%s isn't expected by the model %s", propPath, model)));
+            toCheckProperties.forEach(propPath -> errors.reject("error.unexpected.property.message",
+                                                                String.format("%s isn't expected by the model %s",
+                                                                              propPath,
+                                                                              model)));
         }
 
         return errors;
@@ -119,32 +124,31 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
             // Null property check
             if (att == null) {
                 checkNullProperty(attModel, errors, mode);
-                return errors;
-            }
+            } else {
 
-            // Null property value check
-            if (att.getValue() == null) {
-                checkNullPropertyValue(attModel, errors, mode);
-                return errors;
-            }
-
-            // Check if value is expected or not according to the validation context
-            checkAuthorizedPropertyValue(attModel, errors, mode);
-
-            if (errors.hasErrors()) {
-                // Ok, attribute has been checked
-                toCheckProperties.remove(attPath);
-                return errors;
-            }
-
-            // Do validation
-            for (Validator validator : getValidators(modelAttrAssoc, attPath, mode, feature)) {
-                if (validator.supports(att.getClass())) {
-                    validator.validate(att, errors);
+                // Null property value check
+                if (att.getValue() == null) {
+                    checkNullPropertyValue(attModel, errors, mode);
                 } else {
-                    String defaultMessage = String.format("Unsupported validator \"%s\" for property \"%s\"",
-                                                          validator.getClass().getName(), attPath);
-                    errors.reject("error.unsupported.validator.message", defaultMessage);
+
+                    // Check if value is expected or not according to the validation context
+                    checkAuthorizedPropertyValue(attModel, errors, mode);
+
+                    if (!errors.hasErrors()) {
+
+                        // Do validation
+                        for (Validator validator : getValidators(modelAttrAssoc, attPath, mode, feature)) {
+                            if (validator.supports(att.getClass())) {
+                                validator.validate(att, errors);
+                            } else {
+                                String defaultMessage = String
+                                        .format("Unsupported validator \"%s\" for property \"%s\"",
+                                                validator.getClass().getName(),
+                                                attPath);
+                                errors.reject("error.unsupported.validator.message", defaultMessage);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -157,8 +161,8 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
         if (!ValidationMode.PATCH.equals(mode)) { // In PATCH mode, all properties can be null
             if (!attModel.isOptional()) {
                 String messageKey = "error.missing.required.property.message";
-                String defaultMessage = String.format("Missing required property \"%s\".",
-                                                      attModel.getJsonPropertyPath());
+                String defaultMessage = String
+                        .format("Missing required property \"%s\".", attModel.getJsonPropertyPath());
                 errors.reject(messageKey, defaultMessage);
                 return;
             }
@@ -167,12 +171,12 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
     }
 
     protected void checkNullPropertyValue(AttributeModel attModel, Errors errors, ValidationMode mode) {
-        if (ValidationMode.PATCH.equals(mode)) {
+        if (ValidationMode.PATCH == mode || ValidationMode.UPDATE == mode) {
             // In PATCH mode, null value is used to unset a property
             if (!attModel.isAlterable()) {
                 String messageKey = "error.unset.non.alterable.property.message";
-                String defaultMessage = String.format("Non alterable property \"%s\" cannot be unset.",
-                                                      attModel.getJsonPropertyPath());
+                String defaultMessage = String
+                        .format("Non alterable property \"%s\" cannot be unset.", attModel.getJsonPropertyPath());
                 errors.reject(messageKey, defaultMessage);
             } else {
                 LOGGER.debug("Property \"{}\" will be unset in {} context.", attModel.getJsonPropertyPath(), mode);

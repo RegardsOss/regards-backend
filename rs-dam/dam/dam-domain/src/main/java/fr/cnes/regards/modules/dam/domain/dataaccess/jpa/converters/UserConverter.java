@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,13 +32,13 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.User;
 public class UserConverter implements AttributeConverter<User, String> {
 
     @Override
-    public String convertToDatabaseColumn(User pAttribute) {
-        return pAttribute.getEmail();
+    public String convertToDatabaseColumn(User attribute) {
+        return attribute.getEmail();
     }
 
     @Override
-    public User convertToEntityAttribute(String pDbData) {
-        return new User(pDbData);
+    public User convertToEntityAttribute(String dbData) {
+        return new User(dbData);
     }
 
 }

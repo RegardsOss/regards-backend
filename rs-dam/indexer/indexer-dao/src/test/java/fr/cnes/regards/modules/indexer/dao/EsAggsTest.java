@@ -8,11 +8,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.elasticsearch.client.transport.NoNodeAvailableException;
-import org.elasticsearch.index.IndexNotFoundException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
@@ -30,6 +28,7 @@ import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -75,21 +74,15 @@ public class EsAggsTest {
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.address"),
-                    Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), 0,
-                    new AggregationBuilderFacetTypeVisitor(10, 1));
+                                          Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), 0,
+                                          new AggregationBuilderFacetTypeVisitor(10, 1),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
         } catch (NoNodeAvailableException e) {
             LOGGER.error("NO NODE AVAILABLE");
             repositoryOK = false;
         }
         // Do not launch tests is Elasticsearch is not available
         Assume.assumeTrue(repositoryOK);
-
-        final Consumer<String> cleanFct = (pIndex) -> {
-            try {
-                repository.deleteIndex(pIndex);
-            } catch (final IndexNotFoundException infe) {
-            }
-        };
     }
 
     private static final String[] TAGS = new String[] { "RIRI", "FIFI", "LOULOU", "MICHOU", "JOJO" };
@@ -147,6 +140,11 @@ public class EsAggsTest {
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("RIRI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("LOULOU"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("FIFI"));
+        // assert aggregates details
+        Assert.assertEquals(12, summary.getFileTypesSummaryMap().get("RAWDATA_ref").getFilesCount());
+        Assert.assertEquals(0, summary.getFileTypesSummaryMap().get("RAWDATA_!ref").getFilesCount());
+        Assert.assertEquals(0, summary.getFileTypesSummaryMap().get("QUICKLOOK_HD_ref").getFilesCount());
+        Assert.assertEquals(12, summary.getFileTypesSummaryMap().get("QUICKLOOK_HD_!ref").getFilesCount());
     }
 
     private static class Feature {
@@ -223,9 +221,11 @@ public class EsAggsTest {
             switch (type) {
                 case RAWDATA:
                     super.setUri(file.toURI());
+                    super.setReference(true);
                     break;
                 case QUICKLOOK_HD:
                     super.setUri(new File(file.getParentFile(), file.getName() + "_QL_HD").toURI());
+                    super.setReference(false);
                     break;
                 case QUICKLOOK_MD:
                     super.setUri(new File(file.getParentFile(), file.getName() + "_QL_MD").toURI());

@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.indexer.dao.EsRepository;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -95,7 +96,8 @@ public class EsQueryTest {
             gson = new GsonBuilder().registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                     .create();
             repository = new EsRepository(gson, null, "172.26.47.52", 9200, 0,
-                    new AggregationBuilderFacetTypeVisitor(100, 5));
+                                          new AggregationBuilderFacetTypeVisitor(100, 5),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
 
             // This test is not intended to be executed on integration serveur but better locally to test
             // functionnalities during development phase

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -52,9 +52,11 @@ import fr.cnes.regards.modules.opensearch.service.parser.GeometryParser;
 import fr.cnes.regards.modules.opensearch.service.parser.IParser;
 import fr.cnes.regards.modules.opensearch.service.parser.ImageOnlyParser;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.UrlType;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Parses generic OpenSearch requests like
@@ -76,20 +78,26 @@ public class OpenSearchService implements IOpenSearchService {
     @Autowired
     private HttpClient httpClient;
 
+    @Autowired
+    private IToponymsClient toponymClient;
+
     public OpenSearchService(IAttributeFinder finder) {
         OpenSearchService.parsersHolder = ThreadLocal
                 .withInitial(() -> Lists.newArrayList(new QueryParser(finder), new GeometryParser(), new CircleParser(),
-                                                      new FieldExistsParser(), new ImageOnlyParser()));
+                                                      new FieldExistsParser(), new ImageOnlyParser(),
+                                                      new ToponymParser(toponymClient)));
     }
 
     @Override
     public ICriterion parse(MultiValueMap<String, String> queryParameters) throws OpenSearchParseException {
         List<ICriterion> criteria = new ArrayList<>();
-        for (IParser parser : parsersHolder.get()) {
-            // Parse parameters ... may return null if parser required parameter(s) not set
-            ICriterion crit = parser.parse(queryParameters);
-            if ((crit != null) && !crit.isEmpty()) {
-                criteria.add(crit);
+        if (queryParameters != null) {
+            for (IParser parser : parsersHolder.get()) {
+                // Parse parameters ... may return null if parser required parameter(s) not set
+                ICriterion crit = parser.parse(queryParameters);
+                if ((crit != null) && !crit.isEmpty()) {
+                    criteria.add(crit);
+                }
             }
         }
         return criteria.isEmpty() ? ICriterion.all() : ICriterion.and(criteria);
@@ -136,9 +144,9 @@ public class OpenSearchService implements IOpenSearchService {
     }
 
     @Override
-    public UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws Exception {
+    public UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws ModuleException {
         return descriptor.getUrl().stream().filter(template -> type.toString().equals(template.getType())).findFirst()
-                .orElseThrow(() -> new Exception("No Template url matching"));
+                .orElseThrow(() -> new ModuleException("No Template url matching"));
     }
 
 }

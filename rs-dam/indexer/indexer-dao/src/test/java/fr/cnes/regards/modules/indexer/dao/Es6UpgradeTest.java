@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,6 +36,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 
 /**
  * Tests for testing Elasticsearch 6 upgrade (=> single-type)
@@ -69,7 +70,8 @@ public class Es6UpgradeTest {
         try {
             gson = new GsonBuilder().create();
             repository = new EsRepository(gson, null, "localhost", 9200, 0,
-                    new AggregationBuilderFacetTypeVisitor(10, 1));
+                                          new AggregationBuilderFacetTypeVisitor(10, 1),
+                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
         } catch (NoNodeAvailableException e) {
             repositoryOK = false;
         }

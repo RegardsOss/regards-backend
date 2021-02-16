@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * @author sbinda
@@ -57,6 +58,12 @@ public class TestConfiguration {
     @Primary
     IAttributeHelper helper() {
         return Mockito.mock(IAttributeHelper.class);
+    }
+
+    @Bean
+    @Primary
+    IToponymsClient toponymClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
 }

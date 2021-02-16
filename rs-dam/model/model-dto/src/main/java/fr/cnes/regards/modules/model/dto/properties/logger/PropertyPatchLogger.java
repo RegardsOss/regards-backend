@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class PropertyPatchLogger {
+
+    private PropertyPatchLogger() {}
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyPatchLogger.class);
 

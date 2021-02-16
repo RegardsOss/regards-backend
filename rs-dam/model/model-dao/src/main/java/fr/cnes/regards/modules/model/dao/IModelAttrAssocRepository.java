@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,9 +24,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -58,8 +61,18 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
      * Find page attribute which are associated to at least one of the models
      * @return a page of attribute which are associated to at least one of the models
      */
+    default Page<ModelAttrAssoc> findAllByModelNameIn(Collection<String> modelNames, Pageable pageable) {
+        Page<Long> idPage = findIdPageByModelNameIn(modelNames, pageable);
+        List<ModelAttrAssoc> modelAttrAssocs = findAllById(idPage.getContent());
+        return new PageImpl<>(modelAttrAssocs, idPage.getPageable(), idPage.getTotalElements());
+    }
+
+    @Query("select maa.id from ModelAttrAssoc maa where maa.model.name in :modelNames")
+    Page<Long> findIdPageByModelNameIn(@Param("modelNames") Collection<String> modelNames, Pageable pageable);
+
+    @Override
     @EntityGraph(attributePaths = { "attribute.properties" })
-    Page<ModelAttrAssoc> findAllByModelNameIn(Collection<String> modelNames, Pageable pageable);
+    List<ModelAttrAssoc> findAllById(Iterable<Long> ids);
 
     /**
      * Find all the model attribute association which model is one of the given, represented by their ids

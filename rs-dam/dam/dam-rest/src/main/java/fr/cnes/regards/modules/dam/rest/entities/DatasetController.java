@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -53,6 +53,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.Validity;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.rest.entities.dto.DatasetDataAttributesRequestBody;
 import fr.cnes.regards.modules.dam.rest.entities.exception.AssociatedAccessRightExistsException;
@@ -146,7 +147,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @ResourceAccess(description = "Retrieve all attributes related to given entity")
     @RequestMapping(path = ENTITY_ASSOCS_MAPPING, method = RequestMethod.GET)
     public ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
-            @RequestParam(name = "datasetUrn") OaisUniformResourceName datasetUrn) throws ModuleException {
+            @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn) throws ModuleException {
         Dataset dataset = service.load(datasetUrn);
         Collection<ModelAttrAssoc> assocs = modelAttrAssocService.getModelAttrAssocs(dataset.getDataModel());
         return ResponseEntity.ok(assocs);
@@ -237,7 +238,7 @@ public class DatasetController implements IResourceController<Dataset> {
             // do things cleanly so let's be pigs and do shit without any problems....
             // And ugliest of the ugliest, this exception is thrown at transaction commit that's why it is done here and
             // not into service
-            if (e.getMessage().contains("fk_access_right_access_dataset_id")) {
+            if ((e.getMessage() != null) && e.getMessage().contains("fk_access_right_access_dataset_id")) {
                 throw new AssociatedAccessRightExistsException();
             }
             throw e;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -804,7 +804,7 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         Integer id = JsonPath.read(json, JSON_ID);
 
         // Set a new restriction
-        attModel.setId(Long.valueOf(id));
+        attModel = attributeModelRepository.findById(Long.valueOf(id)).get();
         IntegerRangeRestriction irr = new IntegerRangeRestriction();
         irr.setMin(10);
         irr.setMax(100);
@@ -836,7 +836,7 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         Integer id = JsonPath.read(json, JSON_ID);
 
         // Set a new restriction
-        attModel.setId(Long.valueOf(id));
+        attModel = attributeModelRepository.findById(Long.valueOf(id)).get();
         LongRangeRestriction irr = new LongRangeRestriction();
         irr.setMin(10L);
         irr.setMax(100L);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -36,6 +36,8 @@ public class DocFilesSummary extends AbstractDocSummary {
      */
     private final ConcurrentMap<String, DocFilesSubSummary> subSummariesMap = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<String, FilesSummary> fileTypesSummaryMap = new ConcurrentHashMap<>();
+
     public DocFilesSummary() {
     }
 
@@ -45,6 +47,10 @@ public class DocFilesSummary extends AbstractDocSummary {
 
     public Map<String, DocFilesSubSummary> getSubSummariesMap() {
         return subSummariesMap;
+    }
+
+    public Map<String, FilesSummary> getFileTypesSummaryMap() {
+        return fileTypesSummaryMap;
     }
 
     @Override

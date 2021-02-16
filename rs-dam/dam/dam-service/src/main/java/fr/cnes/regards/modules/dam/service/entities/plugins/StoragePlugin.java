@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,8 +26,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -62,19 +65,28 @@ public class StoragePlugin implements IStorageService {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
     private IAbstractEntityRequestRepository entityRequestRepo;
+
+    @Autowired
+    private INotificationClient notificationClient;
 
     @Override
     public <T extends AbstractEntity<?>> T store(T toPersist) {
-        if (storage != null) {
-            Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
-                    .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
-            if (!files.isEmpty()) {
-                Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
-                        .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
-                        .collect(Collectors.toSet());
-                this.entityRequestRepo.saveAll(infos);
-            }
+        Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
+                .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
+        if ((storage != null) && !storage.isEmpty() && (!files.isEmpty())) {
+            Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
+                    .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
+                    .collect(Collectors.toSet());
+            this.entityRequestRepo.saveAll(infos);
+        } else {
+            String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
+            String title = "Files stored locally";
+            String[] users = new String[] { authResolver.getUser() };
+            notificationClient.notify(message, title, NotificationLevel.INFO, users);
         }
         return toPersist;
     }

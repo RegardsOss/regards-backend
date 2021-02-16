@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -29,6 +29,7 @@ import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QuotedFieldQueryNode;
+import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.WildcardQueryNode;
 
@@ -60,6 +61,7 @@ public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriter
         setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
         setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
         setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
+        setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder(finder));
     }
 
     @Override
