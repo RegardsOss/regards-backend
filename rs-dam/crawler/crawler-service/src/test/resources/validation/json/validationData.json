@@ -18,13 +18,29 @@
         "activated": "true",
         "state": "STARTED"
       },
-      "raw_feature": {
-        "plop": {
-            "plip": {
-                "coucou":"ok"
-            }
+      "raw_feature": { 
+  "street_address" : "ici",
+  "city" : "labas",
+  "state" : "somewhere",
+  "code" : 31,
+  "active" : true,
+  "creation" : "2021-01-25T15:14:14.694Z",
+  "price" : 10.52,
+  "dates" : [ "2021-01-25T15:14:14.694Z" ],
+  "link" : "http://hihi",
+  "appartements" : [
+    {
+      "number" : 1,
+      "rooms": [
+        {
+          "width": 10,
+          "height": 20,
+          "name" : "chambre"
         }
-      },
+      ]
+    }
+  ]
+ },
       "DATASET_VALIDATION_TYPE": "DS1",
       "vurl": "http://truc:201/machin"
     },
