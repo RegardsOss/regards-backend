@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -78,6 +79,11 @@ public class EntityIndexerServiceConfiguration {
     @Bean
     public IUserClient userClient() {
         return Mockito.mock(IUserClient.class);
+    }
+
+    @Bean
+    public IToponymsClient toponymClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
     @Bean

@@ -70,6 +70,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.model.service.event.ComputedAttributeModelEvent;
 import fr.cnes.regards.modules.model.service.event.NewFragmentAttributeEvent;
 import fr.cnes.regards.modules.model.service.exception.FragmentAttributeException;
@@ -228,6 +229,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
         Page<ModelAttrAssoc> assocs = modelAttributeRepository.findAllByModelNameIn(modelNames, pageable);
         List<AttributeModel> atts = assocs.getContent().stream().map(assoc -> assoc.getAttribute())
                 .collect(Collectors.toList());
+        atts = AbstractAttributeHelper.computeAttributes(atts);
         return new PageImpl<>(atts, pageable, assocs.getTotalElements());
     }
 

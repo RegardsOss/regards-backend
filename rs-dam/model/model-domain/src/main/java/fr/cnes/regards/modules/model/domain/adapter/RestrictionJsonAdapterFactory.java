@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
@@ -43,5 +44,6 @@ public class RestrictionJsonAdapterFactory extends PolymorphicTypeAdapterFactory
         registerSubtype(DoubleRangeRestriction.class, RestrictionType.DOUBLE_RANGE);
         registerSubtype(IntegerRangeRestriction.class, RestrictionType.INTEGER_RANGE);
         registerSubtype(LongRangeRestriction.class, RestrictionType.LONG_RANGE);
+        registerSubtype(JsonSchemaRestriction.class, RestrictionType.JSON_SHCEMA);
     }
 }

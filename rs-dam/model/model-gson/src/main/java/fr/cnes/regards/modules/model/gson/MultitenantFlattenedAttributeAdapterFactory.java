@@ -140,7 +140,7 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
         // Define namespace if required
         String namespace = null;
         // Register namespace as an object wrapper
-        if (!att.getFragment().isDefaultFragment()) {
+        if (!att.getFragment().isDefaultFragment() && !att.getFragment().isVirtual()) {
             namespace = att.getFragment().getName();
             registerSubtype(pTenant, ObjectProperty.class, namespace);
         }

@@ -200,6 +200,13 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     @Transient
     private String jsonPath;
 
+    /**
+     * Indicates if this attribute is a real atribute from the model or if it is a generated one from a JsonObject attributes.
+     * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
+     */
+    @Transient
+    private boolean virtual = false;
+
     @Override
     public Long getId() {
         return id;
@@ -224,6 +231,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     public void setType(PropertyType pType) {
         type = pType;
+    }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
     }
 
     public boolean hasFragment() {

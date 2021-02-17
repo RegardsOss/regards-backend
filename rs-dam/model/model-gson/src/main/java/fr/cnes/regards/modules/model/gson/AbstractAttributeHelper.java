@@ -78,11 +78,21 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
 
     private static final String URI_FORMAT = "uri";
 
-    ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public List<AttributeModel> getAllAttributes(String tenant) {
         List<AttributeModel> attributes = doGetAllAttributes(tenant);
+        return computeAttributes(attributes);
+
+    }
+
+    /**
+     * Compute attributes generated from {@link PropertyType#JSON} attributes.
+     * @param attributes : {@link AttributeModel}s to compute
+     * @return {@link AttributeModel}s computed attributes
+     */
+    public static List<AttributeModel> computeAttributes(List<AttributeModel> attributes) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         attributes.stream()
                 .filter(a -> (a.getType() == PropertyType.JSON) && a.hasRestriction()
@@ -91,10 +101,12 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                         .addAll(fromJsonSchema(a.getJsonPropertyPath(),
                                                ((JsonSchemaRestriction) a.getRestriction()).getJsonSchema())));
         attributes.addAll(jsonSchemaAttributes);
+        attributes.forEach(a -> LOGGER.debug("Attribute found : {} - {} / {}", a.getName(), a.getFullJsonPath(),
+                                             Optional.ofNullable(a.getFragment()).map(f -> f.getName()).orElse("-")));
         return attributes;
     }
 
-    private List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
+    private static List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         try {
             JsonNode root = mapper.readTree(schema);
@@ -112,7 +124,8 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         return jsonSchemaAttributes;
     }
 
-    private void createAttributes(String name, String path, JsonNode node, List<AttributeModel> jsonSchemaAttributes) {
+    private static void createAttributes(String name, String path, JsonNode node,
+            List<AttributeModel> jsonSchemaAttributes) {
         String attributeType = node.get(TYPE).textValue();
         switch (attributeType) {
             case OBJECT_TYPE:
@@ -136,7 +149,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         }
     }
 
-    private void createObjectAttributes(String name, String path, JsonNode node,
+    private static void createObjectAttributes(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         Optional.ofNullable(node.get(PROPERTIES)).ifPresent(properties -> {
             Iterator<Entry<String, JsonNode>> it = properties.fields();
@@ -148,14 +161,14 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         });
     }
 
-    private void createArrayAttributes(String name, String path, JsonNode node,
+    private static void createArrayAttributes(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         Optional.ofNullable(node.get(ITEMS)).ifPresent(items -> {
             createAttributes(name, path, items, jsonSchemaAttributes);
         });
     }
 
-    private void createStringAttribute(String name, String path, JsonNode node,
+    private static void createStringAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
         String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
@@ -165,9 +178,11 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setName(name);
         attribute.setJsonPath(Optional.ofNullable(path).map(p -> String.format("%s.%s", p, name)).orElse(name));
         Fragment fragment = new Fragment();
+        fragment.setVirtual(true);
         fragment.setName(path);
         attribute.setFragment(fragment);
         attribute.setDescription(description);
+        attribute.setVirtual(true);
         switch (format) {
             case URI_FORMAT:
                 attribute.setType(PropertyType.URL);
@@ -184,7 +199,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         jsonSchemaAttributes.add(attribute);
     }
 
-    private void createBooleanAttribute(String name, String path, JsonNode node,
+    private static void createBooleanAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
         String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
@@ -194,15 +209,17 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setJsonPath(String.format("%s.%s", path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
+        fragment.setVirtual(true);
         attribute.setFragment(fragment);
         attribute.setDescription(description);
         attribute.setType(PropertyType.BOOLEAN);
         attribute.setUnit(unit);
         attribute.setLabel(label);
+        attribute.setVirtual(true);
         jsonSchemaAttributes.add(attribute);
     }
 
-    private void createIntegerAttribute(String name, String path, JsonNode node,
+    private static void createIntegerAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
         String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
@@ -212,15 +229,17 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setJsonPath(String.format("%s.%s", path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
+        fragment.setVirtual(true);
         attribute.setFragment(fragment);
         attribute.setDescription(description);
         attribute.setType(PropertyType.INTEGER);
         attribute.setUnit(unit);
         attribute.setLabel(label);
+        attribute.setVirtual(true);
         jsonSchemaAttributes.add(attribute);
     }
 
-    private void createDoubleAttribute(String name, String path, JsonNode node,
+    private static void createDoubleAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
         String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
@@ -230,11 +249,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setJsonPath(String.format("%s.%s", path, name));
         Fragment fragment = new Fragment();
         fragment.setName(path);
+        fragment.setVirtual(true);
         attribute.setFragment(fragment);
         attribute.setDescription(description);
         attribute.setType(PropertyType.DOUBLE);
         attribute.setUnit(unit);
         attribute.setLabel(label);
+        attribute.setVirtual(true);
         jsonSchemaAttributes.add(attribute);
     }
 
