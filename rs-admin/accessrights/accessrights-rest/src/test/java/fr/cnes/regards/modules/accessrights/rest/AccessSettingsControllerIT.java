@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +17,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
+import java.util.Collections;
+
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -26,6 +30,9 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IAccessSettingsRepository accessSettingsRepository;
+
+    @Autowired
+    private IRoleRepository rolesRepository;
 
     @Before
     @After
@@ -68,6 +75,8 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
         // First save settings
         final AccessSettings settings = accessSettingsRepository.findAll().get(0);
         settings.setMode("manual");
+        settings.setDefaultRole(rolesRepository.findOneByName(DefaultRole.ADMIN.toString()).get());
+        settings.setDefaultGroups(Collections.singletonList("plop"));
 
         performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT,
             settings,

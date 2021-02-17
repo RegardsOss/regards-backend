@@ -46,8 +46,6 @@ public interface IAccessSettingsClient {
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @Cacheable(cacheNames = AccessSettingsKeyGenerator.CACHE_NAME,
-        keyGenerator = AccessSettingsKeyGenerator.KEY_GENERATOR, sync = true)
     ResponseEntity<EntityModel<AccessSettings>> retrieveAccessSettings();
 
     /**
