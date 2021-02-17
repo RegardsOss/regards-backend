@@ -54,13 +54,6 @@ public class AccessRightsClientCacheAutoConfiguration {
         return new RolesHierarchyKeyGenerator(oauthResolver, resolver);
     }
 
-    @Bean(AccessSettingsKeyGenerator.KEY_GENERATOR)
-    @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAccessSettingsKeyGenerator accessSettingsKeyGenerator(IAuthenticationResolver oauthResolver,
-                                                           IRuntimeTenantResolver resolver) {
-        return new AccessSettingsKeyGenerator(oauthResolver, resolver);
-    }
-
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     RoleEventHandler roleEventHandler(ISubscriber subscriber, IRolesHierarchyKeyGenerator rolesKeyGen) {
