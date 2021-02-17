@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,8 +38,6 @@ import fr.cnes.regards.modules.model.service.validation.validator.AbstractProper
  *
  */
 public class JsonSchemaValidator extends AbstractPropertyValidator {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
 
     private final ObjectMapper mapper = new ObjectMapper();
 
