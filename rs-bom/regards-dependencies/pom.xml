@@ -227,6 +227,7 @@
 		<schedlock.version>4.8.0</schedlock.version>
 		<net.sf.expectit.expectit-core.version>0.9.0</net.sf.expectit.expectit-core.version>
 		<com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>
+		<com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
 	</properties>
 	<distributionManagement>
 		<snapshotRepository>
@@ -1701,6 +1702,11 @@
 				<artifactId>gt-metadata</artifactId>
 				<version>${org.geotools.version}</version>
 			</dependency>
+			<dependency>
+    			<groupId>com.networknt</groupId>
+    			<artifactId>json-schema-validator</artifactId>
+    			<version>${com.networknt.json.schema.validation}</version>
+		</dependency>
             <!-- FTP Mock server (for tests) -->
 			<dependency>
 				<groupId>org.mockftpserver</groupId>
