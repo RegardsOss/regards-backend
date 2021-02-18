@@ -94,6 +94,7 @@
 		<regards.test.version>${regards.version}</regards.test.version>
 		<regards.integration.test.version>${regards.version}</regards.integration.test.version>
 		<regards.test.reporting.version>${regards.version}</regards.test.reporting.version>
+		<wiremock.version>2.27.2</wiremock.version>
 
         <!-- UTILS -->
 		<file.utils.version>${regards.version}</file.utils.version>
@@ -1812,6 +1813,13 @@
     			<groupId>net.javacrumbs.shedlock</groupId>
     			<artifactId>shedlock-provider-jdbc-template</artifactId>
     			<version>${schedlock.version}</version>
+			</dependency>
+			<!-- Wiremock -->
+			<dependency>
+				<groupId>com.github.tomakehurst</groupId>
+				<artifactId>wiremock-jre8</artifactId>
+				<version>${wiremock.version}</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
