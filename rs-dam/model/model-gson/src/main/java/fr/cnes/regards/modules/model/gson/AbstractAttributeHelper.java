@@ -38,45 +38,15 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionTy
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
+ * Abstract class to wrap retrieve of attributes to generate virtual attributes.
+ * Virtual attributes are attributes computed from {@link PropertyType#JSON} attributes.
  *
  * @author Sébastien Binda
  *
  */
 public abstract class AbstractAttributeHelper implements IAttributeHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAttributeHelper.class);
-
-    private static final String TITLE = "title";
-
-    private static final String TYPE = "type";
-
-    private static final String DESCRIPTION = "description";
-
-    private static final String UNIT = "unit";
-
-    private static final String FORMAT = "format";
-
-    private static final String PROPERTIES = "properties";
-
-    private static final String ITEMS = "items";
-
-    private static final String OBJECT_TYPE = "object";
-
-    private static final String STRING_TYPE = "string";
-
-    private static final String INTEGER_TYPE = "integer";
-
-    private static final String NUMBER_TYPE = "number";
-
-    private static final String BOOLEAN_TYPE = "boolean";
-
-    private static final String ARRAY_TYPE = "array";
-
-    private static final String DEFAULT_FORMAT = "default";
-
-    private static final String DATETIME_FORMAT = "date-time";
-
-    private static final String URI_FORMAT = "uri";
+    public static final Logger LOGGER = LoggerFactory.getLogger(AbstractAttributeHelper.class);
 
     private static ObjectMapper mapper = new ObjectMapper();
 
@@ -84,19 +54,25 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
     public List<AttributeModel> getAllAttributes(String tenant) {
         List<AttributeModel> attributes = doGetAllAttributes(tenant);
         return computeAttributes(attributes);
-
     }
+
+    /**
+     * Retrieve all {@link AttributeModel}s for the given tenant from database
+     * @param tenant
+     * @return {@link AttributeModel}s
+     */
+    protected abstract List<AttributeModel> doGetAllAttributes(String tenant);
 
     /**
      * Compute attributes generated from {@link PropertyType#JSON} attributes.
      * @param attributes : {@link AttributeModel}s to compute
      * @return {@link AttributeModel}s computed attributes
      */
-    public static List<AttributeModel> computeAttributes(List<AttributeModel> attributes) {
+    private static List<AttributeModel> computeAttributes(List<AttributeModel> attributes) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         attributes.stream()
                 .filter(a -> (a.getType() == PropertyType.JSON) && a.hasRestriction()
-                        && (a.getRestriction().getType() == RestrictionType.JSON_SHCEMA))
+                        && (a.getRestriction().getType() == RestrictionType.JSON_SCHEMA))
                 .forEach(a -> jsonSchemaAttributes
                         .addAll(fromJsonSchema(a.getJsonPropertyPath(),
                                                ((JsonSchemaRestriction) a.getRestriction()).getJsonSchema())));
@@ -106,6 +82,12 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         return attributes;
     }
 
+    /**
+     * Compute {@link AttributeModel}s fro the given json schema
+     * @param attributePath root path of the {@link PropertyType#JSON} {@link AttributeModel}
+     * @param schema json schema to read
+     * @return computed {@link AttributeModel}s
+     */
     private static List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         try {
@@ -124,34 +106,48 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         return jsonSchemaAttributes;
     }
 
+    /**
+     * Creates {@link AttributeModel}s from the {@link JsonNode} of the Json schema
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createAttributes(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        String attributeType = node.get(TYPE).textValue();
+        String attributeType = node.get(JsonSchemaConstants.TYPE).textValue();
         switch (attributeType) {
-            case OBJECT_TYPE:
+            case JsonSchemaConstants.OBJECT_TYPE:
                 createObjectAttributes(name, path, node, jsonSchemaAttributes);
                 break;
-            case STRING_TYPE:
+            case JsonSchemaConstants.STRING_TYPE:
                 createStringAttribute(name, path, node, jsonSchemaAttributes);
                 break;
-            case INTEGER_TYPE:
+            case JsonSchemaConstants.INTEGER_TYPE:
                 createIntegerAttribute(name, path, node, jsonSchemaAttributes);
                 break;
-            case NUMBER_TYPE:
+            case JsonSchemaConstants.NUMBER_TYPE:
                 createDoubleAttribute(name, path, node, jsonSchemaAttributes);
                 break;
-            case BOOLEAN_TYPE:
+            case JsonSchemaConstants.BOOLEAN_TYPE:
                 createBooleanAttribute(name, path, node, jsonSchemaAttributes);
                 break;
-            case ARRAY_TYPE:
+            case JsonSchemaConstants.ARRAY_TYPE:
                 createArrayAttributes(name, path, node, jsonSchemaAttributes);
                 break;
         }
     }
 
+    /**
+     * Creates attributes from the object type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createObjectAttributes(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        Optional.ofNullable(node.get(PROPERTIES)).ifPresent(properties -> {
+        Optional.ofNullable(node.get(JsonSchemaConstants.PROPERTIES)).ifPresent(properties -> {
             Iterator<Entry<String, JsonNode>> it = properties.fields();
             do {
                 Entry<String, JsonNode> field = it.next();
@@ -161,19 +157,35 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         });
     }
 
+    /**
+     * Creates attributes from the array type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createArrayAttributes(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        Optional.ofNullable(node.get(ITEMS)).ifPresent(items -> {
+        Optional.ofNullable(node.get(JsonSchemaConstants.ITEMS)).ifPresent(items -> {
             createAttributes(name, path, items, jsonSchemaAttributes);
         });
     }
 
+    /**
+     * Creates attributes from the String type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createStringAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
-        String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
-        String label = Optional.ofNullable(node.get(TITLE)).map(JsonNode::asText).orElse(name);
-        String format = Optional.ofNullable(node.get(FORMAT)).map(JsonNode::asText).orElse(DEFAULT_FORMAT);
+        String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION)).map(JsonNode::asText)
+                .orElse(null);
+        String unit = Optional.ofNullable(node.get(JsonSchemaConstants.UNIT)).map(JsonNode::asText).orElse(null);
+        String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
+        String format = Optional.ofNullable(node.get(JsonSchemaConstants.FORMAT)).map(JsonNode::asText)
+                .orElse(JsonSchemaConstants.DEFAULT_FORMAT);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
         attribute.setJsonPath(Optional.ofNullable(path).map(p -> String.format("%s.%s", p, name)).orElse(name));
@@ -184,13 +196,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setDescription(description);
         attribute.setVirtual(true);
         switch (format) {
-            case URI_FORMAT:
+            case JsonSchemaConstants.URI_FORMAT:
                 attribute.setType(PropertyType.URL);
                 break;
-            case DATETIME_FORMAT:
+            case JsonSchemaConstants.DATETIME_FORMAT:
                 attribute.setType(PropertyType.DATE_ISO8601);
                 break;
-            case DEFAULT_FORMAT:
+            case JsonSchemaConstants.DEFAULT_FORMAT:
             default:
                 attribute.setType(PropertyType.STRING);
         }
@@ -199,11 +211,19 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         jsonSchemaAttributes.add(attribute);
     }
 
+    /**
+     * Creates attributes from the Boolean type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createBooleanAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
-        String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
-        String label = Optional.ofNullable(node.get(TITLE)).map(JsonNode::asText).orElse(name);
+        String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION)).map(JsonNode::asText)
+                .orElse(null);
+        String unit = Optional.ofNullable(node.get(JsonSchemaConstants.UNIT)).map(JsonNode::asText).orElse(null);
+        String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
         attribute.setJsonPath(String.format("%s.%s", path, name));
@@ -219,11 +239,19 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         jsonSchemaAttributes.add(attribute);
     }
 
+    /**
+     * Creates attributes from the Integer type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createIntegerAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
-        String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
-        String label = Optional.ofNullable(node.get(TITLE)).map(JsonNode::asText).orElse(name);
+        String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION)).map(JsonNode::asText)
+                .orElse(null);
+        String unit = Optional.ofNullable(node.get(JsonSchemaConstants.UNIT)).map(JsonNode::asText).orElse(null);
+        String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
         attribute.setJsonPath(String.format("%s.%s", path, name));
@@ -239,11 +267,19 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         jsonSchemaAttributes.add(attribute);
     }
 
+    /**
+     * Creates attributes from the Numerical type given {@link JsonNode}
+     * @param name name of the attribute represented by the given {@link JsonNode}
+     * @param path path of the attribute represented by the given {@link JsonNode}
+     * @param node {@link JsonNode} to compute
+     * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
+     */
     private static void createDoubleAttribute(String name, String path, JsonNode node,
             List<AttributeModel> jsonSchemaAttributes) {
-        String description = Optional.ofNullable(node.get(DESCRIPTION)).map(JsonNode::asText).orElse(null);
-        String unit = Optional.ofNullable(node.get(UNIT)).map(JsonNode::asText).orElse(null);
-        String label = Optional.ofNullable(node.get(TITLE)).map(JsonNode::asText).orElse(name);
+        String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION)).map(JsonNode::asText)
+                .orElse(null);
+        String unit = Optional.ofNullable(node.get(JsonSchemaConstants.UNIT)).map(JsonNode::asText).orElse(null);
+        String label = Optional.ofNullable(node.get(JsonSchemaConstants.TITLE)).map(JsonNode::asText).orElse(name);
         AttributeModel attribute = new AttributeModel();
         attribute.setName(name);
         attribute.setJsonPath(String.format("%s.%s", path, name));
@@ -258,7 +294,5 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setVirtual(true);
         jsonSchemaAttributes.add(attribute);
     }
-
-    protected abstract List<AttributeModel> doGetAllAttributes(String tenant);
 
 }

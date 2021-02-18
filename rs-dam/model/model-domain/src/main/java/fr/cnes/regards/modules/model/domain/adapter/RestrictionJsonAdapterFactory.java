@@ -44,6 +44,6 @@ public class RestrictionJsonAdapterFactory extends PolymorphicTypeAdapterFactory
         registerSubtype(DoubleRangeRestriction.class, RestrictionType.DOUBLE_RANGE);
         registerSubtype(IntegerRangeRestriction.class, RestrictionType.INTEGER_RANGE);
         registerSubtype(LongRangeRestriction.class, RestrictionType.LONG_RANGE);
-        registerSubtype(JsonSchemaRestriction.class, RestrictionType.JSON_SHCEMA);
+        registerSubtype(JsonSchemaRestriction.class, RestrictionType.JSON_SCHEMA);
     }
 }

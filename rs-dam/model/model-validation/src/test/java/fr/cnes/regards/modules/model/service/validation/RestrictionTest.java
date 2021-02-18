@@ -52,13 +52,13 @@ public class RestrictionTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestrictionTest.class);
 
     @Test
-    public void test() throws IOException {
+    public void testValid() throws IOException {
 
         JsonSchemaRestriction restriction = new JsonSchemaRestriction();
         InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "schema.json"));
         String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
-        InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "test.json"));
+        InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
         JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
                                                                 JsonObject.class);
         restriction.setJsonSchema(schema);
@@ -69,6 +69,66 @@ public class RestrictionTest {
             LOGGER.error(e.getDefaultMessage());
         });
         Assert.assertFalse("", errors.hasErrors());
+    }
+
+    @Test
+    public void testInvalidDate() throws IOException {
+
+        JsonSchemaRestriction restriction = new JsonSchemaRestriction();
+        InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "schema.json"));
+        String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+
+        InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "invalid.json"));
+        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
+                                                                JsonObject.class);
+        restriction.setJsonSchema(schema);
+        Errors errors = new MapBindingResult(new HashMap<>(), "test");
+        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
+                                                                               errors);
+        errors.getAllErrors().forEach(e -> {
+            LOGGER.error(e.getDefaultMessage());
+        });
+        Assert.assertFalse("", errors.hasErrors());
+    }
+
+    @Test
+    public void testInvalidSchema() throws IOException {
+
+        JsonSchemaRestriction restriction = new JsonSchemaRestriction();
+        InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "invalid-schema.json"));
+        String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+
+        InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
+        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
+                                                                JsonObject.class);
+        restriction.setJsonSchema(schema);
+        Errors errors = new MapBindingResult(new HashMap<>(), "test");
+        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
+                                                                               errors);
+        errors.getAllErrors().forEach(e -> {
+            LOGGER.error(e.getDefaultMessage());
+        });
+        Assert.assertTrue("", errors.hasErrors());
+    }
+
+    @Test
+    public void testInvalidSchema2() throws IOException {
+
+        JsonSchemaRestriction restriction = new JsonSchemaRestriction();
+        InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "invalid-schema-2.json"));
+        String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+
+        InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
+        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
+                                                                JsonObject.class);
+        restriction.setJsonSchema(schema);
+        Errors errors = new MapBindingResult(new HashMap<>(), "test");
+        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
+                                                                               errors);
+        errors.getAllErrors().forEach(e -> {
+            LOGGER.error(e.getDefaultMessage());
+        });
+        Assert.assertTrue("", errors.hasErrors());
     }
 
 }

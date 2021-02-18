@@ -20,11 +20,14 @@ package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 
@@ -39,7 +42,11 @@ import fr.cnes.regards.modules.model.service.validation.validator.AbstractProper
  */
 public class JsonSchemaValidator extends AbstractPropertyValidator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
+
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
 
     /**
      * Configured restriction
@@ -72,14 +79,18 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
                               String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s", ppt.getName(),
                                             e.getPath(), e.getMessage()));
             });
+        } catch (JsonSchemaException e) {
+            LOGGER.error(e.getMessage(), e);
+            errors.reject("error.value.not.conform.to.json.schema",
+                          String.format("Json schema is not valid. Cause : %s", e.getMessage()));
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
             errors.rejectValue("error.value.not.conform.to.json.schema",
                                String.format("Attribute %s  not valid with given json schema", ppt.getName()));
         }
     }
 
-    protected JsonSchema getJsonSchema() {
-        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+    protected JsonSchema getJsonSchema() throws JsonSchemaException {
         return factory.getSchema(this.restriction.getJsonSchema());
     }
 

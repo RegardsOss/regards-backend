@@ -16,28 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.domain.attributes.restriction;
+package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.validation.Constraint;
 
 /**
  *
- * Available restriction type
- *
- * @author msordi
+ * @author Sébastien Binda
  *
  */
-public enum RestrictionType {
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE })
+@Constraint(validatedBy = { CheckJsonSchemaValidator.class })
+@Documented
+public @interface CheckJsonSchema {
 
-    /**
-     * Acceptable restriction type
-     */
-    NO_RESTRICTION,
-    PATTERN,
-    ENUMERATION,
-    DATE_ISO8601,
-    INTEGER_RANGE,
-    LONG_RANGE,
-    DOUBLE_RANGE,
-    URL,
-    GEOMETRY,
-    JSON_SCHEMA;
 }

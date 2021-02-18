@@ -27,18 +27,20 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
  *
+ * Restriction for {@link PropertyType#JSON} to add jsonSchema validation
+ *
  * @author Sébastien Binda
  *
  */
 @Entity
-@DiscriminatorValue("JSON-SCHEMA")
+@DiscriminatorValue("JSON_SCHEMA")
 public class JsonSchemaRestriction extends AbstractRestriction {
 
     @Column(name = "json_schema")
     private String jsonSchema;
 
     public JsonSchemaRestriction() {
-        this.type = RestrictionType.JSON_SHCEMA;
+        this.type = RestrictionType.JSON_SCHEMA;
     }
 
     @Override

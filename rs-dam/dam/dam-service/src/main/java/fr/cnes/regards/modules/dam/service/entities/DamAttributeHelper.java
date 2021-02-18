@@ -67,7 +67,7 @@ public class DamAttributeHelper extends AbstractAttributeHelper {
     }
 
     @Override
-    public List<AttributeModel> doGetAllAttributes(String pTenant) {
+    protected List<AttributeModel> doGetAllAttributes(String pTenant) {
         // Do not alter tenant context if already forced
         String current = runtimeTenantResolver.getTenant();
         boolean forceIt = current == null;
