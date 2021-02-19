@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.indexer.dao;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
@@ -201,6 +199,20 @@ public interface IEsRepository {
      * @return found document or null
      */
     <T extends IIndexable> T get(String index, String docType, String docId, Class<T> clazz);
+
+
+    /**
+     * Retrieve documents collection by any field, and get aggregation on any fields
+     * @param index index
+     * @param docType document type
+     * @param docId What value we are looking for
+     * @param fieldToFilterOn What field we filtering on
+     * @param fieldsToAggregate The key is the aggregator and the associated value is the field
+     * @return aggregated data
+     */
+    Aggregations getDataObjectsAndAggregate(String index, String docType, String docId, String fieldToFilterOn, Map<String, String> fieldsToAggregate);
+
+
 
     <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId, Class<? extends IIndexable> clazz);
 

@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.search.aggregations.Aggregations;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -391,6 +392,26 @@ public class EsRepositoryTest {
 
         Assert.assertEquals(500902683.6326989, repository.sum(searchKey, ICriterion.all(), "price"), 1e7);
         Assert.assertEquals(49871257., repository.sum(searchKey, ICriterion.all(), "height"), 1e6);
+    }
+
+    @Test
+    public void testGetDataObjectAggregated(){
+        repository.createIndex("items");
+        // Creations for first two
+        final Item item1 = new Item("1", "toto",10, 10000d,"group1", "group2", "group3");
+        Assert.assertTrue(repository.save("items", item1));
+        Assert.assertTrue(repository.save("items", new Item("2", "titi",10, 20000d,"group1", "group3")));
+
+        // Get
+//        final Item item1FromIndex = repository.get("items", "item", "1", Item.class);
+
+        HashMap<String, String> fieldsToAggregate = new HashMap<>();
+        fieldsToAggregate.put("min", "price");
+
+        Item item = repository.get("items", "item", "1", Item.class);
+
+        Aggregations dataObjectsAndAggregate = repository.getDataObjectsAndAggregate("items", "item", "toto", "name.keyword", fieldsToAggregate);
+        int i = 0;
     }
 
     @Test
