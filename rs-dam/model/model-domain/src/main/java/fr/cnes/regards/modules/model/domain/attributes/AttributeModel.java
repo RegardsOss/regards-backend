@@ -65,6 +65,7 @@ import fr.cnes.regards.modules.model.domain.schema.Attribute;
 import fr.cnes.regards.modules.model.domain.schema.Property;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.domain.schema.Type;
+import fr.cnes.regards.modules.model.domain.validator.JsonString;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
@@ -147,6 +148,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      */
     @Column
     private boolean optional;
+
+    /**
+     * Optional elasticsearch mapping configuration for this attribute
+     */
+    @JsonString(message = "Elasticsearch mapping must be a valid json format")
+    @Column(name = "es_mapping")
+    @org.hibernate.annotations.Type(type = "text")
+    private String esMapping;
 
     /**
      * Attribute label
@@ -359,6 +368,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         arraysize = pArraysize;
     }
 
+    public String getEsMapping() {
+        return esMapping;
+    }
+
+    public void setEsMapping(String esMapping) {
+        this.esMapping = esMapping;
+    }
+
     @Override
     public Attribute toXml() {
         final Attribute xmlAtt = new Attribute();
@@ -376,6 +393,10 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         }
         if (precision != null) {
             xmlType.setPrecision(BigInteger.valueOf(precision));
+        }
+
+        if (esMapping != null) {
+            xmlAtt.setEsMapping(esMapping);
         }
         xmlType.setUnit(unit);
         xmlType.setValue(fr.cnes.regards.modules.model.domain.schema.RestrictionType.fromValue(type.toString()));
@@ -400,6 +421,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         setDescription(pXmlElement.getDescription());
         setAlterable(pXmlElement.isAlterable());
         setOptional(pXmlElement.isOptional());
+        setEsMapping(pXmlElement.getEsMapping());
         if (pXmlElement.getRestriction() != null) {
             final Restriction xmlRestriction = pXmlElement.getRestriction();
             if (xmlRestriction.getEnumeration() != null) {

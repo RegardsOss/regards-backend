@@ -66,6 +66,9 @@
 
     <!-- Define description -->
     <xs:element name="version" type="xs:string"/>
+    
+    <!-- Define name -->
+    <xs:element name="esMapping" type="xs:string"/>
 
     <!-- Define attribute -->
     <xs:element name="attribute">
@@ -80,6 +83,8 @@
                 <xs:element ref="computation" minOccurs="0"/>
                 <!-- Custom attribute properties -->
                 <xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                <!-- Custom elasticsearch mapping for this attribute -->
+                <xs:element ref="esMapping" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="alterable" type="xs:boolean"
                           default="true"/>
@@ -145,7 +150,7 @@
         </xs:simpleType>
     </xs:element>
     
-    <!-- Pattern restriction -->
+    <!-- JsonSchema restriction -->
     <xs:element name="json_schema">
         <xs:simpleType>
             <xs:restriction base="xs:string">

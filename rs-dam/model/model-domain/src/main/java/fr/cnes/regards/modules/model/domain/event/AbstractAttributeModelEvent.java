@@ -65,6 +65,11 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
     private String fullJsonPath;
 
     /**
+     * Optional Elasticsearch mapping
+     */
+    private String esMappping;
+
+    /**
      * Model attribute properties
      */
     private Map<String, String> attributeProperties;
@@ -78,12 +83,12 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
         this.attributeName = pAttributeModel.getName();
         this.propertyType = pAttributeModel.getType();
         this.fullJsonPath = pAttributeModel.getFullJsonPath();
+        this.esMappping = pAttributeModel.getEsMapping();
         this.restrictionType = Optional.ofNullable(pAttributeModel.getRestriction()).map(AbstractRestriction::getType)
                 .orElse(RestrictionType.NO_RESTRICTION);
-        this.attributeProperties = pAttributeModel.getProperties() == null ?
-                new HashMap<>() :
-                pAttributeModel.getProperties().stream().collect(Collectors.toMap(AttributeProperty::getKey,
-                                                                                  AttributeProperty::getValue));
+        this.attributeProperties = pAttributeModel.getProperties() == null ? new HashMap<>()
+                : pAttributeModel.getProperties().stream()
+                        .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue));
     }
 
     public PropertyType getPropertyType() {
@@ -133,4 +138,13 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
     public void setAttributeProperties(Map<String, String> attributeProperties) {
         this.attributeProperties = attributeProperties;
     }
+
+    public String getEsMappping() {
+        return esMappping;
+    }
+
+    public void setEsMappping(String esMappping) {
+        this.esMappping = esMappping;
+    }
+
 }

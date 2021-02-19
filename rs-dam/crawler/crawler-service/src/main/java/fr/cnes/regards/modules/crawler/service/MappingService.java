@@ -38,6 +38,7 @@ public class MappingService implements IMappingService {
             Set<AttributeDescription> mappings = new HashSet<>();
             for (ModelAttrAssoc modelAttribute : modelAttributes) {
                 AttributeModel attribute = modelAttribute.getAttribute();
+                // If attribute is JSON type, then generate virtual attributes from given jsonSchema to create mapping.
                 if ((attribute.getType() == PropertyType.JSON)
                         && (attribute.getRestrictionType() == RestrictionType.JSON_SCHEMA)) {
                     JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
@@ -45,15 +46,18 @@ public class MappingService implements IMappingService {
                             .forEach(a -> {
                                 mappings.add(new AttributeDescription("feature." + a.getJsonPath(), a.getType(),
                                         a.hasRestriction() ? a.getRestrictionType() : RestrictionType.NO_RESTRICTION,
-                                        a.getProperties().stream().collect(Collectors
-                                                .toMap(AttributeProperty::getKey, AttributeProperty::getValue))));
+                                        a.getProperties().stream()
+                                                .collect(Collectors.toMap(AttributeProperty::getKey,
+                                                                          AttributeProperty::getValue)),
+                                        a.getEsMapping()));
                             });
                 } else {
                     mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(), attribute.getType(),
                             attribute.hasRestriction() ? attribute.getRestrictionType()
                                     : RestrictionType.NO_RESTRICTION,
-                            attribute.getProperties().stream().collect(Collectors.toMap(AttributeProperty::getKey,
-                                                                                        AttributeProperty::getValue))));
+                            attribute.getProperties().stream()
+                                    .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue)),
+                            attribute.getEsMapping()));
                 }
             }
             // now lets put the mappings into ES
