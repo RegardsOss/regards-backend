@@ -410,7 +410,7 @@ public class EsRepositoryTest {
 
         Item item = repository.get("items", "item", "1", Item.class);
 
-        Aggregations dataObjectsAndAggregate = repository.getDataObjectsAndAggregate("items", "item", "toto", "name.keyword", fieldsToAggregate);
+        Aggregations dataObjectsAndAggregate = repository.getDataObjectsAndAggregate("items", "item", "group1", "groups.keyword", fieldsToAggregate);
         int i = 0;
     }
 
