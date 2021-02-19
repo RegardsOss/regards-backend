@@ -88,7 +88,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param schema json schema to read
      * @return computed {@link AttributeModel}s
      */
-    private static List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
+    public static List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         try {
             JsonNode root = mapper.readTree(schema);

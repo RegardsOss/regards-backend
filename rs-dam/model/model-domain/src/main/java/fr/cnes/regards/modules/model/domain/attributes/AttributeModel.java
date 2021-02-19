@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -579,6 +580,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     public String toString() {
         return "AttributeModel{" + "id=" + id + ", name='" + name + '\'' + ", type=" + type + ", fragment=" + fragment
                 + ", jsonPath='" + jsonPath + '\'' + '}';
+    }
+
+    /**
+     * @return
+     */
+    public RestrictionType getRestrictionType() {
+        return Optional.ofNullable(restriction).map(AbstractRestriction::getType)
+                .orElse(RestrictionType.NO_RESTRICTION);
     }
 
 }

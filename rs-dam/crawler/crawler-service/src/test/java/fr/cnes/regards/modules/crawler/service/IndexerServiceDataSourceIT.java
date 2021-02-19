@@ -69,6 +69,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
@@ -403,6 +404,11 @@ public class IndexerServiceDataSourceIT {
                                                             ICriterion.eq("tags", dataset1.getIpId().toString()));
         Assert.assertTrue(objectsPage.getContent().size() > 0);
         Assert.assertEquals(summary1.getSavedObjectsCount(), objectsPage.getContent().size());
+        IProperty<JsonObject> rawFeature = (IProperty<JsonObject>) objectsPage.getContent().get(0).getFeature()
+                .getProperties().stream().filter(p -> p.getName().equals("raw_feature")).findFirst().get();
+        Assert.assertNotNull(rawFeature);
+        Assert.assertEquals("Expted value for property in JsonObject attribute is not found", "ici",
+                            rawFeature.getValue().get("street_address").getAsString());
 
         crawlerService.startWork();
         // Delete dataset1

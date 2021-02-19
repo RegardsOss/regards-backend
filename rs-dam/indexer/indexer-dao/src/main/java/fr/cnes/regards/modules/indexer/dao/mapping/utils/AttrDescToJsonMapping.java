@@ -93,7 +93,6 @@ public class AttrDescToJsonMapping {
                 return toDateIntervalJsonMapping(a);
             case OBJECT:
             case JSON:
-                // FIXME : Handle mapping for json Objects thansk  to json schema
                 return toObjectJsonMapping(a);
             default:
                 throw new NotImplementedException("No mapping definition for property type " + a.getType());
