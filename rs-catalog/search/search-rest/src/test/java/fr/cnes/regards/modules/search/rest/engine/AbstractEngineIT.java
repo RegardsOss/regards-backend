@@ -43,6 +43,8 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -132,6 +134,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected static final String PLANET_SUN_DISTANCE = "sun_distance";
 
+    protected static final String ORIGINE = "origine";
+
     protected static final String START_DATE = "startDate";
 
     protected static final String STOP_DATE = "stopDate";
@@ -196,6 +200,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected PluginConfiguration openSearchPluginConf;
 
     protected Dataset solarSystem;
+
+    GsonBuilder builder = new GsonBuilder();
 
     protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
@@ -276,11 +282,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
-        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
-                .thenAnswer(invocation -> {
-                    // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
-                    return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
-                });
+        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any())).thenAnswer(invocation -> {
+            // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
+            return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
+        });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
             String modelName = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream()
@@ -520,12 +525,19 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildString(PLANET_TYPE, type));
         planet.addProperty(IProperty.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(IProperty.buildLong(PLANET_SUN_DISTANCE, sunDistance));
+        planet.addProperty(IProperty.buildJson(ORIGINE, buildPlanetOrigine()));
         if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
         planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
         return planet;
+    }
+
+    protected JsonObject buildPlanetOrigine() {
+        return builder.create()
+                .fromJson("{\"name\":\"CNES\",\"link\":\"http://cnes.fr\",\"contacts\":[{\"name\":\"JeanPaul\",\"locations\":[{\"institut\":\"CNES-001\",\"code\":1}]},{\"name\":\"Bernadette\",\"locations\":[{\"institut\":\"CNES-156\",\"code\":156}]}]}",
+                          JsonObject.class);
     }
 
     protected Set<String> createParams(String... params) {
