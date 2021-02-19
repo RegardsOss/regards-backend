@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 
 /**
@@ -57,6 +58,9 @@ public final class RestrictionValidatorFactory {
         if (restriction instanceof PatternRestriction) {
             return getValidator((PatternRestriction) restriction, attributeKey);
         }
+        if (restriction instanceof JsonSchemaRestriction) {
+            return getValidator((JsonSchemaRestriction) restriction, attributeKey);
+        }
         String errorMessage = String.format("No validator found for restriction type %s and attribute %s.",
                                             restriction.getType(), attributeKey);
         LOGGER.debug(errorMessage);
@@ -77,5 +81,9 @@ public final class RestrictionValidatorFactory {
 
     public static Validator getValidator(PatternRestriction pRestriction, String pAttributeKey) {
         return new PatternValidator(pRestriction, pAttributeKey);
+    }
+
+    public static Validator getValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
+        return new JsonSchemaValidator(pRestriction, pAttributeKey);
     }
 }

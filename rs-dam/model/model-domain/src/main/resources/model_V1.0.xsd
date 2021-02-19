@@ -122,6 +122,7 @@
             <xs:enumeration value="STRING"/>
             <xs:enumeration value="STRING_ARRAY"/>
             <xs:enumeration value="URL"/>
+            <xs:enumeration value="JSON"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -136,6 +137,16 @@
 
     <!-- Pattern restriction -->
     <xs:element name="pattern">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:whiteSpace value="preserve"/>
+                <xs:minLength value="1"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+    
+    <!-- Pattern restriction -->
+    <xs:element name="json_schema">
         <xs:simpleType>
             <xs:restriction base="xs:string">
                 <xs:whiteSpace value="preserve"/>
@@ -237,6 +248,7 @@
                 <xs:element ref="integer_range"/>
                 <xs:element ref="long_range"/>
                 <xs:element ref="double_range"/>
+                <xs:element ref="json_schema"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>

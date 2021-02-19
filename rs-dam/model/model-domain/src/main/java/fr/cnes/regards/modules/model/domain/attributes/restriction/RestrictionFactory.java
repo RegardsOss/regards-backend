@@ -75,4 +75,10 @@ public final class RestrictionFactory {
         pr.setPattern(pPattern);
         return pr;
     }
+
+    public static JsonSchemaRestriction buildJsonSchemaRestriction(String jsonSchema) {
+        final JsonSchemaRestriction jr = new JsonSchemaRestriction();
+        jr.setJsonSchema(jsonSchema);
+        return jr;
+    }
 }

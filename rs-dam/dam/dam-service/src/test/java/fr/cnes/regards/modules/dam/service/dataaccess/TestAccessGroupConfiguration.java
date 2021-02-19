@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.modules.dam.service.dataaccess.test2" })
@@ -50,6 +51,11 @@ public class TestAccessGroupConfiguration {
     @Bean
     public IProjectUsersClient mockProjectUsersClient() {
         return Mockito.mock(IProjectUsersClient.class);
+    }
+
+    @Bean
+    public IToponymsClient toponymsClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
 }
