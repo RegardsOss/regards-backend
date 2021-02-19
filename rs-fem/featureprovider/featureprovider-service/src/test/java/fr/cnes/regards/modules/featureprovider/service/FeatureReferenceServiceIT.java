@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.featureprovider.service;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -63,16 +66,16 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
+import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
 import fr.cnes.regards.modules.featureprovider.service.conf.FeatureProviderConfigurationProperties;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import static org.junit.Assert.fail;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * @author kevin
@@ -108,6 +111,11 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         @Bean
         public IModelClient modelClient() {
             return Mockito.mock(IModelClient.class);
+        }
+
+        @Bean
+        public IToponymsClient toponymsClient() {
+            return Mockito.mock(IToponymsClient.class);
         }
 
     }
@@ -167,22 +175,15 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
-            FeatureExtractionRequestEvent referenceEvent = FeatureExtractionRequestEvent.build("bibi",
-                                                                                               FeatureCreationSessionMetadata
-                                                                                                     .build("bibi",
-                                                                                                            "session",
-                                                                                                            PriorityLevel.NORMAL,
-                                                                                                            false,
-                                                                                                            new StorageMetadata[0]),
-                                                                                               parameters,
-                                                                                               "testFeatureGeneration");
+            FeatureExtractionRequestEvent referenceEvent = FeatureExtractionRequestEvent
+                    .build("bibi",
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
+                                                                new StorageMetadata[0]),
+                           parameters, "testFeatureGeneration");
             eventsToPublish.add(referenceEvent);
-            creationGrantedToPublish.add(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                                   referenceEvent.getRequestId(),
-                                                                   referenceEvent.getRequestOwner(),
-                                                                   null,
-                                                                   null,
-                                                                   RequestState.GRANTED));
+            creationGrantedToPublish
+                    .add(FeatureRequestEvent.build(FeatureRequestType.CREATION, referenceEvent.getRequestId(),
+                                                   referenceEvent.getRequestOwner(), null, null, RequestState.GRANTED));
         }
         this.publisher.publish(eventsToPublish);
         // lets wait until all requests are registered
@@ -211,14 +212,11 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         for (int i = 0; i < this.properties.getMaxBulkSize(); i++) {
             JsonObject parameters = new JsonObject();
             parameters.add("location", new JsonPrimitive("test" + i));
-            eventsToPublish.add(FeatureExtractionRequestEvent.build("bibi",
-                                                                    FeatureCreationSessionMetadata.build("bibi",
-                                                                                                        "session",
-                                                                                                        PriorityLevel.NORMAL,
-                                                                                                        false,
-                                                                                                        new StorageMetadata[0]),
-                                                                    parameters,
-                                                                    "testFeatureGeneration"));
+            eventsToPublish.add(FeatureExtractionRequestEvent
+                    .build("bibi",
+                           FeatureCreationSessionMetadata.build("bibi", "session", PriorityLevel.NORMAL, false,
+                                                                new StorageMetadata[0]),
+                           parameters, "testFeatureGeneration"));
         }
         this.publisher.publish(eventsToPublish);
 
@@ -272,7 +270,7 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
         // we will expect that all feature reference remain in database with the error state
         do {
             Thread.sleep(1000);
-            if (cpt == timeout / 1000) {
+            if (cpt == (timeout / 1000)) {
                 fail("Timeout");
             }
             cpt++;
@@ -294,17 +292,14 @@ public class FeatureReferenceServiceIT extends AbstractMultitenantServiceTest {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    logger.error(String.format("Thread interrupted %s expected in database, %s really ",
-                                               expected,
+                    logger.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
                                                entityCount));
-                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ",
-                                              expected,
+                    Assert.fail(String.format("Thread interrupted {} expected in database, {} really ", expected,
                                               entityCount));
 
                 }
             } else {
-                logger.error(String.format("Thread interrupted %s expected in database, %s really ",
-                                           expected,
+                logger.error(String.format("Thread interrupted %s expected in database, %s really ", expected,
                                            entityCount));
                 Assert.fail("Timeout");
             }
