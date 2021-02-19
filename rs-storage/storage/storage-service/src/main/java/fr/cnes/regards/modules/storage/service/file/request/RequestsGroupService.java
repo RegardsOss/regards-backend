@@ -208,6 +208,7 @@ public class RequestsGroupService {
         Pageable page = PageRequest.of(0, maxRequestPerTransaction, Direction.ASC, "id");
         Set<RequestGroup> groupDones = Sets.newHashSet();
         Page<RequestGroup> response;
+        int expired = 0;
         do {
             response = reqGroupRepository.findAllByOrderByCreationDateAsc(page);
             if (response.hasContent()) {
@@ -217,12 +218,12 @@ public class RequestsGroupService {
                     if (checkRequestsGroupDone(reqGrp)) {
                         groupDones.add(reqGrp);
                     } else {
-                        checkRequestGroupExpired(reqGrp);
+                        expired = checkRequestGroupExpired(reqGrp)? expired+1:expired;
                     }
-                } while (it.hasNext() && (groupDones.size() < maxRequestPerTransaction));
+                } while (it.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
             }
             page = response.nextPageable();
-        } while (response.hasNext() && (groupDones.size() < maxRequestPerTransaction));
+        } while (response.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
         String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (!groupDones.isEmpty()) {
             Set<RequestResultInfo> infos = groupReqInfoRepository
