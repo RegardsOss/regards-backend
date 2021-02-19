@@ -63,6 +63,11 @@ public class AttrDescToJsonMapping {
     }
 
     private JsonObject dispatch(AttributeDescription a) {
+        // If mapping is fixed by configuration return it
+        if (a.getFixedMapping() != null) {
+            return new JsonParser().parse(a.getFixedMapping()).getAsJsonObject();
+        }
+        // Else generate auto mapping
         switch (a.getType()) {
             case BOOLEAN:
                 return toBooleanJsonMapping(a);
