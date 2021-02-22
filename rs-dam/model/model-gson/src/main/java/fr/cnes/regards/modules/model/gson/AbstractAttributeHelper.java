@@ -68,7 +68,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param attributes : {@link AttributeModel}s to compute
      * @return {@link AttributeModel}s computed attributes
      */
-    private static List<AttributeModel> computeAttributes(List<AttributeModel> attributes) {
+    public static List<AttributeModel> computeAttributes(List<AttributeModel> attributes) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         attributes.stream()
                 .filter(a -> (a.getType() == PropertyType.JSON) && a.hasRestriction()
