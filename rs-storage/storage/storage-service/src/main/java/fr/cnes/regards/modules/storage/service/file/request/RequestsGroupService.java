@@ -243,8 +243,6 @@ public class RequestsGroupService {
     /**
      * Check if all requests are terminated for the given groupId.
      *
-     * @param groupId
-     * @param type
      */
     private boolean checkRequestsGroupDone(RequestGroup reqGrp) {
         boolean isDone = false;
@@ -383,9 +381,6 @@ public class RequestsGroupService {
         groupReqInfoRepository.save(gInfo);
     }
 
-    /**
-     * @param storage
-     */
     public void deleteRequestGroups(FileRequestType type) {
         Pageable page = PageRequest.of(0, 500, Direction.ASC, "id");
         Page<RequestGroup> groups = reqGroupRepository.findByType(type, page);
