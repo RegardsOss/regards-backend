@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
@@ -393,7 +394,9 @@ public class DescriptionBuilder {
             } else {
                 List<AttributeModel> attributes = assocsResponse.getBody().stream().map(ModelAttrAssoc::getAttribute)
                         .collect(Collectors.toList());
-                return AbstractAttributeHelper.computeAttributes(attributes);
+                attributes = AbstractAttributeHelper.computeAttributes(attributes);
+                // Return computed attributes without specific JSON ones that are not queriable.
+                return attributes.stream().filter(a -> a.getType() != PropertyType.JSON).collect(Collectors.toList());
             }
         } catch (FeignException e) {
             LOGGER.error("Cannot retrieve model attributes", e);
