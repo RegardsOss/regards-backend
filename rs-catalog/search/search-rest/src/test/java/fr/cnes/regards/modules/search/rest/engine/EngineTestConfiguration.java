@@ -125,9 +125,4 @@ public class EngineTestConfiguration {
         return Mockito.mock(IProjectsClient.class);
     }
 
-    @Bean
-    public IToponymsClient toponymsClient() {
-        return Mockito.mock(IToponymsClient.class);
-    }
-
 }
