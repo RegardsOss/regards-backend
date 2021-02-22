@@ -224,7 +224,6 @@ public class RequestsGroupService {
             }
             page = response.nextPageable();
         } while (response.hasNext() && ((groupDones.size() + expired) < maxRequestPerTransaction));
-        String message = "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}";
         if (!groupDones.isEmpty()) {
             Set<RequestResultInfo> infos = groupReqInfoRepository
                     .findByGroupIdIn(groupDones.stream().map(g -> g.getId()).collect(Collectors.toSet()));
@@ -235,9 +234,9 @@ public class RequestsGroupService {
             groupReqInfoRepository
                     .deleteByGroupIdIn(groupDones.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
             reqGroupRepository.deleteAll(groupDones);
-            LOGGER.info(message, System.currentTimeMillis() - start, groupDones.size(), response.getTotalElements());
+            LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}/{}. Expired groups {}", System.currentTimeMillis() - start, groupDones.size(), response.getTotalElements(), expired);
         } else {
-            LOGGER.debug(message, System.currentTimeMillis() - start, 0, response.getTotalElements());
+            LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. Expired groups {}/{}", System.currentTimeMillis() - start, expired, response.getTotalElements());
         }
     }
 
