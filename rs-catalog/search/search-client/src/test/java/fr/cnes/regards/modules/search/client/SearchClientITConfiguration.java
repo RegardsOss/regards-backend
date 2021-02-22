@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -116,6 +117,11 @@ public class SearchClientITConfiguration {
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean
+    public IToponymsClient toponymsClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
     @Primary
