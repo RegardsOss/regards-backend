@@ -42,7 +42,7 @@
 		<description>informations origine</description>
 		<type>JSON</type>
 		<restriction>
-			<json_schema><![CDATA[{"type":"object","properties":{"name":{"type":"string"},"link":{"type":"string","format":"uri","pattern":"^.*//.*"},"contacts":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"locations":{"type":"array","items":{"type":"object","properties":{"institut":{"type":"integer"},"code":{"type":"integer"}}}}}}}}}]]></json_schema>
+			<json_schema><![CDATA[{"type":"object","properties":{"name":{"type":"string"},"link":{"type":"string","format":"uri","pattern":"^.*//.*"},"contacts":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"locations":{"type":"array","items":{"type":"object","properties":{"institut":{"type":"string"},"code":{"type":"integer"}}}}}}}}}]]></json_schema>
 		</restriction>
 	</attribute>
 	<fragment>

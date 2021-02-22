@@ -78,8 +78,8 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         SearchRequest request = createSearchRequest(LegacySearchEngine.PLUGIN_ID, astroObjects.get(SOLAR_SYSTEM)
                 .getIpId().toString(), "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        // Should be 7 attributes associated to model planet result of the dataobject search
-        customizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(7)));
+        // Should be 8 attributes associated to model planet result of the dataobject search
+        customizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(8)));
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES,
                            request, customizer, "Search all error");
     }
