@@ -32,11 +32,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +49,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.util.Assert;
 
 import feign.Feign;
 import feign.Headers;
@@ -103,6 +100,9 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
     @Test
     public void executions() {
 
+        // reset db
+        execRepo.deleteAll().block();
+
         // GIVEN
         UUID processId = UUID.randomUUID();
         PProcess mockProcess = mock(PProcess.class);
@@ -117,16 +117,7 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
 
         // Check sorting
         PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client
-                .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(0, 100)));
-        OffsetDateTime previous = null;
-        for (ExecutionMonitoringDTO exec : response.getContent().stream().map(EntityModel::getContent)
-                .collect(Collectors.toList())) {
-            if (previous != null) {
-                Assert.isTrue(exec.getCreated().isBefore(previous), String
-                        .format("%s should be after %s", exec.getCreated().toString(), previous.toString()));
-            } else {
-                previous = exec.getCreated();
-            }
+                .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
 
         }
 
