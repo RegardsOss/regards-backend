@@ -2,18 +2,28 @@ package fr.cnes.regards.modules.indexer.dao;
 
 import java.io.Serializable;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.elasticsearch.search.internal.SearchContext;
+import org.hibernate.Criteria;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -407,11 +417,39 @@ public class EsRepositoryTest {
 
         HashMap<String, String> fieldsToAggregate = new HashMap<>();
         fieldsToAggregate.put("min", "price");
+        fieldsToAggregate.put("max", "price");
 
         Item item = repository.get("items", "item", "1", Item.class);
 
         Aggregations dataObjectsAndAggregate = repository.getDataObjectsAndAggregate("items", "item", "group1", "groups.keyword", fieldsToAggregate);
-        int i = 0;
+        Assert.assertEquals("max_price", dataObjectsAndAggregate.asList().get(0).getName());
+        Assert.assertEquals(20000d, ((ParsedMax) dataObjectsAndAggregate.asList().get(0)).getValue(),0.0001d);
+    }
+
+    @Test
+    public void testGetAggregateOnNumericValues(){
+        repository.createIndex("items");
+        // Creations for first two
+        final Item item1 = new Item("1", "toto",10, 10000d,"group1", "group2", "group3");
+        Assert.assertTrue(repository.save("items", item1));
+        Assert.assertTrue(repository.save("items", new Item("2", "titi",10, 20000d,"group1", "group3")));
+
+        Map<String, QueryableAttribute> qas = Maps.newHashMap();
+        qas.put("min", new QueryableAttribute("price", null,
+                false, 10, false));
+
+
+//        ICriterion all = ICriterion.all();
+        ICriterion all = ICriterion.contains("groups", "group1");
+        Map<String, Class<? extends AbstractEntity>> typesMap = Maps.newHashMap();
+        typesMap.put(EntityType.COLLECTION.toString(), fr.cnes.regards.modules.dam.domain.entities.Collection.class);
+        typesMap.put(EntityType.DATASET.toString(), Dataset.class);
+        typesMap.put(EntityType.DATA.toString(), DataObject.class);
+        SearchKey<Item, Item> searchKey = new SearchKey<>("item", Item.class);
+        searchKey.setSearchIndex("items");
+        Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
+        Assert.assertEquals(20000d,((ParsedStats) aggregations.asList().get(0)).getMax(), 0.0001d);
+        Assert.assertEquals(10000d,((ParsedStats) aggregations.asList().get(0)).getMin(), 0.0001d);
     }
 
     @Test
