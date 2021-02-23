@@ -119,11 +119,6 @@ public class PMonitoringControllerTest extends AbstractProcessingTest {
         PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client
                 .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
 
-        }
-
-        // WHEN
-        response = client.executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
-
         LOGGER.info("Resp: {}", response);
 
         // THEN

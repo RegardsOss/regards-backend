@@ -23,7 +23,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>processing</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -159,10 +158,10 @@
                 <version>${feign.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>6.1.0</version> <!-- instead of 6.4.4 / FIXME once the rest of Regards adopts spring-boot 2.3.2-->
-            </dependency>
+            	<groupId>org.flywaydb</groupId>
+            	<artifactId>flyway-core</artifactId>
+            	<version>${flyway.version}</version>
+        	</dependency>
             <dependency>
                 <groupId>org.springframework.batch</groupId>
                 <artifactId>spring-batch-core</artifactId>
