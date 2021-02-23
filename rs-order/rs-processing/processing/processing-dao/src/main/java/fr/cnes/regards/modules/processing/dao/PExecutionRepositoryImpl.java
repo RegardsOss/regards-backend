@@ -135,7 +135,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             Pageable page
     ) {
         String orderBy = "";
-        if (page.getSort() != null) {
+        if ((page.getSort() != null) && !page.getSort().isEmpty()) {
             int count = 0;
             orderBy = "ORDER BY ";
             for (Order o  : page.getSort().toList()) {
