@@ -34,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -132,7 +131,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         dataFile1.setChecksum(StorageClientMock.TEST_FILE_CHECKSUM);
         dataFile1.setOrderId(order.getId());
         dataFile1.setFilesize(testFile.length());
-        dataFile1.setMimeType(MediaType.TEXT_PLAIN);
+        dataFile1.setMimeType(StorageClientMock.TEST_MEDIA_TYPE);
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setState(FileState.AVAILABLE);
         dataFile1 = dataFileRepository.save(dataFile1);
@@ -146,7 +145,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
                                                         customizer().expectStatusOk(), "Should return result",
                                                         dataFile1.getId());
 
-        assertMediaType(resultActions, MediaType.TEXT_PLAIN);
+        assertMediaType(resultActions, StorageClientMock.TEST_MEDIA_TYPE);
         File resultFile = File.createTempFile("ORDER", "");
         resultFile.deleteOnExit();
 

@@ -29,11 +29,16 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.assertj.core.util.Lists;
+import org.eclipse.jetty.http.HttpHeader;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Maps;
 
 import feign.Request;
 import feign.Response;
@@ -51,6 +56,8 @@ public class StorageClientMock implements IStorageRestClient {
 
     public static String TEST_FILE_CHECKSUM = "checusm_test_storage_client_mock";
 
+    public static MediaType TEST_MEDIA_TYPE = MediaType.TEXT_PLAIN;
+
     @Override
     public Response downloadFile(String checksum) {
 
@@ -60,8 +67,10 @@ public class StorageClientMock implements IStorageRestClient {
             try {
                 File testFile = new File("src/test/resources/files/file1.txt");
                 InputStream stream = new FileInputStream(testFile);
+                Map<String, Collection<String>> headers = Maps.newHashMap();
+                headers.put(HttpHeader.CONTENT_TYPE.toString(), Lists.newArrayList(TEST_MEDIA_TYPE.toString()));
                 return Response.builder().status(HttpStatus.OK.value()).body(stream, (int) testFile.length())
-                        .request(request).build();
+                        .headers(headers).request(request).build();
             } catch (IOException e) {
                 return Response.builder().status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .body(e.getMessage(), StandardCharsets.UTF_8).request(request).build();
