@@ -30,7 +30,7 @@ public class ExternalAuthenticationAutoConfiguration {
 
 //    @ConditionalOnMissingBean
     @Bean
-    public IExternalAuthenticationResolver defaultExternalAuthenticationResolver() {
+    public IExternalAuthenticationResolver externalAuthenticationResolver() {
         return new DefaultExternalAuthenticationResolver();
     }
 
