@@ -25,10 +25,6 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
         return authenticationInfo.getAuthenticationInfo();
     }
 
-    public abstract static class AuthenticationInfo {
-        public abstract Map<String, String> getAuthenticationInfo();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -135,5 +131,9 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
         public int hashCode() {
             return Objects.hash(email, firstname, lastname, metadata);
         }
+    }
+
+    public abstract static class AuthenticationInfo {
+        public abstract Map<String, String> getAuthenticationInfo();
     }
 }

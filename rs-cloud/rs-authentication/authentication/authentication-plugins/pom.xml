@@ -35,7 +35,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-domain</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.directory.api</groupId>

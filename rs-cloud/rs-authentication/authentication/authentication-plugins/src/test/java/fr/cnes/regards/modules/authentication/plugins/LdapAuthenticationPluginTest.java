@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
 import org.apache.directory.api.ldap.model.entry.Attribute;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.exception.LdapAuthenticationException;
@@ -42,7 +43,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.identityprovider.ldap.LdapAuthenticationPlugin;
 
 /**

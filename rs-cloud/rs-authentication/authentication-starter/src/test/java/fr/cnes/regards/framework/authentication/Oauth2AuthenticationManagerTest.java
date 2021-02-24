@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.framework.authentication;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
-
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
@@ -48,10 +34,23 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.IAuthenticationPlugin;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class Oauth2AuthenticationManagerTest

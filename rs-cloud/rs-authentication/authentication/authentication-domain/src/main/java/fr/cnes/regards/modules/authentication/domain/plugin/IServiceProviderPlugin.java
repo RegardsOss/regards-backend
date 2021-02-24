@@ -33,4 +33,6 @@ public interface IServiceProviderPlugin<AuthenticationParams extends ServiceProv
     Try<ServiceProviderAuthenticationInfo<AuthenticationInfo>> authenticate(AuthenticationParams params);
 
     Try<Unit> deauthenticate(Map<String, Object> jwtClaims);
+
+    Try<ServiceProviderAuthenticationInfo<AuthenticationInfo>> verify(String token);
 }

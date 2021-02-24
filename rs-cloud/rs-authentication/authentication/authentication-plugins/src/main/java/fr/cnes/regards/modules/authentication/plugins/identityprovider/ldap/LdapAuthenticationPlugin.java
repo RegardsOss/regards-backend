@@ -9,8 +9,10 @@
 
 package fr.cnes.regards.modules.authentication.plugins.identityprovider.ldap;
 
-import java.io.IOException;
-
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.IAuthenticationPlugin;
 import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Attribute;
@@ -23,10 +25,7 @@ import org.apache.directory.ldap.client.api.LdapNetworkConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
+import java.io.IOException;
 
 /**
  * Class LdapAuthenticationPlugin

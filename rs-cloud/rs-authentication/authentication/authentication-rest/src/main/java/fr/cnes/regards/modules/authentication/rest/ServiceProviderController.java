@@ -49,6 +49,8 @@ public class ServiceProviderController implements IResourceController<ServicePro
 
     public static final String PATH_DEAUTHENTICATE = "/serviceproviders/{name}/deauthenticate";
 
+    public static final String PATH_VERIFY_AUTHENTICATION = "/serviceproviders/verify";
+
     @Autowired
     private IServiceProviderCrudService serviceProviderCrud;
 
@@ -119,7 +121,6 @@ public class ServiceProviderController implements IResourceController<ServicePro
     ) throws ModuleException {
         return serviceProviderAuthentication.authenticate(name, params)
             .map(ResponseEntity::ok)
-            // TODO NotAvailablePluginConfigurationException
             .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().body(ex.getMessage()))
             .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage()))
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
@@ -130,6 +131,18 @@ public class ServiceProviderController implements IResourceController<ServicePro
     public ResponseEntity<Void> deauthenticate(@PathVariable("name") String name) throws ModuleException {
         return serviceProviderAuthentication.deauthenticate(name)
             .map(u -> new ResponseEntity<Void>(HttpStatus.OK))
+            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+    }
+
+    @GetMapping(value = PATH_VERIFY_AUTHENTICATION)
+    @ResourceAccess(description = "Verify and authenticate token through service providers.", role = DefaultRole.PUBLIC)
+    public ResponseEntity<String> verifyAndAuthenticate(
+        @RequestParam(value = "externalToken", required = true) String externalToken
+    ) throws ModuleException {
+        return serviceProviderAuthentication.verifyAndAuthenticate(externalToken)
+            .map(ResponseEntity::ok)
+            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().body(ex.getMessage()))
+            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage()))
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 

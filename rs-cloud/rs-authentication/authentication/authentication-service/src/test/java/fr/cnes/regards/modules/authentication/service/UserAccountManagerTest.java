@@ -87,7 +87,7 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
@@ -114,7 +114,7 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .autoAcceptAccount(eq(PROVIDER_USER_INFO));
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
@@ -146,7 +146,7 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .getAccessSettings();
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
@@ -183,7 +183,7 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
@@ -225,7 +225,7 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
@@ -268,15 +268,14 @@ public class UserAccountManagerTest {
             .when(accountManager)
             .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
 
-        Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> result =
+        Try<String> result =
             accountManager.createUserWithAccountAndGroups(
                 PROVIDER_NAME,
                 PROVIDER_USER_INFO
             );
 
         assertThat(result.isSuccess()).isTrue();
-        assertThat(result.get()._1).isEqualTo(PROVIDER_USER_INFO);
-        assertThat(result.get()._2).isEqualTo(ACCESS_SETTINGS.getDefaultRole().getName());
+        assertThat(result.get()).isEqualTo(ACCESS_SETTINGS.getDefaultRole().getName());
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)

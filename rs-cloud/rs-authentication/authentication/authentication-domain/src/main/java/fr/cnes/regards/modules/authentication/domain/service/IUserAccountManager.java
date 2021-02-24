@@ -5,5 +5,5 @@ import io.vavr.Tuple2;
 import io.vavr.control.Try;
 
 public interface IUserAccountManager {
-    Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> createUserWithAccountAndGroups(String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo);
+    Try<String> createUserWithAccountAndGroups(String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo);
 }

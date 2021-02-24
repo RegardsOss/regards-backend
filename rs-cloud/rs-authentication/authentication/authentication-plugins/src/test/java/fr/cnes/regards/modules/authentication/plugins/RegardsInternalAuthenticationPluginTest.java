@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.plugins;
 
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -41,8 +28,19 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.identityprovider.regards.RegardsInternalAuthenticationPlugin;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Class RegardsInternalAuthenticationPluginTest

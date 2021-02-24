@@ -69,7 +69,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
     }
 
     @Override
-    public Try<Tuple2<ServiceProviderAuthenticationInfo.UserInfo, String>> createUserWithAccountAndGroups(String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
+    public Try<String> createUserWithAccountAndGroups(String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
         return Try
             .run(FeignSecurityManager::asSystem)
             .flatMap(unit -> createAccount(userInfo)
@@ -126,7 +126,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                                     DefaultRole.PROJECT_ADMIN
                                 )
                             ))
-                        .map(unit -> Tuple.of(userInfo, role));
+                        .map(unit -> role);
                 }
             )
             .andFinally(FeignSecurityManager::reset);

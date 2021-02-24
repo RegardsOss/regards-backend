@@ -80,11 +80,5 @@
             <version>1.10.6</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.authentication</groupId>
-            <artifactId>authentication-domain</artifactId>
-            <version>1.4.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>

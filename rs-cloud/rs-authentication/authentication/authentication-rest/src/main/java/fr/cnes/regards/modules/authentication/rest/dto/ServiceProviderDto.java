@@ -33,18 +33,18 @@ public class ServiceProviderDto {
     @URL
     private final String authUrl;
 
-    private final PluginConfiguration configuration;
+    private final PluginConfiguration pluginConfiguration;
 
-    public ServiceProviderDto(String name, String authUrl, PluginConfiguration configuration) {
+    public ServiceProviderDto(String name, String authUrl, PluginConfiguration pluginConfiguration) {
         this.name = name;
         this.authUrl = authUrl;
-        this.configuration = configuration;
+        this.pluginConfiguration = pluginConfiguration;
     }
 
     public ServiceProviderDto(ServiceProvider serviceProvider) {
         this.name = serviceProvider.getName();
         this.authUrl = serviceProvider.getAuthUrl();
-        this.configuration = serviceProvider.getConfiguration();
+        this.pluginConfiguration = serviceProvider.getConfiguration();
     }
 
     public String getName() {
@@ -55,8 +55,8 @@ public class ServiceProviderDto {
         return authUrl;
     }
 
-    public PluginConfiguration getConfiguration() {
-        return configuration;
+    public PluginConfiguration getPluginConfiguration() {
+        return pluginConfiguration;
     }
 
     @Override
@@ -66,19 +66,19 @@ public class ServiceProviderDto {
         ServiceProviderDto that = (ServiceProviderDto) o;
         return Objects.equals(name, that.name)
             && Objects.equals(authUrl, that.authUrl)
-            && Objects.equals(configuration, that.configuration);
+            && Objects.equals(pluginConfiguration, that.pluginConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl, configuration);
+        return Objects.hash(name, authUrl, pluginConfiguration);
     }
 
     public ServiceProvider toDomain() {
         return new ServiceProvider(
             name,
             authUrl,
-            configuration
+            pluginConfiguration
         );
     }
 }

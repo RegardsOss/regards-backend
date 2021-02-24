@@ -48,7 +48,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-service</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- Test -->
         <dependency>

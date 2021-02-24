@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
 import fr.cnes.regards.modules.authentication.domain.plugin.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
@@ -14,13 +15,17 @@ import fr.cnes.regards.modules.authentication.domain.repository.IServiceProvider
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderAuthenticationService;
 import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
+import io.vavr.Tuple;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @MultitenantTransactional
@@ -65,29 +70,11 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
                 return Try.success(plugin);
             })
             .flatMap(plugin -> plugin.authenticate(params))
-            .flatMap(authInfo -> userAccountManager.createUserWithAccountAndGroups(serviceProviderName, authInfo.getUserInfo())
-                .map(t -> t.map1(ignored -> authInfo)))
-            .map(t -> {
-                ServiceProviderAuthenticationInfo.UserInfo userInfo = t._1.getUserInfo();
-                Map<String, String> authInfo = t._1.getAuthenticationInfo();
-                Map<String, String> additionalClaims =
-                    userInfo.getMetadata()
-                        .merge(authInfo);
-
-                String roleName = t._2;
-                return jwtService.generateToken(
-                    runtimeTenantResolver.getTenant(),
-                    userInfo.getEmail(),
-                    userInfo.getEmail(),
-                    roleName,
-                    new java.util.HashMap<>(additionalClaims.toJavaMap())
-                );
-            });
+            .flatMap(authInfo -> regardsAuthentication(serviceProviderName, authInfo));
     }
 
     @Override
     public Try<Unit> deauthenticate(String serviceProviderName) {
-        //TODO get jwt Token, decrypt and pass along
         JWTAuthentication jwt = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
         Map<String, Object> jwtClaims =
             Option.of(jwt)
@@ -98,6 +85,45 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
 
         return getPlugin(serviceProviderName)
             .flatMap(plugin -> plugin.deauthenticate(jwtClaims));
+    }
+
+    @Override
+    public Try<String> verifyAndAuthenticate(String externalToken) {
+        AtomicReference<String> currentServiceProviderName = new AtomicReference<>();
+        return repository.findAll()
+            .toStream()
+            .map(ServiceProvider::getName).peek(currentServiceProviderName::set)
+            .map(this::getPlugin)
+            .map(t -> t
+                .flatMap(plugin -> plugin.verify(externalToken))
+                .flatMap(authInfo -> regardsAuthentication(currentServiceProviderName.get(), authInfo)))
+            .find(Try::isSuccess)
+            .map(Try::get)
+            .toTry(() -> new InsufficientAuthenticationException("Unable to find a Service Provider to successfully verify the provided token."));
+    }
+
+    private Try<String> regardsAuthentication(
+        String serviceProviderName,
+        ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfo.AuthenticationInfo> pAuthInfo
+    ) {
+        return userAccountManager.createUserWithAccountAndGroups(serviceProviderName, pAuthInfo.getUserInfo())
+            .map(role -> Tuple.of(pAuthInfo.getUserInfo(), role, pAuthInfo.getAuthenticationInfo()))
+            .map(t -> {
+                ServiceProviderAuthenticationInfo.UserInfo userInfo = t._1;
+                String roleName = t._2;
+                Map<String, String> authInfo = t._3;
+                Map<String, String> additionalClaims =
+                    userInfo.getMetadata()
+                        .merge(authInfo);
+
+                return jwtService.generateToken(
+                    runtimeTenantResolver.getTenant(),
+                    userInfo.getEmail(),
+                    userInfo.getEmail(),
+                    roleName,
+                    new java.util.HashMap<>(additionalClaims.toJavaMap())
+                );
+            });
     }
 
     @VisibleForTesting

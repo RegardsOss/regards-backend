@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -7,12 +25,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.IOpenIdConnectPlugin;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
-import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaAuthenticationParams;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.response.TheiaOpenIdTokenResponse;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdTokenResponse;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.response.TheiaOpenIdUserInfoResponse;
 import io.vavr.control.Try;
 import org.junit.Assert;
@@ -60,20 +76,20 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         PluginUtils.setup();
     }
 
-    private <OpenIdPluginParams extends ServiceProviderAuthenticationParams> IOpenIdConnectPlugin<OpenIdPluginParams> getPlugin() {
+    private TheiaOpenIdConnectPlugin getPlugin() {
         try {
             // Set all parameters
             Set<IPluginParam> parameters = IPluginParam
                 .set(
-                    IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_CLIENT_ID, "I don't feel like dancin'"),
-                    IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Rather be home with no-one if I can't get down with you-ou-ou")),
-                    IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
-                    IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
-                    IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), REVOKE_ENDPOINT))
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I don't feel like dancin'"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Rather be home with no-one if I can't get down with you-ou-ou")),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), REVOKE_ENDPOINT))
                 );
 
             PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, "", parameters);
-            IOpenIdConnectPlugin<OpenIdPluginParams> plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+            TheiaOpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
             Assert.assertNotNull(plugin);
             return plugin;
         } catch (Exception e) {
@@ -84,7 +100,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     @Test
     public void shouldReturnRightPluginType() {
-        assertThat(getPlugin()).isInstanceOf(TheiaOpenIdConnectPlugin.class);
+        assertThat(getPlugin()).isInstanceOf(OpenIdConnectPlugin.class);
     }
 
     @Test
@@ -95,8 +111,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withStatus(400)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -116,8 +132,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withStatus(500)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -137,8 +153,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withStatus(300)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -158,8 +174,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withStatus(200)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -179,8 +195,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withStatus(204)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -198,11 +214,11 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("basic", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("basic", 10L, "foo", "bar")))));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("code", "uri"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -220,15 +236,15 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(400)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -250,15 +266,15 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(500)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -280,15 +296,15 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(300)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -310,15 +326,15 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(204)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -340,15 +356,15 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse("bearer", 10L, "foo", "bar")))));
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -375,7 +391,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             post(urlEqualTo(TOKEN_ENDPOINT))
                 .willReturn(aResponse()
                     .withStatus(200)
-                    .withBody(gson.toJson(new TheiaOpenIdTokenResponse(tokenType, expiresIn, refreshToken, accessToken)))));
+                    .withBody(gson.toJson(new OpenIdTokenResponse(tokenType, expiresIn, refreshToken, accessToken)))));
 
         String
             regDate = "regDate",
@@ -417,8 +433,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withBody(gson.toJson(response))));
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
-        Try<ServiceProviderAuthenticationInfo<IOpenIdConnectPlugin.OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new TheiaAuthenticationParams("foo", "bar"));
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
 
         assertThat(userInfo.isSuccess()).isTrue();
         assertThat(userInfo.get())
@@ -439,7 +455,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .addMetadata("role", role)
                     .addMetadata("regDate", regDate)
                     .build(),
-                new IOpenIdConnectPlugin.OpenIdConnectToken(accessToken)
+                new OpenIdConnectToken(accessToken)
             ));
 
         verify(
@@ -465,7 +481,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
     @Test
     public void deauthenticate_succeeds_when_claim_contains_openid_token() {
         //noinspection ConstantConditions
-        Try<Unit> result = getPlugin().deauthenticate(io.vavr.collection.HashMap.of(TheiaOpenIdConnectPlugin.OPENID_CONNECT_TOKEN, "foo"));
+        Try<Unit> result = getPlugin().deauthenticate(io.vavr.collection.HashMap.of(OpenIdConnectPlugin.OPENID_CONNECT_TOKEN, "foo"));
 
         assertThat(result.isSuccess()).isTrue();
     }

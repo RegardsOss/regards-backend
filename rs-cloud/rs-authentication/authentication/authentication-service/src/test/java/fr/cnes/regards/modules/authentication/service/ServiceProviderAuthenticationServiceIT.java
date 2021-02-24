@@ -16,7 +16,8 @@ import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.Serv
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
 import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.TheiaOpenIdConnectPlugin;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectPlugin;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
 import io.vavr.control.Try;
 import org.junit.After;
 import org.junit.Before;
@@ -107,7 +108,7 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
 
         Try<IServiceProviderPlugin<ServiceProviderAuthenticationParams, ServiceProviderAuthenticationInfo.AuthenticationInfo>> plugin = service.getPlugin(sp.getName());
         assertThat(plugin.isSuccess()).isTrue();
-        assertThat(plugin.get()).isInstanceOf(TheiaOpenIdConnectPlugin.class);
+        assertThat(plugin.get()).isInstanceOf(OpenIdConnectPlugin.class);
     }
 
     @Test
@@ -126,11 +127,11 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
         pluginConf.setVersion(TheiaOpenIdConnectPlugin.VERSION);
         Set<IPluginParam> parameters = IPluginParam
             .set(
-                IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
-                IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
-                IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
-                IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
-                IPluginParam.build(TheiaOpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Dancin'") // Rather be home with no-one if I can't get down with you-ou-ou
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Dancin'") // Rather be home with no-one if I can't get down with you-ou-ou
             );
         pluginConf.setParameters(parameters);
         return new ServiceProvider(

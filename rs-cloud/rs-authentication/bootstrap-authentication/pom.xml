@@ -75,13 +75,11 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>authentication-starter</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- Add authentication module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-rest</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

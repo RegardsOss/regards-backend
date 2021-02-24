@@ -33,6 +33,7 @@
     </parent>
     <modules>
         <module>authentication-domain</module>
+        <module>authentication-client</module>
         <module>authentication-dao</module>
         <module>authentication-plugins</module>
         <module>authentication-rest</module>

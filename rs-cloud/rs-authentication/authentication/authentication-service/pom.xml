@@ -34,17 +34,14 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-domain</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-dao</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-plugins</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>

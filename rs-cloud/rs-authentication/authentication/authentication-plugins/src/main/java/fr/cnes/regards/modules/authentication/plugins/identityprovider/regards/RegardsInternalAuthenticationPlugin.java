@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.authentication.plugins.identityprovider.regards;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.hateoas.EntityModel;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
-import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
+import fr.cnes.regards.modules.authentication.domain.plugin.IAuthenticationPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * Class SimpleAuthentication

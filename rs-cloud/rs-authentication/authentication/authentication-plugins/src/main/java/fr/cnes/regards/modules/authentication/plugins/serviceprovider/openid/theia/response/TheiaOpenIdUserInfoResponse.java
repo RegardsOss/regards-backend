@@ -1,10 +1,30 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.response;
 
 import com.google.gson.annotations.SerializedName;
+import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdUserInfoResponse;
 
 import java.util.Objects;
 
-public class TheiaOpenIdUserInfoResponse {
+public class TheiaOpenIdUserInfoResponse extends OpenIdUserInfoResponse {
     @SerializedName("http://theia.org/claims/emailaddress")
     private final String email;
 
@@ -163,5 +183,25 @@ public class TheiaOpenIdUserInfoResponse {
     @Override
     public int hashCode() {
         return Objects.hash(email, firstname, lastname, organization, function, type, telephone, streetAddress, source, country, ignKey, ignAuthentication, role, regDate);
+    }
+
+    @Override
+    public ServiceProviderAuthenticationInfo.UserInfo toDomain() {
+        return new ServiceProviderAuthenticationInfo.UserInfo.Builder()
+            .withEmail(email)
+            .withFirstname(firstname)
+            .withLastname(lastname)
+            .addMetadata("organization", organization)
+            .addMetadata("function", function)
+            .addMetadata("type", type)
+            .addMetadata("telephone", telephone)
+            .addMetadata("streetAddress", streetAddress)
+            .addMetadata("source", source)
+            .addMetadata("country", country)
+            .addMetadata("ignKey", ignKey)
+            .addMetadata("ignAuthentication", ignAuthentication)
+            .addMetadata("role", role)
+            .addMetadata("regDate", regDate)
+            .build();
     }
 }

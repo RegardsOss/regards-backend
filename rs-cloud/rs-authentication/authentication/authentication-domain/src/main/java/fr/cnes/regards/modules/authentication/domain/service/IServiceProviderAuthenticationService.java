@@ -9,4 +9,6 @@ public interface IServiceProviderAuthenticationService {
     Try<String> authenticate(String serviceProviderName, ServiceProviderAuthenticationParams params);
 
     Try<Unit> deauthenticate(String serviceProviderName);
+
+    Try<String> verifyAndAuthenticate(String externalToken);
 }
