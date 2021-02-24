@@ -85,7 +85,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Rather be home with no-one if I can't get down with you-ou-ou")),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), REVOKE_ENDPOINT))
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
                 );
 
             PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, "", parameters);
