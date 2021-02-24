@@ -99,7 +99,6 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
         assertThat(result.isSuccess()).isTrue();
         Map<String, String> authenticationInfo = result.get().getAuthenticationInfo();
         assertThat(authenticationInfo.containsKey(OpenIdConnectPlugin.OPENID_CONNECT_TOKEN)).isTrue();
-        assertThat(authenticationInfo.containsKey(OpenIdConnectPlugin.OPENID_CONNECT_PLUGIN)).isTrue();
         ServiceProviderAuthenticationInfo.UserInfo userInfo = result.get().getUserInfo();
         assertThat(userInfo.getEmail()).isEqualTo("User Validation Validation");
         assertThat(userInfo.getFirstname()).isEqualTo("User Validation");
