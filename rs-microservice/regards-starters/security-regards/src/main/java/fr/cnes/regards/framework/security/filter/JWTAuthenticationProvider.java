@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import io.vavr.control.Try;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * REGARDS JWT provider to authenticate request issuer parsing JWT
@@ -33,25 +34,32 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
  */
 public class JWTAuthenticationProvider implements AuthenticationProvider {
 
-    /**
-     * JWT service
-     */
     private final JWTService jwtService;
 
-    public JWTAuthenticationProvider(JWTService pService) {
+    private final IExternalAuthenticationResolver externalAuthenticationResolver;
+
+    public JWTAuthenticationProvider(JWTService pService, IExternalAuthenticationResolver pResolver) {
         jwtService = pService;
+        externalAuthenticationResolver = pResolver;
     }
 
     @Override
     public Authentication authenticate(Authentication pAuthentication) throws AuthenticationException {
-
-        try {
-            // Fill authentication parsing JWT token
-            return jwtService.parseToken((JWTAuthentication) pAuthentication);
-        } catch (JwtException e) {
-            throw new InsufficientAuthenticationException(e.getMessage(), e);
-        }
-
+        return Try
+            // Fill authentication by parsing JWT token.
+            .of(() -> jwtService.parseToken((JWTAuthentication) pAuthentication))
+            // If not a REGARDS token, let's try to resolve a Service Provider token.
+            .recoverWith(JwtException.class, e -> Try
+                // If resolved, a REGARDS token is returned.
+                .of(() -> externalAuthenticationResolver.verifyAndAuthenticate(((JWTAuthentication) pAuthentication).getJwt()))
+                // If not resolved, an (Authentication)Exception is thrown. Drop it, just return that the token is not valid (original exception).
+                .recoverWith(Exception.class, ae -> Try.failure(new InsufficientAuthenticationException(e.getMessage(), e)))
+                // If resolved, try to parse it again, because it's supposed to be a valid REGARDS token now.
+                .mapTry(regardsToken -> jwtService.parseToken(new JWTAuthentication(regardsToken)))
+                // If it fails once again, abort (return original exception).
+                .recoverWith(JwtException.class, ae -> Try.failure(new InsufficientAuthenticationException(e.getMessage(), e)))
+            )
+            .get();
     }
 
     @Override

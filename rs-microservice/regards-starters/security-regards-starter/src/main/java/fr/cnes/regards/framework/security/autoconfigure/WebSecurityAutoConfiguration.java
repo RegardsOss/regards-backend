@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -67,6 +68,9 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private IExternalAuthenticationResolver externalAuthenticationResolver;
 
     /**
      * Authorization service
@@ -153,7 +157,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public JWTAuthenticationProvider jwtAuthenticationProvider() {
-        return new JWTAuthenticationProvider(jwtService);
+        return new JWTAuthenticationProvider(jwtService, externalAuthenticationResolver);
     }
 
 }

@@ -18,46 +18,27 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Manage authentication bean
- * @author msordi
- */
 @Configuration
-public class AuthenticationAutoConfiguration {
-
-    public static final String DEFAULT_USER = "DEFAULT_USER";
-
-    public static final String DEFAULT_ROLE = "DEFAULT_ROLE";
+public class ExternalAuthenticationAutoConfiguration {
 
     public static final String DEFAULT_TOKEN = "DEFAULT_TOKEN";
 
     @ConditionalOnMissingBean
     @Bean
-    public IAuthenticationResolver defaultAuthenticationResolver() {
-        return new DefaultAuthenticationResolver();
+    public IExternalAuthenticationResolver defaultExternalAuthenticationResolver() {
+        return new DefaultExternalAuthenticationResolver();
     }
 
-    private static class DefaultAuthenticationResolver implements IAuthenticationResolver {
+    private static class DefaultExternalAuthenticationResolver implements IExternalAuthenticationResolver {
 
         @Override
-        public String getUser() {
-            return DEFAULT_USER;
-        }
-
-        @Override
-        public String getRole() {
-            return DEFAULT_ROLE;
-        }
-
-        @Override
-        public String getToken() {
+        public String verifyAndAuthenticate(String externalToken) {
             return DEFAULT_TOKEN;
         }
     }
-
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -56,7 +57,9 @@ public class JWTAuthenticationProviderTest {
 
         final JWTService mockedJWTService = Mockito.mock(JWTService.class);
 
-        final JWTAuthenticationProvider provider = new JWTAuthenticationProvider(mockedJWTService);
+        final IExternalAuthenticationResolver mockExternalAuthenticationResolver = Mockito.mock(IExternalAuthenticationResolver.class);
+
+        final JWTAuthenticationProvider provider = new JWTAuthenticationProvider(mockedJWTService, mockExternalAuthenticationResolver);
 
         try {
             Mockito.when(mockedJWTService.parseToken(jwtAuthentication)).thenReturn(jwtAuthentication);
