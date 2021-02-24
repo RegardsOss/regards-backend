@@ -186,8 +186,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
-        Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
+        authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
+        Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
+
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
