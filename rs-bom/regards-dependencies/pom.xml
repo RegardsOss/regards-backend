@@ -137,7 +137,8 @@
 		<modules.access-services.version>${regards.version}</modules.access-services.version>
 		<modules.backend-for-frontend.version>${regards.version}</modules.backend-for-frontend.version>
         <modules.processing.version>${regards.version}</modules.processing.version>
-        <modules.toponyms.version>${regards.version}</modules.toponyms.version>
+		<modules.authentication.version>${regards.version}</modules.authentication.version>
+		<modules.toponyms.version>${regards.version}</modules.toponyms.version>
 
 		<!-- FRONTEND -->
 		<fr.cnes.regards.frontend-webapp.version>${regards.version}</fr.cnes.regards.frontend-webapp.version>
@@ -273,6 +274,16 @@
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>authentication-regards</artifactId>
 				<version>${authentication.starter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>authentication-starter</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>external-authentication-starter</artifactId>
+				<version>${modules.authentication.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
@@ -1029,7 +1040,7 @@
 				<artifactId>backend-for-frontend-rest</artifactId>
 				<version>${modules.backend-for-frontend.version}</version>
 			</dependency>
-            <!-- Storage -->
+			<!-- Storage -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.storage</groupId>
 				<artifactId>storage-rest</artifactId>
@@ -1059,6 +1070,37 @@
 				<groupId>fr.cnes.regards.modules.storage</groupId>
 				<artifactId>storage-dao</artifactId>
 				<version>${modules.storage.version}</version>
+			</dependency>
+			<!-- Authentication -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-rest</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-client</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-plugins</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-service</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-domain</artifactId>
+				<version>${modules.authentication.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.authentication</groupId>
+				<artifactId>authentication-dao</artifactId>
+				<version>${modules.authentication.version}</version>
 			</dependency>
 			<!--  Toponyms -->
 			<dependency>
