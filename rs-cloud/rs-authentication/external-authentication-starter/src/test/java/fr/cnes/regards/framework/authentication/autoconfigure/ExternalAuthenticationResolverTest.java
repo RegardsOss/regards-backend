@@ -85,7 +85,7 @@ public class ExternalAuthenticationResolverTest {
 
     @Test
     public void verify_fail_when_server_returns_unexpected_status_code() {
-        doReturn(ResponseEntity.noContent())
+        doReturn(ResponseEntity.noContent().build())
             .when(externalAuthenticationClient)
             .verifyAndAuthenticate(anyString());
         assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop"))
