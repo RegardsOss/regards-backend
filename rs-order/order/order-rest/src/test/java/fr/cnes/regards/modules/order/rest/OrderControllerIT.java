@@ -537,7 +537,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
             // WAit for availability
-            resultActions.andReturn().getAsyncResult();
+            // resultActions.andReturn().getAsyncResult();
             InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
             ByteStreams.copy(is, fos);
             is.close();
@@ -559,7 +559,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         String[] urlParts = url.split("/");
 
         // Stop at "scope=PROJECT"
-        String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
+        String token = urlParts[4].substring(urlParts[4].indexOf('=') + 1, urlParts[4].indexOf('&'));
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addParameter("orderToken", token);
@@ -621,8 +621,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
 
         Set<String> failures = new HashSet<>();
-        Object o = resultActions.andReturn().getAsyncResult();
-        System.out.println(o);
+        // Object o = resultActions.andReturn().getAsyncResult();
         try (InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
                 ZipInputStream zis = new ZipInputStream(is)) {
             ZipEntry entry;
@@ -757,10 +756,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
             String url = completeUrl.substring(completeUrl.indexOf("/orders/"));
             // extract aipId and checksum
             String[] urlParts = url.split("/");
-            String aipId = urlParts[3];
-            long dataFileId = Long.parseLong(urlParts[5].substring(0, urlParts[5].indexOf('?')));
+            long dataFileId = Long.parseLong(urlParts[4].substring(0, urlParts[4].indexOf('?')));
             // Stop at "scope=PROJECT"
-            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
+            String token = urlParts[4].substring(urlParts[4].indexOf('=') + 1, urlParts[4].indexOf('&'));
 
             // File file3.txt has a status PENDING...
             if (dataFileId == fileText3TxtId) {
@@ -821,7 +819,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         try (FileOutputStream fos = new FileOutputStream(resultFileMl)) {
             // WAit for availability
-            resultActions.andReturn().getAsyncResult();
+            //  resultActions.andReturn().getAsyncResult();
             InputStream is = new ByteArrayInputStream(resultActions.andReturn().getResponse().getContentAsByteArray());
             ByteStreams.copy(is, fos);
             is.close();
@@ -857,9 +855,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
             // extract aipId and checksum
             String[] urlParts = url.split("/");
             String aipId = urlParts[3];
-            long dataFileId = Long.parseLong(urlParts[5].substring(0, urlParts[5].indexOf('?')));
+            long dataFileId = Long.parseLong(urlParts[4].substring(0, urlParts[4].indexOf('?')));
             // Stop at "scope=PROJECT"
-            String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
+            String token = urlParts[4].substring(urlParts[4].indexOf('=') + 1, urlParts[4].indexOf('&'));
 
             // File file3.txt has a status PENDING...
             if (dataFileId == fileText3TxtId) {
