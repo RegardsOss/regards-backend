@@ -23,8 +23,13 @@ import java.util.List;
 import java.util.Set;
 
 import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
+import fr.cnes.regards.framework.authentication.autoconfigure.AuthenticationAutoConfiguration;
+import fr.cnes.regards.framework.authentication.autoconfigure.ExternalAuthenticationAutoConfiguration;
+import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +66,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @EnableWebSecurity
 @ConditionalOnWebApplication
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
+@AutoConfigureAfter({ ExternalAuthenticationAutoConfiguration.class })
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
