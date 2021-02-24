@@ -18,6 +18,29 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -41,28 +64,6 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import io.vavr.collection.HashMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * @author oroussel
@@ -137,6 +138,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new EntityModel<>(project)));
+        authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
@@ -204,7 +206,6 @@ public class BasketControllerIT extends AbstractRegardsIT {
                            customizer().expectStatusNoContent(), "error");
     }
 
-
     @Test
     public void testAddThenRemoveProcessDescription() throws BadBasketSelectionRequestException {
         UUID processBusinessId = UUID.randomUUID();
@@ -212,26 +213,18 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         Basket basket = createBasket();
 
-        RequestBuilderCustomizer customizerAdd = customizer()
-                .expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId", processBusinessId.toString())
+        RequestBuilderCustomizer customizerAdd = customizer().expectStatusOk()
+                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                             processBusinessId.toString())
                 .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
-        performDefaultPut(
-                BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(processBusinessId, parameters),
-                customizerAdd,
-                "error",
-                basket.getDatasetSelections().first().getId());
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                          new ProcessDatasetDescription(processBusinessId, parameters), customizerAdd, "error",
+                          basket.getDatasetSelections().first().getId());
 
-        RequestBuilderCustomizer customizerRemove = customizer()
-                .expectStatusOk()
+        RequestBuilderCustomizer customizerRemove = customizer().expectStatusOk()
                 .expectDoesNotExist("$.content.datasetSelections[0].processDatasetDescription");
-        performDefaultPut(
-                BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                "",
-                customizerRemove,
-                "error",
-                basket.getDatasetSelections().first().getId());
+        performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
+                          "", customizerRemove, "error", basket.getDatasetSelections().first().getId());
     }
 
     @Test
@@ -242,15 +235,13 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testGetBasket() {
         createBasket();
-        RequestBuilderCustomizer customizer = customizer()
-            .expectStatusOk()
-            .expectValue("$.content.quota", 8L)
-            .expectValue("$.content.datasetSelections[0].filesCount", 10L)
-            .expectValue("$.content.datasetSelections[0].filesSize", 124452L)
-            .expectValue("$.content.datasetSelections[0].quota", 8L)
-            .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesCount", 10L)
-            .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesSize", 124452L)
-            .expectValue("$.content.datasetSelections[0].itemsSelections[0].quota", 8L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectValue("$.content.quota", 8L)
+                .expectValue("$.content.datasetSelections[0].filesCount", 10L)
+                .expectValue("$.content.datasetSelections[0].filesSize", 124452L)
+                .expectValue("$.content.datasetSelections[0].quota", 8L)
+                .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesCount", 10L)
+                .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesSize", 124452L)
+                .expectValue("$.content.datasetSelections[0].itemsSelections[0].quota", 8L);
         performDefaultGet(BasketController.ORDER_BASKET, customizer, "error");
     }
 
@@ -260,10 +251,10 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Basket basket = new Basket(getDefaultUserEmail());
         BasketDatasetSelection dsSel = new BasketDatasetSelection();
         dsSel.setDatasetIpid("URN:AIP:DATASET:Olivier:4af7fa7f-110e-42c8-b434-7c863c280548:V1");
-        dsSel.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 2L);
-        dsSel.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 2L);
-        dsSel.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 8L);
-        dsSel.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 124450L);
+        dsSel.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 2L);
+        dsSel.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 2L);
+        dsSel.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 8L);
+        dsSel.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 124450L);
         dsSel.setFileTypeCount(DataType.RAWDATA.name(), 10L);
         dsSel.setFileTypeSize(DataType.RAWDATA.name(), 124452L);
         dsSel.setDatasetLabel("DATASET1");
@@ -271,10 +262,10 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         BasketDatedItemsSelection itemSel = new BasketDatedItemsSelection();
         itemSel.setDate(date);
-        itemSel.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 2L);
-        itemSel.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 2L);
-        itemSel.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 8L);
-        itemSel.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 124450L);
+        itemSel.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 2L);
+        itemSel.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 2L);
+        itemSel.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 8L);
+        itemSel.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 124450L);
         itemSel.setFileTypeCount(DataType.RAWDATA.name(), 10L);
         itemSel.setFileTypeSize(DataType.RAWDATA.name(), 124452L);
         itemSel.setObjectsCount(5);
@@ -290,15 +281,10 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testRemoveDatasetSelection() throws UnsupportedEncodingException {
         Basket basket = createBasket();
-        RequestBuilderCustomizer customizer = customizer()
-            .expectStatusOk()
-            .expectIsEmpty("$.content.datasetSelections")
-            .expectValue("$.content.quota", 0L);
-        performDefaultDelete(
-            BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID,
-            customizer,
-            "error",
-            basket.getDatasetSelections().first().getId());
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectIsEmpty("$.content.datasetSelections")
+                .expectValue("$.content.quota", 0L);
+        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID, customizer,
+                             "error", basket.getDatasetSelections().first().getId());
     }
 
     @Test
