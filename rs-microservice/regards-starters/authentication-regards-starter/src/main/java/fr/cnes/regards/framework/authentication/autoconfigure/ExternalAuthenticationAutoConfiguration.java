@@ -28,13 +28,13 @@ public class ExternalAuthenticationAutoConfiguration {
 
     public static final String DEFAULT_TOKEN = "DEFAULT_TOKEN";
 
-//    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean
     @Bean
     public IExternalAuthenticationResolver externalAuthenticationResolver() {
         return new DefaultExternalAuthenticationResolver();
     }
 
-    private static class DefaultExternalAuthenticationResolver implements IExternalAuthenticationResolver {
+    public static class DefaultExternalAuthenticationResolver implements IExternalAuthenticationResolver {
 
         @Override
         public String verifyAndAuthenticate(String externalToken) {

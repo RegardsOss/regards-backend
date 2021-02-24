@@ -66,7 +66,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @EnableWebSecurity
 @ConditionalOnWebApplication
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
-@AutoConfigureAfter({ ExternalAuthenticationAutoConfiguration.class })
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     /**

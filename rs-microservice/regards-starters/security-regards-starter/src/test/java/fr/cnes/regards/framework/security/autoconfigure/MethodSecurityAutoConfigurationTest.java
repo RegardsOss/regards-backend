@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
+import fr.cnes.regards.framework.authentication.autoconfigure.ExternalAuthenticationAutoConfiguration;
 import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Test;
@@ -58,7 +60,7 @@ public class MethodSecurityAutoConfigurationTest {
         this.context.setServletContext(new MockServletContext());
         this.context.register(SecurityVoterAutoConfiguration.class, MultitenantAutoConfiguration.class,
                               MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
-                              WebSecurityAutoConfiguration.class, JWTService.class, SubscriberMock.class);
+                              WebSecurityAutoConfiguration.class, ExternalAuthenticationAutoConfiguration.DefaultExternalAuthenticationResolver.class, JWTService.class, SubscriberMock.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(MethodAuthorizationService.class)).isNotNull();
