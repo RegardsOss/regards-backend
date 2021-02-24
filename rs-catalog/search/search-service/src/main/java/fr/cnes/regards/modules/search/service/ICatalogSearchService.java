@@ -128,6 +128,19 @@ public interface ICatalogSearchService {
             Collection<QueryableAttribute> attributes) throws SearchException;
 
     /**
+     * Get collection by urn and get its dataobjects statistics
+     * @param urn {@link UniformResourceName} If of the collection we want to get
+     * @param searchType {@link SearchType} for search context
+     * @param attributes {@link AttributeModel} to retrieve statistics on
+     * @return {@link CollectionWithStats}
+     * @throws SearchException
+     * @throws EntityOperationForbiddenException
+     * @throws EntityNotFoundException
+     */
+    CollectionWithStats getCollectionWithDataObjectsStats(UniformResourceName urn, SearchType searchType,
+                                                          Collection<QueryableAttribute> attributes) throws SearchException, EntityOperationForbiddenException, EntityNotFoundException;
+
+    /**
      * Retrieve {@link PropertyBound}s for each property given and {@link ICriterion} search.
      * @return @link PropertyBound}s
      * @throws SearchException
