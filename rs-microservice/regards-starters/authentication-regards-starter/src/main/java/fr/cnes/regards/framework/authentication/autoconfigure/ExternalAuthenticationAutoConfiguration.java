@@ -28,7 +28,7 @@ public class ExternalAuthenticationAutoConfiguration {
 
     public static final String DEFAULT_TOKEN = "DEFAULT_TOKEN";
 
-    @ConditionalOnMissingBean
+//    @ConditionalOnMissingBean
     @Bean
     public IExternalAuthenticationResolver defaultExternalAuthenticationResolver() {
         return new DefaultExternalAuthenticationResolver();
