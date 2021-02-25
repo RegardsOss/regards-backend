@@ -1,5 +1,9 @@
 package fr.cnes.regards.framework.notification.client;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -35,7 +39,21 @@ public interface INotificationClientContract {
      * @param mimeType MIME type ({@link MediaType} can be used!)
      * @param roles list of roles to notify
      */
-    void notify(String message, String title, NotificationLevel level, MimeType mimeType, DefaultRole... roles);
+    default void notify(String message, String title, NotificationLevel level, MimeType mimeType,
+            DefaultRole... roles) {
+        notifyRoles(message, title, level, mimeType, Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Notify a set of roles
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param mimeType MIME type ({@link MediaType} can be used!)
+     * @param roles list of roles to notify
+     */
+    void notifyRoles(String message, String title, NotificationLevel level, MimeType mimeType, Set<String> roles);
 
     /**
      * Notify a set of users with a text plain message
@@ -83,6 +101,26 @@ public interface INotificationClientContract {
      * @param user user to notify
      * @param roles list of roles to notify
      */
-    void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
-            DefaultRole... roles);
+    default void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
+            DefaultRole... roles) {
+        notifyUserAndRoles(message,
+                           title,
+                           level,
+                           mimeType,
+                           user,
+                           Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Notify a user and a set of roles
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param mimeType MIME type ({@link MediaType} can be used!)
+     * @param user user to notify
+     * @param roles list of roles to notify
+     */
+    void notifyUserAndRoles(String message, String title, NotificationLevel level, MimeType mimeType, String user,
+            Set<String> roles);
 }
