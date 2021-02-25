@@ -216,6 +216,23 @@ public class JWTService {
      *
      * FIXME : JWT generate must manage RSA keys
      *
+     * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
+     * @param tenant tenant
+     * @param user user name
+     * @param email user email
+     * @param role user role
+     * @param expirationDate specific expiration date
+     * @param additionalParams additional parameters (user specific)
+     * @return a Json Web Token
+     */
+    public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate, Map<String, Object> additionalParams) {
+        return generateToken(tenant, user, email, role, expirationDate, additionalParams, secret, false);
+    }
+
+    /**
+     *
+     * FIXME : JWT generate must manage RSA keys
+     *
      * Generate a JWT handling the tenant name, the user name and its related role
      * @param tenant tenant
      * @param userLoginAndMail user name & mail
