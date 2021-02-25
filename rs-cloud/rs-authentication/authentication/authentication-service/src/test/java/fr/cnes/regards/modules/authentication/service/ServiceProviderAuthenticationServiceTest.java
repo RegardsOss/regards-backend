@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
 import fr.cnes.regards.modules.authentication.domain.plugin.IServiceProviderPlugin;
@@ -27,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -93,7 +95,7 @@ public class ServiceProviderAuthenticationServiceTest {
         doReturn(Try.failure(expected))
             .when(service).getPlugin(PROVIDER_NAME);
 
-        Try<String> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
+        Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
         assertThat(token.isFailure()).isTrue();
         assertThat(token.getCause()).isEqualTo(expected);
@@ -111,7 +113,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
 
-        Try<String> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock2());
+        Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock2());
 
         assertThat(token.isFailure()).isTrue();
         assertThat(token.getCause()).isInstanceOf(ServiceProviderPluginIllegalParameterException.class);
@@ -134,7 +136,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
 
-        Try<String> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
+        Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
         assertThat(token.isFailure()).isTrue();
         assertThat(token.getCause()).isEqualTo(expected);
@@ -160,7 +162,7 @@ public class ServiceProviderAuthenticationServiceTest {
         when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_NAME, PROVIDER_USER_INFO))
             .thenReturn(Try.failure(expected));
 
-        Try<String> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
+        Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
         assertThat(token.isFailure()).isTrue();
         assertThat(token.getCause()).isEqualTo(expected);
@@ -190,15 +192,16 @@ public class ServiceProviderAuthenticationServiceTest {
         when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), any()))
             .thenReturn("token");
 
-        Try<String> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
+        Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
         assertThat(token.isSuccess()).isTrue();
-        assertThat(token.get()).isEqualTo("token");
+        assertThat(token.get().getAccessToken()).isEqualTo("token");
 
         ArgumentCaptor<String> tenantArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> userArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> roleArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<OffsetDateTime> expirationDateArgumentCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
         //noinspection unchecked
         ArgumentCaptor<java.util.Map<String, Object>> metadataArgumentCaptor = ArgumentCaptor.forClass(java.util.Map.class);
         verify(jwtService).generateToken(
@@ -206,6 +209,7 @@ public class ServiceProviderAuthenticationServiceTest {
             userArgumentCaptor.capture(),
             emailArgumentCaptor.capture(),
             roleArgumentCaptor.capture(),
+            expirationDateArgumentCaptor.capture(),
             metadataArgumentCaptor.capture()
         );
         assertThat(tenantArgumentCaptor.getValue()).isEqualTo(TENANT);
@@ -276,7 +280,7 @@ public class ServiceProviderAuthenticationServiceTest {
     public void verify_fails_when_no_service_provider_found() {
         when(repository.findAll()).thenReturn(List.empty());
 
-        Try<String> result = service.verifyAndAuthenticate("token");
+        Try<Authentication> result = service.verifyAndAuthenticate("token");
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -289,7 +293,7 @@ public class ServiceProviderAuthenticationServiceTest {
         RuntimeException expected = new RuntimeException("Expected");
         doReturn(Try.failure(expected)).when(service).getPlugin(PROVIDER_NAME);
 
-        Try<String> result = service.verifyAndAuthenticate("token");
+        Try<Authentication> result = service.verifyAndAuthenticate("token");
 
         assertThat(result.isFailure()).isTrue();
         assertThat(result.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -334,19 +338,20 @@ public class ServiceProviderAuthenticationServiceTest {
         when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), any()))
             .thenReturn("token");
 
-        Try<String> token = service.verifyAndAuthenticate("token");
+        Try<Authentication> token = service.verifyAndAuthenticate("token");
 
         verify(plugin_1).verify("token");
         verify(plugin_2).verify("token");
         verifyNoInteractions(plugin_3);
 
         assertThat(token.isSuccess()).isTrue();
-        assertThat(token.get()).isEqualTo("token");
+        assertThat(token.get().getAccessToken()).isEqualTo("token");
 
         ArgumentCaptor<String> tenantArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> userArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> roleArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<OffsetDateTime> expirationDateArgumentCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
         //noinspection unchecked
         ArgumentCaptor<java.util.Map<String, Object>> metadataArgumentCaptor = ArgumentCaptor.forClass(java.util.Map.class);
         verify(jwtService).generateToken(
@@ -354,6 +359,7 @@ public class ServiceProviderAuthenticationServiceTest {
             userArgumentCaptor.capture(),
             emailArgumentCaptor.capture(),
             roleArgumentCaptor.capture(),
+            expirationDateArgumentCaptor.capture(),
             metadataArgumentCaptor.capture()
         );
         assertThat(tenantArgumentCaptor.getValue()).isEqualTo(TENANT);

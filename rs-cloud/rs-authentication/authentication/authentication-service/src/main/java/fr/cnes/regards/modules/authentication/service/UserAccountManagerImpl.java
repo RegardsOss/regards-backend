@@ -204,8 +204,8 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                         .map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE))
                         .toJavaList(),
                     null,
-                    "userInfo.get origin url", //FIXME PM023 find which url it is
-                    "userInfo.get request link" //FIXME PM023 find what this is
+                    null,
+                    null
                 )
             ))
             .map(ResponseEntity::getStatusCode)

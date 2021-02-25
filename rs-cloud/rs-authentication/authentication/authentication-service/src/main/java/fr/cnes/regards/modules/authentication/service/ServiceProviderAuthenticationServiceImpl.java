@@ -1,11 +1,13 @@
 package fr.cnes.regards.modules.authentication.service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.annotations.SerializedName;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
 import fr.cnes.regards.modules.authentication.domain.plugin.IServiceProviderPlugin;
@@ -25,6 +27,9 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -59,11 +64,9 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
     }
 
     @Override
-    public Try<String> authenticate(String serviceProviderName, ServiceProviderAuthenticationParams params) {
+    public Try<Authentication> authenticate(String serviceProviderName, ServiceProviderAuthenticationParams params) {
         return getPlugin(serviceProviderName)
             .flatMap(plugin -> {
-                // HEMINGWAY limit work for frontend, use serviceProvider serviceProviderName to get plugin id here instead of in service ? or create custom exception in order to raison from inside service
-                // Meanwhile, this should work
                 if (plugin.getAuthenticationParamsType() != params.getClass()) {
                     return Try.failure(new ServiceProviderPluginIllegalParameterException("Invalid parameter type for service provider."));
                 }
@@ -88,7 +91,7 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
     }
 
     @Override
-    public Try<String> verifyAndAuthenticate(String externalToken) {
+    public Try<Authentication> verifyAndAuthenticate(String externalToken) {
         AtomicReference<String> currentServiceProviderName = new AtomicReference<>();
         return repository.findAll()
             .toStream()
@@ -102,7 +105,7 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
             .toTry(() -> new InsufficientAuthenticationException("Unable to find a Service Provider to successfully verify the provided token."));
     }
 
-    private Try<String> regardsAuthentication(
+    private Try<Authentication> regardsAuthentication(
         String serviceProviderName,
         ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfo.AuthenticationInfo> pAuthInfo
     ) {
@@ -116,12 +119,24 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
                     userInfo.getMetadata()
                         .merge(authInfo);
 
-                return jwtService.generateToken(
-                    runtimeTenantResolver.getTenant(),
-                    userInfo.getEmail(),
-                    userInfo.getEmail(),
+                String tenant = runtimeTenantResolver.getTenant();
+                String email = userInfo.getEmail();
+                OffsetDateTime expirationDate = jwtService.getExpirationDate(OffsetDateTime.now());
+                String token = jwtService.generateToken(
+                    tenant,
+                    email,
+                    email,
                     roleName,
+                    expirationDate,
                     new java.util.HashMap<>(additionalClaims.toJavaMap())
+                );
+
+                return new Authentication(
+                    tenant,
+                    email,
+                    roleName,
+                    token,
+                    expirationDate
                 );
             });
     }

@@ -9,6 +9,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginMetadataNotFoundRuntimeException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.plugin.IServiceProviderPlugin;
@@ -94,6 +95,12 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
             userAccountManager,
             jwtService
         ));
+    }
+
+    @Test
+    public void testSomething() {
+        JWTAuthentication auth = new JWTAuthentication("plop");
+        System.out.println(gson.toJson(auth));
     }
 
     @After

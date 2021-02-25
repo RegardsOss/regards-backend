@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
@@ -115,14 +116,14 @@ public class ServiceProviderController implements IResourceController<ServicePro
 
     @PostMapping(value = PATH_AUTHENTICATE)
     @ResourceAccess(description = "Authenticate with the given service provider.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<String> authenticate(
+    public ResponseEntity<Authentication> authenticate(
         @PathVariable("name") String name,
         @RequestBody ServiceProviderAuthenticationParams params
     ) throws ModuleException {
         return serviceProviderAuthentication.authenticate(name, params)
             .map(ResponseEntity::ok)
-            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().body(ex.getMessage()))
-            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage()))
+            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())
+            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build())
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
@@ -136,13 +137,13 @@ public class ServiceProviderController implements IResourceController<ServicePro
 
     @GetMapping(value = PATH_VERIFY_AUTHENTICATION)
     @ResourceAccess(description = "Verify and authenticate token through service providers.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<String> verifyAndAuthenticate(
+    public ResponseEntity<Authentication> verifyAndAuthenticate(
         @RequestParam(value = "externalToken", required = true) String externalToken
     ) throws ModuleException {
         return serviceProviderAuthentication.verifyAndAuthenticate(externalToken)
             .map(ResponseEntity::ok)
-            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().body(ex.getMessage()))
-            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage()))
+            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> ResponseEntity.badRequest().build())
+            .recover(AuthenticationException.class, ex -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build())
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
