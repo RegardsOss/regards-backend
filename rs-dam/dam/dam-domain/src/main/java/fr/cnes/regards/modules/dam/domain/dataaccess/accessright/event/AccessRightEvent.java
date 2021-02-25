@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
 
 /**
  * Access right event.
@@ -32,25 +35,74 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 @Event(target = Target.ALL)
 public class AccessRightEvent implements ISubscribable {
 
+    /**
+     * This is used by update logic
+     */
     private UniformResourceName datasetIpId;
 
+    /**
+     * This is used for notification purposes
+     */
+    private String datasetLabel;
+
+    private String accessGroupName;
+
+    private AccessLevel accessLevel;
+
+    private DataAccessLevel dataAccessLevel;
+
+    private String dataAccessPluginLabel;
+
     private AccessRightEventType eventType;
+
+    private String roleToNotify;
 
     @SuppressWarnings("unused")
     private AccessRightEvent() {
         super();
     }
 
-    public AccessRightEvent(UniformResourceName datasetIpId, AccessRightEventType eventType) {
-        this.datasetIpId = datasetIpId;
+    public AccessRightEvent(AccessRight accessRight, AccessRightEventType eventType, String roleToNotify) {
+        this.datasetIpId = accessRight.getConstrained().getIpId();
+        this.datasetLabel = accessRight.getConstrained().getLabel();
+        this.accessGroupName = accessRight.getAccessGroup().getName();
+        this.accessLevel = accessRight.getAccessLevel();
+        this.dataAccessLevel = accessRight.getDataAccessLevel();
+        this.dataAccessPluginLabel =
+                accessRight.getDataAccessPlugin() == null ? null : accessRight.getDataAccessPlugin().getLabel();
         this.eventType = eventType;
+        this.roleToNotify = roleToNotify;
     }
 
     public UniformResourceName getDatasetIpId() {
         return datasetIpId;
     }
 
+    public String getDatasetLabel() {
+        return datasetLabel;
+    }
+
+    public String getAccessGroupName() {
+        return accessGroupName;
+    }
+
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
+    }
+
+    public DataAccessLevel getDataAccessLevel() {
+        return dataAccessLevel;
+    }
+
+    public String getDataAccessPluginLabel() {
+        return dataAccessPluginLabel;
+    }
+
     public AccessRightEventType getEventType() {
         return eventType;
+    }
+
+    public String getRoleToNotify() {
+        return roleToNotify;
     }
 }

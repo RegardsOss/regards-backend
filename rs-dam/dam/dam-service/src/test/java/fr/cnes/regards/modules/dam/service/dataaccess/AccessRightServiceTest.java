@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,7 +29,11 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
+import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
+import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
@@ -36,6 +41,7 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
 
@@ -45,7 +51,6 @@ import fr.cnes.regards.modules.model.service.IModelService;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_access_rights" },
         locations = "classpath:es.properties")
-@MultitenantTransactional
 public class AccessRightServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -62,6 +67,18 @@ public class AccessRightServiceTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IAccessRightService accessRightService;
+
+    @Autowired
+    private IAccessRightRepository accessRightRepo;
+
+    @Autowired
+    private IAccessGroupRepository accessGroupRepo;
+
+    @Autowired
+    private IDatasetRepository datasetRepo;
+
+    @Autowired
+    private IModelRepository modelRepo;
 
     @Before
     public void init() {
@@ -89,6 +106,14 @@ public class AccessRightServiceTest extends AbstractMultitenantServiceTest {
 
         // Update access right
         accessRightService.updateAccessRight(ar.getId(), ar);
+    }
+
+    @After
+    public void cleanUp() {
+        accessRightRepo.deleteAll();
+        accessGroupRepo.deleteAll();
+        datasetRepo.deleteAll();
+        modelRepo.deleteAll();
     }
 
     //    @Test
