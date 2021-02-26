@@ -127,7 +127,7 @@ public class ServiceProviderController implements IResourceController<ServicePro
             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
-    @GetMapping(value = PATH_DEAUTHENTICATE)
+    @PostMapping(value = PATH_DEAUTHENTICATE)
     @ResourceAccess(description = "Deauthenticate from the given service provider.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> deauthenticate(@PathVariable("name") String name) throws ModuleException {
         return serviceProviderAuthentication.deauthenticate(name)
