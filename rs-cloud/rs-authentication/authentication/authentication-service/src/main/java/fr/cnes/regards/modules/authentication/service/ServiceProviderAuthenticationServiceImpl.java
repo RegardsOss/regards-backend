@@ -135,6 +135,7 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
                     tenant,
                     email,
                     roleName,
+                    serviceProviderName,
                     token,
                     expirationDate
                 );

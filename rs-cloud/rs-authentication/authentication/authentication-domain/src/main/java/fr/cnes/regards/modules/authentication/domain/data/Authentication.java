@@ -36,6 +36,9 @@ public class Authentication {
 
     private final String sub;
 
+    @SerializedName("service_provider_name")
+    private final String serviceProviderName;
+
     @SerializedName("access_token")
     private final String accessToken;
 
@@ -47,11 +50,12 @@ public class Authentication {
 
     private final String jti = "bearer";
 
-    public Authentication(String tenant, String email, String role, String token, OffsetDateTime expirationDate) {
+    public Authentication(String tenant, String email, String role, String serviceProviderName, String token, OffsetDateTime expirationDate) {
         this.project = tenant;
         this.scope = tenant;
         this.role = role;
         this.sub = email;
+        this.serviceProviderName = serviceProviderName;
         this.accessToken = token;
         this.expiresIn = Date.from(expirationDate.toInstant()).getTime() / 1000;
     }
@@ -70,6 +74,10 @@ public class Authentication {
 
     public String getSub() {
         return sub;
+    }
+
+    public Long getServiceProviderName() {
+        return serviceProviderName;
     }
 
     public String getAccessToken() {
@@ -101,12 +109,13 @@ public class Authentication {
             && Objects.equals(scope, that.scope)
             && Objects.equals(role, that.role)
             && Objects.equals(sub, that.sub)
+            && Objects.equals(serviceProviderName, that.serviceProviderName)
             && Objects.equals(accessToken, that.accessToken)
             && Objects.equals(expiresIn, that.expiresIn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(project, scope, role, sub, accessToken, tokenType, expiresIn, jti);
+        return Objects.hash(project, scope, role, sub, serviceProviderName, accessToken, tokenType, expiresIn, jti);
     }
 }
