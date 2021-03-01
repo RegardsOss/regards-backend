@@ -189,7 +189,9 @@ public class ServiceProviderAuthenticationServiceTest {
         })).when(service).getPlugin(PROVIDER_NAME);
         when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_NAME, PROVIDER_USER_INFO))
             .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
-        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), any()))
+        OffsetDateTime expirationDate = OffsetDateTime.now();
+        when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
+        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any()))
             .thenReturn("token");
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
@@ -335,7 +337,9 @@ public class ServiceProviderAuthenticationServiceTest {
 
         when(userAccountManager.createUserWithAccountAndGroups(providerName_2, PROVIDER_USER_INFO))
             .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
-        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), any()))
+        OffsetDateTime expirationDate = OffsetDateTime.now();
+        when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
+        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any()))
             .thenReturn("token");
 
         Try<Authentication> token = service.verifyAndAuthenticate("token");
