@@ -76,7 +76,7 @@ public class Authentication {
         return sub;
     }
 
-    public Long getServiceProviderName() {
+    public String getServiceProviderName() {
         return serviceProviderName;
     }
 
