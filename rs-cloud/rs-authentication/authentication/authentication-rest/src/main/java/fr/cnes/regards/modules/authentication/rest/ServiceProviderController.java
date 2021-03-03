@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.PersistenceException;
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -81,10 +82,14 @@ public class ServiceProviderController implements IResourceController<ServicePro
     public ResponseEntity<EntityModel<ServiceProviderDto>> saveServiceProvider(
         @Valid @RequestBody ServiceProviderDto serviceProvider
     ) throws ModuleException {
+        //noinspection unchecked
         return serviceProviderCrud.save(serviceProvider.toDomain())
             .map(ServiceProviderDto::new)
             .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
-            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+            .mapFailure(
+                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
+            )
+            .get();
     }
 
     @ResponseBody
