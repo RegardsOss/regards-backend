@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.authentication.service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
+@MultitenantTransactional
 public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudService {
 
     private final IServiceProviderRepository repository;
