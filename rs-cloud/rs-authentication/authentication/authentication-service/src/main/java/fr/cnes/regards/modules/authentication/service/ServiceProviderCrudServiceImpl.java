@@ -1,9 +1,13 @@
 package fr.cnes.regards.modules.authentication.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,9 +19,12 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
 
     private final IServiceProviderRepository repository;
 
+    private final IPluginService pluginService;
+
     @Autowired
-    public ServiceProviderCrudServiceImpl(IServiceProviderRepository repository) {
+    public ServiceProviderCrudServiceImpl(IServiceProviderRepository repository, IPluginService pluginService) {
         this.repository = repository;
+        this.pluginService = pluginService;
     }
 
     @Override
@@ -31,12 +38,33 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
     }
 
     @Override
-    public Try<ServiceProvider> save(ServiceProvider serviceProvider) {
-        return Try.of(() -> repository.save(serviceProvider));
+    public Try<ServiceProvider> save(final ServiceProvider serviceProvider) {
+        return Try.of(() ->  {
+            PluginConfiguration configuration = serviceProvider.getConfiguration();
+            String name = serviceProvider.getName();
+            configuration.setBusinessId(name);
+            configuration.setLabel(name);
+            configuration = pluginService.savePluginConfiguration(configuration);
+            return new ServiceProvider(
+                name,
+                serviceProvider.getAuthUrl(),
+                configuration
+            );
+        }).map(repository::save);
     }
 
     @Override
     public Try<Unit> delete(String name) {
-        return Try.of(() -> repository.delete(name));
+        return Try.of(() -> repository.delete(name))
+            .map(u -> {
+                try {
+                    if (pluginService.exists(TheiaOpenIdConnectPlugin.ID)) {
+                        pluginService.deletePluginConfiguration(name);
+                    }
+                } catch (ModuleException e) {
+                    // ignored, the service provider has been deleted
+                }
+                return u;
+            });
     }
 }

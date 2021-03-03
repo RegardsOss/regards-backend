@@ -1,13 +1,18 @@
 package fr.cnes.regards.modules.authentication.service;
 
+import fr.cnes.regards.framework.encryption.IEncryptionService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
-import fr.cnes.regards.modules.authentication.service.ServiceProviderCrudServiceImpl;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectPlugin;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
 import io.vavr.control.Try;
-import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.AdditionalAnswers;
@@ -23,10 +28,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 
@@ -36,21 +42,6 @@ import static org.mockito.Mockito.when;
     }
 )
 public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT {
-
-    public static final PluginConfiguration STUB_CONF;
-    static {
-        PluginConfiguration pluginConf = new PluginConfiguration(
-            "THEIA",
-            "THEIA"
-        );
-        pluginConf.setVersion(UUID.randomUUID().toString());
-        STUB_CONF = pluginConf;
-    }
-    public static final ServiceProvider STUB = new ServiceProvider(
-        "THEIA",
-        "https://sso.theia-land.fr/login",
-        STUB_CONF
-    );
 
     @Autowired
     private IServiceProviderRepository repository;
@@ -63,8 +54,14 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     @Autowired @InjectMocks
     private ServiceProviderCrudServiceImpl service;
 
+    @Autowired
+    private IEncryptionService encryptionService;
+
+    @Autowired
+    private IPluginService pluginService;
+
     @Before
-    public void setUp() {
+    public void setUp() throws ModuleException {
         MockitoAnnotations.initMocks(this);
         repositoryDelegate = repository;
         repository =
@@ -72,17 +69,19 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
         ReflectionTestUtils.setField(service, "repository", repository);
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-    }
 
-    @After
-    public void tearDown() {
         repository.deleteAll();
+        if (pluginService.exists(TheiaOpenIdConnectPlugin.ID)) {
+            pluginService.deletePluginConfiguration(TheiaOpenIdConnectPlugin.ID);
+        }
+
         Mockito.clearInvocations(repository);
     }
 
     @Test
     public void findAll_ok_when_repository_is_success() {
-        List<ServiceProvider> expected = Collections.singletonList(repository.save(STUB));
+        ServiceProvider stub = getServiceProvider();
+        List<ServiceProvider> expected = Collections.singletonList(repository.save(stub));
 
         Try<Page<ServiceProvider>> actual = service.findAll(Pageable.unpaged());
 
@@ -103,9 +102,10 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
 
     @Test
     public void findByName_ok_when_repository_finds_entity() {
-        ServiceProvider expected = repository.save(STUB);
+        ServiceProvider stub = getServiceProvider();
+        ServiceProvider expected = repository.save(stub);
 
-        Try<ServiceProvider> actual = service.findByName(STUB.getName());
+        Try<ServiceProvider> actual = service.findByName(stub.getName());
 
         assertThat(actual.isSuccess()).isTrue();
         assertThat(actual.get()).isEqualTo(expected);
@@ -113,7 +113,8 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
 
     @Test
     public void findByName_nok_when_entity_not_found() {
-        Try<ServiceProvider> actual = service.findByName(STUB.getName());
+        ServiceProvider stub = getServiceProvider();
+        Try<ServiceProvider> actual = service.findByName(stub.getName());
 
         assertThat(actual.isFailure()).isTrue();
         assertThat(actual.getCause()).isInstanceOf(NoSuchElementException.class);
@@ -121,21 +122,51 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
 
     @Test
     public void save_ok_when_repository_is_success() {
-        ServiceProvider expected = STUB;
-        Try<ServiceProvider> actual = service.save(STUB);
+        ServiceProvider stub = getServiceProvider();
+        Try<ServiceProvider> actual = service.save(stub);
 
         assertThat(actual.isSuccess()).isTrue();
-        assertThat(actual.get()).isEqualTo(expected);
+        assertThat(actual.get()).isEqualTo(stub);
     }
 
     @Test
     public void save_nok_when_repository_is_failure() {
+        ServiceProvider stub = getServiceProvider();
         Exception expected = new RuntimeException("Expected.");
-        when(repository.save(STUB)).thenThrow(expected);
+        doThrow(expected)
+            .when(repository)
+            .save(any());
+//        when(repository.save(stub)).thenThrow(expected);
 
-        Try<ServiceProvider> actual = service.save(STUB);
+        Try<ServiceProvider> actual = service.save(stub);
 
         assertThat(actual.isFailure()).isTrue();
         assertThat(actual.getCause()).isEqualTo(expected);
+    }
+
+    private ServiceProvider getServiceProvider() {
+        try {
+            // Set all parameters
+            Set<IPluginParam> parameters = IPluginParam
+                .set(
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Dancin'") // When the old Joanna plays
+                );
+
+            PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, TheiaOpenIdConnectPlugin.ID, parameters);
+            conf.setBusinessId(TheiaOpenIdConnectPlugin.ID);
+            conf.setVersion(TheiaOpenIdConnectPlugin.VERSION);
+            return new ServiceProvider(
+                TheiaOpenIdConnectPlugin.ID,
+                "https://sso.theia-land.fr/login",
+                conf
+            );
+        } catch (Exception e) {
+            Assert.fail();
+            return null; // never reached, dummy
+        }
     }
 }
