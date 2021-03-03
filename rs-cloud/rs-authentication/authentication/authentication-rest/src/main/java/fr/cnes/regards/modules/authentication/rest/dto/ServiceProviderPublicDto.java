@@ -32,14 +32,18 @@ public class ServiceProviderPublicDto {
     @URL
     private final String authUrl;
 
-    public ServiceProviderPublicDto(String name, String authUrl) {
+    private final String pluginId;
+
+    public ServiceProviderPublicDto(String name, String authUrl, String pluginId) {
         this.name = name;
         this.authUrl = authUrl;
+        this.pluginId = pluginId;
     }
 
     public ServiceProviderPublicDto(ServiceProvider serviceProvider) {
         this.name = serviceProvider.getName();
         this.authUrl = serviceProvider.getAuthUrl();
+        this.pluginId = serviceProvider.getConfiguration().getPluginId();
     }
 
     public String getName() {
@@ -50,17 +54,22 @@ public class ServiceProviderPublicDto {
         return authUrl;
     }
 
+    public String getPluginId() {
+        return pluginId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ServiceProviderPublicDto that = (ServiceProviderPublicDto) o;
         return Objects.equals(name, that.name)
-            && Objects.equals(authUrl, that.authUrl);
+            && Objects.equals(authUrl, that.authUrl)
+            && Objects.equals(pluginId, that.pluginId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, authUrl);
+        return Objects.hash(name, authUrl, pluginId);
     }
 }
