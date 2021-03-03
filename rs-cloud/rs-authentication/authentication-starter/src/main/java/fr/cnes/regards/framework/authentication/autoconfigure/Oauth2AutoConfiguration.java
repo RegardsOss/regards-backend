@@ -134,7 +134,6 @@ public class Oauth2AutoConfiguration {
      * @return PlatformTransactionManager
      */
     @Bean
-    @Primary
     public PlatformTransactionManager transactionManagerStub() {
         return new PlatformTransactionManager() {
 
