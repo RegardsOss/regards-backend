@@ -90,6 +90,7 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
         label = "Registered client secret for the Service Provider",
         description = "The client secret registered for this Service Provider in order to authenticate requests",
         sensitive = true,
+        optional = true,
         defaultValue = ""
     )
     private String clientSecret;
