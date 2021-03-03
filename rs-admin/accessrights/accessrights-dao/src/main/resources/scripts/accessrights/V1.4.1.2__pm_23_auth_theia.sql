@@ -1,0 +1,1 @@
+delete from t_resources_access where microservice = 'rs-admin';
