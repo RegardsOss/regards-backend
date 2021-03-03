@@ -9,6 +9,7 @@ import fr.cnes.regards.modules.authentication.domain.repository.IServiceProvider
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -49,6 +50,19 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
             configuration = pluginService.savePluginConfiguration(configuration);
             return new ServiceProvider(
                 name,
+                serviceProvider.getAuthUrl(),
+                configuration
+            );
+        }).map(repository::save);
+    }
+
+    @Override
+    public Try<ServiceProvider> update(final ServiceProvider serviceProvider) {
+        return Try.of(() ->  {
+            PluginConfiguration configuration = serviceProvider.getConfiguration();
+            configuration = pluginService.updatePluginConfiguration(configuration);
+            return new ServiceProvider(
+                serviceProvider.getName(),
                 serviceProvider.getAuthUrl(),
                 configuration
             );

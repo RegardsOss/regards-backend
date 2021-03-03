@@ -42,7 +42,7 @@ public class ServiceProviderPublicController implements IResourceController<Serv
 
     public static final String PATH_SERVICE_PROVIDER_PUBLIC = "/serviceproviders/public";
 
-    public static final String PATH_SERVICE_PROVIDER_PUBLIC_BY_NAME = "/serviceproviders/{name}/public";
+    public static final String PATH_SERVICE_PROVIDER_PUBLIC_BY_NAME = "/serviceproviders/public/{name}";
 
     @Autowired
     private IServiceProviderCrudService serviceProviderCrud;

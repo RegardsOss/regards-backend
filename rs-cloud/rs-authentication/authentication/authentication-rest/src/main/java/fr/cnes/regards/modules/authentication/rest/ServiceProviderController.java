@@ -92,6 +92,23 @@ public class ServiceProviderController implements IResourceController<ServicePro
             .get();
     }
 
+    @PutMapping(path = PATH_SERVICE_PROVIDERS)
+    @ResponseBody
+    @ResourceAccess(description = "Update service provider.", role = DefaultRole.PROJECT_ADMIN)
+    @SuppressWarnings("rawtypes")
+    public ResponseEntity<EntityModel<ServiceProviderDto>> updateServiceProvider(
+        @Valid @RequestBody ServiceProviderDto serviceProvider
+    ) throws ModuleException {
+        //noinspection unchecked
+        return serviceProviderCrud.update(serviceProvider.toDomain())
+            .map(ServiceProviderDto::new)
+            .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.CREATED))
+            .mapFailure(
+                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
+            )
+            .get();
+    }
+
     @ResponseBody
     @GetMapping(value = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Retrieve the service provider.", role = DefaultRole.PROJECT_ADMIN)

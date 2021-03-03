@@ -136,12 +136,28 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
         doThrow(expected)
             .when(repository)
             .save(any());
-//        when(repository.save(stub)).thenThrow(expected);
 
         Try<ServiceProvider> actual = service.save(stub);
 
         assertThat(actual.isFailure()).isTrue();
         assertThat(actual.getCause()).isEqualTo(expected);
+    }
+
+    @Test
+    public void update_ok_when_repository_is_success() {
+        ServiceProvider stub = getServiceProvider();
+        ServiceProvider saved = service.save(stub).get();
+
+        ServiceProvider toUpdate = new ServiceProvider(
+            saved.getName(),
+            "https://chronos.fr/sso/auth.do",
+            saved.getConfiguration()
+        );
+
+        Try<ServiceProvider> updated = service.update(toUpdate);
+
+        assertThat(updated.isSuccess()).isTrue();
+        assertThat(updated.get()).isEqualTo(toUpdate);
     }
 
     private ServiceProvider getServiceProvider() {
