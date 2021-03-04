@@ -32,7 +32,7 @@ public interface IServiceProviderCrudService {
 
     Try<ServiceProvider> save(ServiceProvider serviceProvider);
 
-    Try<ServiceProvider> update(ServiceProvider serviceProvider);
+    Try<ServiceProvider> update(String name, ServiceProvider serviceProvider);
 
     Try<Unit> delete(String name);
 }

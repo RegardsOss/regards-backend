@@ -57,16 +57,17 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
     }
 
     @Override
-    public Try<ServiceProvider> update(final ServiceProvider serviceProvider) {
-        return Try.of(() ->  {
-            PluginConfiguration configuration = serviceProvider.getConfiguration();
-            configuration = pluginService.updatePluginConfiguration(configuration);
-            return new ServiceProvider(
-                serviceProvider.getName(),
-                serviceProvider.getAuthUrl(),
-                configuration
-            );
-        }).map(repository::save);
+    public Try<ServiceProvider> update(String name, final ServiceProvider serviceProvider) {
+        return repository.findByName(name).toTry()
+            .mapTry(sp ->  {
+                PluginConfiguration configuration = serviceProvider.getConfiguration();
+                configuration = pluginService.updatePluginConfiguration(configuration);
+                return new ServiceProvider(
+                    name,
+                    serviceProvider.getAuthUrl(),
+                    configuration
+                );
+            }).map(repository::save);
     }
 
     @Override

@@ -154,7 +154,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
             saved.getConfiguration()
         );
 
-        Try<ServiceProvider> updated = service.update(toUpdate);
+        Try<ServiceProvider> updated = service.update(saved.getName(), toUpdate);
 
         assertThat(updated.isSuccess()).isTrue();
         assertThat(updated.get()).isEqualTo(toUpdate);
