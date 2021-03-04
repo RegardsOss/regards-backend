@@ -166,7 +166,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
             Set<IPluginParam> parameters = IPluginParam
                 .set(
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Don't"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Dancin'") // When the old Joanna plays

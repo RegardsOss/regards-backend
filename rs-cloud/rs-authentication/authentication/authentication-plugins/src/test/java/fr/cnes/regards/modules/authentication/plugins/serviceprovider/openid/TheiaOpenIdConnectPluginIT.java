@@ -82,7 +82,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             Set<IPluginParam> parameters = IPluginParam
                 .set(
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I don't feel like dancin'"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Rather be home with no-one if I can't get down with you-ou-ou")),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Rather be home with no-one if I can't get down with you-ou-ou"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
