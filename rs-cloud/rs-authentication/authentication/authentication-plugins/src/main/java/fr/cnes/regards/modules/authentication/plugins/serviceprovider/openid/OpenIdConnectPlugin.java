@@ -96,24 +96,24 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
 
     @PluginParameter(
         name = OPENID_TOKEN_ENDPOINT,
-        label = "Service Provider \"token\" type endpoint",
-        description = "The Service Provider endpoint of type \"token\" to authenticate"
+        label = "Service Provider \"token\" endpoint",
+        description = "The Service Provider endpoint to authenticate and retrieve an Oauth2 token"
     )
     @URL
     private String tokenEndpoint;
 
     @PluginParameter(
         name = OPENID_USER_INFO_ENDPOINT,
-        label = "Service Provider \"userInfo\" type endpoint",
-        description = "The Service Provider endpoint of type \"userInfo\" to retrieve info about the authenticated user"
+        label = "Service Provider \"userInfo\" endpoint",
+        description = "The Service Provider endpoint to retrieve info about the authenticated user"
     )
     @URL
     private String userInfoEndpoint;
 
     @PluginParameter(
         name = OPENID_REVOKE_ENDPOINT,
-        label = "Service Provider \"revoke\" type endpoint",
-        description = "The Service Provider endpoint of type \"revoke\" to deauthenticate",
+        label = "Service Provider \"revoke\" endpoint",
+        description = "The Service Provider endpoint to deauthenticate",
         optional = true
     )
     @URL
