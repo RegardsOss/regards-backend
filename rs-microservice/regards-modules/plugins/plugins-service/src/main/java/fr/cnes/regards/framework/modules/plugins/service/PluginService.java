@@ -239,8 +239,8 @@ public class PluginService implements IPluginService {
     private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfiguration conf)
             throws EncryptionException {
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            if (paramType.isSensible()) {
-                StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
+            StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
+            if (pluginParam != null && paramType.isSensible() && pluginParam.hasValue()) {
                 pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
             }
         }
