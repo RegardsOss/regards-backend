@@ -204,7 +204,7 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
                 if (body == null) {
                     return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
                 }
-                if (!body.getTokenType().equals("bearer")) {
+                if (!body.getTokenType().equalsIgnoreCase("bearer")) {
                     return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider returned invalid token type \"%s\", expected \"bearer\".", body.getTokenType())));
                 }
                 return Try.success(body);
