@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -28,8 +29,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdTokenResponse;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.response.TheiaOpenIdUserInfoResponse;
 import io.vavr.control.Try;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,9 +51,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @TestPropertySource(
     properties = {
-        "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests",
+        "spring.jpa.properties.hibernate.default_schema=openid_authentication_service_provider_tests",
     })
-public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
+public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     public static final String ENDPOINT_FORMAT = "http://localhost:%s%s";
     public static final String TOKEN_ENDPOINT = "/token";
@@ -76,7 +75,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         PluginUtils.setup();
     }
 
-    private TheiaOpenIdConnectPlugin getPlugin() {
+    private OpenIdConnectPlugin getPlugin() {
         try {
             // Set all parameters
             Set<IPluginParam> parameters = IPluginParam
@@ -85,11 +84,14 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Rather be home with no-one if I can't get down with you-ou-ou"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "http://theia.org/claims/givenname"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "http://theia.org/claims/lastname"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
                 );
 
-            PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, "", parameters);
-            TheiaOpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+            PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
+            OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
             Assert.assertNotNull(plugin);
             return plugin;
         } catch (Exception e) {
@@ -409,22 +411,23 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             firstname = "firstname",
             email = "email";
 
-        TheiaOpenIdUserInfoResponse response =
-            new TheiaOpenIdUserInfoResponse(
-                email,
-                firstname,
-                lastname,
-                organization,
-                function,
-                type,
-                telephone,
-                streetAddress,
-                source,
-                country,
-                ignKey,
-                ignAuthentication,
-                role,
-                regDate);
+        HashMap<String, String> response =
+            io.vavr.collection.HashMap.<String, String>empty()
+                .put("http://theia.org/claims/emailaddress", email)
+                .put("http://theia.org/claims/givenname", firstname)
+                .put("http://theia.org/claims/lastname", lastname)
+                .put("http://theia.org/claims/organization", organization)
+                .put("http://theia.org/claims/function", function)
+                .put("http://theia.org/claims/type", type)
+                .put("http://theia.org/claims/telephone", telephone)
+                .put("http://theia.org/claims/streetaddress", streetAddress)
+                .put("http://theia.org/claims/source", source)
+                .put("http://theia.org/claims/country", country)
+                .put("http://theia.org/claims/ignKey", ignKey)
+                .put("http://theia.org/claims/ignAuthentication", ignAuthentication)
+                .put("http://theia.org/claims/role", role)
+                .put("http://theia.org/claims/regDate", regDate)
+                .toJavaMap();
 
         stubFor(
             get(urlEqualTo(USER_INFO_ENDPOINT))
@@ -443,17 +446,17 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     .withEmail(email)
                     .withFirstname(firstname)
                     .withLastname(lastname)
-                    .addMetadata("organization", organization)
-                    .addMetadata("function", function)
-                    .addMetadata("type", type)
-                    .addMetadata("telephone", telephone)
-                    .addMetadata("streetAddress", streetAddress)
-                    .addMetadata("source", source)
-                    .addMetadata("country", country)
-                    .addMetadata("ignKey", ignKey)
-                    .addMetadata("ignAuthentication", ignAuthentication)
-                    .addMetadata("role", role)
-                    .addMetadata("regDate", regDate)
+                    .addMetadata("http://theia.org/claims/organization", organization)
+                    .addMetadata("http://theia.org/claims/function", function)
+                    .addMetadata("http://theia.org/claims/type", type)
+                    .addMetadata("http://theia.org/claims/telephone", telephone)
+                    .addMetadata("http://theia.org/claims/streetaddress", streetAddress)
+                    .addMetadata("http://theia.org/claims/source", source)
+                    .addMetadata("http://theia.org/claims/country", country)
+                    .addMetadata("http://theia.org/claims/ignKey", ignKey)
+                    .addMetadata("http://theia.org/claims/ignAuthentication", ignAuthentication)
+                    .addMetadata("http://theia.org/claims/role", role)
+                    .addMetadata("http://theia.org/claims/regDate", regDate)
                     .build(),
                 new OpenIdConnectToken(accessToken)
             ));

@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid;
+package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.integration;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
@@ -30,10 +28,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.request.OpenIdTokenRequest;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdTokenResponse;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdUserInfoResponse;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdAuthenticationParams;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectPlugin;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectToken;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
@@ -44,24 +41,20 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @TestPropertySource(
     properties = {
-        "spring.jpa.properties.hibernate.default_schema=theia_for_real_authentication_service_provider_tests",
+        "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests",
     })
-public class TheiaOpenIdConnectPluginForRealIT extends AbstractRegardsServiceIT {
+public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TheiaOpenIdConnectPluginForRealIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TheiaOpenIdConnectPluginIT.class);
 
     @Autowired
     private IEncryptionService encryptionService;
@@ -100,15 +93,18 @@ public class TheiaOpenIdConnectPluginForRealIT extends AbstractRegardsServiceIT 
                 secret,
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "https://sso.theia-land.fr/oauth2/token"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "https://sso.theia-land.fr/theia/services/userinfo"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "http://theia.org/claims/givenname"),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "http://theia.org/claims/lastname"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
             );
-        PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, "", parameters);
-        TheiaOpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+        PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
+        OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
 
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
             plugin.authenticate(
                 new OpenIdAuthenticationParams(
-                    "54a5511b-3305-3433-ba0b-db815d494155",
+                    "f4136307-1223-353c-9fdc-87bfe5c10be4",
                     "http://vm-perf.cloud-espace.si.c-s.fr/auth/perf"
                 )
             );
@@ -123,16 +119,17 @@ public class TheiaOpenIdConnectPluginForRealIT extends AbstractRegardsServiceIT 
         assertThat(userInfo.getEmail()).isEqualTo("arnaud@monkeypatch.io");
         assertThat(userInfo.getFirstname()).isEqualTo("Arnaud");
         assertThat(userInfo.getLastname()).isEqualTo("Bos");
-        assertThat(userInfo.getMetadata().get("organization")).isEqualTo(Option.some("CS Group"));
-        assertThat(userInfo.getMetadata().get("function")).isEqualTo(Option.some("ff"));
-        assertThat(userInfo.getMetadata().get("type")).isEqualTo(Option.some("person"));
-        assertThat(userInfo.getMetadata().get("streetAddress")).isEqualTo(Option.some("ff"));
-        assertThat(userInfo.getMetadata().get("source")).isEqualTo(Option.some("theia"));
-        assertThat(userInfo.getMetadata().get("country")).isEqualTo(Option.some("FR"));
-        assertThat(userInfo.getMetadata().get("ignKey")).isEqualTo(Option.some(""));
-        assertThat(userInfo.getMetadata().get("ignAuthentication")).isEqualTo(Option.some(""));
-        assertThat(userInfo.getMetadata().get("role")).isEqualTo(Option.some("Internal/identity,Internal/everyone"));
-        assertThat(userInfo.getMetadata().get("regDate")).isEqualTo(Option.some("1614872166974"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/organization")).isEqualTo(Option.some("CS Group"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/function")).isEqualTo(Option.some("ff"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/type")).isEqualTo(Option.some("person"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/streetaddress")).isEqualTo(Option.some("ff"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/source")).isEqualTo(Option.some("theia"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/country")).isEqualTo(Option.some("FR"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/ignkey")).isEqualTo(Option.some(""));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/ignauthentication")).isEqualTo(Option.some(""));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/foreignauthorization")).isEqualTo(Option.some(Boolean.toString(false)));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/role")).isEqualTo(Option.some("Internal/identity,Internal/everyone"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/regDate")).isEqualTo(Option.some("1614872166974"));
     }
 
 }

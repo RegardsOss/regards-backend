@@ -24,7 +24,7 @@ import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.Serv
 import java.util.Objects;
 
 @GsonDiscriminator(OpenIdConnectPlugin.ID)
-class OpenIdAuthenticationParams extends ServiceProviderAuthenticationParams {
+public class OpenIdAuthenticationParams extends ServiceProviderAuthenticationParams {
 
     private final String code;
 

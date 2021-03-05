@@ -24,7 +24,7 @@ import io.vavr.collection.Map;
 
 import java.util.Objects;
 
-class OpenIdConnectToken extends ServiceProviderAuthenticationInfo.AuthenticationInfo {
+public class OpenIdConnectToken extends ServiceProviderAuthenticationInfo.AuthenticationInfo {
 
     private final String token;
 

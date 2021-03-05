@@ -28,6 +28,7 @@ import feign.httpclient.ApacheHttpClient;
 import fr.cnes.regards.framework.feign.ClientErrorDecoder;
 import fr.cnes.regards.framework.feign.ExternalTarget;
 import fr.cnes.regards.framework.feign.FeignContractSupplier;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.authentication.domain.plugin.IServiceProviderPlugin;
@@ -35,7 +36,6 @@ import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.Serv
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.request.OpenIdTokenRequest;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdTokenResponse;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdUserInfoResponse;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
@@ -60,11 +60,23 @@ import static com.google.common.base.Predicates.instanceOf;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 
-public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInfoResponse> implements IServiceProviderPlugin<OpenIdAuthenticationParams, OpenIdConnectToken> {
+@Plugin(
+    id = OpenIdConnectPlugin.ID,
+    author = "REGARDS Team",
+    description = "Plugin handling the authentication via OpenId Service Provider",
+    version = OpenIdConnectPlugin.VERSION,
+    contact = "regards@c-s.fr",
+    license = "GPLv3",
+    owner = "CNES",
+    url = "https://regardsoss.github.io/"
+)
+public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthenticationParams, OpenIdConnectToken> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenIdConnectPlugin.class);
 
     public static final String ID = "OpenId";
+
+    public static final String VERSION = "1.0";
 
     public static final String OPENID_CONNECT_TOKEN = "OPENID_CONNECT_TOKEN";
 
@@ -75,6 +87,12 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
     public static final String OPENID_TOKEN_ENDPOINT = "OpenId_Token_Endpoint";
 
     public static final String OPENID_USER_INFO_ENDPOINT = "OpenId_UserInfo_Endpoint";
+
+    public static final String OPENID_USER_INFO_EMAIL_MAPPING = "OpenId_UserInfo_Email_Mapping";
+
+    public static final String OPENID_USER_INFO_FIRSTNAME_MAPPING = "OpenId_UserInfo_Firstname_Mapping";
+
+    public static final String OPENID_USER_INFO_LASTNAME_MAPPING = "OpenId_UserInfo_Lastname_Mapping";
 
     public static final String OPENID_REVOKE_ENDPOINT = "OpenId_Revoke_Endpoint";
 
@@ -109,6 +127,29 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
     )
     @URL
     private String userInfoEndpoint;
+
+    @PluginParameter(
+        name = OPENID_USER_INFO_EMAIL_MAPPING,
+        label = "Email mapping field in the Service Provider response",
+        description = "The name of the field containing the user email in the Service Provider user info response"
+    )
+    private String userInfoEmailMappingField;
+
+    @PluginParameter(
+        name = OPENID_USER_INFO_FIRSTNAME_MAPPING,
+        label = "Firstname mapping field in the Service Provider response",
+        description = "The name of the field containing the user firstname in the Service Provider user info response",
+        optional = true
+    )
+    private String userInfoFirstnameMappingField;
+
+    @PluginParameter(
+        name = OPENID_USER_INFO_LASTNAME_MAPPING,
+        label = "Lastname mapping field in the Service Provider response",
+        description = "The name of the field containing the user lastname in the Service Provider user info response",
+        optional = true
+    )
+    private String userInfoLastnameMappingField;
 
     @PluginParameter(
         name = OPENID_REVOKE_ENDPOINT,
@@ -155,11 +196,7 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
     @Override
     public Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> authenticate(OpenIdAuthenticationParams params) {
         return token(params)
-            .flatMap(token -> userInfo(token)
-                .map(userInfo -> new ServiceProviderAuthenticationInfo<>(
-                    userInfo.toDomain(),
-                    new OpenIdConnectToken(token)
-                )));
+            .flatMap(this::verify);
     }
 
     @Override
@@ -177,17 +214,33 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
     @Override
     public Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> verify(String token) {
         return userInfo(token)
-            .map(userInfo -> new ServiceProviderAuthenticationInfo<>(
-                userInfo.toDomain(),
-                new OpenIdConnectToken(token)
-            ));
+            .map(userInfo -> {
+                ServiceProviderAuthenticationInfo.UserInfo.Builder builder =
+                    new ServiceProviderAuthenticationInfo.UserInfo.Builder()
+                        .withEmail(userInfo.get(userInfoEmailMappingField))
+                        .withFirstname(userInfo.get(userInfoFirstnameMappingField))
+                        .withLastname(userInfo.get(userInfoLastnameMappingField));
+                userInfo.forEach((key, value) -> {
+                    if (!key.equals(userInfoEmailMappingField)
+                        && !key.equals(userInfoFirstnameMappingField)
+                        && !key.equals(userInfoLastnameMappingField)
+                    ) {
+                        builder.addMetadata(key, value);
+                    }
+                });
+
+                return new ServiceProviderAuthenticationInfo<>(
+                    builder.build(),
+                    new OpenIdConnectToken(token)
+                );
+            });
     }
 
     private Try<String> token(OpenIdAuthenticationParams params) {
         String basicString = String.format("%s:%s", clientId, clientSecret);
         basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
         Map<String, String> headers = HashMap.of(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString);
-        IOpenIdConnectClient<UserInfoResponse> client = getOauth2Client(tokenEndpoint, headers);
+        OpenIdConnectClient client = getOauth2Client(tokenEndpoint, headers);
 
         return Try
             .of(() -> new OpenIdTokenRequest(
@@ -212,9 +265,9 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
             .map(OpenIdTokenResponse::getAccessToken);
     }
 
-    private Try<OpenIdUserInfoResponse> userInfo(String oauth2Token) {
+    private Try<java.util.HashMap<String, String>> userInfo(String oauth2Token) {
         Map<String, String> headers = HashMap.of(HttpHeaders.AUTHORIZATION, BEARER_AUTH + oauth2Token);
-        IOpenIdConnectClient<UserInfoResponse> client = getOauth2Client(userInfoEndpoint, headers);
+        OpenIdConnectClient client = getOauth2Client(userInfoEndpoint, headers);
 
         return Try
             .of(client::userInfo)
@@ -223,9 +276,12 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
                 if (response.getStatusCode() != HttpStatus.OK) {
                     return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider rejected userInfo request with status: %s", response.getStatusCode())));
                 }
-                OpenIdUserInfoResponse body = response.getBody();
+                java.util.HashMap<String, String> body = response.getBody();
                 if (body == null) {
                     return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
+                }
+                if (!body.containsKey(userInfoEmailMappingField)) {
+                    return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider userInfo resopnse does not contain required field: %s", userInfoEmailMappingField)));
                 }
                 return Try.success(body);
             });
@@ -237,7 +293,7 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
             Map<String, String> headers = HashMap.of(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString);
 
-            IOpenIdConnectClient<UserInfoResponse> client = getOauth2Client(revokeEndpoint, headers);
+            OpenIdConnectClient client = getOauth2Client(revokeEndpoint, headers);
 
             // Execute side effect, and then nothing.
             // It's not like we're going to fail the user's logout operation and ask it to retry?
@@ -247,17 +303,15 @@ public abstract class OpenIdConnectPlugin<UserInfoResponse extends OpenIdUserInf
         return Try.success(Unit.UNIT);
     }
 
-    protected IOpenIdConnectClient<UserInfoResponse> getOauth2Client(String url, Map<String, String> headers) {
+    protected OpenIdConnectClient getOauth2Client(String url, Map<String, String> headers) {
         return feign.newInstance(
             new ExternalTarget<>(
-                getOauth2ClientType(),
+                OpenIdConnectClient.class,
                 url,
                 headers.toJavaMap()
             )
         );
     }
-
-    protected abstract <T extends IOpenIdConnectClient<UserInfoResponse>> Class<T> getOauth2ClientType();
 
     private <T> Try<T> mapClientException(Try<T> call) {
         //noinspection unchecked

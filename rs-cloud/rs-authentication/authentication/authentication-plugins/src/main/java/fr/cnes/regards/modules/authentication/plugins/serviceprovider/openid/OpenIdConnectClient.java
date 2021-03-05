@@ -16,25 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia;
+package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.IOpenIdConnectClient;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.request.OpenIdTokenRequest;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.response.OpenIdTokenResponse;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.response.TheiaOpenIdUserInfoResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.HashMap;
 
-@RestClient(name = "theia-open-id-connect", contextId = "theia-open-id-connect")
+@RestClient(name = "open-id-connect", contextId = "open-id-connect")
 @RequestMapping(
     consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE,
     produces = MediaType.APPLICATION_JSON_VALUE
 )
-public interface TheiaOpenIdConnectClient extends IOpenIdConnectClient<TheiaOpenIdUserInfoResponse> {
+public interface OpenIdConnectClient/*<UserInfoResponse extends OpenIdUserInfoResponse>*/ {
 
     @PostMapping
     @ResponseBody
@@ -42,7 +40,7 @@ public interface TheiaOpenIdConnectClient extends IOpenIdConnectClient<TheiaOpen
 
     @GetMapping
     @ResponseBody
-    ResponseEntity<TheiaOpenIdUserInfoResponse> userInfo();
+    ResponseEntity<HashMap<String, String>> userInfo();
 
     @PostMapping
     ResponseEntity<Void> revoke(@RequestParam("token") String token);

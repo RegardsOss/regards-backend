@@ -10,7 +10,6 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
 import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectPlugin;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
 import io.vavr.control.Try;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +42,7 @@ import static org.mockito.Mockito.when;
 )
 public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private IServiceProviderRepository repository;
 
@@ -51,6 +51,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired @InjectMocks
     private ServiceProviderCrudServiceImpl service;
 
@@ -71,8 +72,8 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         repository.deleteAll();
-        if (pluginService.exists(TheiaOpenIdConnectPlugin.ID)) {
-            pluginService.deletePluginConfiguration(TheiaOpenIdConnectPlugin.ID);
+        if (pluginService.exists(OpenIdConnectPlugin.ID)) {
+            pluginService.deletePluginConfiguration(OpenIdConnectPlugin.ID);
         }
 
         Mockito.clearInvocations(repository);
@@ -169,14 +170,17 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Don't"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Dancin'") // When the old Joanna plays
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "Dancin'"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "Dancin'"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "Dancin'"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "When the old Joanna plays")
                 );
 
-            PluginConfiguration conf = PluginConfiguration.build(TheiaOpenIdConnectPlugin.class, TheiaOpenIdConnectPlugin.ID, parameters);
-            conf.setBusinessId(TheiaOpenIdConnectPlugin.ID);
-            conf.setVersion(TheiaOpenIdConnectPlugin.VERSION);
+            PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, OpenIdConnectPlugin.ID, parameters);
+            conf.setBusinessId(OpenIdConnectPlugin.ID);
+            conf.setVersion(OpenIdConnectPlugin.VERSION);
             return new ServiceProvider(
-                TheiaOpenIdConnectPlugin.ID,
+                OpenIdConnectPlugin.ID,
                 "https://sso.theia-land.fr/login",
                 conf
             );

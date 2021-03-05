@@ -121,9 +121,7 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
             }
 
             public UserInfo build() {
-                if (email == null
-                    || firstname == null
-                    || lastname == null) {
+                if (email == null) {
                     throw new InternalAuthenticationServiceException("Unable to build required authentication parameters.");
                 }
                 return new UserInfo(email, firstname, lastname, metadata);

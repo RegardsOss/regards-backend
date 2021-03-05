@@ -8,8 +8,7 @@ import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.repository.IServiceProviderRepository;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
-import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.theia.TheiaOpenIdConnectPlugin;
-import io.vavr.control.Option;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdConnectPlugin;
 import io.vavr.control.Try;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -75,7 +74,7 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
         return Try.of(() -> repository.delete(name))
             .map(u -> {
                 try {
-                    if (pluginService.exists(TheiaOpenIdConnectPlugin.ID)) {
+                    if (pluginService.exists(OpenIdConnectPlugin.ID)) {
                         pluginService.deletePluginConfiguration(name);
                     }
                 } catch (ModuleException e) {
