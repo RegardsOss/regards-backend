@@ -15,9 +15,10 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 public class FeatureExtractionResponseEvent implements ISubscribable {
 
     /**
-     * This field is just here as to not break compatibility with former version
+     * This field is just here as to not break compatibility with former version.
+     * It cannot be "static final" otherwise GSON does not take it into consideration.
      */
-    private final static String type = FeatureExtractionRequest.REQUEST_TYPE;
+    private String type = FeatureExtractionRequest.REQUEST_TYPE;
 
     /**
      * The request id
