@@ -26,6 +26,10 @@ public class InvalidJwtException extends JwtException {
 
     private static final long serialVersionUID = 1L;
 
+    public InvalidJwtException(Throwable cause) {
+        super(cause);
+    }
+
     public InvalidJwtException(String pMessage) {
         super(pMessage);
     }

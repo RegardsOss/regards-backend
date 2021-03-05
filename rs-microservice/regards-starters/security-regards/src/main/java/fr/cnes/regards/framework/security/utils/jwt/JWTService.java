@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,10 +35,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -142,9 +139,15 @@ public class JWTService {
      */
     public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
 
-        final Jws<Claims> claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
-            .parseClaimsJws(pAuthentication.getJwt());
-        // OK, trusted JWT parsed and validated
+        Jws<Claims> claims;
+        try {
+             claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
+                .parseClaimsJws(pAuthentication.getJwt());
+            // OK, trusted JWT parsed and validated
+        } catch (MalformedJwtException m) {
+            LOG.error("Failed to parse claims");
+            throw new InvalidJwtException(m);
+        }
 
         final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
         if (tenant == null) {

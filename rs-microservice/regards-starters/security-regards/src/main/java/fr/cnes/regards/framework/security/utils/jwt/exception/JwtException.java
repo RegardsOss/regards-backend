@@ -25,6 +25,10 @@ public class JwtException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    public JwtException(Throwable cause) {
+        super(cause);
+    }
+
     /**
      * Constructor setting the message exception thanks to the parameter
      */
