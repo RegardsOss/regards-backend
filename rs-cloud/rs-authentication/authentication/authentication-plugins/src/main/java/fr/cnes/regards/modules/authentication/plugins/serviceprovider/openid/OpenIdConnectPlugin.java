@@ -98,14 +98,14 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_CLIENT_ID,
-        label = "Registered client id for the Service Provider",
+        label = "Client Id",
         description = "The client id registered for this Service Provider in order to authenticate requests"
     )
     private String clientId;
 
     @PluginParameter(
         name = OPENID_CLIENT_SECRET,
-        label = "Registered client secret for the Service Provider",
+        label = "Client Secret",
         description = "The client secret registered for this Service Provider in order to authenticate requests",
         sensitive = true,
         optional = true
@@ -114,7 +114,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_TOKEN_ENDPOINT,
-        label = "Service Provider \"token\" endpoint",
+        label = "\"token\" endpoint URL",
         description = "The Service Provider endpoint to authenticate and retrieve an Oauth2 token"
     )
     @URL
@@ -122,7 +122,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_USER_INFO_ENDPOINT,
-        label = "Service Provider \"userInfo\" endpoint",
+        label = "\"user info\" endpoint URL",
         description = "The Service Provider endpoint to retrieve info about the authenticated user"
     )
     @URL
@@ -130,14 +130,14 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_USER_INFO_EMAIL_MAPPING,
-        label = "Email mapping field in the Service Provider response",
+        label = "Email mapping field",
         description = "The name of the field containing the user email in the Service Provider user info response"
     )
     private String userInfoEmailMappingField;
 
     @PluginParameter(
         name = OPENID_USER_INFO_FIRSTNAME_MAPPING,
-        label = "Firstname mapping field in the Service Provider response",
+        label = "Firstname mapping field",
         description = "The name of the field containing the user firstname in the Service Provider user info response",
         optional = true
     )
@@ -145,7 +145,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_USER_INFO_LASTNAME_MAPPING,
-        label = "Lastname mapping field in the Service Provider response",
+        label = "Lastname mapping field",
         description = "The name of the field containing the user lastname in the Service Provider user info response",
         optional = true
     )
@@ -153,7 +153,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     @PluginParameter(
         name = OPENID_REVOKE_ENDPOINT,
-        label = "Service Provider \"revoke\" endpoint",
+        label = "\"revoke\" endpoint URL",
         description = "The Service Provider endpoint to deauthenticate",
         optional = true
     )
