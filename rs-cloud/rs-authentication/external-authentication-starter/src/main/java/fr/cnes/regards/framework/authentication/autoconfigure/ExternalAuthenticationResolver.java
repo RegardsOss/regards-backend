@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.authentication.autoconfigure;
 import feign.FeignException;
 import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import io.vavr.control.Try;
 import org.springframework.http.HttpStatus;
@@ -31,20 +32,25 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import static com.google.common.base.Predicates.instanceOf;
-import static io.vavr.API.$;
-import static io.vavr.API.Case;
+import static io.vavr.API.*;
 
 public class ExternalAuthenticationResolver implements IExternalAuthenticationResolver {
 
     private IExternalAuthenticationClient externalAuthenticationClient;
 
-    public ExternalAuthenticationResolver(IExternalAuthenticationClient externalAuthenticationClient) {
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    public ExternalAuthenticationResolver(IExternalAuthenticationClient externalAuthenticationClient, IRuntimeTenantResolver runtimeTenantResolver) {
         this.externalAuthenticationClient = externalAuthenticationClient;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public String verifyAndAuthenticate(String externalToken) {
-        return Try.run(FeignSecurityManager::asSystem)
+    public String verifyAndAuthenticate(String tenant, String externalToken) {
+        return Try.run(() -> {
+            FeignSecurityManager.asSystem();
+            runtimeTenantResolver.forceTenant(tenant);
+        })
             .map(ignored -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
             .transform(this::mapClientException)
             .flatMap(response -> {
@@ -57,7 +63,10 @@ public class ExternalAuthenticationResolver implements IExternalAuthenticationRe
                 }
                 return Try.success(token);
             })
-            .andFinally(FeignSecurityManager::reset)
+            .andFinally(() -> {
+                runtimeTenantResolver.clearTenant();
+                FeignSecurityManager.reset();
+            })
             .get();
     }
 

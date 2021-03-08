@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.authentication.autoconfigure;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +43,15 @@ public class ExternalAuthenticationResolverTest {
     @Mock
     private IExternalAuthenticationClient externalAuthenticationClient;
 
+    @Mock
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     private IExternalAuthenticationResolver resolver;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        resolver = new ExternalAuthenticationResolver(externalAuthenticationClient);
+        resolver = new ExternalAuthenticationResolver(externalAuthenticationClient, runtimeTenantResolver);
     }
 
     @Test
@@ -57,7 +61,7 @@ public class ExternalAuthenticationResolverTest {
             doThrow(expected)
                 .when(externalAuthenticationClient)
                 .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop"))
+            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
                 .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
                 .hasCauseReference(expected);
         }
@@ -67,7 +71,7 @@ public class ExternalAuthenticationResolverTest {
             doThrow(expected)
                 .when(externalAuthenticationClient)
                 .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop"))
+            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
                 .isExactlyInstanceOf(AuthenticationServiceException.class)
                 .hasCauseReference(expected);
         }
@@ -77,7 +81,7 @@ public class ExternalAuthenticationResolverTest {
             doThrow(expected)
                 .when(externalAuthenticationClient)
                 .verifyAndAuthenticate(anyString());
-            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop"))
+            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
                 .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
                 .hasCauseReference(expected);
         }
@@ -88,7 +92,7 @@ public class ExternalAuthenticationResolverTest {
         doReturn(ResponseEntity.noContent().build())
             .when(externalAuthenticationClient)
             .verifyAndAuthenticate(anyString());
-        assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop"))
+        assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
             .isExactlyInstanceOf(InsufficientAuthenticationException.class);
     }
 }
