@@ -89,21 +89,21 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                         DefaultRole.PROJECT_ADMIN
                     )
                 ))
-            .flatMap(unit -> autoAcceptAccount(userInfo)
-                .onFailure(t ->
-                    notificationClient.notify(
-                        String.format(
-                            "The user account activation via the Service Provider %s failed with the following error message : %s.\nThe account is created but not accepted.",
-                            serviceProviderName,
-                            t.getMessage()
-                        ),
-                        "User account activation failed",
-                        NotificationLevel.INFO,
-                        MimeTypeUtils.TEXT_PLAIN,
-                        userInfo.getEmail(),
-                        DefaultRole.PROJECT_ADMIN
-                    )
-                ))
+//            .flatMap(unit -> autoAcceptAccount(userInfo)
+//                .onFailure(t ->
+//                    notificationClient.notify(
+//                        String.format(
+//                            "The user account activation via the Service Provider %s failed with the following error message : %s.\nThe account is created but not accepted.",
+//                            serviceProviderName,
+//                            t.getMessage()
+//                        ),
+//                        "User account activation failed",
+//                        NotificationLevel.INFO,
+//                        MimeTypeUtils.TEXT_PLAIN,
+//                        userInfo.getEmail(),
+//                        DefaultRole.PROJECT_ADMIN
+//                    )
+//                ))
             .flatMap(unit -> getAccessSettings()
                 .transform(t -> wrapInUserCreationFailedHandler(t, serviceProviderName, userInfo)))
             .flatMap(accessSettings -> {
