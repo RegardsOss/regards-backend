@@ -17,6 +17,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
 import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
@@ -150,6 +151,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                                 userInfo.getLastname(),
                                 null
                             );
+                        account.setStatus(AccountStatus.ACTIVE);
                         account.setExternal(true);
                         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
                         return accountsClient.createAccount(accountNPassword).getStatusCode();
