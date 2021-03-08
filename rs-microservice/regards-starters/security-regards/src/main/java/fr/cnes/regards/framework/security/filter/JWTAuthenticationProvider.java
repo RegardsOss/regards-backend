@@ -57,6 +57,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
                 // If resolved, a REGARDS token is returned.
                 .of(() -> externalAuthenticationResolver.verifyAndAuthenticate(((JWTAuthentication) pAuthentication).getJwt()))
                 .peek(token -> LOG.info("Token = {}", token))
+                .onFailure(t -> LOG.error("Token verification failed.", t))
                 // If not resolved, an (Authentication)Exception is thrown. Drop it, just return that the token is not valid (original exception).
                 .recoverWith(Exception.class, ae -> Try.failure(new InsufficientAuthenticationException(e.getMessage(), e)))
                 // If resolved, try to parse it again, because it's supposed to be a valid REGARDS token now.
