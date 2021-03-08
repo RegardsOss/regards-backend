@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.authentication.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,5 +37,5 @@ public interface IExternalAuthenticationClient {
     String ACCEPT_ACCOUNT_RELATIVE_PATH = "/verify";
 
     @GetMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH)
-    ResponseEntity<String> verifyAndAuthenticate(@RequestParam(value = "externalToken") String externalToken);
+    ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam(value = "externalToken") String externalToken);
 }

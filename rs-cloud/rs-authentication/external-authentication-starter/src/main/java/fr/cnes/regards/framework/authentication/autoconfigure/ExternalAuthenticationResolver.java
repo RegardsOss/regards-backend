@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import io.vavr.control.Try;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -57,11 +58,11 @@ public class ExternalAuthenticationResolver implements IExternalAuthenticationRe
                 if (response.getStatusCode() != HttpStatus.OK) {
                     return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider rejected userInfo request with status: %s", response.getStatusCode())));
                 }
-                String token = response.getBody();
-                if (token == null) {
+                Authentication auth = response.getBody();
+                if (auth == null) {
                     return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
                 }
-                return Try.success(token);
+                return Try.success(auth.getAccessToken());
             })
             .andFinally(() -> {
                 runtimeTenantResolver.clearTenant();
