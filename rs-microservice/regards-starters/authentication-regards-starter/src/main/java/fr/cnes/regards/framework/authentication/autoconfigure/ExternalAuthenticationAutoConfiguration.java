@@ -37,7 +37,7 @@ public class ExternalAuthenticationAutoConfiguration {
     public static class DefaultExternalAuthenticationResolver implements IExternalAuthenticationResolver {
 
         @Override
-        public String verifyAndAuthenticate(String externalToken) {
+        public String verifyAndAuthenticate(String tenant, String externalToken) {
             return DEFAULT_TOKEN;
         }
     }

@@ -49,13 +49,14 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication pAuthentication) throws AuthenticationException {
+        JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
         return Try
             // Fill authentication by parsing JWT token.
-            .of(() -> jwtService.parseToken((JWTAuthentication) pAuthentication))
+            .of(() -> jwtService.parseToken(authentication))
             // If not a REGARDS token, let's try to resolve a Service Provider token.
             .recoverWith(JwtException.class, e -> Try
                 // If resolved, a REGARDS token is returned.
-                .of(() -> externalAuthenticationResolver.verifyAndAuthenticate(((JWTAuthentication) pAuthentication).getJwt()))
+                .of(() -> externalAuthenticationResolver.verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt()))
                 .peek(token -> LOG.info("Token = {}", token))
                 .onFailure(t -> LOG.error("Token verification failed.", t))
                 // If not resolved, an (Authentication)Exception is thrown. Drop it, just return that the token is not valid (original exception).

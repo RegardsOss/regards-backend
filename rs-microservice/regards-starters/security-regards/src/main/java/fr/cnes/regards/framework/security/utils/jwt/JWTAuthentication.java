@@ -18,10 +18,7 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,6 +41,11 @@ public class JWTAuthentication implements Authentication {
      * JWT from request header
      */
     private final String jwt;
+
+    /**
+     * Current tenant
+     */
+    private String tenant;
 
     /**
      * Current user info
@@ -111,7 +113,7 @@ public class JWTAuthentication implements Authentication {
      * @return tenant for whom the JWT was provided
      */
     public String getTenant() {
-        return user.getTenant();
+        return Optional.ofNullable(user.getTenant()).orElse(tenant);
     }
 
     /**
@@ -119,7 +121,10 @@ public class JWTAuthentication implements Authentication {
      * @param pTenant the new tenant
      */
     public void setTenant(String pTenant) {
-        user.setTenant(pTenant);
+        if (user != null) {
+            user.setTenant(pTenant);
+        }
+        tenant = pTenant;
     }
 
     /**
