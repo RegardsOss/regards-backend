@@ -159,7 +159,7 @@ public class ServiceProviderController implements IResourceController<ServicePro
     }
 
     @GetMapping(value = PATH_VERIFY_AUTHENTICATION)
-    @ResourceAccess(description = "Verify and authenticate token through service providers.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Verify and authenticate token through service providers.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Authentication> verifyAndAuthenticate(
         @RequestParam(value = "externalToken", required = true) String externalToken
     ) throws ModuleException {

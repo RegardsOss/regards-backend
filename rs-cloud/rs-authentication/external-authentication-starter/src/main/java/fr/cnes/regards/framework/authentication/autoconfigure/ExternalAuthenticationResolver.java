@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.authentication.autoconfigure;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import io.vavr.control.Try;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,8 @@ public class ExternalAuthenticationResolver implements IExternalAuthenticationRe
 
     @Override
     public String verifyAndAuthenticate(String externalToken) {
-        return Try.of(() -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
+        return Try.run(FeignSecurityManager::asSystem)
+            .map(ignored -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
             .transform(this::mapClientException)
             .flatMap(response -> {
                 if (response.getStatusCode() != HttpStatus.OK) {
@@ -55,6 +57,7 @@ public class ExternalAuthenticationResolver implements IExternalAuthenticationRe
                 }
                 return Try.success(token);
             })
+            .andFinally(FeignSecurityManager::reset)
             .get();
     }
 
