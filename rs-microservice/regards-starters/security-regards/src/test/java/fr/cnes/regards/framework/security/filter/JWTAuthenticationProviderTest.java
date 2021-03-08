@@ -78,8 +78,8 @@ public class JWTAuthenticationProviderTest {
         }
 
         try {
-            Mockito.when(mockedJWTService.parseToken(jwtAuthentication)).thenThrow(new JwtException("JWT parse error"));
-            Mockito.when(mockExternalAuthenticationResolver.verifyAndAuthenticate(anyString(), jwtAuthentication.getJwt())).thenThrow(new RuntimeException("JWT parse error"));
+            Mockito.doThrow(new JwtException("JWT parse error")).when(mockedJWTService).parseToken(jwtAuthentication);
+            Mockito.doThrow(new RuntimeException("JWT parse error")).when(mockExternalAuthenticationResolver).verifyAndAuthenticate(jwtAuthentication.getTenant(), jwtAuthentication.getJwt());
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
