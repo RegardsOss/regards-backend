@@ -32,6 +32,8 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
+import static org.mockito.ArgumentMatchers.anyString;
+
 /**
  * Class JWTAuthenticationProviderTest
  *
@@ -77,7 +79,7 @@ public class JWTAuthenticationProviderTest {
 
         try {
             Mockito.when(mockedJWTService.parseToken(jwtAuthentication)).thenThrow(new JwtException("JWT parse error"));
-            Mockito.when(mockExternalAuthenticationResolver.verifyAndAuthenticate(jwtAuthentication.getJwt())).thenThrow(new RuntimeException("JWT parse error"));
+            Mockito.when(mockExternalAuthenticationResolver.verifyAndAuthenticate(anyString(), jwtAuthentication.getJwt())).thenThrow(new RuntimeException("JWT parse error"));
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
