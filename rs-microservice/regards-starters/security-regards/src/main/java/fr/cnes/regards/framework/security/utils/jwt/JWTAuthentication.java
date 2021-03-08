@@ -113,7 +113,7 @@ public class JWTAuthentication implements Authentication {
      * @return tenant for whom the JWT was provided
      */
     public String getTenant() {
-        return Optional.ofNullable(user.getTenant()).orElse(tenant);
+        return Optional.ofNullable(user).map(UserDetails::getTenant).orElse(tenant);
     }
 
     /**
