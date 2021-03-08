@@ -39,12 +39,25 @@ import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.res
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
-import org.apache.http.HttpHeaders;
+import org.apache.http.*;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicHeaderElementIterator;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
 import org.hibernate.validator.constraints.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -54,6 +67,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static com.google.common.base.Predicates.instanceOf;
@@ -165,23 +179,32 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     private static final String BEARER_AUTH = "Bearer ";
 
     /**
-     * HTTP client for external API requests
-     */
-    @Autowired
-    private HttpClient httpClient;
-
-    /**
      * Gson request and response converter
      */
     @Autowired
     private Gson gson;
+
+    @Value("${http.proxy.host:#{null}}")
+    private String proxyHost;
+
+    @Value("${http.proxy.login:#{null}}")
+    private String proxyLogin;
+
+    @Value("${http.proxy.password:#{null}}")
+    private String proxyPassword;
+
+    @Value("${http.proxy.port:#{null}}")
+    private Integer proxyPort;
+
+    @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
+    private List<String> noProxy;
 
     private Feign feign;
 
     @PluginInit
     public void init() {
         feign = Feign.builder()
-            .client(new ApacheHttpClient(httpClient))
+            .client(new ApacheHttpClient(getHttpClient()))
             .encoder(new FormEncoder())
             .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
             .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
@@ -322,4 +345,67 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
         );
     }
 
+    /**
+     * Copy/pasted from proxy-starter which is not enabled here because it is pernicious.
+     */
+    private HttpClient getHttpClient() {
+        //  Kept in case there is some server that do not support being ask to create a TLSv1 connection while we can also speak in TLSv1.2...
+        //  This allows use to force the usage of only TLSv1.2
+        //  You just need to add a call to HttpClientBuilder#setSSLSocketFactor(sslsf) to activate it
+        //        // specify some SSL parameter for clients only
+        //        SSLContext sslcontext = SSLContexts.createDefault();
+        //        // Allow TLSv1.2 protocol only
+        //        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslcontext,
+        //                                                                          new String[] { "TLSv1.2" },
+        //                                                                          null,
+        //                                                                          SSLConnectionSocketFactory
+        //                                                                                  .getDefaultHostnameVerifier());
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        connManager.setDefaultMaxPerRoute(10);
+        connManager.setMaxTotal(20);
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().setConnectionManager(connManager)
+            .setKeepAliveStrategy((httpResponse, httpContext) -> {
+                HeaderElementIterator it = new BasicHeaderElementIterator(httpResponse
+                    .headerIterator(HTTP.CONN_KEEP_ALIVE));
+                while (it.hasNext()) {
+                    HeaderElement he = it.nextElement();
+                    String param = he.getName();
+                    String value = he.getValue();
+                    if (value != null && param.equalsIgnoreCase("timeout")) {
+                        return Long.parseLong(value) * 1000;
+                    }
+                }
+                return 5 * 1000;
+            });
+        if ((proxyHost != null) && !proxyHost.isEmpty()) {
+            HttpClientBuilder builder = HttpClientBuilder.create();
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            if (((proxyLogin != null) && !proxyLogin.isEmpty()) && ((proxyPassword != null) && !proxyPassword
+                .isEmpty())) {
+                CredentialsProvider credsProvider = new BasicCredentialsProvider();
+                credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
+                    new UsernamePasswordCredentials(proxyLogin, proxyPassword));
+                builder.setDefaultCredentialsProvider(credsProvider);
+            }
+            if (noProxy != null) {
+                HttpRoutePlanner routePlannerHandlingNoProxy = new DefaultProxyRoutePlanner(proxy) {
+
+                    @Override
+                    public HttpRoute determineRoute(final HttpHost host, final HttpRequest request,
+                                                    final HttpContext context) throws HttpException {
+                        String hostname = host.getHostName();
+                        if (noProxy.contains(hostname)) {
+                            // Return direct route
+                            return new HttpRoute(host);
+                        }
+                        return super.determineRoute(host, request, context);
+                    }
+                };
+                return httpClientBuilder.setProxy(proxy).setRoutePlanner(routePlannerHandlingNoProxy).build();
+            }
+            return httpClientBuilder.setProxy(proxy).build();
+        } else {
+            return httpClientBuilder.build();
+        }
+    }
 }
