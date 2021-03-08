@@ -11,7 +11,6 @@ import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.junit.Before;
@@ -105,35 +104,6 @@ public class UserAccountManagerTest {
     }
 
     @Test
-    public void createUserWithAccountAndGroups_fails_when_autoAcceptAccount_fails() {
-        RuntimeException expected = new RuntimeException("expected");
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .createAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.failure(expected))
-            .when(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
-
-        Try<String> result =
-            accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
-                PROVIDER_USER_INFO
-            );
-
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.getCause()).isEqualTo(expected);
-        verify(accountManager)
-            .createAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
-        verifyNoMoreInteractions(accountManager);
-
-        verify(notificationClient).notify(any(), any(), any(), any(), any(), any());
-    }
-
-    @Test
     public void createUserWithAccountAndGroups_fails_when_getAccessSettings_fails() {
         RuntimeException expected = new RuntimeException("expected");
         doReturn(Try.success(Unit.UNIT))
@@ -156,8 +126,6 @@ public class UserAccountManagerTest {
         assertThat(result.getCause()).isEqualTo(expected);
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
@@ -193,8 +161,6 @@ public class UserAccountManagerTest {
         assertThat(result.getCause()).isEqualTo(expected);
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
@@ -236,8 +202,6 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
             .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
@@ -278,8 +242,6 @@ public class UserAccountManagerTest {
         assertThat(result.get()).isEqualTo(ACCESS_SETTINGS.getDefaultRole().getName());
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
