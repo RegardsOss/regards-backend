@@ -195,25 +195,36 @@ public class UserAccountManagerImpl implements IUserAccountManager {
 
     @VisibleForTesting
     protected Try<Unit> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo, String roleName) {
-        return Try.of(() ->
-            usersClient.createUser(
-                new AccessRequestDto(
-                    userInfo.getEmail(),
-                    userInfo.getFirstname(),
-                    userInfo.getLastname(),
-                    roleName,
-                    userInfo.getMetadata()
-                        .map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE))
-                        .toJavaList(),
-                    null,
-                    null,
-                    null
-                )
-            ))
+        return Try
+            .of(() -> usersClient.retrieveProjectUserByEmail(userInfo.getEmail()))
             .map(ResponseEntity::getStatusCode)
+            // Create account if not exist
+            .map(status -> {
+                switch (status) {
+                    case OK:
+                        return HttpStatus.CREATED;
+                    case NOT_FOUND:
+                        return usersClient.createUser(
+                            new AccessRequestDto(
+                                userInfo.getEmail(),
+                                userInfo.getFirstname(),
+                                userInfo.getLastname(),
+                                roleName,
+                                userInfo.getMetadata()
+                                    .map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE))
+                                    .toJavaList(),
+                                null,
+                                null,
+                                null
+                            )
+                        ).getStatusCode();
+                    default:
+                        return status;
+                }
+            })
             .andThen(status -> {
                 if (status != HttpStatus.CREATED) {
-                    throw new RuntimeException(String.format("Failed to create new project user. Returned status code is %s.", status));
+                    throw new RuntimeException(String.format("Failed to retrieve existing or to create new project user. Returned status code is %s.", status));
                 }
             })
             .map(ignored -> Unit.UNIT);
