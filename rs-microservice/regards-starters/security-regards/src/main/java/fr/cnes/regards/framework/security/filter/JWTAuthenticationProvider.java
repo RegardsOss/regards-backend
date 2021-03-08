@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
@@ -33,6 +35,8 @@ import org.springframework.security.core.AuthenticationException;
  * @author msordi
  */
 public class JWTAuthenticationProvider implements AuthenticationProvider {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationProvider.class);
 
     private final JWTService jwtService;
 
@@ -52,6 +56,7 @@ public class JWTAuthenticationProvider implements AuthenticationProvider {
             .recoverWith(JwtException.class, e -> Try
                 // If resolved, a REGARDS token is returned.
                 .of(() -> externalAuthenticationResolver.verifyAndAuthenticate(((JWTAuthentication) pAuthentication).getJwt()))
+                .peek(token -> LOG.info("Token = {}", token))
                 // If not resolved, an (Authentication)Exception is thrown. Drop it, just return that the token is not valid (original exception).
                 .recoverWith(Exception.class, ae -> Try.failure(new InsufficientAuthenticationException(e.getMessage(), e)))
                 // If resolved, try to parse it again, because it's supposed to be a valid REGARDS token now.
