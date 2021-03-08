@@ -65,8 +65,8 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
             }
         }
 
-        // Deny access to all SYS roles
-        pHttp.addFilterAfter(new RoleSysFilter(), IpFilter.class);
+//        // Deny access to all SYS roles
+//        pHttp.addFilterAfter(new RoleSysFilter(), IpFilter.class);
     }
 
 }
