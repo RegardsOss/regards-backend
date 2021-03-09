@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.accessrights.instance.service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -45,6 +47,10 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
@@ -115,6 +121,16 @@ public class AccountService implements IAccountService {
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    /**
+     * Email Client. Autowired by Spring.
+     */
+    private final IEmailClient emailClient;
+
+    /**
+     * Template Service. Autowired by Spring.
+     */
+    private final ITemplateService templateService;
+
     @Autowired
     private MeterRegistry registry;
 
@@ -134,6 +150,7 @@ public class AccountService implements IAccountService {
      * @param pRuntimeTenantResolver runtime tenant resolver
      */
     public AccountService(IAccountRepository accountRepository, //NOSONAR
+            @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
             @Value("${regards.accounts.password.regex}") String passwordRegex,
             @Value("${regards.accounts.password.rules}") String passwordRules,
             @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
@@ -153,6 +170,8 @@ public class AccountService implements IAccountService {
         this.rootAdminUserPassword = rootAdminUserPassword;
         this.thresholdFailedAuthentication = thresholdFailedAuthentication;
         this.runtimeTenantResolver = pRuntimeTenantResolver;
+        this.emailClient = emailClient;
+        this.templateService = templateService;
     }
 
     /**
@@ -294,6 +313,15 @@ public class AccountService implements IAccountService {
         resetAuthenticationFailedCounter(toChange);
         toChange.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(toChange);
+        final Map<String, String> data = new HashMap<>();
+        data.put("name", toChange.getFirstName());
+        String message;
+        try {
+            message = templateService.render(AccessRightTemplateConf.PASSWORD_CHANGED_TEMPLATE_NAME, data);
+        } catch (TemplateException e) {
+            message = "Password successfully changed";
+        }
+        emailClient.sendEmail(message, "[REGARDS] Password changed", null, toChange.getEmail());
     }
 
     @Override

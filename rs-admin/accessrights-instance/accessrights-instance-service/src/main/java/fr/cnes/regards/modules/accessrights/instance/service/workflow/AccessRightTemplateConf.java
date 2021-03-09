@@ -20,6 +20,7 @@ public class AccessRightTemplateConf {
 
     public static final String PASSWORD_RESET_TEMPLATE_NAME = "PASSWORD_RESET_TEMPLATE";
 
+    public static final String PASSWORD_CHANGED_TEMPLATE_NAME = "PASSWORD_CHANGED_TEMPLATE";
 
     @Bean
     public Template accountRefusedTemplate() throws IOException {
@@ -34,6 +35,12 @@ public class AccessRightTemplateConf {
     @Bean
     public Template passwordResetTemplate() throws IOException {
         return TemplateConfigUtil.readTemplate(PASSWORD_RESET_TEMPLATE_NAME, "template/password-reset-template.html");
+    }
+
+    @Bean
+    public Template passwordChangedTemplate() throws IOException {
+        return TemplateConfigUtil.readTemplate(PASSWORD_CHANGED_TEMPLATE_NAME,
+                                               "template/password-changed-template.html");
     }
 
 }

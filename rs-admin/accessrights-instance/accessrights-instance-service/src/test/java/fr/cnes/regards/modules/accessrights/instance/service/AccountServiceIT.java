@@ -53,10 +53,11 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
+import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
  * This class test that the system can invalidate an account.
- *  
+ *
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
@@ -67,14 +68,12 @@ public class AccountServiceIT extends AbstractRegardsIT {
     public static class Config {
 
         @Bean
-        public ITemplateRepository templateRepository() {
-            return Mockito.mock(ITemplateRepository.class);
+        public ITemplateRepository templateRepository(Set<Template> templates) {
+            ITemplateRepository mock = Mockito.mock(ITemplateRepository.class);
+            Mockito.when(mock.findByName(Mockito.anyString())).thenAnswer(invocation -> templates.stream()
+                    .filter(t -> t.getName().equals(invocation.getArguments()[0])).findFirst());
+            return mock;
         }
-
-//        @Bean
-//        public ITemplateService templateService() {
-//            return Mockito.mock(ITemplateService.class);
-//        }
 
         @Bean
         public IEmailClient emailClient() {
@@ -86,7 +85,6 @@ public class AccountServiceIT extends AbstractRegardsIT {
             return Mockito.mock(IProjectUsersClient.class);
         }
     }
-
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountServiceIT.class);
 
@@ -213,7 +211,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
 
         accountService.checkAccountValidity();
         accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
-        
+
         LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
                  accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
         Assert.assertEquals(AccountStatus.ACTIVE, accountPasswordInvalid.getStatus());
@@ -228,6 +226,5 @@ public class AccountServiceIT extends AbstractRegardsIT {
         tokenRepository.deleteAll();
         accountRepository.deleteAll();
     }
-
 
 }

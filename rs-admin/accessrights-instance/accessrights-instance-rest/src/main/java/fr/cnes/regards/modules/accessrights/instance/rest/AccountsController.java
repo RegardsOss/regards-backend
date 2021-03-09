@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.accessrights.instance.rest;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -77,6 +78,11 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
 @RestController
 @RequestMapping(AccountsController.TYPE_MAPPING)
 public class AccountsController implements IResourceController<Account> {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountsController.class);
 
     public static final String PATH_PASSWORD = "/password"; // NOSONAR: not a password
 
@@ -132,9 +138,6 @@ public class AccountsController implements IResourceController<Account> {
      */
     @Autowired
     private IResourceService resourceService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
 
     @Autowired
     private IAccountTransitions accountWorkflowManager;
@@ -338,11 +341,13 @@ public class AccountsController implements IResourceController<Account> {
     public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail,
             @Valid @RequestBody PerformChangePasswordDto changePasswordDto) throws EntityException {
         final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
-        if (!authResolver.getUser().equals(accountEmail)
-                && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
+        if (!accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        accountService.validPassword(changePasswordDto.getNewPassword());
+        if (!accountService.validPassword(changePasswordDto.getNewPassword())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        LOGGER.info("Changing password for user {}", accountEmail);
         accountService.changePassword(toReset.getId(),
                                       EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
         return ResponseEntity.noContent().build();
@@ -493,7 +498,7 @@ public class AccountsController implements IResourceController<Account> {
     @Override
     public EntityModel<Account> toResource(Account element, final Object... extras) {
         EntityModel<Account> resource = null;
-        if (element != null && element.getId() != null) {
+        if ((element != null) && (element.getId() != null)) {
             resource = resourceService.toResource(element);
             // Self retrieve link
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
