@@ -55,7 +55,6 @@ public class AccessRequestDto {
      * The password
      */
     @Valid
-    @NotBlank
     @Length(max = 255)
     private String password;
 
