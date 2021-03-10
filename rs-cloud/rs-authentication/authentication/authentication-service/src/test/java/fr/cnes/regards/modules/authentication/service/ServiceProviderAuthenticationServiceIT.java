@@ -128,6 +128,7 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
             .set(
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "Feel"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "Dancin'"),

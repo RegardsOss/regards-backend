@@ -82,8 +82,8 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                 .set(
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I don't feel like dancin'"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Rather be home with no-one if I can't get down with you-ou-ou"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "uri"),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "http://theia.org/claims/givenname"),

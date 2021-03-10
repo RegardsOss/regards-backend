@@ -75,6 +75,7 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
             .set(
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "regards"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("")),
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "http://plop.com"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/token"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/userinfo"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "sub"),
