@@ -32,9 +32,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -64,7 +61,9 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     private static final Logger LOG = LoggerFactory.getLogger(ModuleService.class);
 
     private static final String MODULE_HAS_NOT_VALID_JSON_FORMAT = "Module has not valid json format.";
+
     public static final String LAYERS = "layers";
+
     public static final String CONTENT = "content";
 
     /**
@@ -163,51 +162,6 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         }
         repository.deleteById(moduleId);
 
-    }
-
-    @Override
-    public JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink)
-            throws EntityInvalidException {
-        final Gson gson = new Gson();
-        JsonObject moduleConfJson;
-
-        try {
-            JsonElement element = gson.fromJson(module.getConf(), JsonElement.class);
-            JsonObject rootConf = element.getAsJsonObject();
-            moduleConfJson = rootConf.getAsJsonObject("conf");
-        } catch (RuntimeException e) {
-            LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException(MODULE_HAS_NOT_VALID_JSON_FORMAT, e);
-        }
-        if (!moduleConfJson.has(LAYERS)) {
-            throw new EntityInvalidException("Module is not a valid Mizar json context file.");
-        }
-
-        JsonArray layers = new JsonArray();
-        if (!dataset.has(CONTENT)) {
-            LOG.warn("Dataset retrieved from catalog doesn't fit the expected result");
-            return moduleConfJson;
-        }
-        JsonArray ds = dataset.getAsJsonArray(CONTENT);
-        if (ds.size() < 1) {
-            LOG.warn("There is no dataset available for this user");
-            return moduleConfJson;
-        }
-        // Iterate over datasets resources
-        ds.forEach(d -> {
-            String datasetIpId = d.getAsJsonObject().get(CONTENT).getAsJsonObject().get("id").getAsString();
-            JsonObject layer = new JsonObject();
-            layer.addProperty("category", "Catalog");
-            layer.addProperty("type", "OpenSearch");
-            layer.addProperty("baseUrl", openSearchLink.replace("DATASET_ID", datasetIpId));
-            layer.addProperty("visible", false);
-            layers.add(layer);
-        });
-        //  Add to the end of the list all layers configured in the module json
-        moduleConfJson.get(LAYERS).getAsJsonArray().forEach(layers::add);
-        // save the layer list inside the module conf
-        moduleConfJson.add(LAYERS, layers);
-        return moduleConfJson;
     }
 
     /**
