@@ -88,8 +88,7 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
             plugin.authenticate(
                 new OpenIdAuthenticationParams(
-                    "281e2396-455f-4158-9a27-4c5348f19e4d.0d070daa-c132-4b76-b099-74c09ab5ea34.fd522e1f-281d-41c9-b0ad-911ea074365a",
-                    "http://plop.com"
+                    "281e2396-455f-4158-9a27-4c5348f19e4d.0d070daa-c132-4b76-b099-74c09ab5ea34.fd522e1f-281d-41c9-b0ad-911ea074365a"
                 )
             );
 

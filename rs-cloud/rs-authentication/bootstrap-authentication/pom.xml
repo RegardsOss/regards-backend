@@ -37,6 +37,7 @@
         <sonar.language>java</sonar.language>
         <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
         <fr.cnes.regards.docker.image.name>rs-authentication</fr.cnes.regards.docker.image.name>
+        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./wait-for-it.sh", "rs-admin-instance:9037", "-t", "0", "--", "./wait-for-it.sh", "rs-dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]</docker.entryPoint>
         <docker.guest.port>9034</docker.guest.port>
     </properties>
 

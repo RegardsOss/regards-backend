@@ -83,6 +83,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I don't feel like dancin'"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Rather be home with no-one if I can't get down with you-ou-ou"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), TOKEN_ENDPOINT)),
+                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "uri"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, String.format(ENDPOINT_FORMAT, wireMockRule.port(), USER_INFO_ENDPOINT)),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
                     IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "http://theia.org/claims/givenname"),
@@ -114,7 +115,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -135,7 +136,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -156,7 +157,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -177,7 +178,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -198,7 +199,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -220,7 +221,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("code", "uri"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("code"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -246,7 +247,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -254,7 +255,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))
@@ -276,7 +277,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -284,7 +285,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))
@@ -306,7 +307,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InternalAuthenticationServiceException.class);
@@ -314,7 +315,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))
@@ -336,7 +337,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(InsufficientAuthenticationException.class);
@@ -344,7 +345,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))
@@ -366,7 +367,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isFailure()).isTrue();
         assertThat(userInfo.getCause()).isExactlyInstanceOf(AuthenticationServiceException.class);
@@ -374,7 +375,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))
@@ -437,7 +438,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         //noinspection ConstantConditions: getPlugin is guaranteed to return a non-null result, stupid IDE...
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> userInfo =
-            getPlugin().authenticate(new OpenIdAuthenticationParams("foo", "bar"));
+            getPlugin().authenticate(new OpenIdAuthenticationParams("foo"));
 
         assertThat(userInfo.isSuccess()).isTrue();
         assertThat(userInfo.get())
@@ -464,7 +465,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         verify(
             postRequestedFor(urlEqualTo(TOKEN_ENDPOINT))
                 .withHeader(HttpHeaders.CONTENT_TYPE, equalTo(CONTENT_TYPE))
-                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=bar"))
+                .withRequestBody(equalTo("code=foo&grant_type=authorization_code&redirect_uri=uri"))
         );
         verify(
             getRequestedFor(urlEqualTo(USER_INFO_ENDPOINT))

@@ -104,8 +104,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
             plugin.authenticate(
                 new OpenIdAuthenticationParams(
-                    "f4136307-1223-353c-9fdc-87bfe5c10be4",
-                    "http://vm-perf.cloud-espace.si.c-s.fr/auth/perf"
+                    "f4136307-1223-353c-9fdc-87bfe5c10be4"
                 )
             );
 
