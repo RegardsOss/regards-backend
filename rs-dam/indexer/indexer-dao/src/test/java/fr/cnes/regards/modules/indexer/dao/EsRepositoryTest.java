@@ -62,6 +62,7 @@ public class EsRepositoryTest {
         protected ItemAdapterFactory() {
             super(IIndexable.class, "type");
             registerSubtype(Item.class, TYPE);
+            registerSubtype(ItemGeo.class, TYPEGEO);
         }
     }
 
@@ -193,7 +194,24 @@ public class EsRepositoryTest {
 
     }
 
+    private static class ItemGeo extends Item{
+
+        private List<List<Double>> geometry;
+
+        public ItemGeo(String id, String name, int height, double price, List<List<Double>> geometry, String... groups){
+            super(id, name, height, price, groups);
+
+            this.geometry = geometry;
+        }
+
+
+        public List<List<Double>> getGeometry() {
+            return geometry;
+        }
+    }
+
     private static final String TYPE = "item";
+    private static final String TYPEGEO = "itemgeo";
 
     /**
      * Class to test
@@ -430,12 +448,16 @@ public class EsRepositoryTest {
     public void testGetAggregateOnNumericValues(){
         repository.createIndex("items");
         // Creations for first two
-        final Item item1 = new Item("1", "toto",10, 10000d,"group1", "group2", "group3");
+        final ItemGeo item1 = new ItemGeo("1", "toto",10, 10000d,
+                Arrays.asList(Arrays.asList(43.524768,1.3747632), Arrays.asList(43.5889203,1.4879276)),"group1", "group2", "group3");
         Assert.assertTrue(repository.save("items", item1));
-        Assert.assertTrue(repository.save("items", new Item("2", "titi",10, 20000d,"group1", "group3")));
+        Assert.assertTrue(repository.save("items", new ItemGeo("2", "titi",10, 20000d,
+                Arrays.asList(Arrays.asList(43.7695852,-0.0369283), Arrays.asList(43.4461681,-0.5334374)),"group1", "group3")));
 
         Map<String, QueryableAttribute> qas = Maps.newHashMap();
         qas.put("min", new QueryableAttribute("price", null,
+                false, 10, false));
+        qas.put("geo", new QueryableAttribute("geometry", null,
                 false, 10, false));
 
 
