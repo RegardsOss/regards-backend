@@ -98,6 +98,8 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
 
     public static final String OPENID_CLIENT_SECRET = "OpenId_Client_Secret";
 
+    public static final String OPENID_REDIRECT_URI = "OpenId_Redirect_Uri";
+
     public static final String OPENID_TOKEN_ENDPOINT = "OpenId_Token_Endpoint";
 
     public static final String OPENID_USER_INFO_ENDPOINT = "OpenId_UserInfo_Endpoint";
@@ -133,6 +135,13 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     )
     @URL
     private String tokenEndpoint;
+
+    @PluginParameter(
+        name = OPENID_REDIRECT_URI,
+        label = "Oauth2 redirect URI",
+        description = "The redirect URI configured with the Oauth2 server"
+    )
+    private String redirectUri;
 
     @PluginParameter(
         name = OPENID_USER_INFO_ENDPOINT,
@@ -268,7 +277,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
         return Try
             .of(() -> new OpenIdTokenRequest(
                 params.getCode(),
-                params.getRedirectUri()
+                redirectUri
             ))
             .map(client::token)
             .transform(this::mapClientException)

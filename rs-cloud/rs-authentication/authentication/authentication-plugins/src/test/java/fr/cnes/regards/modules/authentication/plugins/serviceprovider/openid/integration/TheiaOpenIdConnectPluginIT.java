@@ -68,7 +68,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    // 1. Go to https://sso.theia-land.fr/oauth2/authorize?redirect_uri=http://vm-perf.cloud-espace.si.c-s.fr/auth/perf&response_type=code&scope=openid&client_id=rRLGfEh6jtXjiiGUf53UOdmJLXga
+    // 1. Go to https://sso.theia-land.fr/oauth2/authorize?redirect_uri=http://vm-perf.cloud-espace.si.c-s.fr/authenticate/perf/theia&response_type=code&scope=openid&client_id=rRLGfEh6jtXjiiGUf53UOdmJLXga
     // 2. Enter your login / password
     // 3. After redirect, get query param "code" in URL
     // 4. Copy paste in OpenIdAuthenticationParams below
@@ -91,6 +91,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
             .set(
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "rRLGfEh6jtXjiiGUf53UOdmJLXga"),
                 secret,
+                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "http://vm-perf.cloud-espace.si.c-s.fr/authenticate/perf/theia"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "https://sso.theia-land.fr/oauth2/token"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "https://sso.theia-land.fr/theia/services/userinfo"),
                 IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
@@ -104,8 +105,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
             plugin.authenticate(
                 new OpenIdAuthenticationParams(
-                    "f4136307-1223-353c-9fdc-87bfe5c10be4",
-                    "http://vm-perf.cloud-espace.si.c-s.fr/auth/perf"
+                    "f4136307-1223-353c-9fdc-87bfe5c10be4"
                 )
             );
 

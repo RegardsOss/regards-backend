@@ -28,19 +28,12 @@ public class OpenIdAuthenticationParams extends ServiceProviderAuthenticationPar
 
     private final String code;
 
-    private final String redirectUri;
-
-    public OpenIdAuthenticationParams(String code, String redirectUri) {
+    public OpenIdAuthenticationParams(String code) {
         this.code = code;
-        this.redirectUri = redirectUri;
     }
 
     public String getCode() {
         return code;
-    }
-
-    public String getRedirectUri() {
-        return redirectUri;
     }
 
     @Override
@@ -53,12 +46,11 @@ public class OpenIdAuthenticationParams extends ServiceProviderAuthenticationPar
         }
         if (!super.equals(o)) return false;
         OpenIdAuthenticationParams that = (OpenIdAuthenticationParams) o;
-        return Objects.equals(code, that.code)
-            && Objects.equals(redirectUri, that.redirectUri);
+        return Objects.equals(code, that.code);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), code, redirectUri);
+        return Objects.hash(super.hashCode(), code);
     }
 }
