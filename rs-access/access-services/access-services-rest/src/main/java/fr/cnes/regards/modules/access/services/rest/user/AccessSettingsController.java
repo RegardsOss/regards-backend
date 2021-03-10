@@ -108,6 +108,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
                 .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
                     accessSettings.getId(),
                     accessSettings.getMode(),
+                    accessSettings.getDefaultRole(),
+                    accessSettings.getDefaultGroups(),
                     defaultLimits.getMaxQuota(),
                     defaultLimits.getRateLimit()
                 ))
@@ -133,6 +135,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
                         AccessSettings accessSettings = new AccessSettings();
                         accessSettings.setId(accessSettingsDto.getId());
                         accessSettings.setMode(accessSettingsDto.getMode());
+                        accessSettings.setDefaultRole(accessSettingsDto.getRole());
+                        accessSettings.setDefaultGroups(accessSettingsDto.getGroups());
                         return accessSettings;
                     })
                         .map(accessSettingsClient::updateAccessSettings)
@@ -149,6 +153,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
                 .ap((accessSettings, defaultLimits) -> new AccessSettingsDto(
                     accessSettings.getId(),
                     accessSettings.getMode(),
+                    accessSettings.getDefaultRole(),
+                    accessSettings.getDefaultGroups(),
                     defaultLimits.getMaxQuota(),
                     defaultLimits.getRateLimit()
                 ))

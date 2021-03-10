@@ -61,6 +61,8 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
         AccessSettingsDto dto = new AccessSettingsDto(
             ACCESS_SETTINGS_STUB_ID,
             ACCESS_SETTINGS_STUB_MODE,
+            ACCESS_SETTINGS_STUB_ROLE,
+            ACCESS_SETTINGS_STUB_GROUPS,
             DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA,
             DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT
         );
@@ -70,6 +72,8 @@ public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
                 .expectStatusOk()
                 .expectValue("$.content.id", ACCESS_SETTINGS_STUB_ID)
                 .expectValue("$.content.mode", ACCESS_SETTINGS_STUB_MODE)
+                .expectValue("$.content.role.name", ACCESS_SETTINGS_STUB_ROLE.getName())
+                .expectValue("$.content.groups[0]", ACCESS_SETTINGS_STUB_GROUPS.get(0))
                 .expectValue("$.content.maxQuota", DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA)
                 .expectValue("$.content.rateLimit", DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT)
             ;
