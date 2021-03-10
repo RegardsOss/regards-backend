@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>search</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>1.5.0</version>
 	<packaging>pom</packaging>
 
 	<description>Module providing search features on the entities catalog</description>
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>1.5.0</version>
 		<relativePath />
 	</parent>
 	
