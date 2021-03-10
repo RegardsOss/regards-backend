@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>notification-instance</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>1.5.0</version>
 	</parent>
 
 	<dependencies>
