@@ -48,12 +48,12 @@
 	</parent>
 
 	<modules>
-		<module>bootstrap-access-instance</module>
-		<module>bootstrap-access-project</module>
+		<module>toponyms</module>
 		<module>uiconfiguration</module>
 		<module>access-services</module>
-		<module>toponyms</module>
 		<module>backend-for-frontend</module>
+		<module>bootstrap-access-instance</module>
+		<module>bootstrap-access-project</module>
 	</modules>
 
 </project>
