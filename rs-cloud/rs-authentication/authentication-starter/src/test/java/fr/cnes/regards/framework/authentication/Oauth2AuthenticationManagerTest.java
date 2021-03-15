@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -36,6 +35,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.domain.plugin.IAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
@@ -71,14 +71,14 @@ public class Oauth2AuthenticationManagerTest {
     private static JWTAuthentication auth;
 
     /**
+     * Mock for user accounts manager dealing with administration services.
+     */
+    private static IUserAccountManager userAccountManagerMock;
+
+    /**
      * Mock for accounts client from administration service.
      */
     private static IAccountsClient accountsClientMock;
-
-    /**
-     * Mock for new registration
-     */
-    private static IRegistrationClient registrationClientMock;
 
     /**
      * Mock to retrieve project users
@@ -152,10 +152,10 @@ public class Oauth2AuthenticationManagerTest {
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
                 .thenReturn(new ResponseEntity<>(EntityModel, HttpStatus.OK));
 
-        registrationClientMock = Mockito.mock(IRegistrationClient.class);
+        userAccountManagerMock = Mockito.mock(IUserAccountManager.class);
 
         Mockito.when(beanFactoryMock.getBean(IAccountsClient.class)).thenReturn(accountsClientMock);
-        Mockito.when(beanFactoryMock.getBean(IRegistrationClient.class)).thenReturn(registrationClientMock);
+        Mockito.when(beanFactoryMock.getBean(IUserAccountManager.class)).thenReturn(userAccountManagerMock);
 
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final EntityModel<ProjectUser> EntityModelUser = new EntityModel<>(validUser);
@@ -199,7 +199,8 @@ public class Oauth2AuthenticationManagerTest {
         }
 
         // Account creation is done only for plugins. No for regards internal plugin
-        Mockito.verify(registrationClientMock, Mockito.times(0)).requestAccess(Mockito.any());
+        Mockito.verify(userAccountManagerMock, Mockito.times(0)).createUserWithAccountAndGroups(Mockito.any());
+
     }
 
     /**

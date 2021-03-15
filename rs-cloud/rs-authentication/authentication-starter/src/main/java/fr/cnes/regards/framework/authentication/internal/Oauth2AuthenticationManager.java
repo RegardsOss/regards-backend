@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
-import feign.FeignException;
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -30,15 +29,16 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.domain.plugin.IAuthenticationPlugin;
+import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo;
+import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
+import io.vavr.control.Try;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -118,8 +118,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         }
 
         Object details = authentication.getDetails();
-        String originUrl;
-        String requestLink;
         String scope;
         if (details instanceof Map) {
             @SuppressWarnings("unchecked")
@@ -130,8 +128,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 LOG.error(message);
                 throw new BadCredentialsException(message);
             }
-            originUrl = detailsMap.get("origineUrl");
-            requestLink = detailsMap.get("requestLink");
         } else {
             String message = "Invalid scope";
             LOG.error(message);
@@ -142,7 +138,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // plugins service
         runTimeTenantResolver.forceTenant(scope);
         FeignSecurityManager.asSystem();
-        Authentication auth = doAuthentication(name, password, scope, originUrl, requestLink);
+        Authentication auth = doAuthentication(name, password, scope);
         FeignSecurityManager.reset();
         return auth;
 
@@ -155,8 +151,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param scope project to authenticate to
      * @return Authentication token
      */
-    private Authentication doAuthentication(String login, String password, String scope, String origineUrl,
-            String requestLink) {
+    private Authentication doAuthentication(String login, String password, String scope) {
 
         AuthenticationPluginResponse response = new AuthenticationPluginResponse(false, null);
 
@@ -178,7 +173,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 && (status.equals(AuthenticationStatus.USER_UNKNOWN)
                         || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
                 && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())) {
-            this.createExternalProjectUser(response.getEmail(), status, origineUrl, requestLink);
+            this.createExternalProjectUser(response.getEmail());
             status = checkUserStatus(response.getEmail(), scope);
         }
 
@@ -256,37 +251,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      * Create new account and project user by bypassing validation process
      */
-    private void createExternalProjectUser(String userEmail, AuthenticationStatus userStatus, String originUrl,
-            String requestLink) {
-        try {
-            IRegistrationClient client = beanFactory.getBean(IRegistrationClient.class);
-
-            LOG.info("Creating new account for user email= {}", userEmail);
-            try {
-                FeignSecurityManager.asSystem();
-                switch (userStatus) {
-                    case ACCOUNT_UNKNOWN:
-                    case USER_UNKNOWN:
-                        client.requestExternalAccess(new AccessRequestDto(userEmail, userEmail, userEmail,
-                                DefaultRole.PUBLIC.name(), null, null, originUrl, requestLink));
-                        break;
-                    default:
-                        // Nothing to do
-                        break;
-                }
-            } catch (FeignException e) {
-                String message = String.format("Error creation new account for user %s. Cause : %s", userEmail,
-                                               e.getMessage());
-                LOG.error(message, e);
-                throw new BadCredentialsException(message);
-            } finally {
-                FeignSecurityManager.reset();
-            }
-        } catch (BeansException e) {
-            String message = "Context not initialized, Accounts client is not available";
-            LOG.error(message, e);
-            throw new BadCredentialsException(message);
-        }
+    private void createExternalProjectUser(String userEmail) {
+        Try.of(() -> beanFactory.getBean(IUserAccountManager.class))
+            .flatMap(userAccountManager -> userAccountManager
+                .createUserWithAccountAndGroups(new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(userEmail).build())
+            );
     }
 
     /**

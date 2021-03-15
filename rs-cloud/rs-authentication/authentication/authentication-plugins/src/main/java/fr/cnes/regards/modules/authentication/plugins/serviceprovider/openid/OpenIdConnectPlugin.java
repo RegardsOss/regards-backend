@@ -217,8 +217,8 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
     private List<String> noProxy;
 
-//    @Value("${http.sll.allow-insecure:#{false}}")
-    private Boolean allowInsecure = true;
+    @Value("${http.sll.allow-insecure:false}")
+    private Boolean allowInsecure;
 
     private Feign feign;
 

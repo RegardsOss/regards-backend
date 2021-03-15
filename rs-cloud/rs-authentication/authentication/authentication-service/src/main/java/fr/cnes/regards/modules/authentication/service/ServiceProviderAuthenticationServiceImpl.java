@@ -109,7 +109,7 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
         String serviceProviderName,
         ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfo.AuthenticationInfo> pAuthInfo
     ) {
-        return userAccountManager.createUserWithAccountAndGroups(serviceProviderName, pAuthInfo.getUserInfo())
+        return userAccountManager.createUserWithAccountAndGroups(pAuthInfo.getUserInfo())
             .map(role -> Tuple.of(pAuthInfo.getUserInfo(), role, pAuthInfo.getAuthenticationInfo()))
             .map(t -> {
                 ServiceProviderAuthenticationInfo.UserInfo userInfo = t._1;

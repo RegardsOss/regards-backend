@@ -22,8 +22,6 @@ import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.Serv
 import fr.cnes.regards.modules.authentication.domain.service.IUserAccountManager;
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.collection.Set;
 import io.vavr.control.Try;
@@ -43,8 +41,6 @@ public class UserAccountManagerImpl implements IUserAccountManager {
 
     private IAccessSettingsClient accessSettingsClient;
 
-    private IRegistrationClient registrationClient;
-
     private IUserClient userAccessGroupsClient;
 
     private INotificationClient notificationClient;
@@ -57,20 +53,18 @@ public class UserAccountManagerImpl implements IUserAccountManager {
         IAccountsClient accountsClient,
         IProjectUsersClient usersClient,
         IAccessSettingsClient accessSettingsClient,
-        IRegistrationClient registrationClient,
         IUserClient userAccessGroupsClient,
         INotificationClient notificationClient
     ) {
         this.accountsClient = accountsClient;
         this.usersClient = usersClient;
         this.accessSettingsClient = accessSettingsClient;
-        this.registrationClient = registrationClient;
         this.userAccessGroupsClient = userAccessGroupsClient;
         this.notificationClient = notificationClient;
     }
 
     @Override
-    public Try<String> createUserWithAccountAndGroups(String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
+    public Try<String> createUserWithAccountAndGroups(ServiceProviderAuthenticationInfo.UserInfo userInfo) {
         return Try
             .run(FeignSecurityManager::asSystem)
             .flatMap(unit -> createAccount(userInfo)
@@ -78,8 +72,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                 .onFailure(t ->
                     notificationClient.notify(
                         String.format(
-                            "The user account creation via the Service Provider %s failed with the following error message : %s.",
-                            serviceProviderName,
+                            "The user account creation failed with the following error message : %s.",
                             t.getMessage()
                         ),
                         "User account creation failed",
@@ -90,28 +83,12 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                     )
                 ))
             .flatMap(unit -> getAccessSettings()
-                .transform(t -> wrapInUserCreationFailedHandler(t, serviceProviderName, userInfo)))
+                .transform(t -> wrapInUserCreationFailedHandler(t, userInfo)))
             .flatMap(accessSettings -> {
                     String role = accessSettings.getDefaultRole().getName();
                     List<String> groups = List.ofAll(accessSettings.getDefaultGroups());
-                    return createProjectUser(userInfo, role)
-                        .transform(t -> wrapInUserCreationFailedHandler(t, serviceProviderName, userInfo))
-                        .flatMap(unit -> configureAccessGroups(userInfo, groups)
-                            .onFailure(t ->
-                                notificationClient.notify(
-                                    String.format(
-                                        "The association of groups [%s] to user via the Service Provider %s failed with the following error message : %s.\nThe user is created but not fully configured.",
-                                        Joiner.on(", ").join(groups),
-                                        serviceProviderName,
-                                        t.getMessage()
-                                    ),
-                                    "Access groups configuration failed",
-                                    NotificationLevel.INFO,
-                                    MimeTypeUtils.TEXT_PLAIN,
-                                    userInfo.getEmail(),
-                                    DefaultRole.PROJECT_ADMIN
-                                )
-                            ))
+                    return createProjectUser(userInfo, role, groups)
+                        .transform(t -> wrapInUserCreationFailedHandler(t, userInfo))
                         .map(unit -> role);
                 }
             )
@@ -153,19 +130,6 @@ public class UserAccountManagerImpl implements IUserAccountManager {
     }
 
     @VisibleForTesting
-    protected Try<Unit> autoAcceptAccount(ServiceProviderAuthenticationInfo.UserInfo userInfo) {
-        return Try
-            .of(() -> accountsClient.acceptAccount(userInfo.getEmail()))
-            .map(ResponseEntity::getStatusCode)
-            .andThen(status -> {
-                if (status != HttpStatus.OK) {
-                    throw new RuntimeException(String.format("Failed to auto-accept account. Returned status code is %s.", status));
-                }
-            })
-            .map(ignored -> Unit.UNIT);
-    }
-
-    @VisibleForTesting
     protected Try<AccessSettings> getAccessSettings() {
         return Try.of(() -> accessSettingsClient.retrieveAccessSettings())
             .flatMap(response -> {
@@ -179,32 +143,34 @@ public class UserAccountManagerImpl implements IUserAccountManager {
     }
 
     @VisibleForTesting
-    protected Try<Unit> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo, String roleName) {
+    protected Try<Unit> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo, String roleName, List<String> groups) {
         return Try
             .of(() -> usersClient.retrieveProjectUserByEmail(userInfo.getEmail()))
             .map(ResponseEntity::getStatusCode)
             // Create account if not exist
-            .map(status -> {
+            .flatMap(status -> {
                 switch (status) {
                     case OK:
-                        return HttpStatus.CREATED;
+                        return Try.success(HttpStatus.CREATED);
                     case NOT_FOUND:
-                        return usersClient.createUser(
-                            new AccessRequestDto(
-                                userInfo.getEmail(),
-                                userInfo.getFirstname(),
-                                userInfo.getLastname(),
-                                roleName,
-                                userInfo.getMetadata()
-                                    .map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE))
-                                    .toJavaList(),
-                                null,
-                                null,
-                                null
-                            )
-                        ).getStatusCode();
+                        return Try.of(
+                            () -> usersClient.createUser(
+                                new AccessRequestDto(
+                                    userInfo.getEmail(),
+                                    userInfo.getFirstname(),
+                                    userInfo.getLastname(),
+                                    roleName,
+                                    userInfo.getMetadata()
+                                        .map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE))
+                                        .toJavaList(),
+                                    null,
+                                    null,
+                                    null
+                                )
+                            ).getStatusCode()
+                        ).flatMap(s -> configureAccessGroups(userInfo, groups).map(unit -> s));
                     default:
-                        return status;
+                        return Try.success(status);
                 }
             })
             .andThen(status -> {
@@ -215,12 +181,11 @@ public class UserAccountManagerImpl implements IUserAccountManager {
             .map(ignored -> Unit.UNIT);
     }
 
-    private <T> Try<T> wrapInUserCreationFailedHandler(Try<T> call, String serviceProviderName, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
+    private <T> Try<T> wrapInUserCreationFailedHandler(Try<T> call, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
         return call.onFailure(t ->
             notificationClient.notify(
                 String.format(
-                    "The project user creation via the Service Provider %s failed with the following error message : %s.\nThe associated account exists.",
-                    serviceProviderName,
+                    "The project user creation failed with the following error message : %s.\nThe associated account exists.",
                     t.getMessage()
                 ),
                 "Project user creation failed",
