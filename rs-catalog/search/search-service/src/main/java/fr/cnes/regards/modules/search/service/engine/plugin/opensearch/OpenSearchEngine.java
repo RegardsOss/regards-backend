@@ -187,6 +187,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             throws ModuleException {
         // Retrieve entity
         EntityFeature entity = searchService.get(context.getUrn().get());
+        // add fake pagination for whatever reason it seems we have to response a list and not a single item....
+        context.setPageable(PageRequest.of(0,1));
         FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
                 getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
