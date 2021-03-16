@@ -259,11 +259,12 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     public Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> verify(String token) {
         return userInfo(token)
             .map(userInfo -> {
+                String email = userInfo.get(userInfoEmailMappingField);
                 ServiceProviderAuthenticationInfo.UserInfo.Builder builder =
                     new ServiceProviderAuthenticationInfo.UserInfo.Builder()
-                        .withEmail(userInfo.get(userInfoEmailMappingField))
-                        .withFirstname(userInfo.get(userInfoFirstnameMappingField))
-                        .withLastname(userInfo.get(userInfoLastnameMappingField));
+                        .withEmail(email)
+                        .withFirstname(userInfo.getOrDefault(userInfoFirstnameMappingField, email))
+                        .withLastname(userInfo.getOrDefault(userInfoLastnameMappingField, email));
                 userInfo.forEach((key, value) -> {
                     if (!key.equals(userInfoEmailMappingField)
                         && !key.equals(userInfoFirstnameMappingField)

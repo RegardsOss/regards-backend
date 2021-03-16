@@ -254,7 +254,13 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     private void createExternalProjectUser(String userEmail) {
         Try.of(() -> beanFactory.getBean(IUserAccountManager.class))
             .flatMap(userAccountManager -> userAccountManager
-                .createUserWithAccountAndGroups(new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(userEmail).build())
+                .createUserWithAccountAndGroups(
+                    new ServiceProviderAuthenticationInfo.UserInfo.Builder()
+                        .withEmail(userEmail)
+                        .withFirstname(userEmail)
+                        .withLastname(userEmail)
+                        .build()
+                )
             );
     }
 
