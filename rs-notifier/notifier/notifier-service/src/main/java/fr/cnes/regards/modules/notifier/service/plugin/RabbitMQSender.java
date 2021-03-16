@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.notifier.service.plugin;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,30 +47,6 @@ import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
         version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class RabbitMQSender implements IRecipientNotifier {
-
-    public static final String PLUGIN_ID = "RabbitMQSender";
-
-    public static final String EXCHANGE_PARAM_NAME = "exchange";
-
-    public static final String QUEUE_PARAM_NAME = "queueName";
-
-    @Autowired
-    private IPublisher publisher;
-
-    @PluginParameter(label = "RabbitMQ exchange name", name = EXCHANGE_PARAM_NAME)
-    private String exchange;
-
-    @PluginParameter(label = "RabbitMQ queue name", name = QUEUE_PARAM_NAME, optional = true)
-    private String queueName;
-
-    @Override
-    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
-        List<NotificationEvent> toSend = requestsToSend.stream().map(NotificationEvent::new)
-                .collect(Collectors.toList());
-        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), 0, toSend, new HashMap<>());
-        // if there is an issue with amqp then none of the message will be sent
-        return Collections.emptySet();
-    }
 
     @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
     public static class NotificationEvent implements ISubscribable {
@@ -100,5 +75,29 @@ public class RabbitMQSender implements IRecipientNotifier {
         public void setMetadata(JsonElement metadata) {
             this.metadata = metadata;
         }
+    }
+
+    public static final String PLUGIN_ID = "RabbitMQSender";
+
+    public static final String EXCHANGE_PARAM_NAME = "exchange";
+
+    public static final String QUEUE_PARAM_NAME = "queueName";
+
+    @Autowired
+    private IPublisher publisher;
+
+    @PluginParameter(label = "RabbitMQ exchange name", name = EXCHANGE_PARAM_NAME)
+    private String exchange;
+
+    @PluginParameter(label = "RabbitMQ queue name", name = QUEUE_PARAM_NAME, optional = true)
+    private String queueName;
+
+    @Override
+    public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
+        List<NotificationEvent> toSend = requestsToSend.stream().map(NotificationEvent::new)
+                .collect(Collectors.toList());
+        this.publisher.broadcastAll(exchange, Optional.ofNullable(queueName), 0, toSend, new HashMap<>());
+        // if there is an issue with amqp then none of the message will be sent
+        return Collections.emptySet();
     }
 }
