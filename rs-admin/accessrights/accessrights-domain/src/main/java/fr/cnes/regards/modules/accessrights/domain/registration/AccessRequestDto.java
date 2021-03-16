@@ -28,7 +28,6 @@ public class AccessRequestDto {
      * The first name
      */
     @Valid
-    @NotBlank
     @Length(max = 128)
     private String firstName;
 
@@ -36,7 +35,6 @@ public class AccessRequestDto {
      * The last name
      */
     @Valid
-    @NotBlank
     @Length(max = 128)
     private String lastName;
 
