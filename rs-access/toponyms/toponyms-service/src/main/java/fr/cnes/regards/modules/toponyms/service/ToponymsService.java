@@ -34,6 +34,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -141,9 +143,13 @@ public class ToponymsService {
         Assert.notNull("locale is mandatory for toponyls search by label", locale);
         Assert.notNull("partialLabel is  mandatory for toponyms search by label", partialLabel);
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
-            page = repository.findByLabelFrContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));
+            page = repository
+                    .findByLabelFrContainingIgnoreCase(partialLabel,
+                                                       PageRequest.of(0, limit, Sort.by(Direction.DESC, "label_fr")));
         } else {
-            page = repository.findByLabelContainingIgnoreCase(partialLabel, PageRequest.of(0, limit));
+            page = repository
+                    .findByLabelContainingIgnoreCase(partialLabel,
+                                                     PageRequest.of(0, limit, Sort.by(Direction.DESC, "label")));
         }
         return page
                 .getContent().stream().map(t -> ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null,
