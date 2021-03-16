@@ -51,7 +51,9 @@ public enum UIDefaultPluginEnum {
             "/plugins/criterion/data-with-picture-only/plugin.js", UIPluginTypesEnum.CRITERIA),
 
     DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME("last-version-only", "/plugins/criterion/last-version-only/plugin.js",
-            UIPluginTypesEnum.CRITERIA);
+            UIPluginTypesEnum.CRITERIA),
+
+    DEFAULT_TOPONYM_CRITERION_NAME("toponym", "/plugins/criterion/toponym/plugin.js", UIPluginTypesEnum.CRITERIA);
 
     private String value;
 

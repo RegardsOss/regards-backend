@@ -18,15 +18,9 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,8 +32,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,9 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.JsonObject;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -58,14 +47,11 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 
 /**
  * REST controller for the microservice Access
@@ -86,18 +72,6 @@ public class ModuleController implements IResourceController<Module> {
 
     @Autowired
     private IResourceService resourceService;
-
-    @Autowired
-    private ILegacySearchEngineJsonClient searchClient;
-
-    @Autowired
-    private IAuthenticationResolver authenticationResolver;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Value("${zuul.prefix}")
-    private String gatewayPrefix;
 
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
@@ -200,51 +174,6 @@ public class ModuleController implements IResourceController<Module> {
             @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
         service.deleteModule(moduleId);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Entry point to retrieve a Mizar config for a given module id {@link Module}.
-     * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
-     * @param applicationId
-     * @param moduleId
-     * @param request
-     * @return {@link JsonObject} mizar configuration
-     * @throws EntityNotFoundException
-     * @throws EntityInvalidException
-     * @throws URISyntaxException
-     * @throws MalformedURLException
-     */
-    @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
-    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") String applicationId,
-            @PathVariable("moduleId") Long moduleId, HttpServletRequest request)
-            throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
-        // Retrieve login information for link generation
-        String queryParams;
-        if (authenticationResolver.getRole().equals(DefaultRole.PUBLIC.toString())) {
-            // Handle user not logged in
-            String tenant = runtimeTenantResolver.getTenant();
-            queryParams = "scope=" + tenant;
-        } else {
-            String token = authenticationResolver.getToken();
-            queryParams = "token=" + token;
-        }
-        // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
-        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix
-                + "/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml",
-                                                               queryParams);
-        final Module module = service.retrieveModule(moduleId);
-        @SuppressWarnings("rawtypes")
-        MultiValueMap attr = new LinkedMultiValueMap<>();
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        ResponseEntity datasets = searchClient.searchDatasets(attr);
-        if (!HttpUtils.isSuccess(datasets.getStatusCode())) {
-            return new ResponseEntity<>(datasets.getStatusCode());
-        }
-        JsonObject dataset = (JsonObject) datasets.getBody();
-        JsonObject result = service.addDatasetLayersInsideModuleConf(module, dataset, uriDatasetDescriptor.toString());
-        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @Override
