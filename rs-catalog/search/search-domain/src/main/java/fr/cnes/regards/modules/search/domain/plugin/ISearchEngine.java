@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Search engine plugin contract<br/>
@@ -90,6 +91,24 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
     default ResponseEntity<E> extra(SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException {
         throw new UnsupportedOperationException(
                 "Additional path handling not implemented for engine " + context.getEngineType());
+    }
+
+    /**
+     * Tells if the default search links must be embedded in the configuration representation.
+     *
+     * @return true if the default generation of search links in the configuration can be used
+     */
+    default boolean useDefaultConfigurationLinks() {
+        return true;
+    }
+
+    /**
+     * Allows the plugin to add its own links in the configuration representation.
+     *
+     * @return true if the default generation of search links in the configuration can be used
+     */
+    default List<Link> extraLinks(Class<?> searchEngineControllerClass, SearchEngineConfiguration element) {
+        return new ArrayList<>();
     }
 
     /**

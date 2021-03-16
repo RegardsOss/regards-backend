@@ -18,38 +18,11 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.lang3.tuple.Pair;
-import org.elasticsearch.common.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -66,10 +39,7 @@ import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttribut
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
-import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
-import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
-import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.domain.plugin.*;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
@@ -84,6 +54,31 @@ import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseBuilder;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
+import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.lang3.tuple.Pair;
+import org.elasticsearch.common.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * OpenSearch engine plugin
@@ -455,4 +450,31 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 .collect(Collectors.toList()));
     }
 
+    @Override
+    public List<Link> extraLinks(Class<?> searchEngineControllerClass, SearchEngineConfiguration element) {
+        List<Link> result = new ArrayList<>();
+        String datasetUrn = element.getDatasetUrn();
+        if (datasetUrn != null) {
+            result.add(resourceService.buildLink(searchEngineControllerClass, "searchSingleDatasetExtra",
+                    LinkRelation.of(EXTRA_DESCRIPTION),
+                    MethodParamFactory.build(String.class,
+                            element.getConfiguration().getPluginId()),
+                    MethodParamFactory.build(String.class, datasetUrn),
+                    MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
+                    MethodParamFactory.build(HttpHeaders.class),
+                    MethodParamFactory.build(MultiValueMap.class),
+                    MethodParamFactory.build(Pageable.class)));
+        }
+        else {
+            result.add(resourceService.buildLink(searchEngineControllerClass, "searchAllDataobjectsExtra",
+                    LinkRelation.of(EXTRA_DESCRIPTION),
+                    MethodParamFactory.build(String.class,
+                            element.getConfiguration().getPluginId()),
+                    MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
+                    MethodParamFactory.build(HttpHeaders.class),
+                    MethodParamFactory.build(MultiValueMap.class),
+                    MethodParamFactory.build(Pageable.class)));
+        }
+        return result;
+    }
 }
