@@ -145,7 +145,7 @@ public class ToponymsService {
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
             page = repository
                     .findByLabelFrContainingIgnoreCase(partialLabel,
-                                                       PageRequest.of(0, limit, Sort.by(Direction.DESC, "label_fr")));
+                                                       PageRequest.of(0, limit, Sort.by(Direction.DESC, "labelFr")));
         } else {
             page = repository
                     .findByLabelContainingIgnoreCase(partialLabel,
