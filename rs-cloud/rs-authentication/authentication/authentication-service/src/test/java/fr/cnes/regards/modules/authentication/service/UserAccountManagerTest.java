@@ -4,7 +4,6 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
@@ -55,9 +54,6 @@ public class UserAccountManagerTest {
     private IAccessSettingsClient accessSettingsClient;
 
     @Mock
-    private IRegistrationClient registrationClient;
-
-    @Mock
     private IUserClient userAccessGroupsClient;
 
     @Mock
@@ -73,7 +69,6 @@ public class UserAccountManagerTest {
             accountsClient,
             usersClient,
             accessSettingsClient,
-            registrationClient,
             userAccessGroupsClient,
             notificationClient
         ));
@@ -88,7 +83,6 @@ public class UserAccountManagerTest {
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
                 PROVIDER_USER_INFO
             );
 
@@ -97,7 +91,7 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
         verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
+            .createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO));
         verifyNoMoreInteractions(accountManager);
 
         verify(notificationClient).notify(any(), any(), any(), any(), any(), any());
@@ -109,16 +103,12 @@ public class UserAccountManagerTest {
         doReturn(Try.success(Unit.UNIT))
             .when(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         doReturn(Try.failure(expected))
             .when(accountManager)
             .getAccessSettings();
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
                 PROVIDER_USER_INFO
             );
 
@@ -129,7 +119,7 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
+            .createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO));
         verifyNoMoreInteractions(accountManager);
 
         verify(notificationClient).notify(any(), any(), any(), any(), any(), any());
@@ -141,19 +131,15 @@ public class UserAccountManagerTest {
         doReturn(Try.success(Unit.UNIT))
             .when(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         doReturn(Try.success(ACCESS_SETTINGS))
             .when(accountManager)
             .getAccessSettings();
         doReturn(Try.failure(expected))
             .when(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
                 PROVIDER_USER_INFO
             );
 
@@ -164,51 +150,9 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
         verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
-        verifyNoMoreInteractions(accountManager);
-
-        verify(notificationClient).notify(any(), any(), any(), any(), any(), any());
-    }
-
-    @Test
-    public void createUserWithAccountAndGroups_fails_when_configureAccessGroups_fails() {
-        RuntimeException expected = new RuntimeException("expected");
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .createAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.success(ACCESS_SETTINGS))
-            .when(accountManager)
-            .getAccessSettings();
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
-        doReturn(Try.failure(expected))
-            .when(accountManager)
-            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
-
-        Try<String> result =
-            accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
-                PROVIDER_USER_INFO
-            );
-
-        assertThat(result.isFailure()).isTrue();
-        assertThat(result.getCause()).isEqualTo(expected);
-        verify(accountManager)
-            .createAccount(eq(PROVIDER_USER_INFO));
-        verify(accountManager)
-            .getAccessSettings();
-        verify(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
-        verify(accountManager)
-            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
-        verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
+            .createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO));
         verifyNoMoreInteractions(accountManager);
 
         verify(notificationClient).notify(any(), any(), any(), any(), any(), any());
@@ -219,22 +163,15 @@ public class UserAccountManagerTest {
         doReturn(Try.success(Unit.UNIT))
             .when(accountManager)
             .createAccount(eq(PROVIDER_USER_INFO));
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .autoAcceptAccount(eq(PROVIDER_USER_INFO));
         doReturn(Try.success(ACCESS_SETTINGS))
             .when(accountManager)
             .getAccessSettings();
         doReturn(Try.success(Unit.UNIT))
             .when(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
-        doReturn(Try.success(Unit.UNIT))
-            .when(accountManager)
-            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
-                PROVIDER_NAME,
                 PROVIDER_USER_INFO
             );
 
@@ -245,11 +182,11 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .getAccessSettings();
         verify(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.getDefaultRole().getName()), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
+//        verify(accountManager)
+//            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
         verify(accountManager)
-            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(List.ofAll(ACCESS_SETTINGS.getDefaultGroups())));
-        verify(accountManager)
-            .createUserWithAccountAndGroups(eq(PROVIDER_NAME), eq(PROVIDER_USER_INFO));
+            .createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO));
         verifyNoMoreInteractions(accountManager);
     }
 }

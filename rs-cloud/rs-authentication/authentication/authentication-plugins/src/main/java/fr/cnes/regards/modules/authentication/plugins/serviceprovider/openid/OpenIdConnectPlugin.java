@@ -46,6 +46,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
@@ -53,6 +55,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.hibernate.validator.constraints.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +70,11 @@ import org.springframework.security.authentication.InternalAuthenticationService
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -208,6 +217,9 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     @Value("${http.proxy.noproxy:#{T(java.util.Collections).emptyList()}}")
     private List<String> noProxy;
 
+    @Value("${http.ssl.allow_insecure:false}")
+    private Boolean allowInsecure;
+
     private Feign feign;
 
     @PluginInit
@@ -247,11 +259,12 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
     public Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> verify(String token) {
         return userInfo(token)
             .map(userInfo -> {
+                String email = userInfo.get(userInfoEmailMappingField);
                 ServiceProviderAuthenticationInfo.UserInfo.Builder builder =
                     new ServiceProviderAuthenticationInfo.UserInfo.Builder()
-                        .withEmail(userInfo.get(userInfoEmailMappingField))
-                        .withFirstname(userInfo.get(userInfoFirstnameMappingField))
-                        .withLastname(userInfo.get(userInfoLastnameMappingField));
+                        .withEmail(email)
+                        .withFirstname(userInfo.getOrDefault(userInfoFirstnameMappingField, email))
+                        .withLastname(userInfo.getOrDefault(userInfoLastnameMappingField, email));
                 userInfo.forEach((key, value) -> {
                     if (!key.equals(userInfoEmailMappingField)
                         && !key.equals(userInfoFirstnameMappingField)
@@ -386,8 +399,18 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
                 }
                 return 5 * 1000;
             });
+        HttpClientBuilder builder = HttpClientBuilder.create();
+
+        if (allowInsecure) {
+            try {
+                builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+                builder.setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
+            } catch (Exception e) {
+                LOGGER.error("Exception in creating http client instance", e);
+            }
+        }
+
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
-            HttpClientBuilder builder = HttpClientBuilder.create();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
             if (((proxyLogin != null) && !proxyLogin.isEmpty()) && ((proxyPassword != null) && !proxyPassword
                 .isEmpty())) {

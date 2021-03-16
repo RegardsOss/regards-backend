@@ -159,7 +159,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_NAME, PROVIDER_USER_INFO))
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
             .thenReturn(Try.failure(expected));
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
@@ -187,7 +187,7 @@ public class ServiceProviderAuthenticationServiceTest {
             @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
             @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_NAME, PROVIDER_USER_INFO))
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
             .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
@@ -335,7 +335,7 @@ public class ServiceProviderAuthenticationServiceTest {
             mock(IServiceProviderPlugin.class);
         doReturn(Try.success(plugin_3)).when(service).getPlugin(providerName_3);
 
-        when(userAccountManager.createUserWithAccountAndGroups(providerName_2, PROVIDER_USER_INFO))
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO))
             .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
