@@ -34,7 +34,6 @@
 
     <modules>
         <module>authentication-starter</module>
-        <module>external-authentication-starter</module>
         <module>bootstrap-authentication</module>
         <module>authentication</module>
     </modules>

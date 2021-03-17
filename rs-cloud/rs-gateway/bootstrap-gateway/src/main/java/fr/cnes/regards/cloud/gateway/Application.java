@@ -32,10 +32,19 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
  * Spring boot starter class for Regards Gateway component
  * @author Sébastien Binda
  */
-@SpringBootApplication
+@SpringBootApplication/*(
+    exclude = {
+        FlywayAutoConfiguration.class,
+        CipherAutoConf.class,
+        DataSourceAutoConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        HibernateJpaAutoConfiguration.class
+    }
+)*/
 @EnableZuulProxy
 @EnableDiscoveryClient
 @EnableEurekaClient
+//@EnableFeignClients
 public class Application { // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);

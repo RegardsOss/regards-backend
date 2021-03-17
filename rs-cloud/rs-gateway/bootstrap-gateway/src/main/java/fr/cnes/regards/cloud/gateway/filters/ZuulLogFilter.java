@@ -18,18 +18,20 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
-
 import ch.qos.logback.classic.ClassicConstants;
 import com.google.common.net.HttpHeaders;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import fr.cnes.regards.framwork.logbackappender.LogConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.DEBUG_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
 /**
  * This class is a Zuul proxy filter. It aims to log the HTTP method and the URL.</br>
@@ -44,14 +46,16 @@ public class ZuulLogFilter extends ZuulFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZuulLogFilter.class);
 
+    protected static final int ORDER = DEBUG_FILTER_ORDER;
+
     @Override
     public String filterType() {
-        return "pre";
+        return PRE_TYPE;
     }
 
     @Override
     public int filterOrder() {
-        return 1;
+        return ORDER;
     }
 
     @Override

@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.stereotype.Component;
-
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
+
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
 /**
  * This filter detects JWT in the URL query params and if found set it into the header.<br/>
@@ -49,14 +51,16 @@ public class UrlToHeaderTokenFilter extends ZuulFilter {
      */
     public static final String TOKEN = "token";
 
+    protected static final int ORDER = PRE_DECORATION_FILTER_ORDER;
+
     @Override
     public String filterType() {
-        return "pre";
+        return PRE_TYPE;
     }
 
     @Override
     public int filterOrder() {
-        return 1;
+        return ORDER;
     }
 
     @Override
