@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.authentication.autoconfigure;
+package fr.cnes.regards.cloud.gateway.filters;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
@@ -25,25 +25,30 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import io.vavr.control.Try;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import static com.google.common.base.Predicates.instanceOf;
-import static io.vavr.API.*;
+import static io.vavr.API.$;
+import static io.vavr.API.Case;
 
+@Component
 public class ExternalAuthenticationResolver implements IExternalAuthenticationResolver {
-
-    private IExternalAuthenticationClient externalAuthenticationClient;
 
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    public ExternalAuthenticationResolver(IExternalAuthenticationClient externalAuthenticationClient, IRuntimeTenantResolver runtimeTenantResolver) {
-        this.externalAuthenticationClient = externalAuthenticationClient;
+    private IExternalAuthenticationClient externalAuthenticationClient;
+
+    @Autowired
+    public ExternalAuthenticationResolver(IRuntimeTenantResolver runtimeTenantResolver, IExternalAuthenticationClient externalAuthenticationClient) {
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.externalAuthenticationClient = externalAuthenticationClient;
     }
 
     @Override
