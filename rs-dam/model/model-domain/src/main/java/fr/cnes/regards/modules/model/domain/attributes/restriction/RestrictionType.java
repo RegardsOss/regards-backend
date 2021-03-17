@@ -30,5 +30,14 @@ public enum RestrictionType {
     /**
      * Acceptable restriction type
      */
-    NO_RESTRICTION, PATTERN, ENUMERATION, DATE_ISO8601, INTEGER_RANGE, LONG_RANGE, DOUBLE_RANGE, URL, GEOMETRY;
+    NO_RESTRICTION,
+    PATTERN,
+    ENUMERATION,
+    DATE_ISO8601,
+    INTEGER_RANGE,
+    LONG_RANGE,
+    DOUBLE_RANGE,
+    URL,
+    GEOMETRY,
+    JSON_SCHEMA;
 }

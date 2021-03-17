@@ -32,7 +32,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 
@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
  *
  */
 @Service
-public class DamAttributeHelper implements IAttributeHelper {
+public class DamAttributeHelper extends AbstractAttributeHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamAttributeHelper.class);
 
@@ -67,7 +67,7 @@ public class DamAttributeHelper implements IAttributeHelper {
     }
 
     @Override
-    public List<AttributeModel> getAllAttributes(String pTenant) {
+    protected List<AttributeModel> doGetAllAttributes(String pTenant) {
         // Do not alter tenant context if already forced
         String current = runtimeTenantResolver.getTenant();
         boolean forceIt = current == null;

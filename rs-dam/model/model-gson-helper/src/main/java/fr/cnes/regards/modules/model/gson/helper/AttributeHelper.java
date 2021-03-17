@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 
 /**
 *
@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 */
 @ConditionalOnMissingClass("fr.cnes.regards.modules.dam.service.entities.DamAttributeHelper")
 @Service
-public class AttributeHelper implements IAttributeHelper {
+public class AttributeHelper extends AbstractAttributeHelper {
 
     /**
      * Runtime tenant resolver
@@ -75,7 +75,7 @@ public class AttributeHelper implements IAttributeHelper {
     }
 
     @Override
-    public List<AttributeModel> getAllAttributes(String pTenant) {
+    public List<AttributeModel> doGetAllAttributes(String pTenant) {
         try {
             runtimeTenantResolver.forceTenant(pTenant);
             FeignSecurityManager.asSystem();

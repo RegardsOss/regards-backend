@@ -41,6 +41,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.model.dto.properties.logger.PropertyPatchLogger;
@@ -317,6 +318,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case LONG_INTERVAL:
                 return buildLongInterval(name, (Range<Long>) value);
             case STRING:
+                return buildString(name, toStringValue(value));
+            case JSON:
                 return buildString(name, toStringValue(value));
             case STRING_ARRAY:
                 return buildStringArray(name, toArrayValue(value, IProperty::toStringValue, String.class));
@@ -730,6 +733,13 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
     public static StringProperty buildString(String name, String value) {
         StringProperty att = new StringProperty();
+        att.setName(name);
+        att.setValue(value);
+        return att;
+    }
+
+    public static JsonProperty buildJson(String name, JsonObject value) {
+        JsonProperty att = new JsonProperty();
         att.setName(name);
         att.setValue(value);
         return att;

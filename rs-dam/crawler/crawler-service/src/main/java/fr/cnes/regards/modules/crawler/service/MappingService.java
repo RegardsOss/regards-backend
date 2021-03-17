@@ -13,7 +13,10 @@ import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 
 /**
@@ -30,22 +33,35 @@ public class MappingService implements IMappingService {
 
     @Override
     public void configureMappings(String tenant, String modelName) {
-            List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
-            if(!modelAttributes.isEmpty()) {
-                Set<AttributeDescription> mappings = new HashSet<>();
-                for (ModelAttrAssoc modelAttribute : modelAttributes) {
-                    AttributeModel attribute = modelAttribute.getAttribute();
-                    mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(),
-                                                          attribute.getType(),
-                                                          attribute.hasRestriction() ?
-                                                                  attribute.getRestriction().getType() :
-                                                                  RestrictionType.NO_RESTRICTION,
-                                                          attribute.getProperties().stream().collect(Collectors.toMap(
-                                                                  AttributeProperty::getKey,
-                                                                  AttributeProperty::getValue))));
+        List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
+        if (!modelAttributes.isEmpty()) {
+            Set<AttributeDescription> mappings = new HashSet<>();
+            for (ModelAttrAssoc modelAttribute : modelAttributes) {
+                AttributeModel attribute = modelAttribute.getAttribute();
+                // If attribute is JSON type, then generate virtual attributes from given jsonSchema to create mapping.
+                if ((attribute.getType() == PropertyType.JSON)
+                        && (attribute.getRestrictionType() == RestrictionType.JSON_SCHEMA)) {
+                    JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
+                    AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(), restriction.getJsonSchema())
+                            .forEach(a -> {
+                                mappings.add(new AttributeDescription("feature." + a.getJsonPath(), a.getType(),
+                                        a.hasRestriction() ? a.getRestrictionType() : RestrictionType.NO_RESTRICTION,
+                                        a.getProperties().stream()
+                                                .collect(Collectors.toMap(AttributeProperty::getKey,
+                                                                          AttributeProperty::getValue)),
+                                        a.getEsMapping()));
+                            });
+                } else {
+                    mappings.add(new AttributeDescription("feature." + attribute.getJsonPath(), attribute.getType(),
+                            attribute.hasRestriction() ? attribute.getRestrictionType()
+                                    : RestrictionType.NO_RESTRICTION,
+                            attribute.getProperties().stream()
+                                    .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue)),
+                            attribute.getEsMapping()));
                 }
-                // now lets put the mappings into ES
-                esRepos.putMappings(tenant, mappings);
             }
+            // now lets put the mappings into ES
+            esRepos.putMappings(tenant, mappings);
+        }
     }
 }

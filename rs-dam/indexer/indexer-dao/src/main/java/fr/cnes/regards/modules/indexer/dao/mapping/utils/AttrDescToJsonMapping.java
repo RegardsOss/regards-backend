@@ -1,5 +1,10 @@
 package fr.cnes.regards.modules.indexer.dao.mapping.utils;
 
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
+import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
+import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_LOWER_BOUND;
+import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_UPPER_BOUND;
+
 import java.util.Arrays;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -10,11 +15,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.kv;
-import static fr.cnes.regards.modules.indexer.dao.mapping.utils.GsonBetter.object;
-import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_LOWER_BOUND;
-import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMapping.RANGE_UPPER_BOUND;
 import io.vavr.control.Option;
 
 public class AttrDescToJsonMapping {
@@ -35,8 +37,8 @@ public class AttrDescToJsonMapping {
     static JsonObject nestedPropertiesStructure(String path, JsonObject propMapping) {
         String[] parts = path.split("\\.");
         ArrayUtils.reverse(parts);
-        return Arrays.stream(parts)
-                .reduce(propMapping, (acc, part) -> object("properties", object(part, acc)), (a, b) -> merge(a, b));
+        return Arrays.stream(parts).reduce(propMapping, (acc, part) -> object("properties", object(part, acc)),
+                                           (a, b) -> merge(a, b));
     }
 
     private static JsonObject type(String type) {
@@ -61,6 +63,11 @@ public class AttrDescToJsonMapping {
     }
 
     private JsonObject dispatch(AttributeDescription a) {
+        // If mapping is fixed by configuration return it
+        if (a.getFixedMapping() != null) {
+            return new JsonParser().parse(a.getFixedMapping()).getAsJsonObject();
+        }
+        // Else generate auto mapping
         switch (a.getType()) {
             case BOOLEAN:
                 return toBooleanJsonMapping(a);
@@ -90,6 +97,7 @@ public class AttrDescToJsonMapping {
             case DATE_INTERVAL:
                 return toDateIntervalJsonMapping(a);
             case OBJECT:
+            case JSON:
                 return toObjectJsonMapping(a);
             default:
                 throw new NotImplementedException("No mapping definition for property type " + a.getType());
@@ -100,10 +108,8 @@ public class AttrDescToJsonMapping {
         try {
             return nestedPropertiesStructure(attrDesc.getPath(), new JsonParser().parse(mapping).getAsJsonObject());
         } catch (IllegalStateException e) {
-            LOGGER.warn("Impossible to parse declared {} property for attribute {}",
-                        ELASTICSEARCH_MAPPING_PROP_NAME,
-                        attrDesc.getPath(),
-                        e);
+            LOGGER.warn("Impossible to parse declared {} property for attribute {}", ELASTICSEARCH_MAPPING_PROP_NAME,
+                        attrDesc.getPath(), e);
             return new JsonObject();
         }
     }
@@ -173,13 +179,19 @@ public class AttrDescToJsonMapping {
     }
 
     public enum RangeAliasStrategy {
+
         NO_ALIAS {
+
+            @Override
             JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
                 String path = attrDesc.getPath();
                 return merge(nestedPropertiesStructure(fullLowPath(path), type),
                              nestedPropertiesStructure(fullHighPath(path), type));
             }
-        }, GTELTE {
+        },
+        GTELTE {
+
+            @Override
             JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
                 String path = attrDesc.getPath();
                 return merge(NO_ALIAS.nestedSimpleRange(attrDesc, type),

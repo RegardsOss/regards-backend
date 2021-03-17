@@ -170,6 +170,12 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         descriptors.add(constrainedFields.withPath(prefixPath + "optional", "optional",
                                                    "Whether this attribute is optional", "defaults to false")
                 .type(JSON_BOOLEAN_TYPE).optional());
+        descriptors
+                .add(constrainedFields
+                        .withPath(prefixPath + "esMapping", "esMapping",
+                                  "Used to force elasticsearch mapping configuration for this attribute",
+                                  "Must be a valid json formatted String")
+                        .type(JSON_STRING_TYPE).optional().description(""));
         descriptors.add(constrainedFields.withPath(prefixPath + "label", "label", "Attribute label"));
         descriptors.add(constrainedFields
                 .withPath(prefixPath + "restriction", "restriction", "Attribute applicable restriction")
@@ -191,6 +197,10 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         descriptors.add(constrainedFields
                 .withPath(prefixPath + "jsonPath", "jsonPath",
                           "Used in search request. Define the JSON path to the related values in entities")
+                .type(JSON_STRING_TYPE).optional());
+        descriptors.add(constrainedFields
+                .withPath(prefixPath + "virtual", "virtual",
+                          "Indicates if this atribute is a virtual attribute generated from a json schema restriction associated to a JSON attribute")
                 .type(JSON_STRING_TYPE).optional());
         // ignore links
         ConstrainedFields ignoreFields = new ConstrainedFields(EntityModel.class);
@@ -234,6 +244,10 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                 .withPath(prefixPath + "description", "description", "Fragment description", "Optional")
                 .type(JSON_STRING_TYPE).optional());
         descriptors.add(constrainedFields.withPath(prefixPath + "version", "version", "Fragment Version", "Optional")
+                .type(JSON_STRING_TYPE).optional());
+        descriptors.add(constrainedFields
+                .withPath(prefixPath + "virtual", "virtual",
+                          "Indicates if this fragment is a virtual fragment from a json schema restriction associated to a JSON attribute")
                 .type(JSON_STRING_TYPE).optional());
         return descriptors;
     }

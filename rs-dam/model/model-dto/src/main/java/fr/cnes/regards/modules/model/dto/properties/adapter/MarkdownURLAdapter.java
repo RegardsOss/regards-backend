@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
@@ -45,6 +46,12 @@ public class MarkdownURLAdapter extends TypeAdapter<MarkdownURL> {
 
     @Override
     public MarkdownURL read(JsonReader in) throws IOException {
-        return MarkdownURL.build(in.nextString());
+        if(in.peek() == JsonToken.NULL) {
+            // read the null anyway so that reader is not stuck
+            in.nextNull();
+            return MarkdownURL.build(null);
+        } else {
+            return MarkdownURL.build(in.nextString());
+        }
     }
 }

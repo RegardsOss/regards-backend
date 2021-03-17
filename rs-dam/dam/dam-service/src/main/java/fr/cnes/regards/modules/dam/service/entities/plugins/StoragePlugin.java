@@ -75,15 +75,13 @@ public class StoragePlugin implements IStorageService {
 
     @Override
     public <T extends AbstractEntity<?>> T store(T toPersist) {
-        if ((storage != null) && !storage.isEmpty()) {
-            Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
-                    .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
-            if (!files.isEmpty()) {
-                Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
-                        .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
-                        .collect(Collectors.toSet());
-                this.entityRequestRepo.saveAll(infos);
-            }
+        Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
+                .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
+        if ((storage != null) && !storage.isEmpty() && (!files.isEmpty())) {
+            Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
+                    .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
+                    .collect(Collectors.toSet());
+            this.entityRequestRepo.saveAll(infos);
         } else {
             String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";

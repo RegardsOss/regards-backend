@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 @Profile("!indexer-service")
 @Configuration
@@ -95,6 +96,11 @@ public class CrawlerConfiguration {
     @Bean
     public IStorageClient storageClient() {
         return Mockito.mock(IStorageClient.class);
+    }
+
+    @Bean
+    public IToponymsClient toponymClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 
     @Primary

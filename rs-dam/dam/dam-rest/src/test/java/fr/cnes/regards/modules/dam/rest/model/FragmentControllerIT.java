@@ -242,6 +242,10 @@ public class FragmentControllerIT extends AbstractRegardsTransactionalIT {
                 .type(JSON_STRING_TYPE).optional());
         descriptors.add(constrainedFields.withPath(prefixPath + "version", "version", "Fragment Version", "Optional")
                 .type(JSON_STRING_TYPE).optional());
+        descriptors.add(constrainedFields
+                .withPath(prefixPath + "virtual", "virtual",
+                          "Indicates if this fragment is a virtual fragment generated from a json schema restriction associated to a JSON attribute")
+                .type(JSON_STRING_TYPE).optional());
         // ignore links
         ConstrainedFields ignoreFields = new ConstrainedFields(EntityModel.class);
         descriptors.add(ignoreFields.withPath("links", "links", "hateoas links").optional().ignored());

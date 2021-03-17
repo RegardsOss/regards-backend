@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 
 /**
  * Common DAM REST mocks
@@ -52,5 +53,10 @@ public class DamRestConfiguration {
     @Bean
     public IProjectUsersClient mockProjectUsersClient() {
         return Mockito.mock(IProjectUsersClient.class);
+    }
+
+    @Bean
+    public IToponymsClient toponymClient() {
+        return Mockito.mock(IToponymsClient.class);
     }
 }

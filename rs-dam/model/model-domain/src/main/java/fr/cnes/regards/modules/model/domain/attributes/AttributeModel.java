@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes;
 
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -41,10 +47,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import fr.cnes.regards.framework.gson.utils.GSONConstants;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -55,6 +57,7 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
@@ -62,6 +65,7 @@ import fr.cnes.regards.modules.model.domain.schema.Attribute;
 import fr.cnes.regards.modules.model.domain.schema.Property;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.domain.schema.Type;
+import fr.cnes.regards.modules.model.domain.validator.JsonString;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
@@ -87,9 +91,8 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     @NotNull(message = "Name cannot be null")
     @Pattern(regexp = Model.NAME_REGEXP,
             message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
-            message = "Attribute name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE
-                    + " length.")
+    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE, message = "Attribute name must be between "
+            + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
     @Column(nullable = false, updatable = false, length = Model.NAME_MAX_SIZE)
     private String name;
 
@@ -147,6 +150,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     private boolean optional;
 
     /**
+     * Optional elasticsearch mapping configuration for this attribute
+     */
+    @JsonString(message = "Elasticsearch mapping must be a valid json format")
+    @Column(name = "es_mapping")
+    @org.hibernate.annotations.Type(type = "text")
+    private String esMapping;
+
+    /**
      * Attribute label
      */
     @Column(length = 255)
@@ -199,6 +210,13 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     @Transient
     private String jsonPath;
 
+    /**
+     * Indicates if this attribute is a real atribute from the model or if it is a generated one from a JsonObject attributes.
+     * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
+     */
+    @Transient
+    private boolean virtual = false;
+
     @Override
     public Long getId() {
         return id;
@@ -223,6 +241,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     public void setType(PropertyType pType) {
         type = pType;
+    }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
     }
 
     public boolean hasFragment() {
@@ -342,6 +368,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         arraysize = pArraysize;
     }
 
+    public String getEsMapping() {
+        return esMapping;
+    }
+
+    public void setEsMapping(String esMapping) {
+        this.esMapping = esMapping;
+    }
+
     @Override
     public Attribute toXml() {
         final Attribute xmlAtt = new Attribute();
@@ -359,6 +393,10 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         }
         if (precision != null) {
             xmlType.setPrecision(BigInteger.valueOf(precision));
+        }
+
+        if (esMapping != null) {
+            xmlAtt.setEsMapping(esMapping);
         }
         xmlType.setUnit(unit);
         xmlType.setValue(fr.cnes.regards.modules.model.domain.schema.RestrictionType.fromValue(type.toString()));
@@ -383,6 +421,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         setDescription(pXmlElement.getDescription());
         setAlterable(pXmlElement.isAlterable());
         setOptional(pXmlElement.isOptional());
+        setEsMapping(pXmlElement.getEsMapping());
         if (pXmlElement.getRestriction() != null) {
             final Restriction xmlRestriction = pXmlElement.getRestriction();
             if (xmlRestriction.getEnumeration() != null) {
@@ -395,6 +434,8 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
                 restriction = new LongRangeRestriction();
             } else if (xmlRestriction.getPattern() != null) {
                 restriction = new PatternRestriction();
+            } else if (xmlRestriction.getJsonSchema() != null) {
+                restriction = new JsonSchemaRestriction();
             }
 
             // Cause null pointer exception if implementation not consistent with XSD
@@ -561,6 +602,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     public String toString() {
         return "AttributeModel{" + "id=" + id + ", name='" + name + '\'' + ", type=" + type + ", fragment=" + fragment
                 + ", jsonPath='" + jsonPath + '\'' + '}';
+    }
+
+    /**
+     * @return
+     */
+    public RestrictionType getRestrictionType() {
+        return Optional.ofNullable(restriction).map(AbstractRestriction::getType)
+                .orElse(RestrictionType.NO_RESTRICTION);
     }
 
 }

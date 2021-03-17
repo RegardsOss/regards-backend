@@ -52,6 +52,7 @@ public class RestrictionService {
         restrictions.add(RestrictionFactory.buildLongRangeRestriction(null, null, false, false));
         restrictions.add(RestrictionFactory.buildIntegerRangeRestriction(null, null, false, false));
         restrictions.add(RestrictionFactory.buildPatternRestriction(null));
+        restrictions.add(RestrictionFactory.buildJsonSchemaRestriction(null));
     }
 
     /**
