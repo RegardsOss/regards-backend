@@ -101,7 +101,7 @@
         "MAP": {
           "enabled": false,
           "attributes": [],
-          "initialViewMode": "3D",
+          "initialViewMode": "MODE_3D",
           "mapEngine": "CESIUM",
           "layers": []
         }
