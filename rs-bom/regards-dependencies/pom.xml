@@ -282,11 +282,6 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
-				<artifactId>external-authentication-starter</artifactId>
-				<version>${modules.authentication.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>cloud-regards-starter</artifactId>
 				<version>${cloud.starter.version}</version>
 			</dependency>
