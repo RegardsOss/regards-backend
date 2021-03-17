@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -298,26 +298,6 @@ public final class PluginUtils {
         }
     }
 
-    //    /**
-    //     * Create an instance of {@link Plugin} based on its configuration and metadata
-    //     * @param <T> a {@link Plugin}
-    //     * @param params a {@link List} of {@link IPluginParam}
-    //     * @param pluginClass the required returned type
-    //     * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
-    //     * @return a {@link Plugin} instance
-    //     * @deprecated TODO this method is only used to do tests and should be remove from main code
-    //     */
-    //    @Deprecated
-    //    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass,
-    //            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicPlugins)
-    //            throws NotAvailablePluginConfigurationException {
-    //        // Build plugin metadata
-    //        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
-    //
-    //        PluginConfiguration pluginConfiguration = new PluginConfiguration("", params, pluginMetadata.getPluginId());
-    //        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPlugins, dynamicPlugins);
-    //    }
-
     /**
      * Look for {@link PluginDestroy} annotation and launch corresponding method if found.
      * @param <T> a {@link Plugin}
@@ -372,22 +352,6 @@ public final class PluginUtils {
             }
         }
     }
-
-    //    /**
-    //     * Create an instance of {@link PluginConfiguration}
-    //     * @param <T> a plugin
-    //     * @param params the plugin parameters
-    //     * @param returnInterfaceType the required returned type
-    //     * @return an instance @ if a problem occurs
-    //     * @deprecated TODO remove this method from main code because it is only used in test
-    //     */
-    //    @Deprecated
-    //    public static <T> PluginConfiguration getPluginConfiguration(Set<IPluginParam> params,
-    //            Class<T> returnInterfaceType) {
-    //        // Build plugin metadata
-    //        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
-    //        return new PluginConfiguration(UUID.randomUUID().toString(), params, pluginMetadata.getPluginId());
-    //    }
 
     public static List<String> validateOnCreate(PluginConfiguration conf) {
         List<String> validationErrors = validate(conf);

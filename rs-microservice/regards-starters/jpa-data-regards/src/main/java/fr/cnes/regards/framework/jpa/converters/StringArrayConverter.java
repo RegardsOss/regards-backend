@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,27 +18,26 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
+import com.google.common.base.Joiner;
+
 /**
- * This class allows to convert {@link Path} attribute to {@link String} to persist with JPA
- * @author Marc Sordi
+ * Simple String Array converter.
+ * <b>Beware : join character is ';'</b>
+ * @author oroussel
  */
-@Converter(autoApply = true)
-public class PathAttributeConverter implements AttributeConverter<Path, String> {
+@Converter
+public class StringArrayConverter implements AttributeConverter<String[], String> {
 
     @Override
-    public String convertToDatabaseColumn(Path attribute) {
-        return attribute == null ? null : attribute.toAbsolutePath().toString();
+    public String convertToDatabaseColumn(String[] attribute) {
+        return (attribute == null) ? null : Joiner.on(';').skipNulls().join(attribute);
     }
 
     @Override
-    public Path convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : Paths.get(dbData);
+    public String[] convertToEntityAttribute(String dbData) {
+        return (dbData == null) ? null : dbData.split(";");
     }
-
 }

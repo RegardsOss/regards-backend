@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -239,9 +239,12 @@ public class PluginService implements IPluginService {
     private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfiguration conf)
             throws EncryptionException {
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            if (paramType.isSensible()) {
+            // only decrypt STRING plugin parameter for now.
+            if(paramType.getType() == PluginParamType.STRING) {
                 StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
-                pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
+                if (pluginParam != null && paramType.isSensible() && pluginParam.hasValue()) {
+                    pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
+                }
             }
         }
     }

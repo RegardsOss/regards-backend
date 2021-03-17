@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,21 +19,41 @@
 package fr.cnes.regards.framework.jpa.exception;
 
 /**
- * Generic JPA exception
- * @author Marc Sordi
+ * Class MultiDataBasesException
+ *
+ * Exception raised when there is an error in the multitenancy databases access
+ * @author CS
  */
-@SuppressWarnings("serial")
-public class JpaException extends Exception {
+public class MultiDataBasesException extends Exception {
 
-    public JpaException(final String pMessage, final Throwable pCause) {
+    /**
+     * serialVersionUID field.
+     * @author CS
+     */
+    private static final long serialVersionUID = 7382111289929689769L;
+
+    /**
+     * Constructor
+     * @param pMessage message
+     * @param pCause cause
+     */
+    public MultiDataBasesException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);
     }
 
-    public JpaException(final String pMessage) {
+    /**
+     * Constructor
+     * @param pMessage message
+     */
+    public MultiDataBasesException(final String pMessage) {
         super(pMessage);
     }
 
-    public JpaException(final Throwable pCause) {
+    /**
+     * Constructor
+     * @param pCause cause
+     */
+    public MultiDataBasesException(final Throwable pCause) {
         super(pCause);
     }
 

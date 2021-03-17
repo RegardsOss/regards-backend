@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -42,13 +42,18 @@ public class GsonHttpMessageConverterCustom extends GsonHttpMessageConverter {
 
     @Override
     public Gson getGson() {
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-                .getRequest();
-        String prettyValues = request.getParameter(PRETTY_PRINT_PARAMETER);
-        if ((prettyValues != null)) {
-            LOGGER.trace("pretty print enabled.");
-            return this.prettyGson;
-        } else {
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+                    .getRequest();
+            String prettyValues = request.getParameter(PRETTY_PRINT_PARAMETER);
+            if ((prettyValues != null)) {
+                LOGGER.trace("pretty print enabled.");
+                return this.prettyGson;
+            } else {
+                return super.getGson();
+            }
+        } catch (IllegalStateException e) {
+            // Not in a servlet request context
             return super.getGson();
         }
     }

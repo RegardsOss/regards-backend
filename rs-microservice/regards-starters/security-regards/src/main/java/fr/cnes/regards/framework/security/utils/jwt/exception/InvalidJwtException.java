@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,10 @@ package fr.cnes.regards.framework.security.utils.jwt.exception;
 public class InvalidJwtException extends JwtException {
 
     private static final long serialVersionUID = 1L;
+
+    public InvalidJwtException(Throwable cause) {
+        super(cause);
+    }
 
     public InvalidJwtException(String pMessage) {
         super(pMessage);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,24 +20,23 @@ package fr.cnes.regards.framework.jpa.converters;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-
-import com.google.common.base.Joiner;
+import java.sql.Date;
+import java.time.LocalDate;
 
 /**
- * Simple String Array converter.
- * <b>Beware : join character is ';'</b>
- * @author oroussel
+ * This {@link AttributeConverter} allows to convert a LocalDate to persist with JPA.
+ * @author Christophe Mertz
  */
-@Converter
-public class StringArrayConverter implements AttributeConverter<String[], String> {
+@Converter(autoApply = true)
+public class LocalDateAttributeConverter implements AttributeConverter<LocalDate, Date> {
 
     @Override
-    public String convertToDatabaseColumn(String[] attribute) {
-        return (attribute == null) ? null : Joiner.on(';').skipNulls().join(attribute);
+    public Date convertToDatabaseColumn(LocalDate pLocDate) {
+        return pLocDate == null ? null : Date.valueOf(pLocDate);
     }
 
     @Override
-    public String[] convertToEntityAttribute(String dbData) {
-        return (dbData == null) ? null : dbData.split(";");
+    public LocalDate convertToEntityAttribute(Date pSqlDate) {
+        return pSqlDate == null ? null : pSqlDate.toLocalDate();
     }
 }

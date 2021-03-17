@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,19 +19,19 @@
 package fr.cnes.regards.framework.notification.client;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisherContract;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * An implementation of the notification client using asynchronous messaging
@@ -46,9 +46,10 @@ public abstract class AbstractNotificationPublisher implements INotificationClie
     private String applicationName;
 
     @Override
-    public void notify(String message, String title, NotificationLevel level, MimeType mimeType, DefaultRole... roles) {
+    public void notifyRoles(String message, String title, NotificationLevel level, MimeType mimeType,
+            Set<String> roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                        .toRoles(Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet())));
+                        .toRoles(roles));
     }
 
     @Override
@@ -58,11 +59,10 @@ public abstract class AbstractNotificationPublisher implements INotificationClie
     }
 
     @Override
-    public void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
-            DefaultRole... roles) {
+    public void notifyUserAndRoles(String message, String title, NotificationLevel level, MimeType mimeType,
+            String user, Set<String> roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                        .toRolesAndUsers(Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet()),
-                                         new HashSet<>(Arrays.asList(user))));
+                        .toRolesAndUsers(roles, Sets.newHashSet(user)));
     }
 
     private void publish(NotificationDTO notification) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -114,7 +114,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add JWT Authentication filter
         http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
-                             PublicAuthenticationFilter.class);
+            PublicAuthenticationFilter.class);
         http.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
         http.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 

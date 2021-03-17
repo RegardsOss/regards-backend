@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -23,7 +23,9 @@ import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +35,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -141,9 +139,15 @@ public class JWTService {
      */
     public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
 
-        final Jws<Claims> claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
+        Jws<Claims> claims;
+        try {
+             claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
                 .parseClaimsJws(pAuthentication.getJwt());
-        // OK, trusted JWT parsed and validated
+            // OK, trusted JWT parsed and validated
+        } catch (MalformedJwtException m) {
+            LOG.error("Failed to parse claims");
+            throw new InvalidJwtException(m);
+        }
 
         final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
         if (tenant == null) {
@@ -175,6 +179,8 @@ public class JWTService {
 
         pAuthentication.setAuthenticated(Boolean.TRUE);
 
+        pAuthentication.setAdditionalParams(claims.getBody());
+
         return pAuthentication;
     }
 
@@ -191,6 +197,39 @@ public class JWTService {
      */
     public String generateToken(String tenant, String user, String email, String role) {
         return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), null, secret, false);
+    }
+
+    /**
+     *
+     * FIXME : JWT generate must manage RSA keys
+     *
+     * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
+     * @param tenant tenant
+     * @param user user name
+     * @param email user email
+     * @param role user role
+     * @param additionalParams additional parameters (user specific)
+     * @return a Json Web Token
+     */
+    public String generateToken(String tenant, String user, String email, String role, Map<String, Object> additionalParams) {
+        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), additionalParams, secret, false);
+    }
+
+    /**
+     *
+     * FIXME : JWT generate must manage RSA keys
+     *
+     * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
+     * @param tenant tenant
+     * @param user user name
+     * @param email user email
+     * @param role user role
+     * @param expirationDate specific expiration date
+     * @param additionalParams additional parameters (user specific)
+     * @return a Json Web Token
+     */
+    public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate, Map<String, Object> additionalParams) {
+        return generateToken(tenant, user, email, role, expirationDate, additionalParams, secret, false);
     }
 
     /**

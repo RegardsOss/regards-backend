@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -45,6 +43,11 @@ public class JWTAuthentication implements Authentication {
     private final String jwt;
 
     /**
+     * Current tenant
+     */
+    private String tenant;
+
+    /**
      * Current user info
      */
     private UserDetails user;
@@ -53,6 +56,11 @@ public class JWTAuthentication implements Authentication {
      * Whether the user is authenticated
      */
     private Boolean isAuthenticated;
+
+    /**
+     * Additional parameters (user specific)
+     */
+    private Map<String, Object> additionalParams;
 
     /**
      * Constructor
@@ -105,7 +113,7 @@ public class JWTAuthentication implements Authentication {
      * @return tenant for whom the JWT was provided
      */
     public String getTenant() {
-        return user.getTenant();
+        return Optional.ofNullable(user).map(UserDetails::getTenant).orElse(tenant);
     }
 
     /**
@@ -113,7 +121,10 @@ public class JWTAuthentication implements Authentication {
      * @param pTenant the new tenant
      */
     public void setTenant(String pTenant) {
-        user.setTenant(pTenant);
+        if (user != null) {
+            user.setTenant(pTenant);
+        }
+        tenant = pTenant;
     }
 
     /**
@@ -146,6 +157,14 @@ public class JWTAuthentication implements Authentication {
      */
     public void setUser(UserDetails pUser) {
         user = pUser;
+    }
+
+    public Map<String, Object> getAdditionalParams() {
+        return additionalParams;
+    }
+
+    public void setAdditionalParams(Map<String, Object> additionalParams) {
+        this.additionalParams = additionalParams;
     }
 
     @Override

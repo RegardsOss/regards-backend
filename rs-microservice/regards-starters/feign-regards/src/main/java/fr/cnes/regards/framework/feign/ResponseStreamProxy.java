@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.feign;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,19 +43,38 @@ public class ResponseStreamProxy extends InputStream {
 
     private final InputStream stream;
 
+    private final Function<ResponseStreamProxy, Void> beforeClose;
+
+    private long streamReadCount = 0L;
+
     public ResponseStreamProxy(feign.Response response) throws IOException {
         this.response = response;
         this.stream = response.body().asInputStream();
+        this.beforeClose = null;
+    }
+
+    public ResponseStreamProxy(feign.Response response, Function<ResponseStreamProxy, Void> beforeClose)
+            throws IOException {
+        this.response = response;
+        this.stream = response.body().asInputStream();
+        this.beforeClose = beforeClose;
     }
 
     @Override
     public int read() throws IOException {
-        return stream.read();
+        int count = stream.read();
+        if (count != -1) {
+            this.streamReadCount++;
+        }
+        return count;
     }
 
     @Override
     public void close() throws IOException {
         LOGGER.trace("Close feign http response");
+        if (this.beforeClose != null) {
+            this.beforeClose.apply(this);
+        }
         this.stream.close();
         this.response.close();
     }
@@ -62,6 +82,10 @@ public class ResponseStreamProxy extends InputStream {
     @Override
     public synchronized void reset() throws IOException {
         this.stream.reset();
+    }
+
+    public long getStreamReadCount() {
+        return streamReadCount;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -26,6 +26,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -53,6 +54,13 @@ public class FeignSecurityManager {
      * Else the user token within security context holder will be used.
      */
     private static final ThreadLocal<Boolean> usurpationFlagHolder = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /**
+     * Thread safe flag holder to activate instance tenant call<br/>
+     *
+     * For call with instance tenant in token generated with same user
+     */
+    private static final ThreadLocal<Boolean> instanceFlagHolder = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /**
      * Thread safe user holder
@@ -87,6 +95,8 @@ public class FeignSecurityManager {
             return getSystemToken();
         } else if (usurpationFlagHolder.get()) {
             return getUsurpedToken();
+        } else if (instanceFlagHolder.get()) {
+            return getInstanceToken();
         } else {
             return getUserToken();
         }
@@ -100,6 +110,7 @@ public class FeignSecurityManager {
     private String getUserToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
                 .getAuthentication();
+        authentication.getUser().getRole();
         if (authentication != null) {
             return authentication.getJwt();
         } else {
@@ -107,6 +118,13 @@ public class FeignSecurityManager {
             LOGGER.error(message);
             throw new UnsupportedOperationException(message);
         }
+    }
+
+    private String getInstanceToken() {
+        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
+                .getAuthentication();
+        return jwtService.generateToken("instance", authentication.getUser().getLogin(),
+                                        DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
@@ -139,6 +157,13 @@ public class FeignSecurityManager {
     }
 
     /**
+     * Enable call to instance microservice.
+     */
+    public static void asInstance() {
+        instanceFlagHolder.set(Boolean.TRUE);
+    }
+
+    /**
      * Allows to usurp user identity if feign call needed into separate thread
      */
     public static void asUser(String user, String role) {
@@ -152,6 +177,7 @@ public class FeignSecurityManager {
     public static void reset() {
         systemFlagHolder.set(false);
         usurpationFlagHolder.set(false);
+        instanceFlagHolder.set(false);
         usurpedUserHolder.set(null);
     }
 }

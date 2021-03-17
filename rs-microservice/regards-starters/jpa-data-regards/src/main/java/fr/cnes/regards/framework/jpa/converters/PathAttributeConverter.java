@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,25 +18,27 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-import java.sql.Date;
-import java.time.LocalDate;
 
 /**
- * This {@link AttributeConverter} allows to convert a LocalDate to persist with JPA.
- * @author Christophe Mertz
+ * This class allows to convert {@link Path} attribute to {@link String} to persist with JPA
+ * @author Marc Sordi
  */
 @Converter(autoApply = true)
-public class LocalDateAttributeConverter implements AttributeConverter<LocalDate, Date> {
+public class PathAttributeConverter implements AttributeConverter<Path, String> {
 
     @Override
-    public Date convertToDatabaseColumn(LocalDate pLocDate) {
-        return pLocDate == null ? null : Date.valueOf(pLocDate);
+    public String convertToDatabaseColumn(Path attribute) {
+        return attribute == null ? null : attribute.toAbsolutePath().toString();
     }
 
     @Override
-    public LocalDate convertToEntityAttribute(Date pSqlDate) {
-        return pSqlDate == null ? null : pSqlDate.toLocalDate();
+    public Path convertToEntityAttribute(String dbData) {
+        return dbData == null ? null : Paths.get(dbData);
     }
+
 }

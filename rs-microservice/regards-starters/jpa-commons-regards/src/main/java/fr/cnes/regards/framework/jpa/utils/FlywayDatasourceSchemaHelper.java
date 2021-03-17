@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -40,8 +40,9 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.Location;
 import org.flywaydb.core.api.MigrationVersion;
 import org.flywaydb.core.api.migration.JavaMigration;
-import org.flywaydb.core.internal.resource.LoadableResource;
-import org.flywaydb.core.internal.resource.Resource;
+import org.flywaydb.core.api.resource.LoadableResource;
+import org.flywaydb.core.api.resource.Resource;
+import org.flywaydb.core.internal.scanner.LocationScannerCache;
 import org.flywaydb.core.internal.scanner.ResourceNameCache;
 import org.flywaydb.core.internal.scanner.Scanner;
 import org.hibernate.cfg.Environment;
@@ -118,9 +119,9 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         Preconditions.checkNotNull(schema, "Flyway migration tool requires a database schema");
 
         // Use flyway scanner initialized with script dir (ie resources/scripts)
-        Scanner<JavaMigration> scanner = new Scanner<>(JavaMigration.class,
-                Collections.singleton(new Location(scriptLocationPath)), classLoader, Charset.defaultCharset(),
-                new ResourceNameCache());
+        Scanner<JavaMigration> scanner = new Scanner<JavaMigration>(JavaMigration.class,
+                Collections.singleton(new Location(scriptLocationPath)), classLoader, Charset.defaultCharset(), false,
+                new ResourceNameCache(), new LocationScannerCache());
 
         // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
         Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);

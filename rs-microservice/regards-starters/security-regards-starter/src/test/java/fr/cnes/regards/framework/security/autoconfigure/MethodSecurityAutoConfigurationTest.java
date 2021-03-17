@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Test;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -31,6 +25,11 @@ import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.Test;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
  * @author msordi

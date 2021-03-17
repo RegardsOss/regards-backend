@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,6 +25,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -64,7 +65,7 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
         if ((authHeader == null) && !CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
             // Try to retrieve target tenant from request
             String tenant = request.getHeader(HttpConstants.SCOPE);
-            if (tenant == null) {
+            if (Strings.isNullOrEmpty(tenant) && request.getParameter(HttpConstants.SCOPE) != null) {
                 tenant = request.getParameter(HttpConstants.SCOPE);
             }
             // Add authorization header

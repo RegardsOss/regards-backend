@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -138,7 +138,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             List<BatchMessage> validMessages = new ArrayList<>();
             for (BatchMessage message : convertedMessages.get(tenant)) {
                 if (!tenantResolver.getAllActiveTenants().contains(tenant)) {
-                    handleInvalidMessage(tenant, message, channel, String.format("Unkown tenant %s", tenant));
+                    handleInvalidMessage(null, message, channel, String.format("Unknown tenant %s", tenant));
                 } else if (invokeValidationMethod(tenant, message.getConverted())) {
                     validMessages.add(message);
                 } else {
