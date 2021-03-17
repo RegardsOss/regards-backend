@@ -45,7 +45,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableZuulProxy
 @EnableDiscoveryClient
 @EnableEurekaClient
-@EnableFeignClients(clients = IExternalAuthenticationClient.class)
+@EnableFeignClients
 public class Application { // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
