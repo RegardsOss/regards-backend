@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * Class GatewayApplication
@@ -32,19 +33,11 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
  * Spring boot starter class for Regards Gateway component
  * @author Sébastien Binda
  */
-@SpringBootApplication/*(
-    exclude = {
-        FlywayAutoConfiguration.class,
-        CipherAutoConf.class,
-        DataSourceAutoConfiguration.class,
-        DataSourceTransactionManagerAutoConfiguration.class,
-        HibernateJpaAutoConfiguration.class
-    }
-)*/
+@SpringBootApplication
 @EnableZuulProxy
 @EnableDiscoveryClient
 @EnableEurekaClient
-//@EnableFeignClients
+@EnableFeignClients
 public class Application { // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
