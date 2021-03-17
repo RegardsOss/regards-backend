@@ -37,6 +37,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -321,7 +322,12 @@ public class AccountService implements IAccountService {
         } catch (TemplateException e) {
             message = "Password successfully changed";
         }
-        emailClient.sendEmail(message, "[REGARDS] Password changed", null, toChange.getEmail());
+        try {
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, "[REGARDS] Password changed", null, toChange.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     @Override
