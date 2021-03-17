@@ -48,6 +48,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
 import org.locationtech.spatial4j.exception.InvalidShapeException;
@@ -914,11 +915,9 @@ public class EntityIndexerService implements IEntityIndexerService {
                 GeoJSONReader reader = makeGeoJsonReader(makeFactory(projectGeoSettings.getShouldManagePolesOnGeometries()));
                 Shape read = reader.read(putTypeInFirstPosition(json));
 
-                Point nwPoint = new Point();
-                nwPoint.setCoordinates(new Position(read.getBoundingBox().getMinX(), read.getBoundingBox().getMaxY()));
+                GeoPoint nwPoint = new GeoPoint(read.getBoundingBox().getMinX(), read.getBoundingBox().getMaxY());
                 dataObject.setNwPoint(nwPoint);
-                Point sePoint = new Point();
-                sePoint.setCoordinates(new Position(read.getBoundingBox().getMaxX(), read.getBoundingBox().getMinY()));
+                GeoPoint sePoint = new GeoPoint(read.getBoundingBox().getMaxX(), read.getBoundingBox().getMinY());
                 dataObject.setSePoint(sePoint);
 
             } catch (InvalidShapeException e) {

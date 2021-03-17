@@ -52,6 +52,11 @@ public class QueryableAttribute {
     private boolean booleanAttribute = false;
 
     /**
+     * Does the attribute is a geo (point in elastic 6.5) attribute?
+     */
+    private boolean geoBoundsAttribute = false;
+
+    /**
      * Number of terms to calculate in {@link Aggregation} if the attribute is a text attribute.
      */
     private int termsLimit = 0;
@@ -64,6 +69,17 @@ public class QueryableAttribute {
         this.textAttribute = textAttribute;
         this.booleanAttribute = booleanAttribute;
         this.termsLimit = termsLimit;
+    }
+
+    public QueryableAttribute(String attributeName, Aggregation aggregation, boolean textAttribute, int termsLimit,
+                              boolean booleanAttribute, boolean geoBoundsAttribute) {
+        super();
+        this.attributeName = attributeName;
+        this.aggregation = aggregation;
+        this.textAttribute = textAttribute;
+        this.booleanAttribute = booleanAttribute;
+        this.termsLimit = termsLimit;
+        this.geoBoundsAttribute = geoBoundsAttribute;
     }
 
     public String getAttributeName() {
@@ -105,6 +121,15 @@ public class QueryableAttribute {
     public void setBooleanAttribute(boolean booleanAttribute) {
         this.booleanAttribute = booleanAttribute;
     }
+
+    public boolean isGeoBoundsAttribute() {
+        return geoBoundsAttribute;
+    }
+
+    public void setGeoBoundsAttribute(boolean geoBoundsAttribute) {
+        this.geoBoundsAttribute = geoBoundsAttribute;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

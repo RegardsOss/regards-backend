@@ -560,15 +560,15 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                 .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
 
 
-        Assert.assertTrue(taggedWithVirtualId.getContent().contains(taggedWithLatest));
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint().getCoordinates()
-                .getLongitude(),-122.40305900573729, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint().getCoordinates()
-                .getLatitude(),37.63931540283398, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint().getCoordinates()
-                .getLongitude(),-122.35490798950194, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint().getCoordinates()
-                .getLatitude(),37.604304248565484, 0.0000001);
+//        Assert.assertTrue(taggedWithVirtualId.getContent().contains(taggedWithLatest));
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+                .getLon(),-122.40305900573729, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+                .getLat(),37.63931540283398, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+                .getLon(),-122.35490798950194, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+                .getLat(),37.604304248565484, 0.0000001);
     }
 
 

@@ -99,6 +99,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -502,6 +503,8 @@ public class EsRepository implements IEsRepository {
                                 kv("ipId", stringMapping()),
                                 kv("type", stringMapping()),
                                 kv("wgs84", object("type", "geo_shape")),
+                                kv("nwPoint", object("type", "geo_point")),
+                                kv("sePoint", object("type", "geo_point")),
                                 kv("tags", stringMapping()),
                                 kv("groups", stringMapping()),
                                 kv("lastUpdate", object(kv("type", "date"),
@@ -859,49 +862,6 @@ public class EsRepository implements IEsRepository {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
-    }
-
-    @Override
-    public Aggregations getDataObjectsAndAggregate(String index, String docType, String docId, String fieldToFilterOn,Map<String, String> fieldsToAggregate) {
-        SearchRequest request = new SearchRequest(index.toLowerCase()).types(TYPE);
-        SearchSourceBuilder builder = new SearchSourceBuilder();
-        ConstantScoreQueryBuilder constantScoreQuery = new ConstantScoreQueryBuilder(QueryBuilders.termQuery(fieldToFilterOn, docId));
-        builder.query(constantScoreQuery);
-        for (Map.Entry<String, String> entry : fieldsToAggregate.entrySet()) {
-            switch (entry.getKey().toUpperCase()){
-                case "MIN":
-                    AggregationBuilder aggregationBuilder = AggregationBuilders
-                            .min(entry.getKey() + "_" + entry.getValue())
-                            .field("price");
-                    builder.aggregation(aggregationBuilder);
-                    break;
-                case "MAX":
-                    AggregationBuilder aggregationBuilderMax = AggregationBuilders
-                            .max(entry.getKey() + "_" + entry.getValue())
-                            .field(entry.getValue());
-                    builder.aggregation(aggregationBuilderMax);
-                    break;
-            }
-
-        }
-
-//                .aggregation(aggregationBuilder);
-//                .addAggregator(AggregationBuilders.min("creationDate"))
-//                .addAggregator(AggregationBuilders.max("creationDate"));
-
-        request.source(builder);
-
-        SearchResponse result = null;
-        try {
-            result = client.search(request, options);
-        } catch (IOException e) {
-            throw new RsRuntimeException(e);
-        }
-
-        if (result != null) {
-            return result.getAggregations();
-        }
-        return new Aggregations(Lists.newArrayList());
     }
 
     @Override
@@ -1631,6 +1591,10 @@ public class EsRepository implements IEsRepository {
                 } else if (qa.isBooleanAttribute()) {
                     builder.aggregation(AggregationBuilders.terms(qa.getAttributeName()).field(qa.getAttributeName()))
                             .size(2);
+                } else if (qa.isGeoBoundsAttribute()){
+                    builder.aggregation(AggregationBuilders.geoBounds(qa.getAttributeName())
+                            .field(qa.getAttributeName())
+                            .wrapLongitude(true));
                 } else if (!qa.isTextAttribute()) {
                     builder.aggregation(AggregationBuilders.stats(qa.getAttributeName()).field(qa.getAttributeName()));
                 }
