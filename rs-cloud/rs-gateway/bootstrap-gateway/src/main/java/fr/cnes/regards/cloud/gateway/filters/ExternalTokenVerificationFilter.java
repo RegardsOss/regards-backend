@@ -43,7 +43,10 @@ public class ExternalTokenVerificationFilter {// extends ZuulFilter {
 //    private JWTService jwtService;
 //
 //    @Autowired
-//    private IExternalAuthenticationResolver externalAuthenticationResolver;
+//    private IRuntimeTenantResolver runtimeTenantResolver;
+//
+//    @Autowired
+//    private IExternalAuthenticationClient externalAuthenticationClient;
 //
 //    @VisibleForTesting
 //    public ExternalTokenVerificationFilter(JWTService jwtService, IExternalAuthenticationResolver externalAuthenticationResolver) {
@@ -135,6 +138,40 @@ public class ExternalTokenVerificationFilter {// extends ZuulFilter {
 //                .peek(regardsToken -> valid.put(jwtKey, regardsToken))
 //                .andThen(regardsToken -> ctx.getZuulRequestHeaders().put(AUTHORIZATION, BEARER + " " + regardsToken));
 //        }
+//    }
+//
+//    @Override
+//    public String verifyAndAuthenticate(String tenant, String externalToken) {
+//        return Try.run(() -> {
+//            FeignSecurityManager.asSystem();
+//            runtimeTenantResolver.forceTenant(tenant);
+//        })
+//            .map(ignored -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
+//            .transform(this::mapClientException)
+//            .flatMap(response -> {
+//                if (response.getStatusCode() != HttpStatus.OK) {
+//                    return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider rejected userInfo request with status: %s", response.getStatusCode())));
+//                }
+//                Authentication auth = response.getBody();
+//                if (auth == null) {
+//                    return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
+//                }
+//                return Try.success(auth.getAccessToken());
+//            })
+//            .andFinally(() -> {
+//                runtimeTenantResolver.clearTenant();
+//                FeignSecurityManager.reset();
+//            })
+//            .get();
+//    }
+//
+//    private <T> Try<T> mapClientException(Try<T> call) {
+//        //noinspection unchecked
+//        return call.mapFailure(
+//            Case($(instanceOf(HttpClientErrorException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex)),
+//            Case($(instanceOf(HttpServerErrorException.class)), ex -> new AuthenticationServiceException(ex.getMessage(), ex)),
+//            Case($(instanceOf(FeignException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex))
+//        );
 //    }
 //
 //    @VisibleForTesting

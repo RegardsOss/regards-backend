@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.cloud.gateway;
 
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**

@@ -1,12 +1,19 @@
 package fr.cnes.regards.cloud.gateway.filters;
 
+//import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
+
 public class ExternalTokenVerificationFilterTest {
+//
 //    public static final String TENANT = "DEFAULT";
+//
+//    @Mock
+//    private IRuntimeTenantResolver runtimeTenantResolver;
+//
 //    @Mock
 //    private JWTService jwtService;
 //
 //    @Mock
-//    private IExternalAuthenticationResolver externalAuthenticationResolver;
+//    private IExternalAuthenticationClient externalAuthenticationClient;
 //
 //    private ExternalTokenVerificationFilter filter;
 //
@@ -175,5 +182,47 @@ public class ExternalTokenVerificationFilterTest {
 //            e.printStackTrace();
 //            fail();
 //        }
+//    }
+//
+//    @Test
+//    public void verify_fail_when_client_fails() {
+//        HttpClientErrorException: {
+//            HttpClientErrorException expected = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+//            doThrow(expected)
+//                .when(externalAuthenticationClient)
+//                .verifyAndAuthenticate(anyString());
+//            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
+//                .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
+//                .hasCauseReference(expected);
+//        }
+//
+//        HttpServerErrorException: {
+//            HttpServerErrorException expected = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
+//            doThrow(expected)
+//                .when(externalAuthenticationClient)
+//                .verifyAndAuthenticate(anyString());
+//            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
+//                .isExactlyInstanceOf(AuthenticationServiceException.class)
+//                .hasCauseReference(expected);
+//        }
+//
+//        FeignException: {
+//            FeignException expected = mock(FeignException.class);
+//            doThrow(expected)
+//                .when(externalAuthenticationClient)
+//                .verifyAndAuthenticate(anyString());
+//            assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
+//                .isExactlyInstanceOf(InternalAuthenticationServiceException.class)
+//                .hasCauseReference(expected);
+//        }
+//    }
+//
+//    @Test
+//    public void verify_fail_when_server_returns_unexpected_status_code() {
+//        doReturn(ResponseEntity.noContent().build())
+//            .when(externalAuthenticationClient)
+//            .verifyAndAuthenticate(anyString());
+//        assertThatThrownBy(() -> resolver.verifyAndAuthenticate("plop", "plop"))
+//            .isExactlyInstanceOf(InsufficientAuthenticationException.class);
 //    }
 }
