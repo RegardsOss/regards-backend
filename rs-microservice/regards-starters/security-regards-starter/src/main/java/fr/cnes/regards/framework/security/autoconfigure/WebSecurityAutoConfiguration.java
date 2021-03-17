@@ -22,11 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
-import fr.cnes.regards.framework.authentication.autoconfigure.ExternalAuthenticationAutoConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,7 +59,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @Configuration
 @EnableWebSecurity
 @ConditionalOnWebApplication
-@AutoConfigureAfter(ExternalAuthenticationAutoConfiguration.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -71,9 +67,6 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Autowired
     private JWTService jwtService;
-
-    @Autowired
-    private IExternalAuthenticationResolver externalAuthenticationResolver;
 
     /**
      * Authorization service
@@ -121,7 +114,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add JWT Authentication filter
         http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
-                             PublicAuthenticationFilter.class);
+            PublicAuthenticationFilter.class);
         http.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
         http.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 
@@ -160,7 +153,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public JWTAuthenticationProvider jwtAuthenticationProvider() {
-        return new JWTAuthenticationProvider(jwtService, externalAuthenticationResolver);
+        return new JWTAuthenticationProvider(jwtService);
     }
 
 }

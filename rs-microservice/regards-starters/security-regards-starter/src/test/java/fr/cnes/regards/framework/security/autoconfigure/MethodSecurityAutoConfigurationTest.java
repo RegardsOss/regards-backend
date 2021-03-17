@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
-import fr.cnes.regards.framework.authentication.autoconfigure.ExternalAuthenticationAutoConfiguration;
-import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Test;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -33,6 +25,11 @@ import fr.cnes.regards.framework.security.endpoint.IPluginResourceManager;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.filter.JWTAuthenticationProvider;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import org.assertj.core.api.Assertions;
+import org.junit.After;
+import org.junit.Test;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
  * @author msordi
@@ -60,7 +57,7 @@ public class MethodSecurityAutoConfigurationTest {
         this.context.setServletContext(new MockServletContext());
         this.context.register(SecurityVoterAutoConfiguration.class, MultitenantAutoConfiguration.class,
                               MethodSecurityAutoConfiguration.class, MethodAuthorizationServiceAutoConfiguration.class,
-                              WebSecurityAutoConfiguration.class, ExternalAuthenticationAutoConfiguration.DefaultExternalAuthenticationResolver.class, JWTService.class, SubscriberMock.class);
+                              WebSecurityAutoConfiguration.class, JWTService.class, SubscriberMock.class);
         this.context.refresh();
         Assertions.assertThat(this.context.getBean(IAuthoritiesProvider.class)).isNotNull();
         Assertions.assertThat(this.context.getBean(MethodAuthorizationService.class)).isNotNull();
