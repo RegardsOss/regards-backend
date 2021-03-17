@@ -108,7 +108,7 @@ public class SearchContext {
     /**
      * Request query parameters
      */
-    private MultiValueMap<String, String> queryParams;
+    private final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 
     /**
      * Indicates if the search context is a bound calculation or not.
@@ -201,7 +201,8 @@ public class SearchContext {
     }
 
     public void setQueryParams(MultiValueMap<String, String> queryParams) {
-        this.queryParams = queryParams;
+        this.queryParams.clear();
+        this.queryParams.putAll(queryParams);
     }
 
     public Pageable getPageable() {
