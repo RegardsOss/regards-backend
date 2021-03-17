@@ -36,6 +36,15 @@
 		<description>List of planet parameters</description>
 		<type>STRING_ARRAY</type>
 	</attribute>
+	<attribute optional="true">
+		<label>origine</label>
+		<name>origine</name>
+		<description>informations origine</description>
+		<type>JSON</type>
+		<restriction>
+			<json_schema><![CDATA[{"type":"object","properties":{"name":{"type":"string"},"link":{"type":"string","format":"uri","pattern":"^.*//.*"},"contacts":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"locations":{"type":"array","items":{"type":"object","properties":{"institut":{"type":"string"},"code":{"type":"integer"}}}}}}}}}]]></json_schema>
+		</restriction>
+	</attribute>
 	<fragment>
 		<name>TimePeriod</name>
 		<description>Période temporelle (date début - date fin) au format YYYY-MM-DDThh:mm:ss</description>

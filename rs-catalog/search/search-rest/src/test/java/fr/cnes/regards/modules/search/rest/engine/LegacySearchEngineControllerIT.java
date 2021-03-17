@@ -102,6 +102,16 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchCollectionsWithRegexp() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        addCommontMatchers(customizer);
+        addSearchTermQuery(customizer, STAR, "/S[^i]{2}/");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void fullTextSearchCollections() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
@@ -170,6 +180,25 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.content[0].content.providerId", JUPITER);
         customizer.expectValue("$.content[1].content.providerId", MERCURY);
         addFullTextSearchQuery(customizer, "\"" + MERCURY + " " + JUPITER + "\"");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataobjectsOnJsonAttribute() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(0)));
+        addSearchTermQuery(customizer, "origine.name", "ESA");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
+        addSearchTermQuery(customizer, "origine.name", "CNE*");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }

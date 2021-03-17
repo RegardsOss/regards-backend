@@ -58,6 +58,8 @@ import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
@@ -356,14 +358,13 @@ public class DescriptionBuilder {
 
         // For each attribute retrieve the QueryableAttribute informations
         Set<QueryableAttribute> queryableAttributes = Sets.newHashSet();
-        for (ModelAttrAssoc maa : getModelAttributes(context)) {
+        for (AttributeModel att : getModelAttributes(context)) {
             Optional<ParameterConfiguration> conf = parameterConfs.stream()
-                    .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath())).findFirst();
-            QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
+                    .filter(pc -> pc.getAttributeModelJsonPath().equals(att.getJsonPath())).findFirst();
+            QueryableAttribute queryableAtt = createEmptyQueryableAttribute(att, conf);
             if (!queryableAttributes.contains(queryableAtt)) {
                 queryableAttributes.add(queryableAtt);
-                parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
-                        conf.orElse(null), queryableAtt));
+                parameters.add(new DescriptionParameter(finder.findName(att), att, conf.orElse(null), queryableAtt));
             }
         }
         try {
@@ -376,7 +377,7 @@ public class DescriptionBuilder {
         return parameters;
     }
 
-    private Collection<ModelAttrAssoc> getModelAttributes(SearchContext context) throws ModuleException {
+    private Collection<AttributeModel> getModelAttributes(SearchContext context) throws ModuleException {
         try {
             FeignSecurityManager.asSystem();
             // Retrieve all AttributeModel for the given searchType and dataset if any
@@ -386,11 +387,16 @@ public class DescriptionBuilder {
             } else {
                 assocsResponse = modelAttrAssocClient.getModelAttrAssocsFor(getEntityType(context.getSearchType()));
             }
+
             if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
                 LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
                 throw new ModuleException("Unable to contact model controller");
             } else {
-                return assocsResponse.getBody();
+                List<AttributeModel> attributes = assocsResponse.getBody().stream().map(ModelAttrAssoc::getAttribute)
+                        .collect(Collectors.toList());
+                attributes = AbstractAttributeHelper.computeAttributes(attributes);
+                // Return computed attributes without specific JSON ones that are not queriable.
+                return attributes.stream().filter(a -> a.getType() != PropertyType.JSON).collect(Collectors.toList());
             }
         } catch (FeignException e) {
             LOGGER.error("Cannot retrieve model attributes", e);
@@ -454,57 +460,75 @@ public class DescriptionBuilder {
             // result has the following format: "fullAttrName:value", except for arrays. Arrays are represented thanks
             // to multiple values: attr:val1 OR attr:val2 ...
             StringBuilder result = new StringBuilder();
-            result.append(attr.getFullJsonPath()).append(":");
             switch (attr.getType()) {
                 case BOOLEAN:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{boolean}");
                     break;
                 case DATE_ARRAY:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{ISO-8601 date} OR ").append(attr.getFullJsonPath()).append(":")
                             .append("{ISO-8601 date}");
                     break;
                 case DATE_INTERVAL:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("[* TO  {ISO-8601 date} ]");
                     break;
                 case DATE_ISO8601:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{ISO-8601 date}");
                     break;
                 case DOUBLE:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{double value}");
                     break;
                 case DOUBLE_ARRAY:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{double value} OR ").append(attr.getJsonPath()).append(":").append("{double value}");
                     break;
                 case DOUBLE_INTERVAL:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{double value} TO  {double value}]");
                     break;
                 case LONG:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{long value}");
                     break;
                 case INTEGER:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{integer value}");
                     break;
                 case LONG_ARRAY:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{long value} OR ").append(attr.getJsonPath()).append(":").append("{long value}");
                     break;
                 case INTEGER_ARRAY:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{integer value} OR ").append(attr.getJsonPath()).append(":")
                             .append("{integer value}");
                     break;
                 case LONG_INTERVAL:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{long value} TO  {long value}]");
                     break;
                 case INTEGER_INTERVAL:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("[{integer value} TO  {integer value}]");
                     break;
                 case STRING:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{string}");
                     break;
                 case STRING_ARRAY:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{string} OR ").append(attr.getJsonPath()).append(":").append("{string}");
                     break;
                 case URL:
+                    result.append(attr.getFullJsonPath()).append(":");
                     result.append("{url}");
+                    break;
+                case JSON:
+                    // Do not handle JSON Attributes as simple attributes
                     break;
                 default:
                     throw new IllegalArgumentException(
