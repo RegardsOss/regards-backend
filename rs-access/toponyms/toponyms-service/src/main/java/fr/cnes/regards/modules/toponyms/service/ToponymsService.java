@@ -91,13 +91,19 @@ public class ToponymsService {
      * @param pageable
      * @return {@link ToponymDTO}s
      */
-    public Page<ToponymDTO> findAll(Pageable pageable) {
-        Page<Toponym> page = repository.findAll(pageable);
-        return new PageImpl<ToponymDTO>(page.getContent().stream().map(f -> {
+    public Page<ToponymDTO> findAll(String locale, Pageable pageable) {
+        Pageable page;
+        if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
+            page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Direction.ASC, "labelFr"));
+        } else {
+            page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Direction.ASC, "label"));
+        }
+        Page<Toponym> toponymsPage = repository.findAll(page);
+        return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(f -> {
             return ToponymDTO.build(f.getBusinessId(), f.getLabel(), f.getLabelFr(),
                                     ToponymsService.parse(f.getGeometry(), POINT_SAMPLING_FINDALL), f.getCopyright(),
                                     f.getDescription());
-        }).collect(Collectors.toList()), page.getPageable(), page.getTotalElements());
+        }).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
     }
 
     /**
@@ -145,11 +151,11 @@ public class ToponymsService {
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
             page = repository
                     .findByLabelFrContainingIgnoreCase(partialLabel,
-                                                       PageRequest.of(0, limit, Sort.by(Direction.DESC, "labelFr")));
+                                                       PageRequest.of(0, limit, Sort.by(Direction.ASC, "labelFr")));
         } else {
             page = repository
                     .findByLabelContainingIgnoreCase(partialLabel,
-                                                     PageRequest.of(0, limit, Sort.by(Direction.DESC, "label")));
+                                                     PageRequest.of(0, limit, Sort.by(Direction.ASC, "label")));
         }
         return page
                 .getContent().stream().map(t -> ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null,

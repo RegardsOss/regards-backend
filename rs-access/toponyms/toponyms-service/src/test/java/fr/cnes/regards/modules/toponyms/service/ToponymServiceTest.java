@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 
 /**
  *
@@ -55,7 +56,7 @@ public class ToponymServiceTest extends AbstractRegardsIT {
     @Test
     public void findAll() throws IOException, ModuleException, URISyntaxException {
         tenantResolver.forceTenant(getDefaultTenant());
-        Page<ToponymDTO> results = service.findAll(PageRequest.of(0, 100));
+        Page<ToponymDTO> results = service.findAll(ToponymLocaleEnum.EN.getLocale(), PageRequest.of(0, 100));
         Assert.assertEquals(251, results.getTotalElements());
         Assert.assertEquals(100, results.getSize());
     }
