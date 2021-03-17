@@ -18,70 +18,50 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import feign.FeignException;
-import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
-import fr.cnes.regards.modules.authentication.domain.data.Authentication;
-import io.vavr.control.Try;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+//@Component
+public class ExternalAuthenticationResolver {// implements IExternalAuthenticationResolver {
 
-import static com.google.common.base.Predicates.instanceOf;
-import static io.vavr.API.$;
-import static io.vavr.API.Case;
-
-@Component
-public class ExternalAuthenticationResolver implements IExternalAuthenticationResolver {
-
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    private IExternalAuthenticationClient externalAuthenticationClient;
-
-    @Autowired
-    public ExternalAuthenticationResolver(IRuntimeTenantResolver runtimeTenantResolver, IExternalAuthenticationClient externalAuthenticationClient) {
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.externalAuthenticationClient = externalAuthenticationClient;
-    }
-
-    @Override
-    public String verifyAndAuthenticate(String tenant, String externalToken) {
-        return Try.run(() -> {
-            FeignSecurityManager.asSystem();
-            runtimeTenantResolver.forceTenant(tenant);
-        })
-            .map(ignored -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
-            .transform(this::mapClientException)
-            .flatMap(response -> {
-                if (response.getStatusCode() != HttpStatus.OK) {
-                    return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider rejected userInfo request with status: %s", response.getStatusCode())));
-                }
-                Authentication auth = response.getBody();
-                if (auth == null) {
-                    return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
-                }
-                return Try.success(auth.getAccessToken());
-            })
-            .andFinally(() -> {
-                runtimeTenantResolver.clearTenant();
-                FeignSecurityManager.reset();
-            })
-            .get();
-    }
-
-    private <T> Try<T> mapClientException(Try<T> call) {
-        //noinspection unchecked
-        return call.mapFailure(
-            Case($(instanceOf(HttpClientErrorException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex)),
-            Case($(instanceOf(HttpServerErrorException.class)), ex -> new AuthenticationServiceException(ex.getMessage(), ex)),
-            Case($(instanceOf(FeignException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex))
-        );
-    }
+//    private IRuntimeTenantResolver runtimeTenantResolver;
+//
+//    private IExternalAuthenticationClient externalAuthenticationClient;
+//
+//    @Autowired
+//    public ExternalAuthenticationResolver(IRuntimeTenantResolver runtimeTenantResolver, IExternalAuthenticationClient externalAuthenticationClient) {
+//        this.runtimeTenantResolver = runtimeTenantResolver;
+//        this.externalAuthenticationClient = externalAuthenticationClient;
+//    }
+//
+//    @Override
+//    public String verifyAndAuthenticate(String tenant, String externalToken) {
+//        return Try.run(() -> {
+//            FeignSecurityManager.asSystem();
+//            runtimeTenantResolver.forceTenant(tenant);
+//        })
+//            .map(ignored -> externalAuthenticationClient.verifyAndAuthenticate(externalToken))
+//            .transform(this::mapClientException)
+//            .flatMap(response -> {
+//                if (response.getStatusCode() != HttpStatus.OK) {
+//                    return Try.failure(new InsufficientAuthenticationException(String.format("Service Provider rejected userInfo request with status: %s", response.getStatusCode())));
+//                }
+//                Authentication auth = response.getBody();
+//                if (auth == null) {
+//                    return Try.failure(new AuthenticationServiceException("Service Provider returned an empty response."));
+//                }
+//                return Try.success(auth.getAccessToken());
+//            })
+//            .andFinally(() -> {
+//                runtimeTenantResolver.clearTenant();
+//                FeignSecurityManager.reset();
+//            })
+//            .get();
+//    }
+//
+//    private <T> Try<T> mapClientException(Try<T> call) {
+//        //noinspection unchecked
+//        return call.mapFailure(
+//            Case($(instanceOf(HttpClientErrorException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex)),
+//            Case($(instanceOf(HttpServerErrorException.class)), ex -> new AuthenticationServiceException(ex.getMessage(), ex)),
+//            Case($(instanceOf(FeignException.class)), ex -> new InternalAuthenticationServiceException(ex.getMessage(), ex))
+//        );
+//    }
 }

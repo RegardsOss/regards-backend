@@ -18,20 +18,13 @@
  */
 package fr.cnes.regards.cloud.gateway;
 
-import fr.cnes.regards.framework.encryption.configuration.CipherAutoConf;
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * Class GatewayApplication
@@ -39,7 +32,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * Spring boot starter class for Regards Gateway component
  * @author Sébastien Binda
  */
-@SpringBootApplication(
+@SpringBootApplication/*(
     exclude = {
         FlywayAutoConfiguration.class,
         CipherAutoConf.class,
@@ -47,11 +40,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
         DataSourceTransactionManagerAutoConfiguration.class,
         HibernateJpaAutoConfiguration.class
     }
-)
+)*/
 @EnableZuulProxy
 @EnableDiscoveryClient
 @EnableEurekaClient
-@EnableFeignClients
+//@EnableFeignClients
 public class Application { // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
