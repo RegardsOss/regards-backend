@@ -90,7 +90,7 @@ public class V1_4_0__update extends BaseJavaMigration {
         Map<String, Object> map = (Map<String, Object>) views.get("MAP");
 
         if (map != null) {
-            map.putIfAbsent("initialViewMode", "3D");
+            map.putIfAbsent("initialViewMode", "MODE_3D");
             map.putIfAbsent("mapEngine", "CESIUM");
 
             List<Map<String, Object>> layers = new ArrayList<>();
@@ -106,7 +106,7 @@ public class V1_4_0__update extends BaseJavaMigration {
                     bgLayer.put("layerName", "backgroundLayer");
                     bgLayer.put("enabled", true);
                     bgLayer.put("background", true);
-                    bgLayer.put("layerViewMode", "3D");
+                    bgLayer.put("layerViewMode", "MODE_3D");
                     bgLayer.put("type", type);
                     bgLayer.put("conf", "");
                     bgLayer.put("layersName", "");
