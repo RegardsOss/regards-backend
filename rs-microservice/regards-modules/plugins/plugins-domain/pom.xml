@@ -53,9 +53,17 @@
     </developers>
 
     <dependencies>
+    	<dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards</artifactId>
+            <artifactId>jpa-data-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>amqp-regards</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>
