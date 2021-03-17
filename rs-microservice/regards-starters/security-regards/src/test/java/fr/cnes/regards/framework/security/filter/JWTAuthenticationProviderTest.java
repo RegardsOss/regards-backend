@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import fr.cnes.regards.framework.authentication.IExternalAuthenticationResolver;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -31,8 +30,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
-import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * Class JWTAuthenticationProviderTest
@@ -59,9 +56,7 @@ public class JWTAuthenticationProviderTest {
 
         final JWTService mockedJWTService = Mockito.mock(JWTService.class);
 
-        final IExternalAuthenticationResolver mockExternalAuthenticationResolver = Mockito.mock(IExternalAuthenticationResolver.class);
-
-        final JWTAuthenticationProvider provider = new JWTAuthenticationProvider(mockedJWTService, mockExternalAuthenticationResolver);
+        final JWTAuthenticationProvider provider = new JWTAuthenticationProvider(mockedJWTService);
 
         try {
             Mockito.when(mockedJWTService.parseToken(jwtAuthentication)).thenReturn(jwtAuthentication);
@@ -78,8 +73,7 @@ public class JWTAuthenticationProviderTest {
         }
 
         try {
-            Mockito.doThrow(new JwtException("JWT parse error")).when(mockedJWTService).parseToken(jwtAuthentication);
-            Mockito.doThrow(new RuntimeException("JWT parse error")).when(mockExternalAuthenticationResolver).verifyAndAuthenticate(jwtAuthentication.getTenant(), jwtAuthentication.getJwt());
+            Mockito.when(mockedJWTService.parseToken(jwtAuthentication)).thenThrow(new JwtException("JWT parse error"));
         } catch (final JwtException e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
