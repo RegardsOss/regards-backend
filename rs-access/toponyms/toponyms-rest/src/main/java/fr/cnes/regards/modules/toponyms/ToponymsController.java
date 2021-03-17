@@ -85,7 +85,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(
             @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
-        Page<ToponymDTO> toponyms = service.findAll(pageable);
+        Page<ToponymDTO> toponyms = service.findAll(ToponymLocaleEnum.EN.getLocale(), pageable);
         PagedModel<EntityModel<ToponymDTO>> resources = toPagedResources(toponyms, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -133,17 +133,12 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
             description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
-            @RequestParam(required = false) String locale) throws EntityNotFoundException {
+            @RequestParam(required = false, defaultValue = "en") String locale) throws EntityNotFoundException {
         if ((partialLabel != null) && !partialLabel.isEmpty()) {
-            List<ToponymDTO> toponymes;
-            if (locale != null) {
-                toponymes = service.search(partialLabel, locale, MAX_SEARCH_RESULTS);
-            } else {
-                toponymes = service.search(partialLabel, ToponymLocaleEnum.EN.getLocale(), MAX_SEARCH_RESULTS);
-            }
+            List<ToponymDTO> toponymes = service.search(partialLabel, locale, MAX_SEARCH_RESULTS);
             return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
         } else {
-            Page<ToponymDTO> page = service.findAll(PageRequest.of(0, MAX_SEARCH_RESULTS));
+            Page<ToponymDTO> page = service.findAll(locale, PageRequest.of(0, MAX_SEARCH_RESULTS));
             if ((page != null) && (page.getContent() != null)) {
                 return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
             } else {

@@ -39,6 +39,12 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
+    public void search() {
+        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.SEARCH,
+                          customizer().expectStatusOk().addParameter("locale", "en"), "should be  ok");
+    }
+
+    @Test
     public void findOne() {
 
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
