@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider;
 
+import java.util.Objects;
+
+import fr.cnes.regards.modules.authentication.domain.exception.ServiceProviderPluginException;
+import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo.AuthenticationInfo;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
-import org.springframework.security.authentication.InternalAuthenticationServiceException;
-
-import java.util.Objects;
 
 public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends ServiceProviderAuthenticationInfo.AuthenticationInfo> {
 
@@ -45,11 +46,15 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
         ServiceProviderAuthenticationInfo<?> that = (ServiceProviderAuthenticationInfo<?>) o;
-        return Objects.equals(userInfo, that.userInfo)
-            && Objects.equals(authenticationInfo.getAuthenticationInfo(), that.authenticationInfo.getAuthenticationInfo());
+        return Objects.equals(userInfo, that.userInfo) && Objects
+                .equals(authenticationInfo.getAuthenticationInfo(), that.authenticationInfo.getAuthenticationInfo());
     }
 
     @Override
@@ -67,8 +72,7 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
 
         private final Map<String, String> metadata;
 
-        private UserInfo(String email,String firstname, String lastname, Map<String, String> metadata)
-        {
+        private UserInfo(String email, String firstname, String lastname, Map<String, String> metadata) {
             this.email = email;
             this.firstname = firstname;
             this.lastname = lastname;
@@ -92,6 +96,7 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
         }
 
         public static class Builder {
+
             private String email;
 
             private String firstname;
@@ -120,9 +125,9 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
                 return this;
             }
 
-            public UserInfo build() {
+            public UserInfo build() throws ServiceProviderPluginException {
                 if (email == null) {
-                    throw new InternalAuthenticationServiceException("Unable to build required authentication parameters.");
+                    throw new ServiceProviderPluginException("Unable to build required authentication parameters.");
                 }
                 return new UserInfo(email, firstname, lastname, metadata);
             }
@@ -133,14 +138,12 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
             if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()) {
+            if ((o == null) || (getClass() != o.getClass())) {
                 return false;
             }
             UserInfo that = (UserInfo) o;
-            return Objects.equals(email, that.email)
-                && Objects.equals(firstname, that.firstname)
-                && Objects.equals(lastname, that.lastname)
-                && Objects.equals(metadata, that.metadata);
+            return Objects.equals(email, that.email) && Objects.equals(firstname, that.firstname)
+                    && Objects.equals(lastname, that.lastname) && Objects.equals(metadata, that.metadata);
         }
 
         @Override
@@ -150,6 +153,7 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
     }
 
     public abstract static class AuthenticationInfo {
+
         public abstract Map<String, String> getAuthenticationInfo();
     }
 }
