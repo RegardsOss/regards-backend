@@ -101,6 +101,7 @@
 		<spring.utils.version>${regards.version}</spring.utils.version>
 		<exception.utils.version>${regards.version}</exception.utils.version>
 		<plugin.utils.version>${regards.version}</plugin.utils.version>
+		<query.parser.utils.version>${regards.version}</query.parser.utils.version>
 		
         <!-- FRAMEWORK Modules -->
 		<framework.modules.jobs.version>${regards.version}</framework.modules.jobs.version>
