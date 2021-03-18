@@ -28,7 +28,7 @@ public class LuceneRuleMatcher implements IRuleMatcher {
 
     public static final String PLUGIN_ID = "LuceneRuleMatcher";
 
-    @PluginParameter(name = LUCENE_RULE_NAME, label = "lucene rule to match")
+    @PluginParameter(name = LUCENE_RULE_NAME, label = "lucene expression to match")
     private String luceneRule;
 
     @Override
