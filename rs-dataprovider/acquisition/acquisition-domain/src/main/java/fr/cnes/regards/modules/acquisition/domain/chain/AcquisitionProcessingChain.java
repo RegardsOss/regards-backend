@@ -208,6 +208,14 @@ public class AcquisitionProcessingChain {
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
     private JobInfo lastProductAcquisitionJobInfo;
 
+    /**
+     * Parameter to indicate if products should be stored or referenced
+     * Products are stored by default
+     */
+    @Column(name = "products_stored")
+    @NotNull(message="Referencing system for products is required (to store or to reference")
+    private boolean productsStored = true;
+
     public String getLabel() {
         return label;
     }
@@ -350,4 +358,14 @@ public class AcquisitionProcessingChain {
     public void setVersioningMode(VersioningMode versioningMode) {
         this.versioningMode = versioningMode;
     }
+
+    public boolean isProductsStored() {
+        return productsStored;
+    }
+
+    public void setProductsStored(boolean productsStored) {
+        this.productsStored = productsStored;
+    }
+
 }
+
