@@ -166,7 +166,7 @@ public class ProductService implements IProductService {
             List<ContentInformation> productCIList = product.getSip().getProperties().getContentInformations();
             for(ContentInformation productCI : productCIList) {
                 for(OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
-                    location.setStorage(acquisitionChain.getStorages().get(0).getStorePath());
+                    location.setStorage(acquisitionChain.getStorages().get(0).getPluginBusinessId());
                 }
             }
         }
