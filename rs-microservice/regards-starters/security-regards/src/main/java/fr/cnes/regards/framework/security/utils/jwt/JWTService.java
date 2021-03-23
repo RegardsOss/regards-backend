@@ -18,27 +18,23 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
-import io.jsonwebtoken.io.Encoders;
-import io.jsonwebtoken.security.Keys;
-
-import java.time.ZoneId;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility service based on JJWT library to generate or part a JWT based on a secret.
@@ -87,25 +83,13 @@ public class JWTService {
      * JWT Secret. Default value is only useful for testing purpose.
      */
     @Value("${jwt.secret:!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!}")
-    private String secret = "!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!";
+    private String secret;
 
     /**
      * validity delay expressed in minutes. Defaults to 120.
      */
     @Value("${access_token.validity_period:7200}")
-    private final long validityDelay = 7200 * 7200 * 7200;
-
-    public static void main(String[] args) {
-        JWTService service = new JWTService();
-        String token = service.generateToken(
-                "perf",
-                "regards-admin@c-s.fr",
-                "regards-admin@c-s.fr",
-                DefaultRole.INSTANCE_ADMIN.name(),
-                OffsetDateTime.now(ZoneId.of("UTC")).plusYears(100L),
-                new HashMap<>());
-        System.out.println("Bearer " + token);
-    }
+    private final long validityDelay = 7200;
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}

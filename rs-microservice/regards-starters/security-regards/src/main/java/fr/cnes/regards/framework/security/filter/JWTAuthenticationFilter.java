@@ -18,17 +18,11 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import io.jsonwebtoken.ExpiredJwtException;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -40,6 +34,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
@@ -69,7 +68,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
-            final FilterChain filterChain) throws ServletException, IOException {
+                                    final FilterChain filterChain) throws ServletException, IOException {
         // Clear forced tenant if any
         runtimeTenantResolver.clearTenant();
 
