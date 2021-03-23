@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import io.jsonwebtoken.ExpiredJwtException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,10 +40,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import io.jsonwebtoken.ExpiredJwtException;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
