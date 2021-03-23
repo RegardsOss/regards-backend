@@ -158,8 +158,8 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         Product product = createProduct(chain);
         // test result
         Product productCreated = productService.retrieve(product.getProductName());
-        Assert.assertEquals("Location path should be equal to the path provided in acquisition processing storage",
-                            chain.getStorages().get(0).getStorePath(),
+        Assert.assertEquals("Location should be equal to the pluginId provided in acquisition storage",
+                            chain.getStorages().get(0).getPluginBusinessId(),
                             productCreated.getSip().getProperties().getContentInformations().get(0).getDataObject()
                                     .getLocations().iterator().next().getStorage());
     }
