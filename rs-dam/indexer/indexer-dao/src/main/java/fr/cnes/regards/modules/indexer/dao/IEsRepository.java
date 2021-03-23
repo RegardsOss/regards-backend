@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
-import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.domain.IDocFiles;
@@ -50,6 +29,19 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import org.elasticsearch.common.collect.Tuple;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Elasticsearch DAO interface
@@ -436,6 +428,15 @@ public interface IEsRepository {
      * @return the max
      */
     <T extends IIndexable> OffsetDateTime maxDate(SearchKey<?, T> searchKey, ICriterion crit, String attName);
+
+    /**
+     * Retrieve the desired specific aggregations.
+     * @param searchKey the search key
+     * @param criterion the search criterion
+     * @param aggs the aggregations wished for
+     * @return the aggregations
+     */
+    <T extends IIndexable> Aggregations getAggregations(SearchKey<?, T> searchKey, ICriterion criterion, AggregationBuilder aggs);
 
     /**
      * Retrieve stats for each given attribute
