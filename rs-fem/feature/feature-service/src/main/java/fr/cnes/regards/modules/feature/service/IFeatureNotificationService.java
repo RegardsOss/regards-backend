@@ -21,7 +21,11 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 
@@ -42,4 +46,11 @@ public interface IFeatureNotificationService extends IAbstractFeatureService {
     void handleNotificationSuccess(Set<AbstractFeatureRequest> success);
 
     void handleNotificationError(Set<AbstractFeatureRequest> errorRequest);
+
+    /**
+     * Find all {@link FeatureNotificationRequest}s
+     * @param page
+     * @return {@link FeatureNotificationRequest}s
+     */
+    Page<FeatureNotificationRequest> findRequests(Pageable page);
 }

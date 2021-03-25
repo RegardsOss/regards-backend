@@ -23,7 +23,9 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
@@ -67,4 +69,11 @@ public interface IFeatureDeletionService extends IAbstractFeatureService {
      * @return {@link RequestInfo} contain {@link FeatureUniformResourceName} of granted/denied features
      */
     RequestInfo<FeatureUniformResourceName> registerRequests(@Valid FeatureDeletionCollection collection);
+
+    /**
+     * Find all {@link FeatureDeletionRequest}s
+     * @param page
+     * @return {@link FeatureDeletionRequest}s
+     */
+    Page<FeatureDeletionRequest> findRequests(Pageable page);
 }

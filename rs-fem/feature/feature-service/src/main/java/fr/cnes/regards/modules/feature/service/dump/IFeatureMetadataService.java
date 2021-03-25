@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.feature.service.dump;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -35,6 +36,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest
  */
 
 public interface IFeatureMetadataService {
+
     /** Write temporary zips in the job workspace. These zips are composed of feature (in aip format) written in json files
      * @param metadataRequest request that contains the information about the dump
      * @param tmpZipLocation temporary location used to write zips
@@ -48,15 +50,16 @@ public interface IFeatureMetadataService {
      * @return next pageable if exist null otherwise
      * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
-    Pageable dumpOnePage(FeatureSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation) throws
-            IOException, DuplicateUniqueNameException, NothingToDoException;
+    Pageable dumpOnePage(FeatureSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation)
+            throws IOException, DuplicateUniqueNameException, NothingToDoException;
 
     /** Dump feature contents (in aip format) by zipping all zips previously generated from feature contents
      * @param metadataRequest request that contains the information about the dump
      * @param dumpLocation location to write a zip made up of zips
      * @param tmpZipLocation temporary location to retrieve zips (in the job workspace)
      */
-    void writeDump(FeatureSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation) throws IOException;
+    void writeDump(FeatureSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)
+            throws IOException;
 
     /** Handle request in error and notify client
      * @param metadataRequest request that contains the information about the dump
@@ -68,5 +71,12 @@ public interface IFeatureMetadataService {
      * @param metadataRequest request that contains the information about the dump
      */
     void handleSuccess(FeatureSaveMetadataRequest metadataRequest);
+
+    /**
+     * Find all {@link FeatureSaveMetadataRequest}s
+     * @param page
+     * @return {@link FeatureSaveMetadataRequest}s
+     */
+    public Page<FeatureSaveMetadataRequest> findRequests(Pageable page);
 
 }

@@ -1,0 +1,104 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.feature.dto;
+
+import java.time.OffsetDateTime;
+
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
+/**
+ *
+ * @author Sébastien Binda
+ *
+ */
+public class FeatureRequestDTO {
+
+    private Long id;
+
+    private FeatureUniformResourceName urn;
+
+    private String providerId;
+
+    private RequestState state;
+
+    private boolean processing = false;
+
+    private OffsetDateTime registrationDate;
+
+    private FeatureRequestType type;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public FeatureUniformResourceName getUrn() {
+        return urn;
+    }
+
+    public void setUrn(FeatureUniformResourceName urn) {
+        this.urn = urn;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public RequestState getState() {
+        return state;
+    }
+
+    public void setState(RequestState state) {
+        this.state = state;
+    }
+
+    public OffsetDateTime getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(OffsetDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
+    public FeatureRequestType getType() {
+        return type;
+    }
+
+    public void setType(FeatureRequestType type) {
+        this.type = type;
+    }
+
+    public boolean isProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(boolean processing) {
+        this.processing = processing;
+    }
+
+}

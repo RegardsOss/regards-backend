@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -403,5 +404,10 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     @Override
     protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
         FeatureLogger.deletionDenied(requestOwner, requestId, null, errors);
+    }
+
+    @Override
+    public Page<FeatureDeletionRequest> findRequests(Pageable page) {
+        return deletionRepo.findAll(page);
     }
 }

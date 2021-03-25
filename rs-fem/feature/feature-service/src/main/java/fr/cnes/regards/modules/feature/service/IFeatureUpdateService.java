@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
@@ -58,5 +60,12 @@ public interface IFeatureUpdateService extends IAbstractFeatureService {
      * @return updated features
      */
     Set<FeatureEntity> processRequests(List<FeatureUpdateRequest> requests, FeatureUpdateJob featureUpdateJob);
+
+    /**
+     * Find all {@link FeatureUpdateRequest}s
+     * @param page
+     * @return {@link FeatureUpdateRequest}s
+     */
+    Page<FeatureUpdateRequest> findRequests(Pageable page);
 
 }

@@ -3,6 +3,9 @@ package fr.cnes.regards.modules.feature.service;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -44,4 +47,11 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
      * @param requests successful requests
      */
     void handleSuccessfulCreation(Set<FeatureCreationRequest> requests);
+
+    /**
+     * Find all {@link FeatureCreationRequest}s
+     * @param page
+     * @return {@link FeatureCreationRequest}s
+     */
+    Page<FeatureCreationRequest> findRequests(Pageable page);
 }

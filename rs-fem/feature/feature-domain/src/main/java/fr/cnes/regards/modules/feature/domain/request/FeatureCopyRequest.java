@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.COPY)
+@DiscriminatorValue(FeatureRequestTypeEnum.COPY_DISCRIMINENT)
 public class FeatureCopyRequest extends AbstractFeatureRequest {
 
     @Column(name = "storage", nullable = false)

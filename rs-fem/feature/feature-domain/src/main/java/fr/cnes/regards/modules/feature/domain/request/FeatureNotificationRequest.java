@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.NOTIFICATION)
+@DiscriminatorValue(FeatureRequestTypeEnum.NOTIFICATION_DISCRIMINENT)
 public class FeatureNotificationRequest extends AbstractFeatureRequest {
 
     public static FeatureNotificationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,

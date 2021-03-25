@@ -17,12 +17,15 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package fr.cnes.regards.modules.feature.domain.request;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Set;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
@@ -34,7 +37,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  */
 
 @Entity
-@DiscriminatorValue(AbstractFeatureRequest.FEATURE_SAVE_METADATA)
+@DiscriminatorValue(FeatureRequestTypeEnum.SAVE_METADATA_DISCRIMINENT)
 public class FeatureSaveMetadataRequest extends AbstractFeatureRequest {
 
     @Column(name = "previous_dump_date", nullable = false)

@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -30,17 +34,15 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
@@ -69,20 +71,9 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
 
     protected static final String GROUP_ID = "group_id";
 
-    protected static final String COPY = "COPY";
-
-    protected static final String UPDATE = "UPDATE";
-
-    protected static final String NOTIFICATION = "NOTIFICATION";
-
-    protected static final String CREATION = "CREATION";
-
-    protected static final String DELETION = "DELETION";
-    
-    protected static final String FEATURE_SAVE_METADATA = "SAVE_METADATA";
-
     @Id
-    @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request", allocationSize = 1000)
+    @SequenceGenerator(name = "featureRequestSequence", initialValue = 1, sequenceName = "seq_feature_request",
+            allocationSize = 1000)
     @GeneratedValue(generator = "featureRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -113,7 +104,7 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         this.errors = errors;
         return (T) this;
     }
-    
+
     public Set<String> getErrors() {
         return errors;
     }
@@ -137,6 +128,7 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         this.groupId = groupId;
     }
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -154,4 +146,34 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     }
 
     public abstract <U> U accept(IAbstractFeatureRequestVisitor<U> visitor);
+
+    public static FeatureRequestDTO toDTO(AbstractFeatureRequest request) {
+        FeatureRequestDTO dto = new FeatureRequestDTO();
+        dto.setId(request.getId());
+        dto.setRegistrationDate(request.getRegistrationDate());
+        dto.setState(request.getState());
+        dto.setProcessing(request.getStep().isProcessing());
+        dto.setUrn(request.getUrn());
+        if (request instanceof FeatureCreationRequest) {
+            dto.setProviderId(((FeatureCreationRequest) request).getProviderId());
+            dto.setType(FeatureRequestType.CREATION);
+        }
+        if (request instanceof FeatureUpdateRequest) {
+            dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
+            dto.setType(FeatureRequestType.PATCH);
+        }
+        if (request instanceof FeatureSaveMetadataRequest) {
+            dto.setType(FeatureRequestType.SAVE_METADATA);
+        }
+        if (request instanceof FeatureDeletionRequest) {
+            dto.setType(FeatureRequestType.DELETION);
+        }
+        if (request instanceof FeatureNotificationRequest) {
+            dto.setType(FeatureRequestType.NOTIFICATION);
+        }
+        if (request instanceof FeatureCopyRequest) {
+            dto.setType(FeatureRequestType.FILE_COPY);
+        }
+        return dto;
+    }
 }

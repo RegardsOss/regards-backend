@@ -20,20 +20,33 @@ package fr.cnes.regards.modules.feature.service.request;
 
 import java.util.Set;
 
+import org.apache.commons.compress.utils.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
+import fr.cnes.regards.modules.feature.service.IFeatureNotificationService;
+import fr.cnes.regards.modules.feature.service.IFeatureUpdateService;
+import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
 
 /**
  *
@@ -43,6 +56,8 @@ import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 @Service
 @MultitenantTransactional
 public class FeatureRequestService implements IFeatureRequestService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureRequestService.class);
 
     @Autowired
     private IFeatureCreationRequestRepository fcrRepo;
@@ -54,10 +69,43 @@ public class FeatureRequestService implements IFeatureRequestService {
     private IPublisher publisher;
 
     @Autowired
-    private IFeatureCreationService featureCreationService;
+    public IFeatureCreationService featureCreationService;
 
     @Autowired
-    private IFeatureDeletionService featureDeletionService;
+    public IFeatureDeletionService featureDeletionService;
+
+    @Autowired
+    public IFeatureUpdateService featureUpdateService;
+
+    @Autowired
+    public IFeatureNotificationService featureNotificationService;
+
+    @Autowired
+    public IFeatureCopyService featureCopyService;
+
+    @Autowired
+    public IFeatureMetadataService featureMetadataService;
+
+    @Override
+    public Page<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, Pageable page) {
+        switch (type) {
+            case COPY:
+                return featureCopyService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            case CREATION:
+                return featureCreationService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            case DELETION:
+                return featureDeletionService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            case NOTIFICATION:
+                return featureNotificationService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            case SAVE_METADATA:
+                return featureMetadataService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            case UPDATE:
+                return featureUpdateService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+            default:
+                LOGGER.error("Not available type {} for Feature Requests", type.toString());
+                return new PageImpl<>(Lists.newArrayList(), page, 0L);
+        }
+    }
 
     @Override
     public void handleStorageSuccess(Set<String> groupIds) {
@@ -71,15 +119,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
         // publish error notification for all request id
-        request.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.CREATION,
-                                                                            item.getRequestId(),
-                                                                            item.getRequestOwner(),
-                                                                            item.getFeature() != null ?
-                                                                                    item.getFeature().getId() :
-                                                                                    null,
-                                                                            null,
-                                                                            RequestState.ERROR,
-                                                                            null)));
+        request.forEach(item -> publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.CREATION, item.getRequestId(), item.getRequestOwner(),
+                       item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.ERROR, null)));
         // set FeatureCreationRequest to error state
         request.forEach(item -> item.setState(RequestState.ERROR));
 
@@ -97,13 +139,9 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureDeletionRequest> request = this.fdrRepo.findByGroupIdIn(groupIds);
 
         // publish success notification for all request id
-        request.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
-                                                                            item.getRequestId(),
-                                                                            item.getRequestOwner(),
-                                                                            null,
-                                                                            item.getUrn(),
-                                                                            RequestState.ERROR,
-                                                                            null)));
+        request.forEach(item -> publisher.publish(FeatureRequestEvent
+                .build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null, item.getUrn(),
+                       RequestState.ERROR, null)));
         // set FeatureDeletionRequest to error state
         request.forEach(item -> item.setState(RequestState.ERROR));
 

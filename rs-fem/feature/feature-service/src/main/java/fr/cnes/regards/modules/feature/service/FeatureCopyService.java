@@ -32,7 +32,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -106,14 +109,12 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
 
         copies.forEach(item -> validateFeatureCopyRequest(item, grantedRequests, requestInfo));
-        LOGGER.trace("------------->>> {} creation requests prepared in {} ms",
-                     grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
         featureCopyRequestRepo.saveAll(grantedRequests);
-        LOGGER.trace("------------->>> {} creation requests registered in {} ms",
-                     grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests registered in {} ms", grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -133,22 +134,14 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
-                                                        item.getRequestId(),
-                                                        item.getRequestOwner(),
-                                                        null,
-                                                        null,
-                                                        RequestState.DENIED,
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
+                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
-                                                    item.getRequestId(),
-                                                    item.getRequestOwner(),
-                                                    null,
-                                                    item.getUrn(),
-                                                    RequestState.GRANTED,
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
+                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED,
                                                     null));
 
         grantedRequests.add(item);
@@ -163,11 +156,10 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
         Set<JobParameter> jobParameters = Sets.newHashSet();
 
         List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo
-                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_DELAYED,
-                                                       OffsetDateTime.now(),
-                                                       PageRequest.of(0,
-                                           properties.getMaxBulkSize(),
-                                           Sort.by(Order.asc("priority"), Order.asc("requestDate")))).getContent();
+                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
+                                                       PageRequest.of(0, properties.getMaxBulkSize(), Sort
+                                                               .by(Order.asc("priority"), Order.asc("requestDate"))))
+                .getContent();
         Set<Long> requestIds = requestsToSchedule.stream().map(AbstractFeatureRequest::getId)
                 .collect(Collectors.toSet());
         if (!requestsToSchedule.isEmpty()) {
@@ -177,15 +169,11 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
             jobParameters.add(new JobParameter(FeatureCopyJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false,
-                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                                          jobParameters,
-                                          authResolver.getUser(),
-                                          FeatureCopyJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                    jobParameters, authResolver.getUser(), FeatureCopyJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms",
-                         requestsToSchedule.size(),
+            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms", requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
 
             return requestIds.size();
@@ -216,12 +204,11 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
 
         // update those with a error status
         this.featureCopyRequestRepo.saveAll(requests.stream().filter(request -> !successCopyRequest.contains(request))
-                                                    .collect(Collectors.toList()));
+                .collect(Collectors.toList()));
         // Successful requests are deleted now!
         this.featureCopyRequestRepo.deleteInBatch(successCopyRequest);
 
-        LOGGER.trace("------------->>> {} copy request treated in {} ms",
-                     successCopyRequest.size(),
+        LOGGER.trace("------------->>> {} copy request treated in {} ms", successCopyRequest.size(),
                      System.currentTimeMillis() - processStart);
     }
 
@@ -253,5 +240,10 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     protected void logRequestDenied(String requestOwner, String requestId, Set<String> errors) {
         // request cannot be denied because FeatureCopyRequest are generated in response to storage event and do not
         // come from outside the microservice
+    }
+
+    @Override
+    public Page<FeatureCopyRequest> findRequests(Pageable page) {
+        return featureCopyRequestRepo.findAll(page);
     }
 }
