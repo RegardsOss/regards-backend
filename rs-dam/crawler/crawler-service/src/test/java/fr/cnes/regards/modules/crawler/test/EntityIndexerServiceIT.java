@@ -18,24 +18,10 @@
  */
 package fr.cnes.regards.modules.crawler.test;
 
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -56,11 +42,7 @@ import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityFilter;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.QualityLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -77,6 +59,21 @@ import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test class.
@@ -133,6 +130,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     @Autowired
     private IPluginConfigurationRepository pluginRepo;
+
+//    @Autowired
+//    private Gson gson;
 
     private Dataset dataset;
 
@@ -484,5 +484,75 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Dataset datasetByVirtualId = searchService.get(dataset.getVirtualId());
         Assert.assertEquals(dataset, datasetByVirtualId);
     }
+
+    @Test
+    public void testGetBoundingBoxFromGeometry() throws ModuleException {
+        final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
+
+        searchKey.setSearchIndex(TENANT);
+        DataObject taggedWithLatest = createObject("taggedWithLatest", "Tagged With Latest");
+
+        DataObject taggingWith = objects.get(0);
+        UniformResourceName virtualId = taggingWith.getVirtualId();
+        Assert.assertNotNull(virtualId);
+        taggedWithLatest.addTags(virtualId.toString());
+
+        //KSFO airport geometry [-165,70],[-150,70],[-150,66],[-124.99995,66],[-124.99995,70],[-112.00005,70],[-112.00005,75],
+        //          [-97.5,75],[-97.5,80],[-90,80],[-90,86],[-45,86],[-45,86.16666],[-15,86.16666],[-15,88],[120,88],
+        //          [120,86.5],[180,86.5],[180,90],[-180,90],[-180,86.5],[-142.5,86.5],[-142.5,80],[-156.25005,80],
+        //          [-156.25005,77],[-165,77],[-165,70]
+
+        Polygon geometry = IGeometry.simplePolygon(-122.40305900573729,37.63571307432668,
+                -122.402286529541,37.63109096309235,
+                -122.39636421203612,37.613619505104865,
+                -122.3818588256836,37.604304248565484,
+                -122.37876892089842,37.604508244779446,
+                -122.37791061401367,37.605188228119054,
+                -122.37859725952147,37.60600419992163,
+                -122.37181663513184,37.614639352839696,
+                -122.3587703704834,37.60940398608524,
+                -122.35490798950194,37.61511527699598,
+                -122.36383438110352,37.618650618224926,
+                -122.36443519592285,37.619534427267155,
+                -122.36615180969237,37.62062217781951,
+                -122.36743927001952,37.62021427322739,
+                -122.36855506896973,37.621437980289684,
+                -122.3646068572998,37.62694441280498,
+                -122.3649501800537,37.627828123247475,
+                -122.36692428588866,37.62884777608664,
+                -122.36855506896973,37.627556213461176,
+                -122.37190246582031,37.628643846637885,
+                -122.37250328063965,37.62789610053861,
+                -122.37979888916016,37.63047919153271,
+                -122.38520622253417,37.62857587003062,
+                -122.38863945007323,37.63000336572688,
+                -122.38906860351562,37.63347002683941,
+                -122.38572120666504,37.635645104185514,
+                -122.38821029663086,37.63931540283398,
+                -122.40022659301758,37.63856776411051);
+
+        taggedWithLatest.getFeature().setCrs("WGS_84");
+        taggedWithLatest.setGeometry(geometry);
+        indexerService.createDataObjects(TENANT,
+                datasource.getId(),
+                OffsetDateTime.now().minusDays(1),
+                Lists.newArrayList(taggedWithLatest),
+                "");
+
+        Page<AbstractEntity> taggedWithVirtualId = searchService
+                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
+
+//        Assert.assertTrue(taggedWithVirtualId.getContent().contains(taggedWithLatest));
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+                .getLon(),-122.40305900573729, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+                .getLat(),37.63931540283398, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+                .getLon(),-122.35490798950194, 0.0000001);
+        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+                .getLat(),37.604304248565484, 0.0000001);
+    }
+
+
 
 }

@@ -194,6 +194,7 @@ public interface IEsRepository {
      */
     <T extends IIndexable> T get(String index, String docType, String docId, Class<T> clazz);
 
+
     <T extends IIndexable> T getByVirtualId(String tenant, String docType, String virtualId, Class<? extends IIndexable> clazz);
 
     /**

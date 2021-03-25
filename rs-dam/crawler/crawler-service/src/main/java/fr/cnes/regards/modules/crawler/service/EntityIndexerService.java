@@ -18,45 +18,8 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.elasticsearch.ElasticsearchException;
-import org.locationtech.spatial4j.exception.InvalidShapeException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.ObjectError;
-
 import com.google.common.base.Strings;
-
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -73,11 +36,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectAssocRemover;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocRemover;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocUpdater;
-import fr.cnes.regards.modules.crawler.service.consumer.DataObjectUpdater;
-import fr.cnes.regards.modules.crawler.service.consumer.SaveDataObjectsCallable;
+import fr.cnes.regards.modules.crawler.service.consumer.*;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
@@ -104,6 +63,42 @@ import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
+import org.locationtech.spatial4j.context.jts.JtsSpatialContextFactory;
+import org.locationtech.spatial4j.exception.InvalidShapeException;
+import org.locationtech.spatial4j.io.GeoJSONReader;
+import org.locationtech.spatial4j.shape.Shape;
+import org.locationtech.spatial4j.shape.jts.JtsShapeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.ObjectError;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -176,6 +171,9 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @Autowired
     private IMappingService esMappingService;
+
+    @Autowired
+    private Gson gson;
 
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
@@ -895,20 +893,63 @@ public class EntityIndexerService implements IEntityIndexerService {
                 } else { // Even if Crs is WGS84, don't forget to normalize geometry (already done into feature)
                     dataObject.setWgs84(feature.getNormalizedGeometry());
                 }
+                String json = gson.toJson(geometry);
+
+                GeoJSONReader reader = makeGeoJsonReader(makeFactory(projectGeoSettings.getShouldManagePolesOnGeometries()));
+                Shape read = reader.read(putTypeInFirstPosition(json));
+
+                GeoPoint nwPoint = new GeoPoint(read.getBoundingBox().getMaxY(), read.getBoundingBox().getMinX());
+                dataObject.setNwPoint(nwPoint);
+                GeoPoint sePoint = new GeoPoint(read.getBoundingBox().getMinY(), read.getBoundingBox().getMaxX());
+                dataObject.setSePoint(sePoint);
+
             } catch (InvalidShapeException e) {
                 // Validation error
-                String msg = String
-                        .format("Failed to normalize the feature geometry : %s.\nFeature label = %s, ProviderId = %s\n",
-                                e.getMessage(), feature.getLabel(), feature.getProviderId());
-                // Log error msg
-                LOGGER.warn(msg);
-                errorBuffer.append(msg);
-                // Add data object in error into summary result
-                bulkSaveResult.addInErrorDoc(dataObject.getDocId(), new EntityInvalidException(msg),
-                                             Optional.ofNullable(dataObject.getFeature().getSession()),
-                                             Optional.ofNullable(dataObject.getFeature().getSessionOwner()));
+                NormalizeGeometryError(dataObject, bulkSaveResult, errorBuffer, feature, "Failed to normalize the feature geometry : %s.\nFeature label = %s, ProviderId = %s\n", e.getMessage());
+            } catch (ParseException e) {
+                // Validation error
+                NormalizeGeometryError(dataObject, bulkSaveResult, errorBuffer, feature, "Failed to generate bbox from geometry : %s.\nFeature label = %s, ProviderId = %s\n", e.getMessage());
+            } catch (IOException e) {
+                // Validation error
+                NormalizeGeometryError(dataObject, bulkSaveResult, errorBuffer, feature, "Failed to generate bbox from geometry : %s.\nFeature label = %s, ProviderId = %s\n", e.getMessage());
             }
         }
+    }
+
+    /**
+     * Without this dirty hack, GeoJSONReader can not read geometries where the type appears after the coordinates.
+     * https://github.com/locationtech/spatial4j/issues/156
+     */
+    private String putTypeInFirstPosition(String json) {
+        String type = json.replaceFirst("(.*)(\"type\"\\s*:\\s*\"[^\"]*?\")(.*)", "$2");
+        return "{" + type + "," + json.replaceFirst("\\{", "");
+    }
+
+    private void NormalizeGeometryError(DataObject dataObject, BulkSaveResult bulkSaveResult, StringBuilder errorBuffer,
+                                        DataObjectFeature feature, String s, String message) {
+        String msg = String
+                .format(s,
+                        message, feature.getLabel(), feature.getProviderId());
+        // Log error msg
+        LOGGER.warn(msg);
+        errorBuffer.append(msg);
+        // Add data object in error into summary result
+        bulkSaveResult.addInErrorDoc(dataObject.getDocId(), new EntityInvalidException(msg),
+                Optional.ofNullable(dataObject.getFeature().getSession()),
+                Optional.ofNullable(dataObject.getFeature().getSessionOwner()));
+    }
+
+    private Function<JtsSpatialContextFactory, JtsSpatialContextFactory> makeFactory(boolean geo){
+        return factory -> {
+            factory.geo = geo;
+            factory.shapeFactoryClass = JtsShapeFactory.class;
+            return factory;
+        };
+    }
+
+    private GeoJSONReader makeGeoJsonReader(Function<JtsSpatialContextFactory, JtsSpatialContextFactory> makeFactory){
+        JtsSpatialContextFactory factory = makeFactory.apply(new JtsSpatialContextFactory());
+        return new GeoJSONReader(new JtsSpatialContext(factory), factory);
     }
 
     /**
