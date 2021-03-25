@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import org.elasticsearch.search.aggregations.Aggregation;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This POJO wrap stac collection informations found with URN and DataObjects' aggregation data contained in this collection
@@ -44,27 +45,23 @@ public final class CollectionWithStats {
     }
 
     public boolean equals(final Object o) {
-        if (o == this) return true;
-        if (!(o instanceof CollectionWithStats)) return false;
+        if (o == this) { return true; }
+        if (!(o instanceof CollectionWithStats)) { return false; }
         final CollectionWithStats other = (CollectionWithStats) o;
-        final Object this$collection = this.getCollection();
-        final Object other$collection = other.getCollection();
-        if (this$collection == null ? other$collection != null : !this$collection.equals(other$collection))
+        if (!Objects.equals(this.getCollection(), other.getCollection())) {
             return false;
-        final Object this$aggregationList = this.getAggregationList();
-        final Object other$aggregationList = other.getAggregationList();
-        if (this$aggregationList == null ? other$aggregationList != null : !this$aggregationList.equals(other$aggregationList))
+        }
+        if (!Objects.equals(this.getAggregationList(), other.getAggregationList())) {
             return false;
+        }
         return true;
     }
 
     public int hashCode() {
         final int PRIME = 59;
         int result = 1;
-        final Object $collection = this.getCollection();
-        result = result * PRIME + ($collection == null ? 43 : $collection.hashCode());
-        final Object $aggregationList = this.getAggregationList();
-        result = result * PRIME + ($aggregationList == null ? 43 : $aggregationList.hashCode());
+        result = result * PRIME + (collection == null ? 43 : collection.hashCode());
+        result = result * PRIME + (aggregationList == null ? 43 : aggregationList.hashCode());
         return result;
     }
 
