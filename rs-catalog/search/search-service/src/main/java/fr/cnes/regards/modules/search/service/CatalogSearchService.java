@@ -394,7 +394,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                                  Collection<QueryableAttribute> attributes) throws SearchException,
         EntityOperationForbiddenException, EntityNotFoundException {
 
-        DataObject abstractEntity = new DataObject();
+        AbstractEntity<?> abstractEntity = get(urn);
         //We look for collection's dataobjects by urn in tags
         ICriterion tags = ICriterion.contains("tags", urn.toString());
         List<Aggregation> aggregations = retrievePropertiesStats(tags, searchType, attributes);
