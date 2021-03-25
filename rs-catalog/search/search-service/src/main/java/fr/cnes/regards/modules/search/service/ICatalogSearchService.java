@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;

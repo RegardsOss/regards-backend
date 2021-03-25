@@ -52,6 +52,7 @@ import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.PropertyBound;
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
@@ -374,7 +375,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
-            Collection<QueryableAttribute> attributes) throws SearchException {
+            Collection<QueryableAttribute> attributes) {
         try {
             // Apply security filter (ie user groups)
             criterion = accessRightFilter.addAccessRights(criterion);
@@ -393,10 +394,9 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                                  Collection<QueryableAttribute> attributes) throws SearchException,
         EntityOperationForbiddenException, EntityNotFoundException {
 
-
-        AbstractEntity<?> abstractEntity = get(urn);
+        DataObject abstractEntity = new DataObject();
         //We look for collection's dataobjects by urn in tags
-        ICriterion tags = ICriterion.contains("tags", urn.getIdentifier());
+        ICriterion tags = ICriterion.contains("tags", urn.toString());
         List<Aggregation> aggregations = retrievePropertiesStats(tags, searchType, attributes);
         return new CollectionWithStats(abstractEntity, aggregations);
     }

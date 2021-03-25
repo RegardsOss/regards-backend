@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.search.domain.plugin.CollectionWithStats;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
@@ -289,9 +290,11 @@ public class CatalogSearchServiceTest {
         urn.setTenant("perf");
         urn.setEntityId(UUID.fromString("80282ac5-1b01-4e9d-a356-123456789012"));
         SearchType searchType = Mockito.mock(SearchType.class);
-        QueryableAttribute queryableAttribute = new QueryableAttribute("creationDate",null,
+        QueryableAttribute creationDateAttribute = new QueryableAttribute("creationDate",null,
                 true, 0, false);
 
+        QueryableAttribute geometryAttribute = new QueryableAttribute("geometry",null,
+                true, 0, false);
         AbstractEntity<CollectionFeature> returnCollection = new Collection(new Model(), "perf",
                 "provider","label");
         ParsedStats parsedStats = new ParsedStats();
@@ -302,7 +305,7 @@ public class CatalogSearchServiceTest {
         Mockito.when(accessRightFilter.getUserAccessGroups()).thenReturn(null);
 
         CollectionWithStats documentsWithStats = catalogSearchService.getCollectionWithDataObjectsStats(urn, searchType,
-                Sets.newHashSet(queryableAttribute));
+                Sets.newHashSet(creationDateAttribute,geometryAttribute));
 
         Assert.assertNotNull(documentsWithStats);
         Assert.assertNotNull(documentsWithStats.getAggregationList());
