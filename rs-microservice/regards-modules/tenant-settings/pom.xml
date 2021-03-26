@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
  Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
@@ -21,16 +21,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework</groupId>
-    <artifactId>regards-modules</artifactId>
-    <description>REGARDS framework modules</description>
+    <groupId>fr.cnes.regards.framework.modules</groupId>
+    <artifactId>tenant-settings</artifactId>
+    <version>1.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <artifactId>regards-parent</artifactId>
         <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -54,13 +53,36 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>plugins</module>
-        <module>jobs</module>
-        <module>templates</module>
-        <module>workspace</module>
-        <module>dump</module>
-        <module>tenant-settings</module>
-    </modules>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Module layers -->
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <artifactId>tenant-settings-dao</artifactId>
+                <version>1.4.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <artifactId>tenant-settings-domain</artifactId>
+                <version>1.4.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <artifactId>tenant-settings-rest</artifactId>
+                <version>1.4.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules</groupId>
+                <artifactId>tenant-settings-service</artifactId>
+                <version>1.4.1-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+    <modules>
+        <module>tenant-settings-domain</module>
+        <module>tenant-settings-dao</module>
+        <module>tenant-settings-rest</module>
+        <module>tenant-settings-service</module>
+    </modules>
 </project>
