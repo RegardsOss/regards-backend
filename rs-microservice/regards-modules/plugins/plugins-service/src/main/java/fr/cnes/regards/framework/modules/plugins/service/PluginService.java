@@ -225,9 +225,9 @@ public class PluginService implements IPluginService {
             throws EncryptionException {
         for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
             // only decrypt STRING plugin parameter for now.
-            if(paramType.getType() == PluginParamType.STRING) {
+            if (paramType.getType() == PluginParamType.STRING) {
                 StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
-                if (pluginParam != null && paramType.isSensible() && pluginParam.hasValue()) {
+                if ((pluginParam != null) && paramType.isSensible() && pluginParam.hasValue()) {
                     pluginParam.setDecryptedValue(encryptionService.decrypt(pluginParam.getValue()));
                 }
             }
@@ -292,7 +292,13 @@ public class PluginService implements IPluginService {
             LOGGER.error(String.format("Error while getting the plugin configuration <%s>.", businessId));
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        plgConf.setMetaData(PluginUtils.getPlugins().get(plgConf.getPluginId()));
+        PluginMetaData meta = PluginUtils.getPlugins().get(plgConf.getPluginId());
+        if (meta == null) {
+            LOGGER.error(String.format("Plugin {} is not available. Plugin is missing or service cannot access it.",
+                                       plgConf.getPluginId()));
+            throw new EntityNotFoundException(plgConf.getPluginId(), PluginMetaData.class);
+        }
+        plgConf.setMetaData(meta);
         return plgConf;
     }
 
