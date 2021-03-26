@@ -8,16 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
 
-public class AndRule implements IRule {
+public class OrRule implements IRule {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AndRule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OrRule.class);
 
     private final List<IRule> rules = new ArrayList<>();
 
     @Override
     public <U> U accept(IRuleVisitor<U> visitor) {
         LOGGER.debug("Accepting {}", this.getClass().getName());
-        return visitor.visitAnd(this);
+        return visitor.visitOr(this);
     }
 
     public void add(IRule rule) {

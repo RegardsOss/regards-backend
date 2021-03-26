@@ -2,16 +2,19 @@ package fr.cnes.regards.framework.utils.parser;
 
 import fr.cnes.regards.framework.utils.parser.rule.AndRule;
 import fr.cnes.regards.framework.utils.parser.rule.NotRule;
+import fr.cnes.regards.framework.utils.parser.rule.OrRule;
 import fr.cnes.regards.framework.utils.parser.rule.PropertyRule;
 import fr.cnes.regards.framework.utils.parser.rule.RegexpPropertyRule;
 
 public interface IRuleVisitor<T> {
 
-    T visit(AndRule rule);
+    T visitAnd(AndRule rule);
 
-    T visit(NotRule rule);
+    T visitOr(OrRule rule);
 
-    T visit(PropertyRule rule);
+    T visitNot(NotRule rule);
 
-    T visit(RegexpPropertyRule rule);
+    T visitProperty(PropertyRule rule);
+
+    T visitRegex(RegexpPropertyRule rule);
 }

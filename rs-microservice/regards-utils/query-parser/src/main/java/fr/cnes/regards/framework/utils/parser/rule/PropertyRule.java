@@ -21,7 +21,7 @@ public class PropertyRule implements IRule {
     @Override
     public <U> U accept(IRuleVisitor<U> visitor) {
         LOGGER.debug("Accepting {}", this.getClass().getName());
-        return visitor.visit(this);
+        return visitor.visitProperty(this);
     }
 
     public String getProperty() {

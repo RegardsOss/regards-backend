@@ -23,6 +23,7 @@ import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.FieldQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
+import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QuotedFieldQueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
@@ -39,7 +40,7 @@ public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuild
 
         // Register builder
         setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
-        //        setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
+        setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
         setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder());
         setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
         setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());

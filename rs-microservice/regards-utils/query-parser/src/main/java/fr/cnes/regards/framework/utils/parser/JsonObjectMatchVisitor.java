@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.utils.parser.rule.AndRule;
 import fr.cnes.regards.framework.utils.parser.rule.IRule;
 import fr.cnes.regards.framework.utils.parser.rule.NotRule;
+import fr.cnes.regards.framework.utils.parser.rule.OrRule;
 import fr.cnes.regards.framework.utils.parser.rule.PropertyRule;
 import fr.cnes.regards.framework.utils.parser.rule.RegexpPropertyRule;
 
@@ -30,7 +31,7 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(AndRule rule) {
+    public Boolean visitAnd(AndRule rule) {
         LOGGER.debug("Visiting {}", rule.getClass().getName());
         Boolean result = Boolean.TRUE;
         for (IRule child : rule.getRules()) {
@@ -40,13 +41,23 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(NotRule rule) {
+    public Boolean visitOr(OrRule rule) {
+        LOGGER.debug("Visiting {}", rule.getClass().getName());
+        Boolean result = Boolean.FALSE;
+        for (IRule child : rule.getRules()) {
+            result = result || child.accept(this);
+        }
+        return result;
+    }
+
+    @Override
+    public Boolean visitNot(NotRule rule) {
         LOGGER.debug("Visiting {}", rule.getClass().getName());
         return !rule.getRule().accept(this);
     }
 
     @Override
-    public Boolean visit(PropertyRule rule) {
+    public Boolean visitProperty(PropertyRule rule) {
         LOGGER.debug("Visiting {}", rule.getClass().getName());
         // Find property to test
         JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
@@ -69,7 +80,7 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(RegexpPropertyRule rule) {
+    public Boolean visitRegex(RegexpPropertyRule rule) {
         LOGGER.debug("Visiting {}", rule.getClass().getName());
         // Find property to test
         JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
