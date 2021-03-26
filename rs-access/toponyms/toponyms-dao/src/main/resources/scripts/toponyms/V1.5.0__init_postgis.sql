@@ -1,4 +1,2 @@
-create extension POSTGIS schema ${flyway:defaultSchema} ;
-create extension POSTGIS_TOPOLOGY;
-SET search_path = ${flyway:defaultSchema};
-SELECT PostGIS_Version();
+create extension if not exists POSTGIS schema public;
+create extension if not exists POSTGIS_TOPOLOGY;
