@@ -69,7 +69,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.nio.entity.NStringEntity;
-import org.apache.lucene.search.ConstantScoreQuery;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.DocWriteResponse.Result;
@@ -101,25 +100,20 @@ import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions.Builder;
-import org.elasticsearch.client.Requests;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.ml.job.config.MlFilter;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -1528,10 +1522,14 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T extends IIndexable> Aggregations getAggregations(SearchKey<?, T> searchKey, ICriterion criterion, AggregationBuilder aggs) {
+    public <T extends IIndexable> Aggregations getAggregationsFor(
+            SearchKey<?, T> searchKey,
+            ICriterion criterion,
+            Collection<AggregationBuilder> aggs
+    ) {
         try {
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()));
-            builder.aggregation(aggs);
+            aggs.forEach(builder::aggregation);
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
             // Launch the request
             SearchResponse response = getSearchResponse(request);

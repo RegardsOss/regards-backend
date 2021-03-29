@@ -437,7 +437,8 @@ public interface IEsRepository {
      * @param aggs the aggregations wished for
      * @return the aggregations
      */
-    <T extends IIndexable> Aggregations getAggregations(SearchKey<?, T> searchKey, ICriterion criterion, AggregationBuilder aggs);
+    <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey, ICriterion criterion,
+            Collection<AggregationBuilder> aggs);
 
     /**
      * Retrieve stats for each given attribute
