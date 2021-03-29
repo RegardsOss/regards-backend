@@ -95,7 +95,7 @@ public class IngestMetadataDto {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
-        Assert.notEmpty(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
+        Assert.notNull(storages, IngestValidationMessages.MISSING_STORAGE_METADATA);
         IngestMetadataDto m = new IngestMetadataDto();
         m.setIngestChain(ingestChain);
         m.setSessionOwner(sessionOwner);
