@@ -78,14 +78,13 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 @Table(name = "t_acq_processing_chain")
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
         attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
-                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
+                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
+                        subgraph = "graph.acquisition.chain.jobs") },
         subgraphs = {
-        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
-                attributeNodes = { @NamedAttributeNode(value = "parameters") }),
-        @NamedSubgraph(name = "subgraph.file.info",
-                attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") })
-})
-})
+                @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+                        attributeNodes = { @NamedAttributeNode(value = "parameters") }),
+                @NamedSubgraph(name = "subgraph.file.info",
+                        attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") }) }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 
@@ -207,6 +206,21 @@ public class AcquisitionProcessingChain {
     @OneToOne
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
     private JobInfo lastProductAcquisitionJobInfo;
+
+    /**
+     * Parameter to indicate if products should be stored or referenced
+     * Products are stored by default
+     */
+    @Column(name = "products_stored")
+    @NotNull(message = "Referencing system for products is required (to store or to reference")
+    private boolean productsStored = true;
+
+    /**
+     * Storage plugin businessId for referenced files.
+     * Used only if productsStored=true. Else storages is used.
+     */
+    @Column(name = "reference_location")
+    private String referenceLocation;
 
     public String getLabel() {
         return label;
@@ -350,4 +364,21 @@ public class AcquisitionProcessingChain {
     public void setVersioningMode(VersioningMode versioningMode) {
         this.versioningMode = versioningMode;
     }
+
+    public boolean isProductsStored() {
+        return productsStored;
+    }
+
+    public void setProductsStored(boolean productsStored) {
+        this.productsStored = productsStored;
+    }
+
+    public String getReferenceLocation() {
+        return referenceLocation;
+    }
+
+    public void setReferenceLocation(String referenceLocation) {
+        this.referenceLocation = referenceLocation;
+    }
+
 }
