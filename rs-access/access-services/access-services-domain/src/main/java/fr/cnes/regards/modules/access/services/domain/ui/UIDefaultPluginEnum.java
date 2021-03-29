@@ -53,7 +53,10 @@ public enum UIDefaultPluginEnum {
     DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME("last-version-only", "/plugins/criterion/last-version-only/plugin.js",
             UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_TOPONYM_CRITERION_NAME("toponym", "/plugins/criterion/toponym/plugin.js", UIPluginTypesEnum.CRITERIA);
+    DEFAULT_TOPONYM_CRITERION_NAME("toponym", "/plugins/criterion/toponym/plugin.js", UIPluginTypesEnum.CRITERIA),
+
+    DEFAULT_NUMERICAL_RANGE_CRITERION_NAME("numerical-range-criteria",
+            "/plugins/criterion/numerical-range-criteria/plugin.js", UIPluginTypesEnum.CRITERIA);
 
     private String value;
 
