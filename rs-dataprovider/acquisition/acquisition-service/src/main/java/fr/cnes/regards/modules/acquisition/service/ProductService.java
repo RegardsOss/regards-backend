@@ -52,6 +52,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
@@ -151,10 +153,22 @@ public class ProductService implements IProductService {
                      product.getSipState());
 
         List<StorageMetadata> storageList = new ArrayList<>();
-        for (StorageMetadataProvider storage : acquisitionChain.getStorages()) {
-            storageList.add(StorageMetadata.build(storage.getPluginBusinessId(),
-                                                  storage.getStorePath(),
-                                                  storage.getTargetTypes()));
+
+        // If products have to be stored physically, save storage paths in storageList
+        // else if they have to be referenced, save them in storage location content information
+        if(acquisitionChain.isProductsStored()) {
+            for (StorageMetadataProvider storage : acquisitionChain.getStorages()) {
+                storageList.add(StorageMetadata.build(storage.getPluginBusinessId(),
+                                                      storage.getStorePath(),
+                                                      storage.getTargetTypes()));
+            }
+        } else {
+            List<ContentInformation> productCIList = product.getSip().getProperties().getContentInformations();
+            for(ContentInformation productCI : productCIList) {
+                for(OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
+                    location.setStorage(acquisitionChain.getStorages().get(0).getPluginBusinessId());
+                }
+            }
         }
 
         IngestMetadataDto ingestMetadata = IngestMetadataDto.build(product.getProcessingChain().getLabel(),

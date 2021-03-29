@@ -24,6 +24,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
+import fr.cnes.regards.framework.oais.RepresentationInformation;
+import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -35,6 +39,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -46,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,15 +123,7 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
     public void deleteProducts() throws ModuleException {
         AcquisitionProcessingChain chain = processingService.createChain(create());
         // Add a product
-        Product product = new Product();
-        product.setIpId("productIpId");
-        product.setProcessingChain(chain);
-        product.setProductName("ProductName");
-        product.setSession("session");
-        product.setSip(SIP.build(EntityType.DATA, "providerId"));
-        product.setSipState(SIPState.STORED);
-        product.setState(ProductState.COMPLETED);
-        productService.saveAndSubmitSIP(product, chain);
+        createProduct(chain);
 
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
         productService.deleteByProcessingChain(chain);
@@ -137,15 +135,7 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
     public void deleteProductsWithSession() throws ModuleException {
         AcquisitionProcessingChain chain = processingService.createChain(create());
         // Add a product
-        Product product = new Product();
-        product.setIpId("productIpId");
-        product.setProcessingChain(chain);
-        product.setProductName("ProductName");
-        product.setSession("session");
-        product.setSip(SIP.build(EntityType.DATA, "providerId"));
-        product.setSipState(SIPState.STORED);
-        product.setState(ProductState.COMPLETED);
-        productService.saveAndSubmitSIP(product, chain);
+        createProduct(chain);
 
         Assert.assertTrue("There should be product associated to the chain", productService.countByChain(chain) > 0);
         productService.deleteBySession(chain, "plop");
@@ -153,6 +143,25 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         productService.deleteBySession(chain, "session");
         Assert.assertFalse("There should not be any product associated to the chain",
                            productService.countByChain(chain) > 0);
+    }
+
+
+    @Test
+    @Purpose("The product has to be stored by reference, thus test if the store path is saved in the content information of the product")
+    public void createProductsByReference() throws ModuleException {
+        // create chain
+        AcquisitionProcessingChain chain = processingService.createChain(create());
+        // set products to be stored by reference and remove one storage from chain (only one storage is allowed in this case)
+        chain.setProductsStored(false);
+        chain.getStorages().remove(0);
+        // create product
+        Product product = createProduct(chain);
+        // test result
+        Product productCreated = productService.retrieve(product.getProductName());
+        Assert.assertEquals("Location should be equal to the pluginId provided in acquisition storage",
+                            chain.getStorages().get(0).getPluginBusinessId(),
+                            productCreated.getSip().getProperties().getContentInformations().get(0).getDataObject()
+                                    .getLocations().iterator().next().getStorage());
     }
 
     private AcquisitionProcessingChain create() {
@@ -216,5 +225,33 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
             Assert.fail("Acquisition processing chain should be valid");
         }
         return processingChain;
+    }
+
+    public Product createProduct(AcquisitionProcessingChain chain) throws SIPGenerationException {
+        // HANDLE PRODUCt
+        Product product = new Product();
+        product.setIpId("productIpId");
+        product.setProcessingChain(chain);
+        product.setProductName("ProductName");
+        product.setSession("session");
+        product.setSip(SIP.build(EntityType.DATA, "providerId"));
+        product.setSipState(SIPState.STORED);
+        product.setState(ProductState.COMPLETED);
+
+        // HANDLE SIP
+        SIP sip = product.getSip();
+        // add content information to the sip
+        ContentInformation ci = new ContentInformation();
+        RepresentationInformation ri = new RepresentationInformation();
+        Syntax syntax = new Syntax();
+        syntax.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
+        ri.setSyntax(syntax);
+        ci.setRepresentationInformation(ri);
+        ci.withDataObject(DataType.RAWDATA, "filename", "MD5", UUID.randomUUID().toString(), 10L, OAISDataObjectLocation.build("file://ARCHIVE1/NODE1/sample1.dat/"));
+        sip.getProperties().getContentInformations().add(ci);
+
+        // SUBMIT PRODUCT
+        productService.saveAndSubmitSIP(product, chain);
+        return product;
     }
 }
