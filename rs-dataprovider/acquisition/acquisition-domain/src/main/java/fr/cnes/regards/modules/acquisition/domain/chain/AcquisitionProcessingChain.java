@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
+import java.time.OffsetDateTime;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -44,11 +50,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -78,14 +79,13 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 @Table(name = "t_acq_processing_chain")
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
         attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
-                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs") },
+                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
+                        subgraph = "graph.acquisition.chain.jobs") },
         subgraphs = {
-        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
-                attributeNodes = { @NamedAttributeNode(value = "parameters") }),
-        @NamedSubgraph(name = "subgraph.file.info",
-                attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") })
-})
-})
+                @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+                        attributeNodes = { @NamedAttributeNode(value = "parameters") }),
+                @NamedSubgraph(name = "subgraph.file.info",
+                        attributeNodes = { @NamedAttributeNode(value = "scanDirInfo") }) }) })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AcquisitionProcessingChain {
 
@@ -213,8 +213,15 @@ public class AcquisitionProcessingChain {
      * Products are stored by default
      */
     @Column(name = "products_stored")
-    @NotNull(message="Referencing system for products is required (to store or to reference")
+    @NotNull(message = "Referencing system for products is required (to store or to reference")
     private boolean productsStored = true;
+
+    /**
+     * Storage plugin businessId for referenced files.
+     * Used only if productsStored=true. Else storages is used.
+     */
+    @Column(name = "reference_location")
+    private String referenceLocation;
 
     public String getLabel() {
         return label;
@@ -367,5 +374,12 @@ public class AcquisitionProcessingChain {
         this.productsStored = productsStored;
     }
 
-}
+    public String getReferenceLocation() {
+        return referenceLocation;
+    }
 
+    public void setReferenceLocation(String referenceLocation) {
+        this.referenceLocation = referenceLocation;
+    }
+
+}
