@@ -108,7 +108,8 @@
 		<framework.modules.workspace.version>${regards.version}</framework.modules.workspace.version>
 		<framework.modules.plugins.version>${regards.version}</framework.modules.plugins.version>
 		<framework.modules.locks.version>${regards.version}</framework.modules.locks.version>
-		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>    
+		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>
+		<framework.modules.tenant-settings.version>${regards.version}</framework.modules.tenant-settings.version>
         
         <!-- MODULES -->
 		<modules.project.version>${regards.version}</modules.project.version>
@@ -603,6 +604,28 @@
 				<artifactId>locks-service</artifactId>
 				<version>${framework.modules.locks.version}</version>
 			</dependency>
+			<!-- Regards Tenant Settings -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-dao</artifactId>
+				<version>${framework.modules.tenant-settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-domain</artifactId>
+				<version>${framework.modules.tenant-settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-service</artifactId>
+				<version>${framework.modules.tenant-settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-rest</artifactId>
+				<version>${framework.modules.tenant-settings.version}</version>
+			</dependency>
+
             <!-- Regards Plugins -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
