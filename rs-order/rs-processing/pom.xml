@@ -9,6 +9,7 @@
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
         <version>1.4.1-SNAPSHOT</version>
+        <relativePath/>
     </parent>
 
     <groupId>fr.cnes.regards.microservices</groupId>

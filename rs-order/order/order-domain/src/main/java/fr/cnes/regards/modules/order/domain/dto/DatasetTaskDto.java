@@ -66,11 +66,11 @@ public class DatasetTaskDto {
         this.objectsCount = objectsCount;
     }
 
-    public int getFilesCount() {
+    public long getFilesCount() {
         return filesCount;
     }
 
-    public void setFilesCount(int filesCount) {
+    public void setFilesCount(long filesCount) {
         this.filesCount = filesCount;
     }
 
