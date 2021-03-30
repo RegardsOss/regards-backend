@@ -18,18 +18,12 @@
  */
 package fr.cnes.regards.modules.toponyms.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
+import com.sun.istack.NotNull;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import org.geolatte.geom.Geometry;
 import org.geolatte.geom.Position;
 
-import com.sun.istack.NotNull;
-
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import javax.persistence.*;
 
 /**
  * POJO for Toponym object
@@ -71,6 +65,12 @@ public class Toponym {
 
     @Column(name = "description")
     String description;
+
+    @Column(name= "visible")
+    boolean visible;
+
+    @Embedded
+    ToponymMetadata toponymMetadata;
 
     public String getDescription() {
         return description;
@@ -120,4 +120,34 @@ public class Toponym {
         this.copyright = copyright;
     }
 
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public void setToponymMetadata(ToponymMetadata toponymMetadata) {
+        this.toponymMetadata = toponymMetadata;
+    }
+
+    public Toponym() {
+    }
+
+    public Toponym(String businessId, String label, String labelFr, Geometry<Position> geometry, String copyright,
+            String description, boolean visible, ToponymMetadata toponymMetadata) {
+        this.businessId = businessId;
+        this.label = label;
+        this.labelFr = labelFr;
+        this.geometry = geometry;
+        this.copyright = copyright;
+        this.description = description;
+        this.visible = visible;
+        this.toponymMetadata = toponymMetadata;
+    }
+
+    public ToponymMetadata getToponymMetadata() {
+        return toponymMetadata;
+    }
 }

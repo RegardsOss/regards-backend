@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.toponyms.dao;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -35,14 +37,23 @@ import fr.cnes.regards.modules.toponyms.domain.Toponym;
  *
  */
 @InstanceEntity
-public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaSpecificationExecutor<Toponym> {
+public interface IToponymsRepository extends JpaRepository<Toponym, String>, JpaSpecificationExecutor<Toponym> {
 
-    Page<Toponym> findByLabelFrContainingIgnoreCase(String partialLabel, Pageable page);
+    Page<Toponym> findByLabelFrContainingIgnoreCaseAndVisible(String partialLabel, boolean visible, Pageable page);
 
-    Page<Toponym> findByLabelContainingIgnoreCase(String partialLabel, Pageable page);
+    Page<Toponym> findByLabelContainingIgnoreCaseAndVisible(String partialLabel, boolean visible, Pageable page);
 
-    @Query(value = "select bid, label, label_fr, ST_Simplify(geom, ?2,true) as geom, copyright, description from {h-schema}t_toponyms where bid = ?1",
+    @Query(value = "select bid, label, label_fr, ST_Simplify(geom, ?2,true) as geom, copyright, description, visible,"
+            + "creation_date, last_access_date, project, author from {h-schema}t_toponyms where bid = ?1",
             nativeQuery = true)
     Optional<Toponym> findOneSimplified(String businessId, double tolerance);
 
+    Page<Toponym> findByVisible(boolean visible, Pageable page);
+
+    Page<Toponym> findByVisibleAndExpirationDateBefore(boolean visible, OffsetDateTime expirationDate, Pageable page);
+
+    int countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(String user, OffsetDateTime startDate, OffsetDateTime endDate);
+
+    @Transactional
+    void deleteByVisible(boolean visibility);
 }

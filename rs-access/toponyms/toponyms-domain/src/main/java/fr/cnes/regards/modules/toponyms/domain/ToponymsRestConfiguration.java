@@ -42,4 +42,9 @@ public class ToponymsRestConfiguration {
      */
     public static final String SEARCH = "/search";
 
+    /**
+     * Upload path
+     */
+    public static final String UPLOAD = "/upload";
+
 }
