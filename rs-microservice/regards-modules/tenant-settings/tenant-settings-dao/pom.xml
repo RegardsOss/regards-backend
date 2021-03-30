@@ -21,7 +21,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework.modules</groupId>
+    <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
     <artifactId>tenant-settings-dao</artifactId>
     <packaging>jar</packaging>
 
@@ -53,21 +53,10 @@
     </developers>
 
     <dependencies>
-        <!-- REGARDS starter -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-starter</artifactId>
-        </dependency>
         <!-- Module -->
         <dependency>
-            <groupId>fr.cnes.regards.framework.modules</groupId>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-domain</artifactId>
-        </dependency>
-        <!-- Tests -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

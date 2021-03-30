@@ -18,19 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.tenant.settings.service;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.Greeting;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
-/**
- * TODO Description
- * @author TODO
- */
-public interface IGreetingsService {
+public interface IDynamicTenantSettingCustomizer {
 
-    /**
-     * Get greetings
-     * @return {@link Greeting}
-     * @since 1.0.0
-     */
-    Greeting getGreeting(String pName);
+    boolean isValid(DynamicTenantSetting dynamicTenantSetting);
+
+    default boolean canBeModified(DynamicTenantSetting dynamicTenantSetting) {
+        return true;
+    }
+
+    default void doRightNow(DynamicTenantSetting dynamicTenantSetting) {
+        // do nothing
+    }
+
+    boolean appliesTo(DynamicTenantSetting dynamicTenantSetting);
 
 }

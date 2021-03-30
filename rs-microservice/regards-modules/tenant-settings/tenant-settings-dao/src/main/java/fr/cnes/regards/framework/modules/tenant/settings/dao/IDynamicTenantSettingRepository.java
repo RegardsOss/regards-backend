@@ -16,23 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.tenant.settings.service;
+package fr.cnes.regards.framework.modules.tenant.settings.dao;
 
-import org.springframework.stereotype.Service;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.Greeting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IGreetingsService;
+import java.util.Optional;
 
-/**
- * TODO Description
- * @author TODO
- */
-@Service
-public class GreetingsService implements IGreetingsService {
+@Repository
+public interface IDynamicTenantSettingRepository extends JpaRepository<DynamicTenantSetting, Long> {
 
-    @Override
-    public Greeting getGreeting(String pName) {
-        return new Greeting(pName);
-    }
+    Optional<DynamicTenantSetting> findByName(String name);
 
 }
