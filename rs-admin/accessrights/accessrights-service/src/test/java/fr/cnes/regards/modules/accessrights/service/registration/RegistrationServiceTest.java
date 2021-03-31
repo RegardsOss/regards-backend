@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.registration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -45,16 +31,27 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Test class for {@link RegistrationService}.
@@ -124,8 +121,6 @@ public class RegistrationServiceTest {
 
     private IAccountsClient accountsClient;
 
-    private IAccountSettingsClient accountSettingsClient;
-
     private ProjectUserWorkflowManager projectUserWorkflowManager;
 
     private AccessRequestDto dto;
@@ -134,15 +129,12 @@ public class RegistrationServiceTest {
 
     private Account account;
 
-    private AccountSettings accountSettings;
-
     /**
      * Do some setup before each test
      */
     @Before
     public void setUp() {
         accountsClient = Mockito.mock(IAccountsClient.class);
-        accountSettingsClient = Mockito.mock(IAccountSettingsClient.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
         IEmailVerificationTokenService tokenService = Mockito.mock(IEmailVerificationTokenService.class);
@@ -155,7 +147,7 @@ public class RegistrationServiceTest {
 
         // Create the tested service
         registrationService = new RegistrationService(projectUserRepository, roleService, tokenService,
-                accountSettingsClient, accountsClient, listener);
+                accountsClient, listener);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
@@ -172,8 +164,6 @@ public class RegistrationServiceTest {
         projectUser.setMetadata(META_DATA);
         projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
 
-        // Prepare account settings
-        accountSettings = new AccountSettings();
     }
 
     /**
@@ -300,8 +290,6 @@ public class RegistrationServiceTest {
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(newAccountToCreate), HttpStatus.CREATED));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
-        Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         // Call the service
         registrationService.requestAccess(dto, true);
@@ -336,8 +324,6 @@ public class RegistrationServiceTest {
         AccountNPassword accountWithPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountWithPassword))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
-        Mockito.when(accountSettingsClient.retrieveAccountSettings())
-                .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 

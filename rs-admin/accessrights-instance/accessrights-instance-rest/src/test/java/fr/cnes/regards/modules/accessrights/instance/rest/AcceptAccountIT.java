@@ -37,7 +37,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * Specific integration test for 'accesses/acceptAccount' endpoint
  *
  * @author Xavier-Alexandre Brochard
-
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class AcceptAccountIT extends AbstractRegardsIT {

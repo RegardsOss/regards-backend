@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.registration;
 
-import java.util.ArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -39,15 +29,21 @@ import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerifi
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 /**
  * {@link IRegistrationService} implementation.
@@ -69,11 +65,6 @@ public class RegistrationService implements IRegistrationService {
     private final IAccountsClient accountsClient;
 
     /**
-     * {@link IAccountSettingsClient} instance
-     */
-    private final IAccountSettingsClient accountSettingsClient;
-
-    /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
      */
     private final IProjectUserRepository projectUserRepository;
@@ -91,14 +82,12 @@ public class RegistrationService implements IRegistrationService {
     private final WaitForQualificationListener listener;
 
     public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
-            IEmailVerificationTokenService pTokenService, IAccountSettingsClient accountSettingsClient,
-            IAccountsClient accountsClient, WaitForQualificationListener listener) {
+            IEmailVerificationTokenService pTokenService, IAccountsClient accountsClient, WaitForQualificationListener listener) {
         super();
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         tokenService = pTokenService;
         this.accountsClient = accountsClient;
-        this.accountSettingsClient = accountSettingsClient;
         this.listener = listener;
     }
 
@@ -116,16 +105,13 @@ public class RegistrationService implements IRegistrationService {
      * @param accountDto {@link AccessRequestDto} account to create if missing
      * @param isExternalAccess {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
      */
-    private void requestAccountIfNecessary(final AccessRequestDto accountDto, Boolean isExternalAccess)
-            throws EntityException {
+    private void requestAccountIfNecessary(final AccessRequestDto accountDto, Boolean isExternalAccess) throws EntityException {
         // Check existence
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient
-                    .retrieveAccounByEmail(accountDto.getEmail());
+            ResponseEntity<EntityModel<Account>> accountResponse = accountsClient.retrieveAccounByEmail(accountDto.getEmail());
             if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                 LOG.info("Requesting access with an existing account. Ok, no account created");
-                return;
             } else {
                 // Check that all information are provided to create account
                 boolean isNotValid = accountDto.getEmail() == null;
@@ -133,32 +119,13 @@ public class RegistrationService implements IRegistrationService {
                 isNotValid |= accountDto.getLastName() == null;
                 isNotValid |= (accountDto.getPassword() == null) && !isExternalAccess;
                 if (isNotValid) {
-                    LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
-                              accountDto.getEmail());
+                    LOG.error("Account does not exist for user {} and there is not enough information to create a new one.", accountDto.getEmail());
                     throw new EntityNotFoundException(accountDto.getEmail(), Account.class);
                 }
-            }
-
-            // Create the new account
-            Account account = new Account(accountDto.getEmail(), accountDto.getFirstName(), accountDto.getLastName(),
-                    accountDto.getPassword());
-            account.setExternal(isExternalAccess);
-
-            // Check status
-            Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),
-                          "Trying to create an Account with other status than PENDING.");
-
-            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
-            // Create
-            account = accountsClient.createAccount(accountNPassword).getBody().getContent();
-
-            // Auto-accept if configured so
-            ResponseEntity<EntityModel<AccountSettings>> accountSettingsResponse = accountSettingsClient
-                    .retrieveAccountSettings();
-            if (accountSettingsResponse.getStatusCode().is2xxSuccessful() && accountSettingsResponse.getBody()
-                    .getContent().getMode().equals(AccountSettings.AUTO_ACCEPT_MODE)) {
-                // in case the microservice does not answer properly to us, lets decide its manual
-                accountsClient.acceptAccount(account.getEmail());
+                Account account = new Account(accountDto.getEmail(), accountDto.getFirstName(), accountDto.getLastName(), accountDto.getPassword());
+                account.setExternal(isExternalAccess);
+                AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+                accountsClient.createAccount(accountNPassword);
             }
         } finally {
             FeignSecurityManager.reset();
@@ -168,7 +135,7 @@ public class RegistrationService implements IRegistrationService {
     /**
      * Create the project user
      * @param accountDto {@link AccessRequestDto} account to create if missing
-     * @param isExternalAccess {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
+     * @param isExternal {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
      */
     private void requestProjectUser(final AccessRequestDto accountDto, Boolean isExternal) throws EntityException {
         try {

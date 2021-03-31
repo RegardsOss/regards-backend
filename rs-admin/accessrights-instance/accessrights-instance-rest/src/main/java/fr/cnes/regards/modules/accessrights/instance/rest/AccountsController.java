@@ -18,8 +18,28 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.utils.Validity;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformChangePasswordDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
+import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountValidationModeSettingService;
+import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,39 +54,9 @@ import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.utils.Validity;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
-import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
-import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformChangePasswordDto;
-import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
-import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
-import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
-import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
-import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
+import javax.validation.Valid;
 
 /**
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
@@ -160,6 +150,9 @@ public class AccountsController implements IResourceController<Account> {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private AccountValidationModeSettingService accountValidationModeSettingCustomizer;
+
     /**
      * Retrieve the list of all {@link Account}s.
      * @param pageable the pageable object used by Spring for building the page of result
@@ -194,7 +187,11 @@ public class AccountsController implements IResourceController<Account> {
         Account newAccount = newAccountWithPassword.getAccount();
         newAccount.setPassword(newAccountWithPassword.getPassword());
         accountService.checkPassword(newAccount);
-        return new ResponseEntity<>(new EntityModel<>(accountService.createAccount(newAccount)), HttpStatus.CREATED);
+        Account account = accountService.createAccount(newAccount);
+        if (AccountStatus.PENDING.equals(account.getStatus()) && accountValidationModeSettingCustomizer.isAutoAccept()) {
+            accountWorkflowManager.acceptAccount(account);
+        }
+        return new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED);
     }
 
     /**
