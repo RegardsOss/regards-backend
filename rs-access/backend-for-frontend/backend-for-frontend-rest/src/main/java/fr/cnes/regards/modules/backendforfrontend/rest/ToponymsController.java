@@ -132,16 +132,13 @@ public class ToponymsController {
 
     @PostMapping
     @ResponseBody
-    @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody String featureString) {
         FeignSecurityManager.asInstance();
         try {
-            String user = "test";
-            String project = "test";
             return client.createNotVisibleToponym(new ToponymGeoJson(featureString, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
         } finally {
             FeignSecurityManager.reset();
         }
     }
-
 }

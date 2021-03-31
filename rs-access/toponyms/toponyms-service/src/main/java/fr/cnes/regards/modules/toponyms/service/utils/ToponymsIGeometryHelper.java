@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility to convert a {@link Geometry} to a {@link IGeometry}
+ *
+ * @author Sébastien Binda
  */
 public class ToponymsIGeometryHelper {
 

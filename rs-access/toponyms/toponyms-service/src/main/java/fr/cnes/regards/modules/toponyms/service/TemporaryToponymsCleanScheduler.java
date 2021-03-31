@@ -28,7 +28,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * Scheduler to handle created {@link }
+ * Scheduler to delete out-dated not visible toponyms
  *
  * @author Iliana Ghazali
  */
@@ -38,26 +38,26 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class TemporaryToponymsCleanScheduler {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(TemporaryToponymsCleanScheduler.class);
-
-
-
     @Autowired
     private TemporaryToponymsCleanService cleanService;
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(TemporaryToponymsCleanScheduler.class);
+
     private final static String DEFAULT_INITIAL_DELAY = "10000";
-    private final static String DEFAULT_SCHEDULING_DELAY = "86400000";
+
+    private final static String DEFAULT_SCHEDULING_DELAY = "86400000"; // once a day
 
     /**
-     * Periodically check the cache total size and delete expired files or/and older files if needed.
+     * Periodically check the expiration dates of not visible toponyms and eventually delete out-dated ones
      * Default : scheduled to be run every hour.
      */
     @Scheduled(initialDelayString = "${regards.toponyms.temporary.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.toponyms.temporary.cleanup.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void cleanTemporaryToponyms() {
-            LOGGER.info("[CLEAN TEMPORARY TOPONYMS JOB] - Scanning the number of temporary toponyms to delete");
-            int nbDeleted = cleanService.clean();
-            LOGGER.info("[CLEAN TEMPORARY TOPONYMS JOB] - Job handled in {}ms. {} temporary toponyms deleted.", System.currentTimeMillis(), nbDeleted);
-        }
+        long start = System.currentTimeMillis();
+        LOGGER.info("[CLEAN TEMPORARY TOPONYMS SCHEDULER] - Scanning the number of temporary toponyms to delete");
+        int nbDeleted = cleanService.clean();
+        LOGGER.info("[CLEAN TEMPORARY TOPONYMS SCHEDULER] - {} Temporary toponyms deleted. Handled in {}ms.", nbDeleted, System.currentTimeMillis() - start);
     }
+}
 

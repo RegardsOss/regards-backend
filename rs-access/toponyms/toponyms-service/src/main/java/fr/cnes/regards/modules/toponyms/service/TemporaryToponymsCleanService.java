@@ -13,6 +13,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service to delete out-dated not visible toponyms
+ *
+ * @author Iliana Ghazali
+ */
 @Service
 @RegardsTransactional
 public class TemporaryToponymsCleanService {
@@ -29,9 +34,8 @@ public class TemporaryToponymsCleanService {
      * Delete all out-dated not visible toponyms
      */
     public int clean() {
-        OffsetDateTime currentDateTime = OffsetDateTime.now();
         int nbDeleted = 0;
-        LOGGER.debug("Deleting expired files from cache. Current date : {}", currentDateTime.toString());
+        LOGGER.debug("Check expiration dates of not visible toponyms. Current date : {}", OffsetDateTime.now());
         Pageable page = PageRequest.of(0, 100);
         Page<Toponym> toponymsToDelete;
         do {

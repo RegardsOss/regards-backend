@@ -28,7 +28,6 @@ import fr.cnes.regards.modules.toponyms.service.ToponymsService;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import java.io.IOException;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,19 +36,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponym_controller_it",
+@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=toponym_controller_it",
         "regards.toponyms.limit.save=2"})
 @RegardsTransactional
 public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final String TEST_USER = "test_user";
-    private static final String TEST_PROJECT = "test_project";
-    @Value("${regards.toponyms.limit.save}")
-    private int maxLimit;
 
 
     @Autowired
@@ -58,6 +50,13 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private ToponymsRepository repository;
 
+    @Value("${regards.toponyms.limit.save}")
+    private int maxLimit;
+
+
+    private static final String TEST_USER = "test_user";
+
+    private static final String TEST_PROJECT = "test_project";
 
     private final static String LINESTRING = "{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [ [ 6.199999999999898, 7.895833333333167], [ 6.229166666666564, 7.89583333333316], [ 6.262499999999898, 7.862499999999832]] }}";
 
@@ -69,34 +68,29 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
             "[[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]]" +
             "]}}";
 
-    @Before
-    public void init(){
-        // delete all temporary toponyms
-        this.repository.deleteByVisible(false);
-    }
 
     @Test
     public void findAll() {
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING, customizer().expectStatusOk()
-                .expectToHaveSize(JSON_PATH_CONTENT, 10).addParameter("page", "0").addParameter("size", "10"),
-                          "should be  ok");
+                        .expectToHaveSize(JSON_PATH_CONTENT, 10).addParameter("page", "0").addParameter("size", "10"),
+                "should be  ok");
     }
 
     @Test
     public void search() {
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.SEARCH,
-                          customizer().expectStatusOk().addParameter("locale", "en"), "should be  ok");
+                customizer().expectStatusOk().addParameter("locale", "en"), "should be  ok");
     }
 
     @Test
     public void findOne() {
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-                          customizer().expectStatusOk().expectDoesNotExist("$.content.toponymMetadata.expirationDate"),
+                customizer().expectStatusOk().expectDoesNotExist("$.content.toponymMetadata.expirationDate"),
                 "Martinique toponym should be retried", "Martinique");
 
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-                          customizer().expectStatus(HttpStatus.NOT_FOUND), "Somewhere toponym should not exists",
-                          "Somewhere");
+                customizer().expectStatus(HttpStatus.NOT_FOUND), "Somewhere toponym should not exists",
+                "Somewhere");
     }
 
     @Test

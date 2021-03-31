@@ -82,7 +82,6 @@ public class ToponymsService {
 
     /**
      * Tolerance (unit: meter) to generate simplified geometry through  ST_Simplify Postgis function
-     *
      * @see "https://postgis.net/docs/ST_Simplify.html"
      */
     @Value("${regards.toponyms.geo.sampling.tolerance:0.1}")
@@ -96,7 +95,7 @@ public class ToponymsService {
     private int sampling;
 
     /**
-     *
+     * Parameter used to set the expiration date of a not visible toponym
      */
     @Value("${regards.toponyms.expiration:30}")
     private int defaultExpiration;
@@ -114,8 +113,7 @@ public class ToponymsService {
 
     /**
      * Retrieve {@link Page} of {@link ToponymDTO}s
-     *
-     * @param visible
+     * @param visible visibility of the toponym
      * @param pageable
      * @return {@link ToponymDTO}s
      */
@@ -128,7 +126,7 @@ public class ToponymsService {
         }
         Page<Toponym> toponymsPage = repository.findByVisible(visible, page);
         return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(t ->
-                getToponymDTO(t, true)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
+                getToponymDTO(t, POINT_SAMPLING_FINDALL)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
     }
 
     /**
@@ -156,7 +154,7 @@ public class ToponymsService {
                 t.getToponymMetadata().setExpirationDate(oldDateTime.plusDays(this.defaultExpiration));
                 t = this.repository.save(t);
             }
-            return Optional.of(getToponymDTO(t, false));
+            return Optional.of(getToponymDTO(t, sampling));
         } else {
             return Optional.empty();
         }
@@ -169,7 +167,7 @@ public class ToponymsService {
      * @param partialLabel
      * @param locale
      * @param visible
-     * @param limit        maximum number of results to retrieve
+     * @param limit maximum number of results to retrieve
      * @return {@link ToponymDTO}s without geometry
      */
     public List<ToponymDTO> search(String partialLabel, String locale, boolean visible, int limit) {
@@ -193,8 +191,9 @@ public class ToponymsService {
 
 
     /**
-     * Save a toponym
-     *
+     * Generate a not visible toponym
+     * @param user the user who has requested the toponym creation
+     * @param project the project on which the toponym has been dropped
      * @return a {@link ToponymDTO}
      */
     public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project) throws ModuleException {
@@ -203,7 +202,7 @@ public class ToponymsService {
         int nbCreations = this.repository.countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime, OffsetDateTime.now());
 
         if (nbCreations >= this.limitSave) {
-            throw new MaxLimitPerDayException(user);
+            throw new MaxLimitPerDayException(String.format("User %s has reached the maximum number of toponyms to be saved in one day (max. %d).", user, this.limitSave));
         } else {
             // --- GEOMETRY PARSING ---
             Geometry<Position> geometry = parseGeometry(featureString);
@@ -212,26 +211,29 @@ public class ToponymsService {
             OffsetDateTime currentDateTime = OffsetDateTime.now();
             String bid = String.format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             ToponymMetadata metadata = new ToponymMetadata(currentDateTime, currentDateTime.plusDays(this.defaultExpiration), user, project);
-            return getToponymDTO(this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)), false);
+            return getToponymDTO(this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)), sampling);
         }
     }
 
     /**
-     * Get the {@link ToponymDTO} a of {@link Toponym}
-     *
-     * @param t       toponym
-     * @param sampled if the geometry has to be sampled, i.e, with a tolerance
+     * Utils method to get the {@link ToponymDTO} from a {@link Toponym}
+     * @param t toponym
+     * @param samplingMax maximum number of points to retrieve in geometry
      * @return {@link ToponymDTO}
      */
-    public ToponymDTO getToponymDTO(Toponym t, boolean sampled) {
-        int samplingMax = sampled ? POINT_SAMPLING_FINDALL : sampling;
+    public ToponymDTO getToponymDTO(Toponym t, int samplingMax) {
         return ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
                 ToponymsIGeometryHelper.parseLatteGeometry(t.getGeometry(), samplingMax), t.getCopyright(),
                 t.getDescription(), t.isVisible(), t.getToponymMetadata());
-
     }
 
 
+    /**
+     * Utils method to parse a geometry
+     * @param featureString the feature in string format
+     * @return the geometry with {@link Geometry} format
+     * @throws ModuleException if a problem occurred during the parsing of the geometry
+     */
     private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
         // define mapper
         ObjectMapper mapper = new ObjectMapper();

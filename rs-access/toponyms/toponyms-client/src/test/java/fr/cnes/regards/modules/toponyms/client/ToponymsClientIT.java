@@ -133,6 +133,8 @@ public class ToponymsClientIT extends AbstractRegardsWebIT {
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.CREATED));
         Assert.assertNotNull(result.getBody());
         Assert.assertNotNull(result.getBody().getContent());
+        Assert.assertNotNull(result.getBody().getContent().getBusinessId());
+        Assert.assertNotNull(result.getBody().getContent().getGeometry());
     }
 
     @Override

@@ -62,11 +62,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController implements IResourceController<ToponymDTO> {
 
-    /** Hypermedia resource service */
+    /**
+     * Hypermedia resource service
+     */
     @Autowired
     private IResourceService resourceService;
 
-    /** Toponym service */
+    /**
+     * Toponym service
+     */
     @Autowired
     private ToponymsService service;
 
@@ -82,7 +86,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
 
 
     /**
-     * Endpoint to retrieve all toponyms with pagination
+     * Endpoint to retrieve all toponyms with pagination. By default only visible toponyms are retrieved.
      *
      * @param pageable
      * @param assembler
@@ -101,7 +105,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     }
 
     /**
-     * Endpoint to retrieve one toponym by his identifier
+     * Endpoint to retrieve one toponym by its identifier
      *
      * @param businessId Unique identifier of toponym to search for
      * @param simplified True for simplified geometry (minimize size)
@@ -130,6 +134,7 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
 
     /**
      * Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.
+     * By default only visible toponyms are retrieved.
      *
      * @param partialLabel
      * @param locale
@@ -158,9 +163,10 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     }
 
     /**
-     * Add a toponym in the database. All the toponyms added through this path will have a "USER" origin
+     * Add a toponym in the database. All the toponyms added through this path will not be visible and thus will not
+     * be retrieved from the global search. They will also have an expiration date
      *
-     * @param toponymGeoJson in geojson format
+     * @param toponymGeoJson the object containing the feature in geojson format, the user and the project initiating the request
      * @return toponymDTO
      */
     @PostMapping

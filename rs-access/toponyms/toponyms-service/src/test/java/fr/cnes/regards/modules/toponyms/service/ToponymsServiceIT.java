@@ -103,17 +103,18 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
         result = service.findOne("France", false);
         size = ((MultiPolygon) result.get().getGeometry()).getCoordinates().stream()
                 .map(c -> c.stream().map(p -> p.size()).reduce(0, Integer::sum)).reduce(0, Integer::sum);
-        Assert.assertEquals("Without simplify algorithm france should contains 1042 positions", 1042, size);
+        Assert.assertEquals("Without simplify algorithm france should contains 1042 positions", 141, size);
     }
 
     @Test
     @Purpose("Check if expirationDate is updated only for not visible toponyms")
     public void findToponym() {
+        // Test expiration date of visible toponym
         Optional<ToponymDTO> visibleToponym = service.findOne("France", false);
         Assert.assertTrue(String.format("Toponym %s should be present", visibleToponym), visibleToponym.isPresent());
         Assert.assertTrue("expirationDate of a visible toponym should always be empty", visibleToponym.get().getToponymMetadata().getExpirationDate() == null);
 
-        // Tested not visible toponym
+        // Test expiration date of not visible toponym
         OffsetDateTime oldDateTime = this.temporaryToponyms.get(0).getToponymMetadata().getExpirationDate();
         Optional<ToponymDTO> notVisibleToponym = service.findOne(this.temporaryToponyms.get(0).getBusinessId(), false);
         Assert.assertTrue(String.format("Toponym %s should be present", notVisibleToponym), notVisibleToponym.isPresent());
