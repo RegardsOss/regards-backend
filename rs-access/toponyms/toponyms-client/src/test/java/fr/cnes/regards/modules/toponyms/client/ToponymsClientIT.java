@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.toponyms.client;
 
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import java.util.List;
 
 import org.junit.Assert;
@@ -123,6 +124,15 @@ public class ToponymsClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals(result.getBody().getContent().getBusinessId(), id);
         Assert.assertEquals(result.getBody().getContent().getLabelEn(), id);
         Assert.assertEquals(result.getBody().getContent().getLabelFr(), id);
+    }
+
+    @Test
+    public void createNotVisibleToponym() {
+        String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
+        ResponseEntity<EntityModel<ToponymDTO>> result = client.createNotVisibleToponym(new ToponymGeoJson(polygon, "test_user" , "test_project"));
+        Assert.assertTrue(result.getStatusCode().equals(HttpStatus.CREATED));
+        Assert.assertNotNull(result.getBody());
+        Assert.assertNotNull(result.getBody().getContent());
     }
 
     @Override

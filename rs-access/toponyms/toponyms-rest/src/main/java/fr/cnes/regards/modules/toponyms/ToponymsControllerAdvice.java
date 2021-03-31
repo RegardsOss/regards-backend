@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.toponyms;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -27,17 +27,9 @@ public class ToponymsControllerAdvice {
      * @return {@link ResponseEntity}
      */
 
-    @ExceptionHandler(JsonProcessingException.class)
-    public ResponseEntity<ServerErrorResponse> jsonProcessingException(final JsonProcessingException exception) {
-        String message = exception.getMessage();
-        if (exception.getCause() != null) {
-            message += ". Cause: " + exception.getCause().getMessage();
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message, exception));
-    }
 
-    @ExceptionHandler(GeometryNotHandledException.class)
-    public ResponseEntity<ServerErrorResponse> openSearchParseException(final GeometryNotHandledException exception) {
+    @ExceptionHandler(GeometryNotParsedException.class)
+    public ResponseEntity<ServerErrorResponse> geometryNotParsedException(final GeometryNotParsedException exception) {
         String message = exception.getMessage();
         if (exception.getCause() != null) {
             message += ". Cause: " + exception.getCause().getMessage();
@@ -46,7 +38,7 @@ public class ToponymsControllerAdvice {
     }
 
     @ExceptionHandler(MaxLimitPerDayException.class)
-    public ResponseEntity<ServerErrorResponse> openSearchParseException(final MaxLimitPerDayException exception) {
+    public ResponseEntity<ServerErrorResponse> maxLimitPerDayException(final MaxLimitPerDayException exception) {
         String message = exception.getMessage();
         if (exception.getCause() != null) {
             message += ". Cause: " + exception.getCause().getMessage();

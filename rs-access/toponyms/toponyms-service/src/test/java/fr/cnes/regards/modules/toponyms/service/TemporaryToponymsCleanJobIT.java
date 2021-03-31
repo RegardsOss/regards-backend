@@ -1,10 +1,9 @@
 package fr.cnes.regards.modules.toponyms.service;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.toponyms.dao.IToponymsRepository;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
 import java.time.OffsetDateTime;
@@ -17,18 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_job_it", "regards.toponyms.temporary.cleanup.delay=500"})
-public class TemporaryToponymsCleanJobIT extends AbstractMultitenantServiceTest {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_clean_it"})
+@RegardsTransactional
+public class TemporaryToponymsCleanJobIT extends AbstractRegardsIT {
+
 
     @Autowired
-    private IJobInfoService jobInfoService;
+    private ToponymsRepository toponymsRepository;
 
     @Autowired
-    private IRuntimeTenantResolver tenantResolver;
-
-    @Autowired
-    private IToponymsRepository toponymsRepository;
-
+    private TemporaryToponymsCleanService toponymCleanService;
 
     private List<Toponym> temporaryToponyms;
 
@@ -38,7 +35,6 @@ public class TemporaryToponymsCleanJobIT extends AbstractMultitenantServiceTest 
 
     @Before
     public void init() throws ModuleException {
-        this.tenantResolver.forceTenant(getDefaultTenant());
         // delete all temporary toponyms and init new ones
         this.toponymsRepository.deleteByVisible(false);
         this.temporaryToponyms = initNotVisibleToponyms();
@@ -46,8 +42,8 @@ public class TemporaryToponymsCleanJobIT extends AbstractMultitenantServiceTest 
 
     @Test
     public void testCleanUpJob() throws InterruptedException {
-        Thread.sleep(500);
-        Assert.assertEquals(toponymsRepository.findByVisible(false, PageRequest.of(0, 100)).getTotalElements(), this.nbToponyms - this.nbExpired );
+        toponymCleanService.clean();
+        Assert.assertEquals(this.nbToponyms - this.nbExpired , toponymsRepository.findByVisible(false, PageRequest.of(0, 100)).getTotalElements());
 
     }
 

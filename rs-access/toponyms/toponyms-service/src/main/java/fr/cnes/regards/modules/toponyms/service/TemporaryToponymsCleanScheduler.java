@@ -19,15 +19,6 @@
 
 package fr.cnes.regards.modules.toponyms.service;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,25 +40,13 @@ public class TemporaryToponymsCleanScheduler {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(TemporaryToponymsCleanScheduler.class);
 
-    @Autowired
-    private ITenantResolver tenantResolver;
+
 
     @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IJobInfoService jobService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
+    private TemporaryToponymsCleanService cleanService;
 
     private final static String DEFAULT_INITIAL_DELAY = "10000";
     private final static String DEFAULT_SCHEDULING_DELAY = "86400000";
-    private static final String CLEAR_TEMPORARY_TOPONYMS_LOCK = "scheduledClearTemporaryToponyms";
-    private static final String CLEAR_TOPONYMS_TITLE = "CLEAR TEMPORARY TOPONYMS";
-    private static final String CLEAR_TOPONYMS = "CLEAR TEMPORARY TOPONYMS";
-
 
     /**
      * Periodically check the cache total size and delete expired files or/and older files if needed.
@@ -76,15 +55,9 @@ public class TemporaryToponymsCleanScheduler {
     @Scheduled(initialDelayString = "${regards.toponyms.temporary.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.toponyms.temporary.cleanup.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void cleanTemporaryToponyms() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            Set<JobParameter> parameters = Sets.newHashSet();
-            if (jobService.retrieveJobsCount(TemporaryToponymsCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
-                    JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-                jobService.createAsQueued(new JobInfo(false, 0, parameters,
-                        authResolver.getUser(), TemporaryToponymsCleanJob.class.getName()));
-            }
-            runtimeTenantResolver.clearTenant();
+            LOGGER.info("[CLEAN TEMPORARY TOPONYMS JOB] - Scanning the number of temporary toponyms to delete");
+            int nbDeleted = cleanService.clean();
+            LOGGER.info("[CLEAN TEMPORARY TOPONYMS JOB] - Job handled in {}ms. {} temporary toponyms deleted.", System.currentTimeMillis(), nbDeleted);
         }
     }
-}
+

@@ -18,8 +18,17 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
+import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +37,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,14 +46,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
-import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
-import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 
 /**
  * Controller to search for Toponymms throught instance module toponyms of access-instance
@@ -61,6 +64,15 @@ public class ToponymsController {
 
     @Autowired
     private IToponymsClient client;
+
+    /** Authentication */
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
+
+    /** Tenant resolver */
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
 
     /**
      * Endpoint to retrieve one toponym by his identifier
@@ -113,6 +125,20 @@ public class ToponymsController {
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        } finally {
+            FeignSecurityManager.reset();
+        }
+    }
+
+    @PostMapping
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody String featureString) {
+        FeignSecurityManager.asInstance();
+        try {
+            String user = "test";
+            String project = "test";
+            return client.createNotVisibleToponym(new ToponymGeoJson(featureString, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
         } finally {
             FeignSecurityManager.reset();
         }

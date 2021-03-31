@@ -18,24 +18,20 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.toponyms.dao.IToponymsRepository;
-import fr.cnes.regards.modules.toponyms.domain.Toponym;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
-import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import java.io.IOException;
-import java.time.OffsetDateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,41 +41,36 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  * @author Sébastien Binda
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponym_controller_it", "regards.toponyms.limit.save=2"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponym_controller_it",
+        "regards.toponyms.limit.save=2"})
+@RegardsTransactional
 public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 
+    private static final String TEST_USER = "test_user";
+    private static final String TEST_PROJECT = "test_project";
     @Value("${regards.toponyms.limit.save}")
     private int maxLimit;
 
-    @Value("${regards.toponyms.expiration}")
-    private int defaultExpiration;
-
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymControllerIT.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ToponymsService toponymsService;
 
     @Autowired
-    private IToponymsRepository repository;
+    private ToponymsRepository repository;
 
 
-    private final static String LINESTRING = "\"{\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"test\\\": 546169.05592760979},\\\"geometry\\\": {\\\"type\\\": \\\"LineString\\\",\\\"coordinates\\\": [ [ 6.199999999999898, 7.895833333333167], [ 6.229166666666564, 7.89583333333316], [ 6.262499999999898, 7.862499999999832]] }}\"";
+    private final static String LINESTRING = "{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [ [ 6.199999999999898, 7.895833333333167], [ 6.229166666666564, 7.89583333333316], [ 6.262499999999898, 7.862499999999832]] }}";
 
-    private final static String POLYGON = "\"{\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"test\\\" : 42}, \\\"geometry\\\": { \\\"type\\\": \\\"Polygon\\\", \\\"coordinates\\\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}\"";
+    private final static String POLYGON = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
 
-    private final static String MULTIPOLYGON = "\"{\\\"type\\\": \\\"Feature\\\", \\\"properties\\\": {\\\"test\\\" : 42}, \\\"geometry\\\": { \\\"type\\\": \\\"MultiPolygon\\\", \\\"coordinates\\\": [\n" +
+    private final static String MULTIPOLYGON = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"MultiPolygon\", \"coordinates\": [" +
             "[[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]]," +
             "[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]," +
             "[[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]]" +
-            "]}}\"";
+            "]}}";
 
     @Before
     public void init(){
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // delete all temporary toponyms
         this.repository.deleteByVisible(false);
     }
@@ -100,29 +91,12 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void findOne() {
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-                          customizer().expectStatusOk(), "Martinique toponym should be retried", "Martinique");
+                          customizer().expectStatusOk().expectDoesNotExist("$.content.toponymMetadata.expirationDate"),
+                "Martinique toponym should be retried", "Martinique");
 
         performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
                           customizer().expectStatus(HttpStatus.NOT_FOUND), "Somewhere toponym should not exists",
                           "Somewhere");
-    }
-
-    @Test
-    @Purpose("Check that the expiration date was updated only for not visible toponyms")
-    public void findOneExpirationDate() {
-        // get a visible toponym and check the lastAccessDate is null
-        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-                customizer().expectStatusOk().expectDoesNotExist("$.content.toponymMetadata.expirationDate"),
-                "Zimbabwe toponym should have been retrieved with no expiration date", "Zimbabwe");
-        // create a not visible toponym
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, POLYGON, customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        Toponym toponym = this.repository.findByVisible(false, PageRequest.of(0, 1)).getContent().get(0);
-        // access to this toponym
-        performDefaultGet(ToponymsRestConfiguration.ROOT_MAPPING + ToponymsRestConfiguration.TOPONYM_ID,
-                customizer().expectStatusOk().expectValue("$.content.toponymMetadata.expirationDate",
-                OffsetDateTime.now().plusDays(defaultExpiration)),
-                "Not visible toponym should have been retrieved with an updated expiration date", toponym.getBusinessId());
-
     }
 
     @Test
@@ -134,17 +108,17 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Purpose("Test the creation of a not visible toponym with a type not handled by REGARDS")
-    @ExceptionHandler(GeometryNotHandledException.class)
+    @ExceptionHandler(GeometryNotParsedException.class)
     public void createInvalidNotVisibleToponym() throws IOException {
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, LINESTRING,
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(LINESTRING, TEST_USER, TEST_PROJECT),
                 customizer().expectStatus(HttpStatus.BAD_REQUEST), "Should have created toponym");
     }
 
     @Test
     @Purpose("Test the successful creation of visible toponyms handled by REGARDS")
     public void createValidNotVisibleToponyms() {
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, POLYGON, customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, MULTIPOLYGON, customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(MULTIPOLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
 
     }
 
@@ -152,9 +126,9 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Test limit of created toponyms reached for the day")
     @ExceptionHandler(MaxLimitPerDayException.class)
     public void testLimitToponymsSaving() {
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, POLYGON, customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, POLYGON, customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, POLYGON, customizer().expectStatus(HttpStatus.FORBIDDEN), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.FORBIDDEN), "Should have created toponym");
 
     }
 }

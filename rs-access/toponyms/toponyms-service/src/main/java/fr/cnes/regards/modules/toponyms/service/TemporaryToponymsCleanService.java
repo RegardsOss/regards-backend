@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.toponyms.service;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.toponyms.dao.IToponymsRepository;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import java.time.OffsetDateTime;
 import org.slf4j.Logger;
@@ -11,17 +11,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
-@MultitenantTransactional
+@RegardsTransactional
 public class TemporaryToponymsCleanService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TemporaryToponymsCleanService.class);
 
     @Autowired
-    private IToponymsRepository toponymsRepository;
+    private ToponymsRepository toponymsRepository;
 
     @Value("${regards.toponyms.limit.temporary:30}")
     private int limitTemporary;
@@ -33,10 +32,10 @@ public class TemporaryToponymsCleanService {
         OffsetDateTime currentDateTime = OffsetDateTime.now();
         int nbDeleted = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", currentDateTime.toString());
-        Pageable page = PageRequest.of(0, 100, Sort.Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, 100);
         Page<Toponym> toponymsToDelete;
         do {
-            toponymsToDelete = toponymsRepository.findByVisibleAndExpirationDateBefore(false, OffsetDateTime.now(), page);
+            toponymsToDelete = toponymsRepository.findByVisibleAndToponymMetadataExpirationDateBefore(false, OffsetDateTime.now(), page);
             this.toponymsRepository.deleteInBatch(toponymsToDelete);
             nbDeleted += toponymsToDelete.getNumberOfElements();
         } while (toponymsToDelete.hasNext());

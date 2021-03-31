@@ -55,30 +55,20 @@
 	</parent>
 
 	<dependencies>
-		<!-- Starters -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards-starter</artifactId>
-		</dependency>
+        <!-- Starters -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards-starter</artifactId>
+        </dependency>
 		 <!-- Module dependencies -->
         <dependency>
 			<groupId>fr.cnes.regards.modules.toponyms</groupId>
 			<artifactId>toponyms-dao</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-            <artifactId>jobs-service</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.geolatte/geolatte-geojson -->
-        <dependency>
-            <groupId>org.geolatte</groupId>
-            <artifactId>geolatte-geojson</artifactId>
-            <version>1.8.0</version>
-        </dependency>
 		<!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-test</artifactId>
+            <artifactId>jpa-instance-regards-starter</artifactId>
             <scope>test</scope>
         </dependency>
 		<dependency>

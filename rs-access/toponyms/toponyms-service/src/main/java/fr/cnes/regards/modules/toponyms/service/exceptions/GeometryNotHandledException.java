@@ -9,7 +9,7 @@ public class GeometryNotHandledException extends ModuleException {
      * @param geometryType the message
      */
     public GeometryNotHandledException(String geometryType) {
-        super(String.format("The geometry type %s is not handled by REGARDS. The Toponym was not saved.", geometryType));
+        super(String.format("The geometry type %s is not handled by REGARDS.", geometryType));
     }
 
     /**

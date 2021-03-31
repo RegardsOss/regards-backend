@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.toponyms.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.toponyms.dao.IToponymsRepository;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
 import java.time.LocalDate;
@@ -63,20 +62,15 @@ import org.springframework.util.Assert;
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional
+@RegardsTransactional
 public class ToponymsService {
 
-    /** Toponyms repository */
+    /**
+     * Toponyms repository
+     */
     @Autowired
-    private IToponymsRepository repository;
+    private ToponymsRepository repository;
 
-    /** Authentication */
-    @Autowired
-    private IAuthenticationResolver authenticationResolver;
-
-    /** Tenant resolver */
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     // --- DEFAULT PARAMETERS ---
 
@@ -88,6 +82,7 @@ public class ToponymsService {
 
     /**
      * Tolerance (unit: meter) to generate simplified geometry through  ST_Simplify Postgis function
+     *
      * @see "https://postgis.net/docs/ST_Simplify.html"
      */
     @Value("${regards.toponyms.geo.sampling.tolerance:0.1}")
@@ -133,38 +128,38 @@ public class ToponymsService {
         }
         Page<Toponym> toponymsPage = repository.findByVisible(visible, page);
         return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(t ->
-            getToponymDTO(t, true)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
+                getToponymDTO(t, true)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
     }
 
     /**
      * Retrieve one {@link ToponymDTO}s by his business unique identifier. If the toponym is not visible, the lastAccessDate
      * will automatically be updated to now.
+     *
      * @param businessId the identifier of the toponym searched
      * @param simplified if the geometry has to be returned simplified, i.e, with a tolerance)
      * @return {@link ToponymDTO}
      */
-    public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
-        Optional<ToponymDTO> toponymDTO = Optional.empty();
+     public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
+        Optional<Toponym> toponym;
         // check if geometry should be returned simplified
         if (!simplified) {
-            Optional<Toponym> toponym = repository.findById(businessId);
-            if (toponym.isPresent()) {
-                Toponym t = toponym.get();
-                // check if the toponym visibility
-                if (!t.isVisible()) {
-                    t.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
-                }
-                toponymDTO = Optional.of(getToponymDTO(t, false));
-            }
+            toponym = repository.findById(businessId);
         } else {
             // Optional<ISimplifiedToponym> toponym = repository.findOneSimplified(businessId);
-            Optional<Toponym> toponym = repository.findOneSimplified(businessId, tolerance);
-            if (toponym.isPresent()) {
-                Toponym t = toponym.get();
-                toponymDTO = Optional.of(getToponymDTO(t, false));
-            }
+            toponym = repository.findOneSimplified(businessId, tolerance);
         }
-        return toponymDTO;
+        // check if the toponym is present and its visibility
+        if (toponym.isPresent()) {
+            Toponym t = toponym.get();
+            if (!t.isVisible()) {
+                OffsetDateTime oldDateTime = t.getToponymMetadata().getExpirationDate();
+                t.getToponymMetadata().setExpirationDate(oldDateTime.plusDays(this.defaultExpiration));
+                t = this.repository.save(t);
+            }
+            return Optional.of(getToponymDTO(t, false));
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -174,7 +169,7 @@ public class ToponymsService {
      * @param partialLabel
      * @param locale
      * @param visible
-     * @param limit maximum number of results to retrieve
+     * @param limit        maximum number of results to retrieve
      * @return {@link ToponymDTO}s without geometry
      */
     public List<ToponymDTO> search(String partialLabel, String locale, boolean visible, int limit) {
@@ -199,42 +194,32 @@ public class ToponymsService {
 
     /**
      * Save a toponym
+     *
      * @return a {@link ToponymDTO}
      */
-    public ToponymDTO generateNotVisibleToponym(String featureString) throws MaxLimitPerDayException, GeometryNotHandledException, JsonProcessingException {
+    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project) throws ModuleException {
         // Count if user has reached the limit of toponyms to save per day
-        String user = this.authenticationResolver.getUser();
         OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
         int nbCreations = this.repository.countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime, OffsetDateTime.now());
 
-        if(nbCreations > this.limitSave) {
+        if (nbCreations >= this.limitSave) {
             throw new MaxLimitPerDayException(user);
         } else {
             // --- GEOMETRY PARSING ---
-            // define mapper
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new GeolatteGeomModule());
-            // parse geometry
-            Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
-            Geometry<Position> geometry = (Geometry<Position>) feature.getGeometry();
-            // Refuse not handled geometry types
-            GeometryType geometryType = geometry.getGeometryType();
-            if (!geometryType.equals(GeometryType.POLYGON) && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
-                throw new GeometryNotHandledException(geometry.getGeometryType().toString());
-            }
+            Geometry<Position> geometry = parseGeometry(featureString);
             // --- TOPONYM GENERATION
             // define parameters
             OffsetDateTime currentDateTime = OffsetDateTime.now();
             String bid = String.format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            ToponymMetadata metadata = new ToponymMetadata(currentDateTime, currentDateTime.plusDays(this.defaultExpiration), this.tenantResolver.getTenant(), user);
+            ToponymMetadata metadata = new ToponymMetadata(currentDateTime, currentDateTime.plusDays(this.defaultExpiration), user, project);
             return getToponymDTO(this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)), false);
-
         }
     }
 
     /**
      * Get the {@link ToponymDTO} a of {@link Toponym}
-     * @param t toponym
+     *
+     * @param t       toponym
      * @param sampled if the geometry has to be sampled, i.e, with a tolerance
      * @return {@link ToponymDTO}
      */
@@ -247,6 +232,26 @@ public class ToponymsService {
     }
 
 
-
+    private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
+        // define mapper
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new GeolatteGeomModule());
+        // parse geometry
+        Geometry<Position> geometry;
+        try {
+            Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
+            // refuse not handled geometry types
+            geometry = (Geometry<Position>) feature.getGeometry();
+            GeometryType geometryType = geometry.getGeometryType();
+            if (!geometryType.equals(GeometryType.POLYGON) && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
+                throw new GeometryNotHandledException(geometryType.toString());
+            }
+        } catch (Exception e) {
+            String msg = "The geometry could not be parsed. The toponym will not be saved.";
+            LOGGER.error(msg, e);
+            throw new GeometryNotParsedException(msg, e);
+        }
+        return geometry;
+    }
 
 }

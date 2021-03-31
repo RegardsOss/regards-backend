@@ -22,14 +22,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
-import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,14 +160,14 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     /**
      * Add a toponym in the database. All the toponyms added through this path will have a "USER" origin
      *
-     * @param featureString feature in geojson format
+     * @param toponymGeoJson in geojson format
      * @return toponymDTO
      */
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody String featureString) throws JsonProcessingException, GeometryNotHandledException, MaxLimitPerDayException {
-        ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(featureString);
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException, JsonProcessingException {
+        ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(), toponymGeoJson.getUser(), toponymGeoJson.getProject());
         return new ResponseEntity<>(toResource(toponymDTO), HttpStatus.CREATED);
     }
 

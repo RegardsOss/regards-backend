@@ -80,7 +80,7 @@ public class ToponymMetadata {
         this.author = author;
     }
 
-    public ToponymMetadata(OffsetDateTime creationDate, OffsetDateTime expirationDate, String project, String author) {
+    public ToponymMetadata(OffsetDateTime creationDate, OffsetDateTime expirationDate, String author, String project) {
         this.creationDate = creationDate;
         this.expirationDate = expirationDate;
         this.project = project;
