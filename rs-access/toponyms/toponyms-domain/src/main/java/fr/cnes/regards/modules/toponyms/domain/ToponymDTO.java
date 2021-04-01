@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.toponyms.domain;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import org.geolatte.geom.Geometry;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import javax.persistence.Embedded;
 
 /**
  *
@@ -62,6 +63,17 @@ public class ToponymDTO {
     private String copyright;
 
     /**
+     * Origin
+     */
+    private boolean visible;
+
+    /**
+     * Toponym metadata
+     */
+    @Embedded
+    private ToponymMetadata toponymMetadata;
+
+    /**
      * Creates a new {@link ToponymDTO}
      * @param businessId unique identifier
      * @param labelEn English label
@@ -69,10 +81,11 @@ public class ToponymDTO {
      * @param geometry
      * @param copyright owner
      * @param description
+     * @param visible
      * @return
      */
     public static ToponymDTO build(String businessId, String labelEn, String labelFr, IGeometry geometry,
-            String copyright, String description) {
+            String copyright, String description, boolean visible, ToponymMetadata toponymMetadata) {
         ToponymDTO dto = new ToponymDTO();
         dto.setBusinessId(businessId);
         dto.setLabelEn(labelEn);
@@ -80,6 +93,8 @@ public class ToponymDTO {
         dto.setGeometry(geometry);
         dto.setCopyright(copyright);
         dto.setDescription(description);
+        dto.setVisible(visible);
+        dto.setToponymMetadata(toponymMetadata);
         return dto;
     }
 
@@ -131,4 +146,19 @@ public class ToponymDTO {
         Description = description;
     }
 
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    public ToponymMetadata getToponymMetadata() {
+        return toponymMetadata;
+    }
+
+    public void setToponymMetadata(ToponymMetadata toponymMetadata) {
+        this.toponymMetadata = toponymMetadata;
+    }
 }

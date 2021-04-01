@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.modules.toponyms.client;
 
+import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
+import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import java.util.List;
-
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
-import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 
 /**
  *
@@ -52,6 +52,9 @@ public interface IToponymsClient {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(@RequestParam(name = "page") int page,
             @RequestParam(name = "size") int size);
+
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson);
 
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,

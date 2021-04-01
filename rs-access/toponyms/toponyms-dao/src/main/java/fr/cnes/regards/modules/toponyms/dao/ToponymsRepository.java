@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.toponyms.dao;
 
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.toponyms.domain.Toponym;
+import java.time.OffsetDateTime;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.toponyms.domain.Toponym;
 
 /**
  *
@@ -37,12 +36,20 @@ import fr.cnes.regards.modules.toponyms.domain.Toponym;
 @InstanceEntity
 public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaSpecificationExecutor<Toponym> {
 
-    Page<Toponym> findByLabelFrContainingIgnoreCase(String partialLabel, Pageable page);
+    Page<Toponym> findByLabelFrContainingIgnoreCaseAndVisible(String partialLabel, boolean visible, Pageable page);
 
-    Page<Toponym> findByLabelContainingIgnoreCase(String partialLabel, Pageable page);
+    Page<Toponym> findByLabelContainingIgnoreCaseAndVisible(String partialLabel, boolean visible, Pageable page);
 
-    @Query(value = "select bid, label, label_fr, ST_Simplify(geom, ?2,true) as geom, copyright, description from {h-schema}t_toponyms where bid = ?1",
-            nativeQuery = true)
+    //
+    @Query(value = "select bid, label, label_fr, public.ST_Simplify(geom, ?2,true) as geom, copyright, description, visible,"+
+            "creation_date, expiration_date, author, project from {h-schema}t_toponyms where bid = ?1",nativeQuery = true)
     Optional<Toponym> findOneSimplified(String businessId, double tolerance);
 
+    Page<Toponym> findByVisible(boolean visible, Pageable page);
+
+    Page<Toponym> findByVisibleAndToponymMetadataExpirationDateBefore(boolean visible, OffsetDateTime expirationDate, Pageable page);
+
+    int countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(String user, OffsetDateTime startDate, OffsetDateTime endDate);
+
+    void deleteByVisible(boolean visibility);
 }
