@@ -1557,9 +1557,6 @@ public class EsRepository implements IEsRepository {
                             .wrapLongitude(true));
                 } else if (!qa.isTextAttribute()) {
                     builder.aggregation(AggregationBuilders.stats(qa.getAttributeName()).field(qa.getAttributeName()));
-                } else {
-                    builder.aggregation(AggregationBuilders.terms(qa.getAttributeName())
-                            .field(qa.getAttributeName()).size(qa.getTermsLimit()));
                 }
             }
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).types(TYPE).source(builder);
