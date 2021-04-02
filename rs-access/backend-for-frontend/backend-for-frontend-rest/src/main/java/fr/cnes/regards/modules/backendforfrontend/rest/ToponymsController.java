@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
+import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJsonDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import java.util.List;
 import org.slf4j.Logger;
@@ -132,10 +133,11 @@ public class ToponymsController {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody String featureString) {
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) {
         FeignSecurityManager.asInstance();
         try {
-            return client.createNotVisibleToponym(new ToponymGeoJson(featureString, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
+            String feature = toponymGeoJsonDTO.getToponym();
+            return client.createNotVisibleToponym(new ToponymGeoJson(feature, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getMessage(), e);
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);

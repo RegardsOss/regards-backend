@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.toponyms.domain;
 
 /**
- * POJO to transfer the feature in geojson format, the user and the project from backend-for-frontend ENDPOINT
+ * POJO used to create {@link Toponym}. Generated in backend-for-frontend ENDPOINT
  * @author Iliana
  *
  */
