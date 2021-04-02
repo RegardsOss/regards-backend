@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -45,7 +46,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -169,16 +169,27 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @param toponymGeoJson the object containing the feature in geojson format, the user and the project initiating the request
      * @return toponymDTO
      */
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException, JsonProcessingException {
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException {
         ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(), toponymGeoJson.getUser(), toponymGeoJson.getProject());
         return new ResponseEntity<>(toResource(toponymDTO), HttpStatus.CREATED);
     }
 
     @Override
-    public EntityModel<ToponymDTO> toResource(ToponymDTO element, Object... extras) {
-        return resourceService.toResource(element);
+    public EntityModel<ToponymDTO> toResource(ToponymDTO toponymDTO, Object... extras) {
+        EntityModel<ToponymDTO> resource = resourceService.toResource(toponymDTO);
+        resourceService.addLink(resource,
+                this.getClass(),
+                "get",
+                LinkRels.SELF,
+                MethodParamFactory.build(String.class, toponymDTO.getBusinessId()), MethodParamFactory.build(Boolean.class));
+        resourceService.addLink(resource,
+                this.getClass(),
+                "createNotVisibleToponym",
+                LinkRels.CREATE,
+                MethodParamFactory.build(ToponymGeoJson.class));
+        return resource;
     }
 }
