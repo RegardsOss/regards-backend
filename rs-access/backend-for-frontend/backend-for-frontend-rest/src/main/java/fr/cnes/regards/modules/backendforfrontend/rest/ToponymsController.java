@@ -133,14 +133,14 @@ public class ToponymsController {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) {
+    public ResponseEntity createNotVisibleToponym(@RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) {
         FeignSecurityManager.asInstance();
         try {
             String feature = toponymGeoJsonDTO.getToponym();
             return client.createNotVisibleToponym(new ToponymGeoJson(feature, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+            LOGGER.error(e.getResponseBodyAsString(), e);
+            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
         } finally {
             FeignSecurityManager.reset();
         }

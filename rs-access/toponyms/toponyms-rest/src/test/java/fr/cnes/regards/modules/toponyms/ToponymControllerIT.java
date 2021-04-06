@@ -105,7 +105,7 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @ExceptionHandler(GeometryNotParsedException.class)
     public void createInvalidNotVisibleToponym() throws IOException {
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(LINESTRING, TEST_USER, TEST_PROJECT),
-                customizer().expectStatus(HttpStatus.BAD_REQUEST), "Should have created toponym");
+                customizer().expectStatus(HttpStatus.BAD_REQUEST), "Should not have created toponym");
     }
 
     @Test
