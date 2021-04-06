@@ -260,7 +260,7 @@ public class AccountService implements IAccountService {
         boolean activeAccount = !checkAccountValidity || accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
         boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
-        // If password is invalid
+        // If password is invalid and we are not trying to connect with one of instance account
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
             // Increment password error counter and update account
             accountToValidate.setAuthenticationFailedCounter(accountToValidate.getAuthenticationFailedCounter() + 1);

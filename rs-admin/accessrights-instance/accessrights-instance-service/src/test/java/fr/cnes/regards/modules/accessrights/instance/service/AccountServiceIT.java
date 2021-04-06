@@ -22,7 +22,11 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
+import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -47,6 +51,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,18 +64,18 @@ import java.util.Set;
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
-@PropertySource("classpath:application-test.properties")
-public class AccountServiceIT extends AbstractRegardsIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice", "regards.microservice.type=instance" })
+public class AccountServiceIT extends AbstractRegardsServiceIT {
 
     @Configuration
     public static class Config {
 
+        /**
+         * As we are using AbstractRegardsServiceIT, we are not running a web app so auto conf in security-regards-starter does not create it for us.
+         */
         @Bean
-        public ITemplateRepository templateRepository(Set<Template> templates) {
-            ITemplateRepository mock = Mockito.mock(ITemplateRepository.class);
-            Mockito.when(mock.findByName(Mockito.anyString())).thenAnswer(invocation -> templates.stream()
-                    .filter(t -> t.getName().equals(invocation.getArguments()[0])).findFirst());
-            return mock;
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return new SecureRuntimeTenantResolver("instance");
         }
 
         @Bean
