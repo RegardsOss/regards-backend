@@ -118,7 +118,7 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
         OffsetDateTime oldDateTime = this.temporaryToponyms.get(0).getToponymMetadata().getExpirationDate();
         Optional<ToponymDTO> notVisibleToponym = service.findOne(this.temporaryToponyms.get(0).getBusinessId(), false);
         Assert.assertTrue(String.format("Toponym %s should be present", notVisibleToponym), notVisibleToponym.isPresent());
-        Assert.assertEquals("expirationDate should have been updated", oldDateTime.plusDays(this.defaultExpiration)
+        Assert.assertNotEquals("expirationDate should have been updated", oldDateTime
                 , notVisibleToponym.get().getToponymMetadata().getExpirationDate());
 
     }

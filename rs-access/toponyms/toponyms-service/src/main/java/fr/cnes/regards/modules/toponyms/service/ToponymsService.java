@@ -150,8 +150,7 @@ public class ToponymsService {
         if (toponym.isPresent()) {
             Toponym t = toponym.get();
             if (!t.isVisible()) {
-                OffsetDateTime oldDateTime = t.getToponymMetadata().getExpirationDate();
-                t.getToponymMetadata().setExpirationDate(oldDateTime.plusDays(this.defaultExpiration));
+                t.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
                 t = this.repository.save(t);
             }
             return Optional.of(getToponymDTO(t, sampling));
