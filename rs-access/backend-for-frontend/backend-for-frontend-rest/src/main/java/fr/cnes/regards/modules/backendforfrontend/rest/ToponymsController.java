@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -140,7 +141,7 @@ public class ToponymsController {
             return client.createNotVisibleToponym(new ToponymGeoJson(feature, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(e.getResponseBodyAsString(), e);
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            return ResponseEntity.status(e.getStatusCode()).body(new ServerErrorResponse(e.getResponseBodyAsString(), e));
         } finally {
             FeignSecurityManager.reset();
         }

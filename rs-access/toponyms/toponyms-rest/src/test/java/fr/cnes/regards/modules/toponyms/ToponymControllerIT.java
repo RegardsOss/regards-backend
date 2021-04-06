@@ -122,7 +122,7 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     public void testLimitToponymsSaving() {
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.FORBIDDEN), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.TOO_MANY_REQUESTS), "Should have created toponym");
 
     }
 }

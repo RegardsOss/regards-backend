@@ -44,7 +44,7 @@ public class ToponymsControllerAdvice {
         if (exception.getCause() != null) {
             message += ". Cause: " + exception.getCause().getMessage();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(message, exception));
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new ServerErrorResponse(message, exception));
     }
 }
 
