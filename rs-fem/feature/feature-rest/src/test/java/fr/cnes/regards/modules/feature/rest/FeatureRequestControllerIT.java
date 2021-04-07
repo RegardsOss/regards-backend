@@ -148,10 +148,9 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         // Retrieve by state
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
                 .expectToHaveSize("$.content", 50).expectValue("$.info.nbErrors", 50);
-        ;
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("state", "ERROR");
+        requestBuilderCustomizer.addParameter("state", RequestState.ERROR.toString());
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                           requestBuilderCustomizer, "Error retrieving creation requests",
                           FeatureRequestTypeEnum.CREATION);
