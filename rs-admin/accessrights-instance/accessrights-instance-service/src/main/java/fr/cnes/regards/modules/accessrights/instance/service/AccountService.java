@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountValidationModeSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +133,8 @@ public class AccountService implements IAccountService {
      */
     private final ITemplateService templateService;
 
+    private final AccountValidationModeSettingService accountValidationModeSettingService;
+
     @Autowired
     private MeterRegistry registry;
 
@@ -149,20 +152,23 @@ public class AccountService implements IAccountService {
      * @param rootAdminUserPassword root admin user password
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
+     * @param accountValidationModeSettingService
      */
     public AccountService(IAccountRepository accountRepository, //NOSONAR
-            @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
-            @Value("${regards.accounts.password.regex}") String passwordRegex,
-            @Value("${regards.accounts.password.rules}") String passwordRules,
-            @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
-            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
-            @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
-            @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
-            @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
-            @Autowired IRuntimeTenantResolver pRuntimeTenantResolver) {
-        super();
+                          @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
+                          @Value("${regards.accounts.password.regex}") String passwordRegex,
+                          @Value("${regards.accounts.password.rules}") String passwordRules,
+                          @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
+                          @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
+                          @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
+                          @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
+                          @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
+                          @Autowired IRuntimeTenantResolver pRuntimeTenantResolver,
+                          AccountValidationModeSettingService accountValidationModeSettingService
+    ) {
         this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
+        this.accountValidationModeSettingService = accountValidationModeSettingService;
         this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
         this.passwordRules = passwordRules;
         this.accountPasswordValidityDuration = accountPasswordValidityDuration;
@@ -213,6 +219,9 @@ public class AccountService implements IAccountService {
             account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
         }
         account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
+        if (AccountStatus.PENDING.equals(account.getStatus()) && accountValidationModeSettingService.isAutoAccept()) {
+            account.setStatus(AccountStatus.ACTIVE);
+        }
         return accountRepository.save(account);
     }
 

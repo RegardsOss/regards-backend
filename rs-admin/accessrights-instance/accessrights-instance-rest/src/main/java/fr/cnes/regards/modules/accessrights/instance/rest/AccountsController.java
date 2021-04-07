@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.Reques
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformChangePasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
-import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountValidationModeSettingService;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
@@ -150,9 +149,6 @@ public class AccountsController implements IResourceController<Account> {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    @Autowired
-    private AccountValidationModeSettingService accountValidationModeSettingCustomizer;
-
     /**
      * Retrieve the list of all {@link Account}s.
      * @param pageable the pageable object used by Spring for building the page of result
@@ -187,11 +183,7 @@ public class AccountsController implements IResourceController<Account> {
         Account newAccount = newAccountWithPassword.getAccount();
         newAccount.setPassword(newAccountWithPassword.getPassword());
         accountService.checkPassword(newAccount);
-        Account account = accountService.createAccount(newAccount);
-        if (AccountStatus.PENDING.equals(account.getStatus()) && accountValidationModeSettingCustomizer.isAutoAccept()) {
-            accountWorkflowManager.acceptAccount(account);
-        }
-        return new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED);
+        return new ResponseEntity<>(new EntityModel<>(accountService.createAccount(newAccount)), HttpStatus.CREATED);
     }
 
     /**
