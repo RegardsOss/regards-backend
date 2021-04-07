@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.framework.modules.tenant.settings.domain;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import org.hibernate.annotations.Type;
@@ -29,7 +28,6 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
-@InstanceEntity
 @Table(name = "t_dynamic_tenant_setting")
 public class DynamicTenantSetting {
 
@@ -70,6 +68,13 @@ public class DynamicTenantSetting {
         this.description = description;
         setDefaultValue(defaultValue);
         setValue(value);
+    }
+
+    public <T> DynamicTenantSetting(String name, String description, T defaultValue) {
+        this.name = name;
+        this.description = description;
+        setDefaultValue(defaultValue);
+        setValue(defaultValue);
     }
 
     public <T> T getDefaultValue() {
