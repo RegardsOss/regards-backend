@@ -18,95 +18,57 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettingsEvent;
-import io.vavr.collection.List;
-import io.vavr.control.Option;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-/**
- * {@link IAccessSettingsService} implementation
- * @author Xavier-Alexandre Brochard
- */
+import java.util.ArrayList;
+
 @Service
-@MultitenantTransactional
-public class AccessSettingsService implements IAccessSettingsService {
+public class AccessSettingsService {
 
-    /**
-     * CRUD repository managing access settings. Autowired by Spring.
-     */
-    private final IAccessSettingsRepository accessSettingsRepository;
+    private final DynamicTenantSettingService dynamicTenantSettingService;
 
-    private final IRoleRepository roleRepository;
-
-    private final IPublisher publisher;
-
-    /**
-     * Creates an {@link AccessSettingsService} wired to the given {@link IProjectUserRepository}.
-     * @param pAccessSettingsRepository Autowired by Spring. Must not be {@literal null}.
-     */
-    public AccessSettingsService(IAccessSettingsRepository pAccessSettingsRepository, IRoleRepository pRoleRepository, IPublisher pPublisher) {
-        super();
-        accessSettingsRepository = pAccessSettingsRepository;
-        roleRepository = pRoleRepository;
-        publisher = pPublisher;
+    public AccessSettingsService(DynamicTenantSettingService dynamicTenantSettingService) {
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
-    @Override
-    public AccessSettings retrieve() {
-        return List.ofAll(accessSettingsRepository.findAll())
-            .headOption()
-            .orElse(() -> {
-                AccessSettings alt = new AccessSettings();
-                alt.setId(0L);
-                return Option.some(alt);
-            })
-            .map(result -> {
-                if (result.getDefaultRole() != null && result.getDefaultGroups() != null) {
-                    return result;
-                } else {
-                    if (result.getDefaultRole() == null) {
-                        roleRepository
-                            .findOneByName(DefaultRole.REGISTERED_USER.toString())
-                            .ifPresent(result::setDefaultRole);
-                    }
-                    if (result.getDefaultGroups() == null) {
-                        result.setDefaultGroups(Lists.newArrayList());
-                    }
-                    return accessSettingsRepository.save(result);
-                }
-            })
-            .get();
+    @EventListener
+    public void init(ApplicationStartedEvent event) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+        createSetting(AccessSettings.MODE_SETTING, "Acceptance Mode", AccessSettings.DEFAULT_MODE.getName());
+        createSetting(AccessSettings.DEFAULT_ROLE_SETTING, "Default Role", DefaultRole.REGISTERED_USER.toString());
+        createSetting(AccessSettings.DEFAULT_GROUPS_SETTING, "Default Groups", new ArrayList<>());
     }
 
-    @Override
-    public AccessSettings update(AccessSettings accessSettings) throws EntityNotFoundException {
-        if (!accessSettingsRepository.existsById(accessSettings.getId())) {
-            throw new EntityNotFoundException(accessSettings.getId().toString(), AccessSettings.class);
+    public boolean isAutoAccept() {
+        boolean isAutoAccept = false;
+        try {
+            isAutoAccept = AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(currentMode());
+        } catch (EntityNotFoundException e) {
+            // do Nothing
         }
-        if (accessSettings.getDefaultRole() == null) {
-            roleRepository
-                .findOneByName(DefaultRole.REGISTERED_USER.toString())
-                .ifPresent(accessSettings::setDefaultRole);
+        return isAutoAccept;
+    }
+
+    private <T> void createSetting(String name, String description, T defaultValue) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+        DynamicTenantSetting dynamicTenantSetting;
+        try {
+            dynamicTenantSettingService.read(name);
+        } catch (EntityNotFoundException e) {
+            dynamicTenantSetting = new DynamicTenantSetting(name, description, defaultValue);
+            dynamicTenantSettingService.create(dynamicTenantSetting);
         }
-        if (accessSettings.getDefaultGroups() == null) {
-            accessSettings.setDefaultGroups(Lists.newArrayList());
-        }
-        AccessSettings result = accessSettingsRepository.save(accessSettings);
-        publisher.publish(new AccessSettingsEvent(
-            accessSettings.getMode(),
-            accessSettings.getDefaultRole().getName(),
-            accessSettings.getDefaultGroups()
-        ));
-        return result;
+    }
+
+    private AccessSettings.AcceptanceMode currentMode() throws EntityNotFoundException {
+        return AccessSettings.AcceptanceMode.fromName(dynamicTenantSettingService.read(AccessSettings.MODE_SETTING).getValue());
     }
 
 }

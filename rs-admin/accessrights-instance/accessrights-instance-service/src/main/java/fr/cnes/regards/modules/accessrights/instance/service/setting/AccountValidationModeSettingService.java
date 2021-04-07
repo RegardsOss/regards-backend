@@ -24,11 +24,11 @@ public class AccountValidationModeSettingService {
         try {
             dynamicTenantSettingService.read(AccountValidation.SETTING);
         } catch (EntityNotFoundException e) {
-            DynamicTenantSetting dynamicTenantSetting = new DynamicTenantSetting();
-            dynamicTenantSetting.setName(AccountValidation.SETTING);
-            dynamicTenantSetting.setDescription("Accept Mode");
-            dynamicTenantSetting.setDefaultValue(AccountValidation.DEFAULT_MODE.getName());
-            dynamicTenantSetting.setValue(dynamicTenantSetting.getValue());
+            DynamicTenantSetting dynamicTenantSetting = new DynamicTenantSetting(
+                    AccountValidation.SETTING,
+                    "Accept Mode",
+                    AccountValidation.DEFAULT_MODE.getName()
+            );
             dynamicTenantSettingService.create(dynamicTenantSetting);
         }
     }

@@ -34,16 +34,18 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -58,11 +60,7 @@ import java.util.Optional;
  *
  * @author Xavier-Alexandre Brochard
  */
-
-/**
- *
- * @author Xavier-Alexandre Brochard
- */
+@RunWith(MockitoJUnitRunner.class)
 public class RegistrationServiceTest {
 
     /**
@@ -110,18 +108,23 @@ public class RegistrationServiceTest {
      */
     private static final String REQUEST_LINK = "requestLink";
 
-    /**
-     * The tested service
-     */
-    private IRegistrationService registrationService;
-
+    @Mock
     private IProjectUserRepository projectUserRepository;
 
+    @Mock
     private IRoleService roleService;
 
+    @Mock
     private IAccountsClient accountsClient;
 
-    private ProjectUserWorkflowManager projectUserWorkflowManager;
+    @Mock
+    private IEmailVerificationTokenService tokenService;
+
+    @Mock
+    private WaitForQualificationListener listener;
+
+    @InjectMocks
+    private RegistrationService registrationService;
 
     private AccessRequestDto dto;
 
@@ -129,29 +132,15 @@ public class RegistrationServiceTest {
 
     private Account account;
 
-    /**
-     * Do some setup before each test
-     */
     @Before
     public void setUp() {
-        accountsClient = Mockito.mock(IAccountsClient.class);
-        projectUserRepository = Mockito.mock(IProjectUserRepository.class);
-        roleService = Mockito.mock(IRoleService.class);
-        IEmailVerificationTokenService tokenService = Mockito.mock(IEmailVerificationTokenService.class);
-        projectUserWorkflowManager = Mockito.mock(ProjectUserWorkflowManager.class);
-        // Mock
+
         Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
-
-        WaitForQualificationListener listener = new WaitForQualificationListener(projectUserRepository,
-                projectUserWorkflowManager, Mockito.mock(IAccessSettingsService.class));
-
-        // Create the tested service
-        registrationService = new RegistrationService(projectUserRepository, roleService, tokenService,
-                accountsClient, listener);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
-                REQUEST_LINK);
+                                   REQUEST_LINK
+        );
 
         // Prepare the account we expect to be create by the access request
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
@@ -212,7 +201,6 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
         registrationService.requestAccess(dto, false);
@@ -240,7 +228,6 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
         registrationService.requestAccess(dto, true);
@@ -289,7 +276,6 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.createAccount(Mockito.any()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(newAccountToCreate), HttpStatus.CREATED));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
         registrationService.requestAccess(dto, true);
@@ -325,7 +311,6 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.createAccount(accountWithPassword))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Trigger the exception
         registrationService.requestAccess(dto, false);
