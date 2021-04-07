@@ -18,14 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
+import java.security.Policy.Parameters;
 import java.util.Set;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 
 /**
  * @author kevin
@@ -36,10 +38,12 @@ public interface IFeatureRequestService {
     /**
      * Retrieve {@link FeatureRequestDTO}s for given {@link FeatureRequestTypeEnum}
      * @param type {@link FeatureRequestTypeEnum}
+     * @param parameters FeatureRequestSearchParameters {@link Parameters} search parameters
      * @param page
      * @return {@link FeatureRequestDTO}s
      */
-    public Page<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, Pageable page);
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
+            FeatureRequestSearchParameters searchParameters, Pageable page);
 
     /**
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by

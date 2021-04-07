@@ -31,10 +31,12 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -56,22 +58,23 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
-import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
@@ -93,9 +96,6 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
 
     @Autowired
     private IFeatureDeletionRequestRepository deletionRepo;
-
-    @Autowired
-    private IAbstractFeatureRequestRepository<AbstractFeatureRequest> requestRepo;
 
     @Autowired
     private IPublisher publisher;
@@ -407,7 +407,19 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Page<FeatureDeletionRequest> findRequests(Pageable page) {
-        return deletionRepo.findAll(page);
+    public Page<FeatureDeletionRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+        // Session,  source and providerId are unknown for deletion requests
+        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
+                || (searchParameters.getProviderId() != null)) {
+            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+        } else {
+            return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(searchParameters, page),
+                                        page);
+        }
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(deletionRepo.countByState(RequestState.ERROR));
     }
 }

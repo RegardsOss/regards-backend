@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -45,17 +49,21 @@ import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
@@ -76,6 +84,9 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Autowired
     private IFeatureNotificationService featureNotificationService;
 
+    @Autowired
+    private IFeatureRequestService featureRequestService;
+
     /**
      * Test creation of properties.getMaxBulkSize() features Check if
      * {@link FeatureCreationRequest} and {@link FeatureEntity}are stored in
@@ -88,8 +99,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureCreationRequestEvent> events = super
-                .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
+                                                                                         true);
         // clear file to test notifications without files
         events.forEach(request -> request.getFeature().getFiles().clear());
         this.featureCreationService.registerRequests(events);
@@ -150,26 +161,73 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
 
         List<FeatureCreationRequest> requests = featureCreationRequestRepo.findAll();
         Assert.assertFalse(requests.isEmpty());
-        Assert.assertTrue(
-                "All feature creation request should have urn and feature entity set to ensure proper notification processing",
-                requests.stream()
-                        .allMatch(fcr -> fcr.getUrn() != null && fcr.getFeatureEntity() != null));
+        Assert.assertTrue("All feature creation request should have urn and feature entity set to ensure proper notification processing",
+                          requests.stream()
+                                  .allMatch(fcr -> (fcr.getUrn() != null) && (fcr.getFeatureEntity() != null)));
+    }
+
+    @Test
+    public void testRetrieveRequests() throws InterruptedException {
+        int nbValid = 20;
+        // Register valid requests
+        OffsetDateTime start = OffsetDateTime.now();
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        this.featureCreationService.registerRequests(events);
+
+        RequestsPage<FeatureRequestDTO> results = this.featureRequestService
+                .findAll(FeatureRequestTypeEnum.CREATION,
+                         FeatureRequestSearchParameters.build().withState(RequestState.GRANTED),
+                         PageRequest.of(0, 100));
+        Assert.assertEquals(nbValid, results.getContent().size());
+        Assert.assertEquals(nbValid, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService
+                .findAll(FeatureRequestTypeEnum.CREATION,
+                         FeatureRequestSearchParameters.build().withState(RequestState.ERROR), PageRequest.of(0, 100));
+        Assert.assertEquals(0, results.getContent().size());
+        Assert.assertEquals(0, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION, FeatureRequestSearchParameters
+                .build().withState(RequestState.GRANTED).withProviderId(events.get(0).getFeature().getId()),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(1, results.getContent().size());
+        Assert.assertEquals(1, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService
+                .findAll(FeatureRequestTypeEnum.CREATION,
+                         FeatureRequestSearchParameters.build().withState(RequestState.GRANTED)
+                                 .withProviderId(events.get(0).getFeature().getId())
+                                 .withStart(OffsetDateTime.now().plusSeconds(5)),
+                         PageRequest.of(0, 100));
+        Assert.assertEquals(0, results.getContent().size());
+        Assert.assertEquals(0, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService
+                .findAll(FeatureRequestTypeEnum.CREATION,
+                         FeatureRequestSearchParameters.build().withState(RequestState.GRANTED)
+                                 .withProviderId(events.get(0).getFeature().getId()).withStart(start)
+                                 .withEnd(OffsetDateTime.now().plusSeconds(5)),
+                         PageRequest.of(0, 100));
+        Assert.assertEquals(1, results.getContent().size());
+        Assert.assertEquals(1, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
     }
 
     private void testNotification() {
         // now that feature are created, lets do logic to get to notification of the creation
         // lets check that for feature created, there is a request in step LOCAL_TO_BE_NOTIFIED
-        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
-                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                OffsetDateTime.now(),
-                PageRequest.of(0,
-                               properties.getMaxBulkSize(),
-                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
+        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo
+                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, OffsetDateTime.now(),
+                                                       PageRequest.of(0, properties.getMaxBulkSize(),
+                                                                      Sort.by(Sort.Order.asc("priority"),
+                                                                              Sort.Order.asc("requestDate"))));
         Assert.assertEquals("There should be at least max bulk size request in step LOCAL_TO_BE_NOTIFIED",
-                            properties.getMaxBulkSize().intValue(),
-                            requestsToSend.getSize());
-        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED",
-                            1,
+                            properties.getMaxBulkSize().intValue(), requestsToSend.getSize());
+        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED", 1,
                             requestsToSend.getTotalPages());
         // now that we are sure only right requests are in step LOCAL_TO_BE_NOTIFIED, lets ask them to be sent (method called by task scheduler)
         featureNotificationService.sendToNotifier();
@@ -188,8 +246,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureCreationRequestEvent> events = super
-                .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
+                                                                                         true);
 
         // clear file to test notifications without files and put the same request id
         events.forEach(request -> {
@@ -222,8 +280,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testFeatureCreationWithInvalidFeature() throws InterruptedException {
 
-        List<FeatureCreationRequestEvent> events = super
-                .initFeatureCreationRequestEvent(properties.getMaxBulkSize(), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
+                                                                                         true);
 
         Feature f = events.get(0).getFeature();
         f.setEntityType(null);
@@ -253,18 +311,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testRegisterScheduleProcess() {
         List<Feature> features = new ArrayList<>();
-        String model = mockModelClient("feature_model_01.xml",
-                                       cps,
-                                       factory,
-                                       this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            Feature toAdd = Feature.build("id" + i,
-                                          "owner",
-                                          null,
-                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                          EntityType.DATA,
-                                          model);
+            Feature toAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                          EntityType.DATA, model);
             features.add(toAdd);
             toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
             toAdd.addProperty(IProperty.buildObject("file_characterization",
@@ -272,14 +323,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build("owner",
-                                                                               FeatureCreationSessionMetadata.build(
-                                                                                       "owner",
-                                                                                       "session",
-                                                                                       PriorityLevel.NORMAL,
-                                                                                       false,
-                                                                                       StorageMetadata.build("id ")),
-                                                                               features);
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
+                .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureCreationRequestRepo.count());
@@ -291,23 +336,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     public void testRegisterScheduleProcessWithErrors() {
         List<Feature> features = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            features.add(Feature.build("id" + i,
-                                       "owner",
-                                       null,
-                                       IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                       null,
+            features.add(Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)), null,
                                        "model"));
         }
 
         StorageMetadata.build("id ");
-        FeatureCreationCollection collection = FeatureCreationCollection.build("owner",
-                                                                               FeatureCreationSessionMetadata.build(
-                                                                                       "owner",
-                                                                                       "session",
-                                                                                       PriorityLevel.NORMAL,
-                                                                                       false,
-                                                                                       StorageMetadata.build("id ")),
-                                                                               features);
+        FeatureCreationCollection collection = FeatureCreationCollection.build("owner", FeatureCreationSessionMetadata
+                .build("owner", "session", PriorityLevel.NORMAL, false, StorageMetadata.build("id ")), features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
         assertEquals(0, infos.getGranted().size());
@@ -322,12 +357,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
     @Test
     public void testFeaturePriority() throws InterruptedException {
 
-        List<FeatureCreationRequestEvent> events = super
-                .initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize()
+                + (properties.getMaxBulkSize() / 2), true);
 
         // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
-        for (int i = properties.getMaxBulkSize();
-             i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2)); i++) {
+        for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize()
+                + (properties.getMaxBulkSize() / 2)); i++) {
             events.get(i).getMetadata().setPriority(PriorityLevel.HIGH);
         }
 

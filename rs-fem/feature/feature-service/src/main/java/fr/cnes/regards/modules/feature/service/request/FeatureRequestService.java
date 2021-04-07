@@ -38,9 +38,12 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
@@ -87,24 +90,47 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureMetadataService featureMetadataService;
 
     @Override
-    public Page<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, Pageable page) {
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
+            FeatureRequestSearchParameters searchParameters, Pageable page) {
+        Page<FeatureRequestDTO> results = new PageImpl<>(Lists.newArrayList(), page, 0L);
+        RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                return featureCopyService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureCopyService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureCopyService.getInfo();
+                break;
             case CREATION:
-                return featureCreationService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureCreationService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureCreationService.getInfo();
+                break;
             case DELETION:
-                return featureDeletionService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureDeletionService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureDeletionService.getInfo();
+                break;
             case NOTIFICATION:
-                return featureNotificationService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureNotificationService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureNotificationService.getInfo();
+                break;
             case SAVE_METADATA:
-                return featureMetadataService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureMetadataService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureMetadataService.getInfo();
+                break;
             case UPDATE:
-                return featureUpdateService.findRequests(page).map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureUpdateService.findRequests(searchParameters, page)
+                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                info = featureUpdateService.getInfo();
+                break;
             default:
                 LOGGER.error("Not available type {} for Feature Requests", type.toString());
-                return new PageImpl<>(Lists.newArrayList(), page, 0L);
+                break;
         }
+
+        return new RequestsPage<>(results.getContent(), info, results.getPageable(), results.getTotalElements());
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +22,8 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Repository
-public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequest> extends JpaRepository<T, Long> {
+public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequest>
+        extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
 
     @Query("select distinct afr.requestId from AbstractFeatureRequest afr")
     Set<String> findRequestId();
@@ -58,4 +60,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Modifying
     @Query("delete from AbstractFeatureRequest req where urn in :urns")
     void deleteByUrnIn(@Param("urns") Set<FeatureUniformResourceName> urns);
+
+    Long countByState(RequestState state);
 }

@@ -29,10 +29,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -51,6 +53,7 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -60,10 +63,12 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
@@ -243,7 +248,19 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     }
 
     @Override
-    public Page<FeatureCopyRequest> findRequests(Pageable page) {
-        return featureCopyRequestRepo.findAll(page);
+    public Page<FeatureCopyRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+        // Session,  source and providerId are unknown for copy requests
+        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
+                || (searchParameters.getProviderId() != null)) {
+            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+        } else {
+            return featureCopyRequestRepo
+                    .findAll(FeatureCopyRequestSpecification.searchAllByFilters(searchParameters, page), page);
+        }
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(featureCopyRequestRepo.countByState(RequestState.ERROR));
     }
 }

@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 
 /**
@@ -52,5 +53,5 @@ public interface IFeatureNotificationService extends IAbstractFeatureService {
      * @param page
      * @return {@link FeatureNotificationRequest}s
      */
-    Page<FeatureNotificationRequest> findRequests(Pageable page);
+    Page<FeatureNotificationRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page);
 }

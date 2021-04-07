@@ -51,7 +51,9 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
  * see {@link IFeatureMetadataService}
@@ -182,7 +184,13 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public Page<FeatureSaveMetadataRequest> findRequests(Pageable page) {
+    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestSearchParameters searchParameters,
+            Pageable page) {
         return featureSaveMetadataRepository.findAll(page);
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(featureSaveMetadataRepository.countByState(RequestState.ERROR));
     }
 }

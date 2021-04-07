@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -75,5 +76,5 @@ public interface IFeatureDeletionService extends IAbstractFeatureService {
      * @param page
      * @return {@link FeatureDeletionRequest}s
      */
-    Page<FeatureDeletionRequest> findRequests(Pageable page);
+    Page<FeatureDeletionRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page);
 }

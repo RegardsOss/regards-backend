@@ -20,30 +20,67 @@ package fr.cnes.regards.modules.feature.dto;
 
 import java.time.OffsetDateTime;
 
+import javax.validation.constraints.NotNull;
+
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
+ * DTO to provides information about feature requests.
  *
  * @author Sébastien Binda
  *
  */
 public class FeatureRequestDTO {
 
+    /**
+     * Request identifier
+     */
+    @NotNull
     private Long id;
 
+    /**
+     * URN of the associated feature if any
+     */
     private FeatureUniformResourceName urn;
 
+    /**
+     * Provider of the associated feature if any
+     */
     private String providerId;
 
+    /**
+     * State of the request
+     */
+    @NotNull
     private RequestState state;
 
+    /**
+     * Does the request currently processed ?
+     */
     private boolean processing = false;
 
+    /**
+     * Request registration date
+     */
+    @NotNull
     private OffsetDateTime registrationDate;
 
+    /**
+     * Request type
+     */
     private FeatureRequestType type;
+
+    /**
+     * Source of the feature request.
+     */
+    private String source;
+
+    /**
+     * Session of the feature request
+     */
+    private String session;
 
     public Long getId() {
         return id;
@@ -99,6 +136,22 @@ public class FeatureRequestDTO {
 
     public void setProcessing(boolean processing) {
         this.processing = processing;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
 }

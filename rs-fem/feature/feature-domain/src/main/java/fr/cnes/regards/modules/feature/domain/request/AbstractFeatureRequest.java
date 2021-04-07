@@ -67,7 +67,7 @@ import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 @DiscriminatorColumn(name = AbstractFeatureRequest.REQUEST_TYPE_COLUMN)
 public abstract class AbstractFeatureRequest extends AbstractRequest {
 
-    protected static final String REQUEST_TYPE_COLUMN = "request_type";
+    public static final String REQUEST_TYPE_COLUMN = "request_type";
 
     protected static final String GROUP_ID = "group_id";
 
@@ -155,8 +155,11 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         dto.setProcessing(request.getStep().isProcessing());
         dto.setUrn(request.getUrn());
         if (request instanceof FeatureCreationRequest) {
-            dto.setProviderId(((FeatureCreationRequest) request).getProviderId());
+            FeatureCreationRequest fcr = (FeatureCreationRequest) request;
+            dto.setProviderId(fcr.getProviderId());
             dto.setType(FeatureRequestType.CREATION);
+            dto.setSession(fcr.getMetadata().getSession());
+            dto.setSource(fcr.getMetadata().getSessionOwner());
         }
         if (request instanceof FeatureUpdateRequest) {
             dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());

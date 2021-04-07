@@ -59,6 +59,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -73,6 +74,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -82,6 +84,7 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureCreationState;
@@ -487,7 +490,13 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Page<FeatureCreationRequest> findRequests(Pageable page) {
-        return featureCreationRequestRepo.findAll(page);
+    public Page<FeatureCreationRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+        return featureCreationRequestRepo
+                .findAll(FeatureCreationRequestSpecification.searchAllByFilters(searchParameters, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(featureCreationRequestRepo.countByState(RequestState.ERROR));
     }
 }

@@ -25,10 +25,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -43,6 +45,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.modules.feature.dao.FeatureNotificationRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
@@ -50,10 +53,12 @@ import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
@@ -224,7 +229,20 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     @Override
-    public Page<FeatureNotificationRequest> findRequests(Pageable page) {
-        return featureNotificationRequestRepository.findAll(page);
+    public Page<FeatureNotificationRequest> findRequests(FeatureRequestSearchParameters searchParameters,
+            Pageable page) {
+        // Session,  source and providerId are unknown for notification requests
+        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
+                || (searchParameters.getProviderId() != null)) {
+            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+        } else {
+            return featureNotificationRequestRepository
+                    .findAll(FeatureNotificationRequestSpecification.searchAllByFilters(searchParameters, page), page);
+        }
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(featureNotificationRequestRepository.countByState(RequestState.ERROR));
     }
 }

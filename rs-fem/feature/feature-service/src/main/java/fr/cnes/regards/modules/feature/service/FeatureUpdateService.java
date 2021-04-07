@@ -28,10 +28,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.feature.dao.FeatureUpdateRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
@@ -61,12 +64,14 @@ import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
@@ -379,7 +384,18 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     }
 
     @Override
-    public Page<FeatureUpdateRequest> findRequests(Pageable page) {
-        return updateRepo.findAll(page);
+    public Page<FeatureUpdateRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+        // Session and  source are unknown for update requests
+        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)) {
+            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+        } else {
+            return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(searchParameters, page),
+                                      page);
+        }
+    }
+
+    @Override
+    public RequestsInfo getInfo() {
+        return RequestsInfo.build(updateRepo.countByState(RequestState.ERROR));
     }
 }

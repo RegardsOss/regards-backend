@@ -29,6 +29,8 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
  * Service to dump features, which consists in creating zip of zip from feature formatted as aips
@@ -77,6 +79,13 @@ public interface IFeatureMetadataService {
      * @param page
      * @return {@link FeatureSaveMetadataRequest}s
      */
-    public Page<FeatureSaveMetadataRequest> findRequests(Pageable page);
+    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestSearchParameters searchParameters,
+            Pageable page);
+
+    /**
+     * Find requests information
+     * @return {@link RequestsInfo}
+     */
+    RequestsInfo getInfo();
 
 }

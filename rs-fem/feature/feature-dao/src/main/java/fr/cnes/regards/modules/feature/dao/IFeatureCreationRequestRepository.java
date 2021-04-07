@@ -29,7 +29,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
@@ -63,6 +62,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
     List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
 
     @Modifying
-    @Query(value ="UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns", nativeQuery = true)
-    void updateLastByUrnIn(@Param("last") boolean last,@Param("urns") Set<String> urns);
+    @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
+            nativeQuery = true)
+    void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
 }

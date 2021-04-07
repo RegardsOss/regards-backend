@@ -75,5 +75,9 @@
 			<artifactId>jpa-commons-regards</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.hateoas</groupId>
+			<artifactId>spring-hateoas</artifactId>
+		</dependency>
 	</dependencies>
 </project>

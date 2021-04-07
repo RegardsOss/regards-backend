@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,7 +42,9 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -80,12 +83,11 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     @RequestMapping(method = RequestMethod.GET, path = REQUEST_SEARCH_TYPE_PATH,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get features according last update date", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<FeatureRequestDTO>>> getRequests(
+    public ResponseEntity<RequestsPagedModel<EntityModel<FeatureRequestDTO>>> getRequests(
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
-            Pageable page, PagedResourcesAssembler<FeatureRequestDTO> assembler) {
-        return new ResponseEntity<>(toPagedResources(featureRequestService.findAll(type, page), assembler),
-                HttpStatus.OK);
+            FeatureRequestSearchParameters parameters, Pageable page) {
+        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, parameters, page)), HttpStatus.OK);
     }
 
     @Operation(summary = "Delete feature request by id", description = "Delete feature request by id")
@@ -106,18 +108,40 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         return null;
     }
 
-    @Override
-    public EntityModel<FeatureRequestDTO> toResource(FeatureRequestDTO element, Object... extras) {
-        EntityModel<FeatureRequestDTO> resource = resourceService.toResource(element);
+    /**
+     * Format response with HATEOAS
+     */
+    private RequestsPagedModel<EntityModel<FeatureRequestDTO>> toResources(
+            RequestsPage<FeatureRequestDTO> requestsPage) {
+        RequestsPagedModel<EntityModel<FeatureRequestDTO>> pagedResource = RequestsPagedModel
+                .wrap(requestsPage.getContent(), new PagedModel.PageMetadata(requestsPage.getSize(),
+                        requestsPage.getNumber(), requestsPage.getTotalElements(), requestsPage.getTotalPages()),
+                      requestsPage.getInfo());
+        pagedResource.getContent().forEach(resource -> addLinks(resource));
+        return pagedResource;
+    }
+
+    private void addLinks(EntityModel<FeatureRequestDTO> resource) {
         // Request are deletable only if not scheduled
-        if ((element.getState() == RequestState.DENIED) || (element.getState() == RequestState.ERROR)
-                || (element.getState() == RequestState.SUCCESS)) {
+        if (!resource.getContent().isProcessing()) {
             resourceService.addLink(resource, this.getClass(), "deleteRequest", LinkRels.DELETE,
                                     MethodParamFactory.build(String.class),
                                     MethodParamFactory.build(OffsetDateTime.class),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
+
+            resourceService.addLink(resource, this.getClass(), "retryRequest", LinkRelation.of("retry"),
+                                    MethodParamFactory.build(String.class),
+                                    MethodParamFactory.build(OffsetDateTime.class),
+                                    MethodParamFactory.build(Pageable.class),
+                                    MethodParamFactory.build(PagedResourcesAssembler.class));
         }
+    }
+
+    @Override
+    public EntityModel<FeatureRequestDTO> toResource(FeatureRequestDTO element, Object... extras) {
+        EntityModel<FeatureRequestDTO> resource = resourceService.toResource(element);
+        addLinks(resource);
         return resource;
     }
 
