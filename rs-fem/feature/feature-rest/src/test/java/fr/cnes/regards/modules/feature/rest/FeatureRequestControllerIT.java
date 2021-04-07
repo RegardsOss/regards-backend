@@ -27,13 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -61,10 +59,8 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_requests",
-        "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-        "spring.jpa.properties.hibernate.order_inserts=true" })
-@ActiveProfiles(value = { "testAmqp", "noscheduler" })
-@ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
+        "spring.jpa.properties.hibernate.jdbc.batch_size=1024" })
+@ActiveProfiles(value = { "noscheduler" })
 public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
     @Autowired
