@@ -16,35 +16,37 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.feature.dto.hateoas;
+package fr.cnes.regards.modules.feature.dto;
+
+import java.util.List;
+
+import org.apache.commons.compress.utils.Lists;
 
 /**
- * Information section for requests pagination endpoints
  *
  * @author Sébastien Binda
  *
  */
-public class RequestsInfo {
+public class FeatureRequestsSelectionDTO {
 
-    private Long nbErrors = 0L;
+    FeatureRequestSearchParameters filters;
 
-    public static RequestsInfo build(Long nbErrors) {
-        RequestsInfo info = new RequestsInfo();
-        info.setNbErrors(nbErrors);
-        return info;
+    List<String> excludedUrns = Lists.newArrayList();
+
+    public FeatureRequestSearchParameters getFilters() {
+        return filters;
     }
 
-    public Long getNbErrors() {
-        return nbErrors;
+    public void setFilters(FeatureRequestSearchParameters filters) {
+        this.filters = filters;
     }
 
-    public void setNbErrors(Long nbErrors) {
-        this.nbErrors = nbErrors;
+    public List<String> getExcludedUrns() {
+        return excludedUrns;
     }
 
-    @Override
-    public String toString() {
-        return "RequestsInfo [" + (nbErrors != null ? "nbErrors=" + nbErrors : "") + "]";
+    public void setExcludedUrns(List<String> excludedUrns) {
+        this.excludedUrns = excludedUrns;
     }
 
 }

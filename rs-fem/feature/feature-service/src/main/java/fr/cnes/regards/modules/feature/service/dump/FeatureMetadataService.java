@@ -45,6 +45,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.feature.dao.FeatureSaveMetadataRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -190,7 +191,13 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(featureSaveMetadataRepository.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(featureSaveMetadataRepository.count(FeatureSaveMetadataRequestSpecification
+                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }

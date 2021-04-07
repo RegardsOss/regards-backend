@@ -419,7 +419,13 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(deletionRepo.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(deletionRepo.count(FeatureDeletionRequestSpecification
+                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }

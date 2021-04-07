@@ -31,11 +31,14 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
@@ -72,6 +75,9 @@ public class FeatureRequestService implements IFeatureRequestService {
     private IPublisher publisher;
 
     @Autowired
+    private IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
+
+    @Autowired
     public IFeatureCreationService featureCreationService;
 
     @Autowired
@@ -98,32 +104,32 @@ public class FeatureRequestService implements IFeatureRequestService {
             case COPY:
                 results = featureCopyService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCopyService.getInfo();
+                info = featureCopyService.getInfo(searchParameters);
                 break;
             case CREATION:
                 results = featureCreationService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCreationService.getInfo();
+                info = featureCreationService.getInfo(searchParameters);
                 break;
             case DELETION:
                 results = featureDeletionService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureDeletionService.getInfo();
+                info = featureDeletionService.getInfo(searchParameters);
                 break;
             case NOTIFICATION:
                 results = featureNotificationService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureNotificationService.getInfo();
+                info = featureNotificationService.getInfo(searchParameters);
                 break;
             case SAVE_METADATA:
                 results = featureMetadataService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureMetadataService.getInfo();
+                info = featureMetadataService.getInfo(searchParameters);
                 break;
             case UPDATE:
                 results = featureUpdateService.findRequests(searchParameters, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureUpdateService.getInfo();
+                info = featureUpdateService.getInfo(searchParameters);
                 break;
             default:
                 LOGGER.error("Not available type {} for Feature Requests", type.toString());
@@ -131,6 +137,19 @@ public class FeatureRequestService implements IFeatureRequestService {
         }
 
         return new RequestsPage<>(results.getContent(), info, results.getPageable(), results.getTotalElements());
+    }
+
+    @Override
+    public void delete(Long requestId) throws EntityOperationForbiddenException {
+        AbstractFeatureRequest request = abstractFeatureRequestRepo.getOne(requestId);
+        // Only delete requests in error status or not schedule yet.
+        if ((request.getState() == RequestState.ERROR) || (request.getStep() == FeatureRequestStep.LOCAL_DELAYED)) {
+            abstractFeatureRequestRepo.delete(request);
+        } else {
+            throw new EntityOperationForbiddenException(
+                    String.format("Request %l with status %s / %s cannot be deleted.", requestId,
+                                  request.getState().toString(), request.getStep().toString()));
+        }
     }
 
     @Override

@@ -84,8 +84,9 @@ public interface IFeatureMetadataService {
 
     /**
      * Find requests information
+     * @param searchParameters {@link FeatureRequestSearchParameters}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo();
+    RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters);
 
 }

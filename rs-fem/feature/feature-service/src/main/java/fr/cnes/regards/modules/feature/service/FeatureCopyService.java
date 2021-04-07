@@ -260,7 +260,13 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(featureCopyRequestRepo.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(featureCopyRequestRepo
+                    .count(FeatureCopyRequestSpecification.searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }

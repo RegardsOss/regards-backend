@@ -25,42 +25,32 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 
 /**
- * JPA Specification to search for {@link FeatureCreationRequest} from {@link IFeatureCreationRequestRepositoryatu}
+ * JPA Specification to search for {@link FeatureCopyRequest} from {@link IFeatureSaveMetadataRequestRepository}
  *
  * @author Sébastien Binda
  *
  */
-public class FeatureCreationRequestSpecification {
+public class FeatureSaveMetadataRequestSpecification {
 
-    private FeatureCreationRequestSpecification() {
+    private FeatureSaveMetadataRequestSpecification() {
         throw new IllegalStateException("Utility class");
     }
 
     /**
-     * Creates search {@link Specification} for {@link FeatureCreationRequest}s
+     * Creates search {@link Specification} for {@link FeatureSaveMetadataRequest}s
      * @param filters {@link FeatureRequestSearchParameters}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureCreationRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureSaveMetadataRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
             Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, root, query, cb, page);
-
-            if (filters.getProviderId() != null) {
-                predicates.add(cb.equal(root.get("providerId"), filters.getProviderId()));
-            }
-            if (filters.getSource() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("sessionOwner"), filters.getSource()));
-            }
-            if (filters.getSession() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("session"), filters.getSession()));
-            }
-
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

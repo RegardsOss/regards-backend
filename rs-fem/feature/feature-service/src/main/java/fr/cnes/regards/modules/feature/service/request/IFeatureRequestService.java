@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
@@ -76,5 +77,12 @@ public interface IFeatureRequestService {
      * @param groupId
      */
     void handleDeletionError(Set<String> groupIds);
+
+    /**
+     * Delete request with the given id
+     * @param requestId
+     * @throws EntityOperationForbiddenException
+     */
+    public void delete(Long requestId) throws EntityOperationForbiddenException;
 
 }

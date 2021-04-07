@@ -496,7 +496,13 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(featureCreationRequestRepo.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(featureCreationRequestRepo.count(FeatureCreationRequestSpecification
+                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }

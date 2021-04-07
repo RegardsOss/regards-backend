@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.time.OffsetDateTime;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
@@ -30,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,11 +38,13 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
@@ -90,21 +92,45 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         return new ResponseEntity<>(toResources(featureRequestService.findAll(type, parameters, page)), HttpStatus.OK);
     }
 
-    @Operation(summary = "Delete feature request by id", description = "Delete feature request by id")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature request by id") })
-    @RequestMapping(method = RequestMethod.DELETE, path = ROOT_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete feature requests by selection", description = "Delete feature requests by selection")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
+    @RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> deleteRequests() {
-        // TODO : Gestion d'une payload de recherche associé aux entités à traiter.
+    public ResponseEntity<Void> deleteRequests(
+            @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
+        // TODO
         return null;
     }
 
-    @Operation(summary = "Retry feature requests", description = "Retry feature requests")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests") })
-    @RequestMapping(method = RequestMethod.DELETE, path = RETRY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete feature request by id", description = "Delete feature request by id")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature request by id") })
+    @RequestMapping(method = RequestMethod.DELETE, path = ITEM_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> deleteRequest(
+            @Parameter(description = "Id of request to delete") @PathVariable("id") Long requestId)
+            throws EntityOperationForbiddenException {
+        featureRequestService.delete(requestId);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Retry feature request by id", description = "Retry feature request by id")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature request by idn") })
+    @RequestMapping(method = RequestMethod.POST, path = RETRY_PATH + ITEM_PATH,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Retry feature request by id", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<Void> retryRequest(
+            @Parameter(description = "Id of request to delete") @PathVariable("id") Long requestId) {
+        // TODO
+        return null;
+    }
+
+    @Operation(summary = "Retry feature requests by selection", description = "Retry feature requests by selection")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
+    @RequestMapping(method = RequestMethod.POST, path = RETRY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> retryRequests() {
-        // TODO : Gestion d'une payload de recherche associée aux entités à traiter.
+    public ResponseEntity<Void> retryRequests(
+            @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
+        // TODO
         return null;
     }
 
@@ -125,16 +151,9 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         // Request are deletable only if not scheduled
         if (!resource.getContent().isProcessing()) {
             resourceService.addLink(resource, this.getClass(), "deleteRequest", LinkRels.DELETE,
-                                    MethodParamFactory.build(String.class),
-                                    MethodParamFactory.build(OffsetDateTime.class),
-                                    MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class));
-
+                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
             resourceService.addLink(resource, this.getClass(), "retryRequest", LinkRelation.of("retry"),
-                                    MethodParamFactory.build(String.class),
-                                    MethodParamFactory.build(OffsetDateTime.class),
-                                    MethodParamFactory.build(Pageable.class),
-                                    MethodParamFactory.build(PagedResourcesAssembler.class));
+                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
         }
     }
 

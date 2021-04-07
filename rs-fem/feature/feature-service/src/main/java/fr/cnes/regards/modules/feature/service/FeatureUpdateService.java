@@ -395,7 +395,13 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(updateRepo.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(updateRepo.count(FeatureUpdateRequestSpecification
+                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }

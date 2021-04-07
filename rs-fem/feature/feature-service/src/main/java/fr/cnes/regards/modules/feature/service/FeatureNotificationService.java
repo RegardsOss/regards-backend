@@ -242,7 +242,13 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     @Override
-    public RequestsInfo getInfo() {
-        return RequestsInfo.build(featureNotificationRequestRepository.countByState(RequestState.ERROR));
+    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
+        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+            return RequestsInfo.build(0L);
+        } else {
+            searchParameters.withState(RequestState.ERROR);
+            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification
+                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+        }
     }
 }
