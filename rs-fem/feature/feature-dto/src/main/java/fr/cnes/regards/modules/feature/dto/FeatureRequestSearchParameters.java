@@ -61,11 +61,6 @@ public class FeatureRequestSearchParameters {
         return this;
     }
 
-    public FeatureRequestSearchParameters withUrn(String urn) {
-        this.setUrn(urn);
-        return this;
-    }
-
     public FeatureRequestSearchParameters withStart(OffsetDateTime start) {
         this.setStart(start);
         return this;

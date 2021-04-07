@@ -63,9 +63,6 @@ public final class FeatureRequestSpecificationsHelper {
         if (filters.getEnd() != null) {
             predicates.add(cb.lessThanOrEqualTo(root.get("registrationDate"), filters.getEnd()));
         }
-        if (filters.getUrn() != null) {
-            predicates.add(cb.equal(root.get("urn"), filters.getUrn()));
-        }
         if (filters.getState() != null) {
             predicates.add(cb.equal(root.get("state"), filters.getState()));
         }
