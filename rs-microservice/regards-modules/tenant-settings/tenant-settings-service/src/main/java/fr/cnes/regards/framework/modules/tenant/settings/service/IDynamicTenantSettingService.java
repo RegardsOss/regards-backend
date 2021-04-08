@@ -24,12 +24,13 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IDynamicTenantSettingService {
 
     DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting) throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException;
 
-    DynamicTenantSetting read(String name) throws EntityNotFoundException;
+    Optional<DynamicTenantSetting> read(String name);
 
     List<DynamicTenantSetting> readAll();
 
