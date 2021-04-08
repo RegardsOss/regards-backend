@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
 import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountValidationModeSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,6 +135,8 @@ public class AccountService implements IAccountService {
      */
     private final ITemplateService templateService;
 
+    private final IInstancePublisher instancePublisher;
+
     private final AccountValidationModeSettingService accountValidationModeSettingService;
 
     @Autowired
@@ -152,6 +156,7 @@ public class AccountService implements IAccountService {
      * @param rootAdminUserPassword root admin user password
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
+     * @param instancePublisher
      * @param accountValidationModeSettingService
      */
     public AccountService(IAccountRepository accountRepository, //NOSONAR
@@ -164,10 +169,11 @@ public class AccountService implements IAccountService {
                           @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
                           @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
                           @Autowired IRuntimeTenantResolver pRuntimeTenantResolver,
-                          AccountValidationModeSettingService accountValidationModeSettingService
+                          IInstancePublisher instancePublisher, AccountValidationModeSettingService accountValidationModeSettingService
     ) {
         this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
+        this.instancePublisher = instancePublisher;
         this.accountValidationModeSettingService = accountValidationModeSettingService;
         this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
         this.passwordRules = passwordRules;
@@ -220,9 +226,16 @@ public class AccountService implements IAccountService {
         }
         account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         if (AccountStatus.PENDING.equals(account.getStatus()) && accountValidationModeSettingService.isAutoAccept()) {
-            account.setStatus(AccountStatus.ACTIVE);
+            activate(account);
         }
         return accountRepository.save(account);
+    }
+
+    @Override
+    public void activate(Account account) {
+        account.setStatus(AccountStatus.ACTIVE);
+        accountRepository.save(account);
+        instancePublisher.publish(new AccountAcceptedEvent(account));
     }
 
     @Override
