@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 
 import javax.validation.constraints.NotNull;
 
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
@@ -70,7 +69,7 @@ public class FeatureRequestDTO {
     /**
      * Request type
      */
-    private FeatureRequestType type;
+    private String type;
 
     /**
      * Source of the feature request.
@@ -122,11 +121,11 @@ public class FeatureRequestDTO {
         this.registrationDate = registrationDate;
     }
 
-    public FeatureRequestType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(FeatureRequestType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

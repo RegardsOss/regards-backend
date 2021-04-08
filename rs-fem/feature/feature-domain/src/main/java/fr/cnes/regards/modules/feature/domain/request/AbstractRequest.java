@@ -30,7 +30,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
@@ -170,6 +172,38 @@ public abstract class AbstractRequest {
 
     public void setRequestOwner(String requestOwner) {
         this.requestOwner = requestOwner;
+    }
+
+    public static FeatureRequestDTO toDTO(AbstractRequest request) {
+        FeatureRequestDTO dto = new FeatureRequestDTO();
+        dto.setId(request.getId());
+        dto.setRegistrationDate(request.getRegistrationDate());
+        dto.setState(request.getState());
+        dto.setProcessing(request.getStep().isProcessing());
+        if (request instanceof FeatureCreationRequest) {
+            FeatureCreationRequest fcr = (FeatureCreationRequest) request;
+            dto.setProviderId(fcr.getProviderId());
+            dto.setType(FeatureRequestType.CREATION.toString());
+            dto.setSession(fcr.getMetadata().getSession());
+            dto.setSource(fcr.getMetadata().getSessionOwner());
+        }
+        if (request instanceof FeatureUpdateRequest) {
+            dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
+            dto.setType(FeatureRequestType.PATCH.toString());
+        }
+        if (request instanceof FeatureSaveMetadataRequest) {
+            dto.setType(FeatureRequestType.SAVE_METADATA.toString());
+        }
+        if (request instanceof FeatureDeletionRequest) {
+            dto.setType(FeatureRequestType.DELETION.toString());
+        }
+        if (request instanceof FeatureNotificationRequest) {
+            dto.setType(FeatureRequestType.NOTIFICATION.toString());
+        }
+        if (request instanceof FeatureCopyRequest) {
+            dto.setType(FeatureRequestType.FILE_COPY.toString());
+        }
+        return dto;
     }
 
     public abstract Long getId();

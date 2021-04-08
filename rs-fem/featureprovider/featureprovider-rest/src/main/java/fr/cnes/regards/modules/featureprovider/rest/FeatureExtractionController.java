@@ -53,9 +53,8 @@ public class FeatureExtractionController implements IResourceController<RequestI
     @ResourceAccess(
             description = "Publish locations collection to create features and return urns of granted and denied requests ids")
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_VALUE)
-    public ResponseEntity<EntityModel<RequestInfo<String>>> createFeaturesFromReferences(
-            @Parameter(description = "Contain all Features to handle") @Valid @RequestBody
-                    FeatureReferenceCollection collection) {
+    public ResponseEntity<EntityModel<RequestInfo<String>>> createFeaturesFromReferences(@Parameter(
+            description = "Contain all Features to handle") @Valid @RequestBody FeatureReferenceCollection collection) {
 
         RequestInfo<String> info = this.featureReferenceService.registerRequests(collection);
         return new ResponseEntity<>(toResource(info), computeStatus(info));

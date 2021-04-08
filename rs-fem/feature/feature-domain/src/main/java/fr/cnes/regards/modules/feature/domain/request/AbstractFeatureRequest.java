@@ -42,7 +42,6 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
@@ -148,35 +147,8 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     public abstract <U> U accept(IAbstractFeatureRequestVisitor<U> visitor);
 
     public static FeatureRequestDTO toDTO(AbstractFeatureRequest request) {
-        FeatureRequestDTO dto = new FeatureRequestDTO();
-        dto.setId(request.getId());
-        dto.setRegistrationDate(request.getRegistrationDate());
-        dto.setState(request.getState());
-        dto.setProcessing(request.getStep().isProcessing());
+        FeatureRequestDTO dto = AbstractRequest.toDTO(request);
         dto.setUrn(request.getUrn());
-        if (request instanceof FeatureCreationRequest) {
-            FeatureCreationRequest fcr = (FeatureCreationRequest) request;
-            dto.setProviderId(fcr.getProviderId());
-            dto.setType(FeatureRequestType.CREATION);
-            dto.setSession(fcr.getMetadata().getSession());
-            dto.setSource(fcr.getMetadata().getSessionOwner());
-        }
-        if (request instanceof FeatureUpdateRequest) {
-            dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
-            dto.setType(FeatureRequestType.PATCH);
-        }
-        if (request instanceof FeatureSaveMetadataRequest) {
-            dto.setType(FeatureRequestType.SAVE_METADATA);
-        }
-        if (request instanceof FeatureDeletionRequest) {
-            dto.setType(FeatureRequestType.DELETION);
-        }
-        if (request instanceof FeatureNotificationRequest) {
-            dto.setType(FeatureRequestType.NOTIFICATION);
-        }
-        if (request instanceof FeatureCopyRequest) {
-            dto.setType(FeatureRequestType.FILE_COPY);
-        }
         return dto;
     }
 }

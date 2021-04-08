@@ -51,6 +51,7 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
 
     /**
      * Find all {@link FeatureCreationRequest}s
+     * @param searchParameters {@link FeatureRequestSearchParameters}
      * @param page
      * @return {@link FeatureCreationRequest}s
      */
