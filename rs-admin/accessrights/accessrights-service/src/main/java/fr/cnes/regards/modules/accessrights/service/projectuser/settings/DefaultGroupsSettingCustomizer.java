@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Component
-public class DefaultGroupsSettingOptimizer implements IDynamicTenantSettingCustomizer {
+public class DefaultGroupsSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
@@ -19,7 +19,7 @@ public class DefaultGroupsSettingOptimizer implements IDynamicTenantSettingCusto
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.DEFAULT_GROUPS_SETTING.equals(dynamicTenantSetting.getName());
+        return AccessSettings.DEFAULT_GROUPS_SETTING.getName().equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {

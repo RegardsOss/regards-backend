@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.accessrights.instance.service.setting;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountValidation;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,11 +34,11 @@ public class AccountValidationModeSettingCustomizer implements IDynamicTenantSet
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccountValidation.SETTING.equals(dynamicTenantSetting.getName());
+        return AccountSettings.VALIDATION_SETTING.getName().equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof String && AccountValidation.Mode.fromName((String) value) != null;
+        return value instanceof String && AccountSettings.ValidationMode.fromName((String) value) != null;
     }
 
 }

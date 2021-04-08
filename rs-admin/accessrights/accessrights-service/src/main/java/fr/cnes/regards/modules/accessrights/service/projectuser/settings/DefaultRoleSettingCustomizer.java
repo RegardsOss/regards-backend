@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class DefaultRoleSettingOptimizer implements IDynamicTenantSettingCustomizer {
+public class DefaultRoleSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     private final IRoleService roleService;
 
-    public DefaultRoleSettingOptimizer(IRoleService roleService) {
+    public DefaultRoleSettingCustomizer(IRoleService roleService) {
         this.roleService = roleService;
     }
 
@@ -24,7 +24,7 @@ public class DefaultRoleSettingOptimizer implements IDynamicTenantSettingCustomi
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.DEFAULT_ROLE_SETTING.equals(dynamicTenantSetting.getName());
+        return AccessSettings.DEFAULT_ROLE_SETTING.getName().equals(dynamicTenantSetting.getName());
     }
 
 }

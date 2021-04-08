@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class DefaultAcceptanceModeSettingOptimizer implements IDynamicTenantSettingCustomizer {
+public class DefaultAcceptanceModeSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
@@ -17,7 +17,7 @@ public class DefaultAcceptanceModeSettingOptimizer implements IDynamicTenantSett
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.MODE_SETTING.equals(dynamicTenantSetting.getName());
+        return AccessSettings.MODE_SETTING.getName().equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {

@@ -18,45 +18,43 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-public class AccessSettings {
+public final class AccessSettings {
 
-    public static final String MODE_SETTING = "acceptance_mode";
-    public static final String DEFAULT_ROLE_SETTING = "default_role";
-    public static final String DEFAULT_GROUPS_SETTING = "default_groups";
+    private AccessSettings() {
+    }
 
     public static final AcceptanceMode DEFAULT_MODE = AcceptanceMode.AUTO_ACCEPT;
 
-    private String mode;
-    private String defaultRole;
-    private List<String> defaultGroups;
+    public static final DynamicTenantSetting MODE_SETTING = new DynamicTenantSetting(
+            "acceptance_mode",
+            "Acceptance Mode",
+            DEFAULT_MODE.getName()
+    );
 
+    public static final DynamicTenantSetting DEFAULT_ROLE_SETTING = new DynamicTenantSetting(
+            "default_role",
+            "Default Role",
+            DefaultRole.REGISTERED_USER.toString()
+    );
 
-    public String getMode() {
-        return mode;
-    }
+    public static final DynamicTenantSetting DEFAULT_GROUPS_SETTING = new DynamicTenantSetting(
+            "default_groups",
+            "Default Groups",
+            new ArrayList<>()
+    );
 
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
-    public String getDefaultRole() {
-        return defaultRole;
-    }
-
-    public void setDefaultRole(String defaultRole) {
-        this.defaultRole = defaultRole;
-    }
-
-    public List<String> getDefaultGroups() {
-        return defaultGroups;
-    }
-
-    public void setDefaultGroups(List<String> defaultGroups) {
-        this.defaultGroups = defaultGroups;
-    }
+    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
+            MODE_SETTING,
+            DEFAULT_ROLE_SETTING,
+            DEFAULT_GROUPS_SETTING
+    );
 
     public enum AcceptanceMode {
 
@@ -81,19 +79,6 @@ public class AccessSettings {
             }
             return null;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AccessSettings)) return false;
-        AccessSettings that = (AccessSettings) o;
-        return mode.equals(that.mode) && Objects.equals(defaultRole, that.defaultRole) && Objects.equals(defaultGroups, that.defaultGroups);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mode, defaultRole, defaultGroups);
     }
 
 }

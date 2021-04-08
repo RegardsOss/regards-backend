@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
-import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountValidationModeSettingService;
+import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,7 +137,7 @@ public class AccountService implements IAccountService {
 
     private final IInstancePublisher instancePublisher;
 
-    private final AccountValidationModeSettingService accountValidationModeSettingService;
+    private final AccountSettingsService accountSettingsService;
 
     @Autowired
     private MeterRegistry registry;
@@ -157,7 +157,7 @@ public class AccountService implements IAccountService {
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
      * @param instancePublisher
-     * @param accountValidationModeSettingService
+     * @param accountSettingsService
      */
     public AccountService(IAccountRepository accountRepository, //NOSONAR
                           @Autowired ITemplateService templateService, @Autowired IEmailClient emailClient,
@@ -169,12 +169,12 @@ public class AccountService implements IAccountService {
                           @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
                           @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
                           @Autowired IRuntimeTenantResolver pRuntimeTenantResolver,
-                          IInstancePublisher instancePublisher, AccountValidationModeSettingService accountValidationModeSettingService
+                          IInstancePublisher instancePublisher, AccountSettingsService accountSettingsService
     ) {
         this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
         this.instancePublisher = instancePublisher;
-        this.accountValidationModeSettingService = accountValidationModeSettingService;
+        this.accountSettingsService = accountSettingsService;
         this.passwordRegexPattern = Pattern.compile(this.passwordRegex);
         this.passwordRules = passwordRules;
         this.accountPasswordValidityDuration = accountPasswordValidityDuration;
@@ -225,7 +225,7 @@ public class AccountService implements IAccountService {
             account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
         }
         account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
-        if (AccountStatus.PENDING.equals(account.getStatus()) && accountValidationModeSettingService.isAutoAccept()) {
+        if (AccountStatus.PENDING.equals(account.getStatus()) && accountSettingsService.isAutoAccept()) {
             activate(account);
         }
         return accountRepository.save(account);
