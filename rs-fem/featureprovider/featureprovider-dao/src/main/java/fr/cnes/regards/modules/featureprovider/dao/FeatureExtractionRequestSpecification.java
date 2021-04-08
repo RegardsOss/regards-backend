@@ -51,7 +51,7 @@ public class FeatureExtractionRequestSpecification {
     public static Specification<FeatureExtractionRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
 
             if (filters.getSource() != null) {
                 predicates.add(cb.equal(root.get("metadata").get("sessionOwner"), filters.getSource()));

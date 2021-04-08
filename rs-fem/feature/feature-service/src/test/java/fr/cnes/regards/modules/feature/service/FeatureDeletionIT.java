@@ -216,6 +216,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         String deletionOwner = "deleter";
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
+
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
                 .findAll(FeatureRequestTypeEnum.DELETION, FeatureRequestSearchParameters.build(),
                          PageRequest.of(0, 100));
@@ -243,6 +244,20 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                     FeatureRequestSearchParameters.build().withProviderId("id1"),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(11, results.getContent().size());
+        Assert.assertEquals(11, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                     FeatureRequestSearchParameters.build().withProviderId("id10"),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(1, results.getContent().size());
+        Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
     }
 

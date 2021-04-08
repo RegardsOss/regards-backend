@@ -49,7 +49,7 @@ public class FeatureCopyRequestSpecification {
     public static Specification<FeatureCopyRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, true, root, query, cb, page);
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

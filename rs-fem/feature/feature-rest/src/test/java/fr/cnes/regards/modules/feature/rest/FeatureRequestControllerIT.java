@@ -225,8 +225,29 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                           FeatureRequestTypeEnum.NOTIFICATION);
     }
 
-    private int createCreationRequests(String featureIdPrefix, String source, String session, RequestState state,
-            FeatureRequestStep step, int nbRequests) {
+    @Test
+    public void deleteRequests() {
+        // Create 10 requests scheduled, so they cannot be deleted
+        List<FeatureCreationRequest> notDeletable = createCreationRequests("to_delete_", "deletion_test", "test1",
+                                                                           RequestState.GRANTED,
+                                                                           FeatureRequestStep.LOCAL_SCHEDULED, 10);
+        // Create 10 requests in error status, so theu can be deleted
+        List<FeatureCreationRequest> deletable = createCreationRequests("to_delete_", "deletion_test", "test1",
+                                                                        RequestState.ERROR,
+                                                                        FeatureRequestStep.LOCAL_ERROR, 10);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusForbidden();
+        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.ITEM_PATH,
+                             requestBuilderCustomizer, "Error retrieving creation requests",
+                             notDeletable.get(0).getId());
+        requestBuilderCustomizer = customizer().expectStatusOk();
+        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.ITEM_PATH,
+                             requestBuilderCustomizer, "Error retrieving creation requests", deletable.get(0).getId());
+
+    }
+
+    private List<FeatureCreationRequest> createCreationRequests(String featureIdPrefix, String source, String session,
+            RequestState state, FeatureRequestStep step, int nbRequests) {
         List<FeatureCreationRequest> requests = Lists.newArrayList();
         for (int i = 0; i < nbRequests; i++) {
             Feature feature = Feature
@@ -242,7 +263,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         }
         requests = featureRequestCreationRepo.saveAll(requests);
         Assert.assertEquals(nbRequests, requests.size());
-        return requests.size();
+        return requests;
     }
 
     private int createDeletionRequests(RequestState state, int nbRequests) {

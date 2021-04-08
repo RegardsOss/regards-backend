@@ -49,10 +49,10 @@ public class FeatureCreationRequestSpecification {
     public static Specification<FeatureCreationRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
 
             if (filters.getProviderId() != null) {
-                predicates.add(cb.equal(root.get("providerId"), filters.getProviderId()));
+                predicates.add(cb.like(cb.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
             }
             if (filters.getSource() != null) {
                 predicates.add(cb.equal(root.get("metadata").get("sessionOwner"), filters.getSource()));

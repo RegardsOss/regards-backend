@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -40,6 +42,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
+import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -47,6 +50,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
@@ -136,6 +140,7 @@ public class FeatureRequestService implements IFeatureRequestService {
                 break;
         }
 
+        addProviderIdsToRequests(results);
         return new RequestsPage<>(results.getContent(), info, results.getPageable(), results.getTotalElements());
     }
 
@@ -147,7 +152,7 @@ public class FeatureRequestService implements IFeatureRequestService {
             abstractFeatureRequestRepo.delete(request);
         } else {
             throw new EntityOperationForbiddenException(
-                    String.format("Request %l with status %s / %s cannot be deleted.", requestId,
+                    String.format("Request %d with status %s / %s cannot be deleted.", requestId,
                                   request.getState().toString(), request.getStep().toString()));
         }
     }
@@ -191,6 +196,24 @@ public class FeatureRequestService implements IFeatureRequestService {
         request.forEach(item -> item.setState(RequestState.ERROR));
 
         this.fdrRepo.saveAll(request);
+    }
+
+    /**
+     * Retrieve missing providerId from {@link FeatureRequestDTO}s if available with associated feature.
+     *
+     * @param requests {@link FeatureRequestDTO}s page
+     */
+    private void addProviderIdsToRequests(Page<FeatureRequestDTO> requests) {
+        List<FeatureUniformResourceName> missingUrns = requests.stream().map(r -> r.getUrn()).filter(r -> r != null)
+                .collect(Collectors.toList());
+        if (!missingUrns.isEmpty()) {
+            List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo
+                    .findFeatureProviderIdFromRequestUrns(missingUrns);
+            requests.forEach(r -> {
+                providerIds.stream().filter(i -> i.getUrn().equals(r.getUrn())).findFirst()
+                        .ifPresent(i -> r.setProviderId(i.getProviderId()));
+            });
+        }
     }
 
 }

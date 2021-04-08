@@ -32,6 +32,7 @@ import org.springframework.data.jpa.domain.Specification;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
@@ -53,8 +54,8 @@ public final class FeatureRequestSpecificationsHelper {
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Set<Predicate> init(FeatureRequestSearchParameters filters, Root<?> root, CriteriaQuery<?> query,
-            CriteriaBuilder cb, Pageable page) {
+    public static Set<Predicate> init(FeatureRequestSearchParameters filters, boolean searchProviderIdFromFeature,
+            Root<?> root, CriteriaQuery<?> query, CriteriaBuilder cb, Pageable page) {
         Set<Predicate> predicates = Sets.newHashSet();
 
         if (filters.getStart() != null) {
@@ -65,6 +66,11 @@ public final class FeatureRequestSpecificationsHelper {
         }
         if (filters.getState() != null) {
             predicates.add(cb.equal(root.get("state"), filters.getState()));
+        }
+        if ((filters.getProviderId() != null) && searchProviderIdFromFeature) {
+            Root<FeatureEntity> fr = query.from(FeatureEntity.class);
+            predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+            predicates.add(cb.like(cb.lower(fr.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
         }
 
         // Add order

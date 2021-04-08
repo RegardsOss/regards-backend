@@ -409,8 +409,7 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     @Override
     public Page<FeatureDeletionRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
         // Session,  source and providerId are unknown for deletion requests
-        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
-                || (searchParameters.getProviderId() != null)) {
+        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)) {
             return new PageImpl<>(Lists.newArrayList(), page, 0L);
         } else {
             return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(searchParameters, page),

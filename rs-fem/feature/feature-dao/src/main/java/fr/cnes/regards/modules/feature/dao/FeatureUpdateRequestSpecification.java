@@ -49,7 +49,12 @@ public class FeatureUpdateRequestSpecification {
     public static Specification<FeatureUpdateRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
+
+            if (filters.getProviderId() != null) {
+                predicates.add(cb.like(cb.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
+            }
+
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

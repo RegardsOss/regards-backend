@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
@@ -27,6 +28,9 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
 
     @Query("select distinct afr.requestId from AbstractFeatureRequest afr")
     Set<String> findRequestId();
+
+    @Query("select f.urn as urn, f.providerId as providerId from FeatureEntity f, AbstractFeatureRequest r where r.urn in :urns and r.urn=f.urn")
+    List<IProviderIdByUrn> findFeatureProviderIdFromRequestUrns(@Param("urns") List<FeatureUniformResourceName> urns);
 
     Set<T> findAllByRequestIdIn(List<String> requestIds);
 
