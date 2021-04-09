@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -57,9 +56,6 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
 
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
-
-    @Autowired
-    private IFeatureNotificationSettingsRepository notificationSettingsRepository;
 
     private boolean isToNotify;
 
@@ -199,8 +195,4 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         assertTrue(notScheduled.stream().allMatch(request -> PriorityLevel.NORMAL.equals(request.getPriority())));
     }
 
-    @Override
-    public void doAfter() {
-        notificationSettingsRepository.deleteAll();
-    }
 }

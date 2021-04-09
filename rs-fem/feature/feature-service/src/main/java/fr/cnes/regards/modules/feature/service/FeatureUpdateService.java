@@ -387,7 +387,7 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
         featureUpdateRequestRepo.saveAll(errorRequests);
 
         // if notifications are required
-        if (notificationSettingsService.retrieve().isActiveNotification()) {
+        if (notificationSettingsService.isActiveNotification()) {
             featureUpdateRequestRepo.updateStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
                                                 successfulRequest.stream().map(AbstractFeatureRequest::getId)
                                                         .collect(Collectors.toSet()));

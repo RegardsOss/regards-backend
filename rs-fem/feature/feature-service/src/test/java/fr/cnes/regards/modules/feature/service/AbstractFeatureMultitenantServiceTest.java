@@ -142,9 +142,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
     protected IAbstractFeatureRequestRepository<AbstractFeatureRequest> abstractFeatureRequestRepo;
 
     @Autowired
-    private IFeatureNotificationSettingsRepository featureNotificationSettingsRepo;
-
-    @Autowired
     protected IFeatureNotificationService featureNotificationService;
 
     @Autowired
@@ -199,7 +196,6 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
         this.featureRepo.deleteAllInBatch();
         this.notificationRequestRepo.deleteAllInBatch();
         this.jobInfoRepository.deleteAll();
-        this.featureNotificationSettingsRepo.deleteAll();
     }
 
     public void cleanQueues() {
@@ -461,7 +457,7 @@ public abstract class AbstractFeatureMultitenantServiceTest extends AbstractMult
 
 
     public boolean initDefaultNotificationSettings() {
-        return featureSettingsNotificationService.retrieve().isActiveNotification();
+        return featureSettingsNotificationService.isActiveNotification();
     }
 
 

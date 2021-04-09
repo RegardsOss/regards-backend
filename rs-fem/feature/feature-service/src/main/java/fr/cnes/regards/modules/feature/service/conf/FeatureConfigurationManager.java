@@ -18,26 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.service.conf;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
+import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Configuration manager for current module
@@ -68,14 +66,15 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
                     importErrors.add(String.format("New dump settings were not updated, cause by: %s", e.getMessage()));
                     LOGGER.error("Not able to update new dump settings, cause by:", e);
                 }
-            } else if (FeatureNotificationSettings.class.isAssignableFrom(item.getKey())) {
+            } else if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 notificationSettingsService.update(item.getTypedValue());
             } else {
                 String message = String.format(
                         "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
                         item.getKey(),
                         this.getClass().getName(),
-                        configuration.getModule().getName());
+                        configuration.getModule().getName()
+                );
                 importErrors.add(message);
                 LOGGER.warn(message);
             }
@@ -92,10 +91,8 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
             configurations.add(ModuleConfigurationItem.build(dumpSettings));
         }
 
-        FeatureNotificationSettings notifSettings = notificationSettingsService.retrieve();
-        if (notifSettings != null) {
-            configurations.add(ModuleConfigurationItem.build(notifSettings));
-        }
+        notificationSettingsService.retrieve()
+                .forEach(setting ->configurations.add(ModuleConfigurationItem.build(setting)));
 
         return ModuleConfiguration.build(info, true, configurations);
     }

@@ -18,22 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.assertj.core.util.Lists;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
@@ -43,6 +31,17 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import org.assertj.core.util.Lists;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test feature mutation based on null property values.
@@ -76,15 +75,16 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
     public void createAndUpdateTest() {
 
 
-        FeatureNotificationSettings settings = notificationSettingsService.retrieve();
-        settings.setActiveNotification(false);
-        notificationSettingsService.update(settings);
+        DynamicTenantSetting setting = notificationSettingsService.retrieve().get(0);
+        setting.setValue(false);
+        notificationSettingsService.update(setting);
 
 
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
                 .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true);
         String modelName = mockModelClient("feature_mutation_model.xml", this.getCps(), this.getFactory(),
-                                           this.getDefaultTenant(), this.getModelAttrAssocClientMock());
+                                           this.getDefaultTenant(), this.getModelAttrAssocClientMock()
+        );
 
         // Build feature to create
         String id = String.format("F%05d", 1);

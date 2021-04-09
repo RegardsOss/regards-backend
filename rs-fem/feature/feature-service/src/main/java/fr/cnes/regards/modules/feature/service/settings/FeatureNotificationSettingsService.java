@@ -20,8 +20,17 @@
 
 package fr.cnes.regards.modules.feature.service.settings;
 
-import java.util.Optional;
-
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -29,92 +38,88 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.feature.dao.IFeatureNotificationSettingsRepository;
-import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
+import java.util.List;
 
 /**
  * see {@link IFeatureNotificationSettingsService}
+ *
  * @author Iliana Ghazali
  */
 
 @Service
 @MultitenantTransactional
-public class FeatureNotificationSettingsService implements IFeatureNotificationSettingsService {
+public class FeatureNotificationSettingsService extends AbstractSettingService implements IFeatureNotificationSettingsService {
 
-    @Autowired
-    private IFeatureNotificationSettingsRepository notificationSettingsRepository;
+    private static final Logger LOG = LoggerFactory.getLogger(FeatureNotificationSettingsService.class);
 
-    @Autowired
     private ITenantResolver tenantsResolver;
-
-    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private IFeatureNotificationSettingsService self;
+    private FeatureNotificationSettingsService self;
+
+    public FeatureNotificationSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                              ITenantResolver tenantsResolver,
+                                              IRuntimeTenantResolver runtimeTenantResolver
+    ) {
+        super(dynamicTenantSettingService);
+        this.tenantsResolver = tenantsResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+    }
 
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) {
-        //for each tenant try to create notification settings, if it do not exists then create with default value
-        for(String tenant: tenantsResolver.getAllActiveTenants()) {
+    public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) throws EntityException {
+        for (String tenant : tenantsResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
-                self.initNotificationSettings();
+                self.init();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
         }
     }
 
-    @Override
-    public void initNotificationSettings() {
-        Optional<FeatureNotificationSettings> notificationSettingsOpt = notificationSettingsRepository.findFirstBy();
-        if (!notificationSettingsOpt.isPresent()) {
-            // init new settings
-            notificationSettingsRepository.save(new FeatureNotificationSettings());
-        }
-    }
-
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void onTenantConnectionReady(TenantConnectionReady event) {
+    public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
         runtimeTenantResolver.forceTenant(event.getTenant());
         try {
-            self.initNotificationSettings();
+            self.init();
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
     @Override
-    public FeatureNotificationSettings retrieve() {
-        return notificationSettingsRepository.findFirstBy().orElseThrow(() -> new RsRuntimeException(
-                "Tenant has not been correctly initialized by system!! Go and shout on the devs!"));
+    public List<DynamicTenantSetting> retrieve() {
+        return dynamicTenantSettingService.readAll();
     }
 
     @Override
-    public void update(FeatureNotificationSettings featureNotificationSettings) {
-        // SET ID (only one id is allowed for featureNotificationSettings)
-        featureNotificationSettings.setId();
-
-        // UPDATE SETTINGS if they already exist
-        Optional<FeatureNotificationSettings> featSettingsOpt = notificationSettingsRepository.findById(featureNotificationSettings.getId());
-        if (!featSettingsOpt.isPresent() || !featSettingsOpt.get().equals(featureNotificationSettings)) {
-            notificationSettingsRepository.save(featureNotificationSettings);
+    public void update(DynamicTenantSetting dynamicTenantSetting) {
+        try {
+            dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
+        } catch (EntityException e) {
+            LOG.error("Unable to update setting {}", dynamicTenantSetting.getName());
         }
     }
 
     @Override
-    public void resetSettings() {
-        notificationSettingsRepository.deleteAll();
-        initNotificationSettings();
+    public void resetSettings() throws EntityException {
+        deleteAll();
+        init();
     }
+
+    @Override
+    public boolean isActiveNotification() {
+        Boolean isActiveNotification = getValue(FeatureNotificationSettings.ACTIVE_NOTIFICATION);
+        return isActiveNotification != null && isActiveNotification;
+    }
+
+    @Override
+    protected List<DynamicTenantSetting> getSettingList() {
+        return FeatureNotificationSettings.SETTING_LIST;
+    }
+
 }
