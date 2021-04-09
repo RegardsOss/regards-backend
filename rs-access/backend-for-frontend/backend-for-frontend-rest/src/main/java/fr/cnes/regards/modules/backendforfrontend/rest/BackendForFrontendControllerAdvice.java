@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,17 +23,24 @@ import org.springframework.web.client.HttpStatusCodeException;
 @Order(0)
 public class BackendForFrontendControllerAdvice {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BackendForFrontendControllerAdvice.class);
+
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<JsonObject> httpClientErrorException(final HttpStatusCodeException exception) {
-        return ResponseEntity.status(exception.getStatusCode()).body(buildError(exception));
+        return buildError(exception);
     }
 
     @ExceptionHandler(HttpServerErrorException.class)
     public ResponseEntity<JsonObject> httpServerErrorException(final HttpServerErrorException exception) {
-        return ResponseEntity.status(exception.getStatusCode()).body(buildError(exception));
+        return buildError(exception);
     }
 
-    private JsonObject buildError(HttpStatusCodeException exception) {
-        return new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
+    private ResponseEntity<JsonObject> buildError(HttpStatusCodeException exception) {
+        LOGGER.error(exception.getMessage(), exception);
+        JsonObject jsonObject = new JsonParser().parse(exception.getResponseBodyAsString()).getAsJsonObject();
+        return ResponseEntity.status(exception.getStatusCode()).body(jsonObject);
     }
 }

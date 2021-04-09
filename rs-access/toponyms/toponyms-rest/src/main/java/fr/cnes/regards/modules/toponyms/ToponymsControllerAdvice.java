@@ -8,6 +8,8 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,11 @@ import java.util.Map;
 @RestControllerAdvice(annotations = RestController.class)
 @Order(0)
 public class ToponymsControllerAdvice {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsControllerAdvice.class);
 
     /**
      * Http Codes corresponding to the exception caught
@@ -46,7 +53,7 @@ public class ToponymsControllerAdvice {
      */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ServerErrorResponse> entityNotFoundException(final EntityNotFoundException exception) {
-        return ResponseEntity.status(getHttpStatus(exception.getClass().getName())).body(buildError(exception));
+        return buildError(exception);
     }
 
     // --- HANDLING POST EXCEPTIONS ---
@@ -59,7 +66,7 @@ public class ToponymsControllerAdvice {
      */
     @ExceptionHandler(ModuleException.class)
     public ResponseEntity<ServerErrorResponse> moduleException(final ModuleException exception) {
-        return ResponseEntity.status(getHttpStatus(exception.getClass().getName())).body(buildError(exception));
+        return buildError(exception);
     }
 
     /**
@@ -70,17 +77,19 @@ public class ToponymsControllerAdvice {
      */
     @ExceptionHandler(JsonProcessingException.class)
     public ResponseEntity<ServerErrorResponse> jsonProcessingException(final JsonProcessingException exception) {
-        return ResponseEntity.status(getHttpStatus(exception.getClass().getName())).body(buildError(exception));
+        return buildError(exception);
     }
 
     // --- UTILS ---
 
-    private ServerErrorResponse buildError(Exception exception) {
+    private ResponseEntity<ServerErrorResponse> buildError(Exception exception) {
         String message = exception.getMessage();
         if (exception.getCause() != null) {
             message += " Cause: " + exception.getCause().getMessage();
         }
-        return new ServerErrorResponse(message, exception);
+        LOGGER.error(message, exception);
+        return ResponseEntity.status(getHttpStatus(exception.getClass().getName()))
+                .body(new ServerErrorResponse(message, exception));
     }
 
     private HttpStatus getHttpStatus(String className) {

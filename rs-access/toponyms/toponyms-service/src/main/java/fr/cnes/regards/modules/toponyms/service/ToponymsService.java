@@ -36,6 +36,8 @@ import org.geolatte.geom.Geometry;
 import org.geolatte.geom.GeometryType;
 import org.geolatte.geom.Position;
 import org.geolatte.geom.json.GeolatteGeomModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
@@ -100,6 +102,11 @@ public class ToponymsService {
      * Maximum number of points to retrieve for each polygon of a geometry
      */
     private static final int POINT_SAMPLING_FINDALL = 50;
+
+    /**
+     * LOGGER
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
 
 
     /**
@@ -198,8 +205,13 @@ public class ToponymsService {
                 .findByGeometryAndVisibleAndToponymMetadataProject(geometry.toString(), project);
         if (!toponymRetrieved.isEmpty()) {
             // --- RETURN TOPONYM IF FOUND ---
+            if (toponymRetrieved.size() > 1) {
+                String toponymAsString = toponymRetrieved.stream().map(Toponym::getBusinessId)
+                        .collect(Collectors.joining(" - ", "[", "]"));
+                LOGGER.warn("The not visible toponym geometries should be unique per project. The following "
+                                    + "toponyms have the same geometry {}", toponymAsString);
+            }
             // update expiration date
-            // get first in list because the not visible toponym geometry is unique per project
             Toponym toponym = toponymRetrieved.get(0);
             toponym.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
             return getToponymDTO(this.repository.save(toponym), sampling);
@@ -255,6 +267,7 @@ public class ToponymsService {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new GeolatteGeomModule());
         // parse geometry
+        LOGGER.debug("Parsing geometry of feature {}", featureString);
         Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
         // if geometry could not be read
         if (feature.getGeometry() == null || feature.getGeometry().getGeometryType() == null) {
