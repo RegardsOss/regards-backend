@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -34,9 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,13 +43,13 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -73,6 +71,8 @@ import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestJob;
 import fr.cnes.regards.modules.storage.service.file.job.FileDeletionRequestsCreatorJob;
 import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 
 /**
  * Service to handle request to physically delete files thanks to {@link FileDeletionRequest}s.
@@ -121,14 +121,14 @@ public class FileDeletionRequestService {
     @Autowired
     private FileCacheRequestService fileCacheReqService;
 
-    @Autowired
-    private ILockService lockService;
-
     @Value("${regards.storage.deletion.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
     @Value("${regards.storage.deletion.requests.per.job:100}")
     private Integer nbRequestsPerJob;
+
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
 
     /**
      * Create a new {@link FileDeletionRequest}.
@@ -177,41 +177,21 @@ public class FileDeletionRequestService {
      */
     public Collection<JobInfo> scheduleJobs(FileRequestStatus status, Collection<String> storages) {
         Collection<JobInfo> jobList = Lists.newArrayList();
-        if (!lockDeletionProcess(false, 30)) {
-            LOGGER.info("[DELETION REQUESTS] Deletion process is delayed. A deletion process is already running.");
-            return jobList;
-        }
         try {
-            LOGGER.trace("[DELETION REQUESTS] Scheduling deletion jobs ...");
-            long start = System.currentTimeMillis();
-            Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
-            Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
-                    ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
-                    : allStorages;
-            int loop = 0;
-            for (String storage : deletionToSchedule) {
-                Page<FileDeletionRequest> deletionRequestPage;
-                Long maxId = 0L;
-                // Always search the first page of requests until there is no requests anymore.
-                // To do so, we order on id to ensure to not handle same requests multiple times.
-                Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
-                do {
-                    deletionRequestPage = fileDeletionRequestRepo
-                            .findByStorageAndStatusAndIdGreaterThan(storage, status, maxId, page);
-                    if (deletionRequestPage.hasContent()) {
-                        maxId = deletionRequestPage.stream().max(Comparator.comparing(FileDeletionRequest::getId)).get()
-                                .getId();
-                        jobList.addAll(self.scheduleDeletionJobsByStorage(storage, deletionRequestPage));
-                    }
-                    loop++;
-                } while (deletionRequestPage.hasContent() && (loop < 10));
+            TaskResult<Collection<JobInfo>> result = lockingTaskExecutors
+                    .executeWithLock(new FileDeletionTask(status, storages, nbRequestsPerJob, jobList,
+                            fileDeletionRequestRepo, self),
+                                     new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
+                                             Instant.now().plusSeconds(30)));
+            if (result.wasExecuted() && (result.getResult() != null)) {
+                jobList = result.getResult();
+            } else if (!result.wasExecuted()) {
+                LOGGER.info("Deletion jobs cannot be scheduled as the process is locked by another process");
             }
-            LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
-                         System.currentTimeMillis() - start);
-            return jobList;
-        } finally {
-            releaseLock();
+        } catch (Throwable e) {
+            LOGGER.error(e.getMessage(), e);
         }
+        return jobList;
     }
 
     /**
@@ -552,32 +532,6 @@ public class FileDeletionRequestService {
         } else {
             fileDeletionRequestRepo.deleteByStorage(storageLocationId);
         }
-    }
-
-    /**
-     * Lock deletion process for all instance of storage microservice
-     * @param blockingMode
-     * @param expiresIn seconds
-     */
-    public boolean lockDeletionProcess(boolean blockingMode, int expiresIn) {
-        boolean lock = false;
-        if (blockingMode) {
-            lock = lockService.waitForlock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem(), expiresIn, 30000);
-        } else {
-            lock = lockService.obtainLockOrSkip(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem(), expiresIn);
-        }
-        if (lock) {
-            LOGGER.trace("[DELETION PROCESS] Locked !");
-        }
-        return lock;
-    }
-
-    /**
-     * Release deletion process for all instance of storage microservice
-     */
-    public void releaseLock() {
-        lockService.releaseLock(DeletionFlowItem.DELETION_LOCK, new DeletionFlowItem());
-        LOGGER.trace("[DELETION PROCESS] Lock released !");
     }
 
     /**

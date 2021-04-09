@@ -18,22 +18,17 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -41,12 +36,12 @@ import org.springframework.util.Assert;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -58,7 +53,6 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
@@ -66,6 +60,7 @@ import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileCopyRequestsCreatorJob;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 
 /**
  * Service to handle {@link FileCopyRequest}s.
@@ -79,7 +74,7 @@ public class FileCopyRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileCopyRequestService.class);
 
-    private static final String COPY_PROCESS_LOCK = "copy-requests-lock";
+    public static final String COPY_PROCESS_LOCK = "copy-requests-lock";
 
     @Autowired
     private IFileCopyRequestRepository copyRepository;
@@ -109,10 +104,10 @@ public class FileCopyRequestService {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private ILockService lockService;
+    private RequestStatusService reqStatusService;
 
     @Autowired
-    private RequestStatusService reqStatusService;
+    private LockingTaskExecutors lockingTaskExecutors;
 
     @Value("${regards.storage.copy.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -213,42 +208,12 @@ public class FileCopyRequestService {
      * @param status status of copy requests to schedule.
      */
     public void scheduleCopyRequests(FileRequestStatus status) {
-        if (!lockCopyProcess(false, 30)) {
-            LOGGER.trace("[COPY FLOW HANDLER] Copy process delayed. A copy process is already running.");
-            return;
-        }
         try {
-            LOGGER.trace("[COPY REQUESTS] handling copy requests ...");
-            long start = System.currentTimeMillis();
-            Long maxId = 0L;
-            // Always search the first page of requests until there is no requests anymore.
-            // To do so, we order on id to ensure to not handle same requests multiple times.
-            Pageable page = PageRequest.of(0, AvailabilityFlowItem.MAX_REQUEST_PER_GROUP, Direction.ASC, "id");
-            Page<FileCopyRequest> pageResp = null;
-            // Allow file availability for one day to let enough time to next storage process to be perform.
-            OffsetDateTime expDate = OffsetDateTime.now().plusDays(1);
-            do {
-                String fileCacheGroupId = UUID.randomUUID().toString();
-                pageResp = copyRepository.findByStatusAndIdGreaterThan(status, maxId, page);
-                if (pageResp.hasContent()) {
-                    maxId = pageResp.stream().max(Comparator.comparing(FileCopyRequest::getId)).get().getId();
-                    Set<String> checksums = Sets.newHashSet();
-                    for (FileCopyRequest request : pageResp) {
-                        checksums.add(request.getMetaInfo().getChecksum());
-                        request.setFileCacheGroupId(fileCacheGroupId);
-                        request.setStatus(FileRequestStatus.PENDING);
-                    }
-
-                    if (!checksums.isEmpty()) {
-                        reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
-                                              expDate);
-                        fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
-                    }
-                }
-            } while (pageResp.hasContent());
-            LOGGER.debug("[COPY REQUESTS] Copy requests handled in {} ms", System.currentTimeMillis() - start);
-        } finally {
-            releaseLock();
+            lockingTaskExecutors
+                    .executeWithLock(new CopyRequestTask(fileCacheReqService, copyRepository, reqGrpService, status),
+                                     new LockConfiguration(COPY_PROCESS_LOCK, Instant.now().plusSeconds(30)));
+        } catch (Throwable e) {
+            LOGGER.trace("[COPY FLOW HANDLER] Copy process delayed. A copy process is already running.", e);
         }
     }
 
@@ -423,32 +388,6 @@ public class FileCopyRequestService {
                                                                   Sets.newHashSet(FileRequestStatus.RUNNING_STATUS));
         }
         return isRunning;
-    }
-
-    /**
-     * Lock copy process for all instance of storage microservice
-     * @param blockingMode
-     * @param expiresIn seconds
-     */
-    public boolean lockCopyProcess(boolean blockingMode, int expiresIn) {
-        boolean lock = false;
-        if (blockingMode) {
-            lock = lockService.waitForlock(COPY_PROCESS_LOCK, new CopyFlowItem(), expiresIn, 30000);
-        } else {
-            lock = lockService.obtainLockOrSkip(COPY_PROCESS_LOCK, new CopyFlowItem(), expiresIn);
-        }
-        if (lock) {
-            LOGGER.trace("[COPY PROCESS] Locked !");
-        }
-        return lock;
-    }
-
-    /**
-     * Release deletion process for all instance of storage microservice
-     */
-    public void releaseLock() {
-        lockService.releaseLock(COPY_PROCESS_LOCK, new CopyFlowItem());
-        LOGGER.trace("[COPY PROCESS] Lock released !");
     }
 
     /**

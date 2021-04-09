@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -51,6 +53,8 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Test class
@@ -74,6 +78,11 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
 
     @Autowired
     FileStorageRequestService fileStorageReqService;
+
+    @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    private static boolean waitForLock = false;
 
     @Before
     public void initialize() throws ModuleException {
@@ -293,8 +302,29 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
     }
 
+    public class LockDeletion extends Thread {
+
+        private final Task wait = () -> {
+            do {
+                Thread.sleep(1000);
+            } while (waitForLock);
+        };
+
+        @Override
+        public void run() {
+            try {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                lockingTaskExecutors.executeWithLock(wait, new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
+                        Instant.now().plusSeconds(30)));
+            } catch (Throwable e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Test
-    public void testLock() throws InterruptedException, ExecutionException {
+    public void testLock() throws Throwable {
 
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
@@ -307,7 +337,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         String storage = fileRef.getLocation().getStorage();
 
         // Simulate a lock
-        fileDeletionRequestService.lockDeletionProcess(false, 10);
+        waitForLock = true;
+        (new LockDeletion()).start();
 
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum, storage, owner, false),
                                                        UUID.randomUUID().toString());
@@ -320,7 +351,8 @@ public class DeleteFileReferenceFlowItemTest extends AbstractStorageTest {
         Assert.assertTrue("No deletion job can be scheduled yet", jobs.isEmpty());
 
         // Simulate unlock
-        fileDeletionRequestService.releaseLock();
+        waitForLock = false;
+        Thread.sleep(1100);
         jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList());
         Assert.assertFalse("Deletion jobs should be scheduled now", jobs.isEmpty());
     }
