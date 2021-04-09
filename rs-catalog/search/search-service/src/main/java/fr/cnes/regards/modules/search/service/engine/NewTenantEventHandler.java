@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +29,14 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * Handler to manage new tenant for microservice initializations.
@@ -39,10 +45,17 @@ import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchE
 @Component
 public class NewTenantEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(NewTenantEventHandler.class);
+
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(NewTenantEventHandler.class);
+
+    /**
+     * Name of the lock used in this service
+     */
+    public static final String SEARCH_ENGINE_LOCK_NAME = "initDefaultSearchEngine";
 
     @Autowired
     private ISearchEngineConfigurationService engineService;
@@ -51,7 +64,15 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    private LockingTaskExecutors lockingTaskExecutors;
+
+    @Autowired
     private ITenantResolver resolver;
+
+    private final Task initLegacySearchEngine = () -> {
+        LockAssert.assertLocked();
+        engineService.initDefaultSearchEngine(LegacySearchEngine.class);
+    };
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
@@ -60,7 +81,12 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
         for (String tenant : resolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                engineService.initDefaultSearchEngine(LegacySearchEngine.class);
+                try {
+                    lockingTaskExecutors.executeWithLock(initLegacySearchEngine, new LockConfiguration(
+                            SEARCH_ENGINE_LOCK_NAME, Instant.now().plusSeconds(30)));
+                } catch (Throwable e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -73,7 +99,13 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
             LOG.info("New tenant ready, initializing search-module for tenant {}.", event.getTenant());
             String tenant = event.getTenant();
             runtimeTenantResolver.forceTenant(tenant);
-            engineService.initDefaultSearchEngine(LegacySearchEngine.class);
+            try {
+                lockingTaskExecutors
+                        .executeWithLock(initLegacySearchEngine,
+                                         new LockConfiguration(SEARCH_ENGINE_LOCK_NAME, Instant.now().plusSeconds(30)));
+            } catch (Throwable e) {
+                LOGGER.error(e.getMessage(), e);
+            }
             LOG.info("New tenant ready, search-module initialized");
         } finally {
             runtimeTenantResolver.clearTenant();

@@ -45,7 +45,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -70,11 +69,6 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationService.class);
 
-    /**
-     * Name of the lock used in this service
-     */
-    public static final String SEARCH_ENGINE_LOCK_NAME = "initDefaultSearchEngine";
-
     public static final String LEGACY_SEARCH_ENGINE_BUSINESS_ID = "search-engine-legacy";
 
     @Autowired
@@ -92,9 +86,6 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IDatasetClient datasetClient;
 
-    @Autowired
-    private ILockService lockService;
-
     @PostConstruct
     public void listenForDatasetEvents() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -103,29 +94,22 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass) {
-        // if the lock is null it means it could not be acquired
-        if (lockService.obtainLockOrSkip(SEARCH_ENGINE_LOCK_NAME, this, 10L)) {
+        // Initialize the mandatory legacy searchengine if it does not exists yet.
+        SearchEngineConfiguration conf = repository
+                .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
+        if (conf == null) {
+            // Create the new one
+            conf = new SearchEngineConfiguration();
+            conf.setLabel("REGARDS search protocol");
+            PluginConfiguration pluginConf = PluginConfiguration.build(legacySearchEnginePluginClass, null,
+                                                                       IPluginParam.set());
+            pluginConf.setBusinessId(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
+            pluginConf.setLabel(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
+            conf.setConfiguration(pluginConf);
             try {
-                // Initialize the mandatory legacy searchengine if it does not exists yet.
-                SearchEngineConfiguration conf = repository
-                        .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
-                if (conf == null) {
-                    // Create the new one
-                    conf = new SearchEngineConfiguration();
-                    conf.setLabel("REGARDS search protocol");
-                    PluginConfiguration pluginConf = PluginConfiguration.build(legacySearchEnginePluginClass, null,
-                                                                               IPluginParam.set());
-                    pluginConf.setBusinessId(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
-                    pluginConf.setLabel(LEGACY_SEARCH_ENGINE_BUSINESS_ID);
-                    conf.setConfiguration(pluginConf);
-                    try {
-                        createConf(conf);
-                    } catch (ModuleException e) {
-                        LOGGER.error("Error initializing legacy search engine", e);
-                    }
-                }
-            } finally {
-                lockService.releaseLock(SEARCH_ENGINE_LOCK_NAME, this);
+                createConf(conf);
+            } catch (ModuleException e) {
+                LOGGER.error("Error initializing legacy search engine", e);
             }
         }
     }
