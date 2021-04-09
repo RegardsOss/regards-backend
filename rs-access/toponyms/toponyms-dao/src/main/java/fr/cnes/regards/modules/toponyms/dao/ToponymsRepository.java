@@ -20,13 +20,15 @@ package fr.cnes.regards.modules.toponyms.dao;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
-import java.time.OffsetDateTime;
-import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -50,6 +52,7 @@ public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaS
 
     int countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(String user, OffsetDateTime startDate, OffsetDateTime endDate);
 
-    @Query(value = "select count(*) from {h-schema}t_toponyms where public.ST_Equals(geom, public.ST_GeomFromText(?1))", nativeQuery = true)
-    int countByGeometry(String geometry);
+    @Query(value = "select * from {h-schema}t_toponyms where public.ST_Equals(geom, public.ST_GeomFromText(?1)) and "
+            + "visible is false and project = ?2", nativeQuery = true)
+    List<Toponym> findByGeometryAndVisibleAndToponymMetadataProject(String geometry, String project);
 }

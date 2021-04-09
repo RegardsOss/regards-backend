@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.toponyms.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
@@ -32,6 +31,18 @@ import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledExc
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
+import org.geolatte.geom.Feature;
+import org.geolatte.geom.Geometry;
+import org.geolatte.geom.GeometryType;
+import org.geolatte.geom.Position;
+import org.geolatte.geom.json.GeolatteGeomModule;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -40,21 +51,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.geolatte.geom.Feature;
-import org.geolatte.geom.Geometry;
-import org.geolatte.geom.GeometryType;
-import org.geolatte.geom.Position;
-import org.geolatte.geom.json.GeolatteGeomModule;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Service to search {@link ToponymDTO}s from a postgis database
@@ -183,50 +179,75 @@ public class ToponymsService {
                                 t.getDescription(), t.isVisible(), t.getToponymMetadata())).collect(Collectors.toList());
     }
 
-
     /**
      * Generate a not visible toponym
-     * @param user the user who has requested the toponym creation
-     * @param project the project on which the toponym has been dropped
+     *
+     * @param featureString the feature received as string
+     * @param user          the user who has requested the toponym creation
+     * @param project       the project on which the toponym has been dropped
      * @return a {@link ToponymDTO}
+     * @throws ModuleException         if a problem occurred during the parsing of the geometry
+     * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
-    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project) throws ModuleException, JsonProcessingException {
-        // Count if user has reached the limit of toponyms to save per day
-        OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
-        int nbCreations = this.repository.countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime, OffsetDateTime.now());
-
-        if (nbCreations >= this.limitSave) {
-            throw new MaxLimitPerDayException(String.format("User %s has reached the maximum number of toponyms to be saved in one day (max. %d).", user, this.limitSave));
+    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project)
+            throws ModuleException, JsonProcessingException {
+        // --- GEOMETRY PARSING ---
+        Geometry<Position> geometry = parseGeometry(featureString);
+        // check geometry is not already present in the database for this project
+        List<Toponym> toponymRetrieved = this.repository
+                .findByGeometryAndVisibleAndToponymMetadataProject(geometry.toString(), project);
+        if (!toponymRetrieved.isEmpty()) {
+            // --- RETURN TOPONYM IF FOUND ---
+            // update expiration date
+            // get first in list because the not visible toponym geometry is unique per project
+            Toponym toponym = toponymRetrieved.get(0);
+            toponym.getToponymMetadata().setExpirationDate(OffsetDateTime.now().plusDays(this.defaultExpiration));
+            return getToponymDTO(this.repository.save(toponym), sampling);
         } else {
-            // --- GEOMETRY PARSING ---
-            Geometry<Position> geometry = parseGeometry(featureString);
-            // --- TOPONYM GENERATION
-            // define parameters
-            OffsetDateTime currentDateTime = OffsetDateTime.now();
-            String bid = String.format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            ToponymMetadata metadata = new ToponymMetadata(currentDateTime, currentDateTime.plusDays(this.defaultExpiration), user, project);
-            return getToponymDTO(this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)), sampling);
+            // --- CREATE TOPONYM ---
+            // Count if user has reached the limit of toponyms to save per day
+            OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
+            int nbCreations = this.repository
+                    .countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime,
+                                                                                       OffsetDateTime.now());
+            if (nbCreations >= this.limitSave) {
+                throw new MaxLimitPerDayException(String.format(
+                        "User %s has reached the maximum number of toponyms to be saved in one day (max. %d).", user,
+                        this.limitSave));
+            } else {
+                // define parameters
+                OffsetDateTime currentDateTime = OffsetDateTime.now();
+                String bid = String
+                        .format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                ToponymMetadata metadata = new ToponymMetadata(currentDateTime,
+                                                               currentDateTime.plusDays(this.defaultExpiration), user,
+                                                               project);
+                return getToponymDTO(
+                        this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)),
+                        sampling);
+            }
         }
     }
 
     /**
      * Utils method to get the {@link ToponymDTO} from a {@link Toponym}
-     * @param t toponym
+     *
+     * @param t           toponym
      * @param samplingMax maximum number of points to retrieve in geometry
      * @return {@link ToponymDTO}
      */
     public ToponymDTO getToponymDTO(Toponym t, int samplingMax) {
         return ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
-                ToponymsIGeometryHelper.parseLatteGeometry(t.getGeometry(), samplingMax), t.getCopyright(),
-                t.getDescription(), t.isVisible(), t.getToponymMetadata());
+                                ToponymsIGeometryHelper.parseLatteGeometry(t.getGeometry(), samplingMax),
+                                t.getCopyright(), t.getDescription(), t.isVisible(), t.getToponymMetadata());
     }
-
 
     /**
      * Utils method to parse a geometry
+     *
      * @param featureString the feature in string format
      * @return the geometry with {@link Geometry} format
-     * @throws ModuleException if a problem occurred during the parsing of the geometry
+     * @throws ModuleException         if a problem occurred during the parsing of the geometry
      * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
     private Geometry<Position> parseGeometry(String featureString) throws ModuleException, JsonProcessingException {
@@ -237,18 +258,15 @@ public class ToponymsService {
         Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
         // if geometry could not be read
         if (feature.getGeometry() == null || feature.getGeometry().getGeometryType() == null) {
-            throw new GeometryNotProcessedException("The geometry could not be processed. The toponym will not be saved. " +
-                    "Check the format of the geojson feature");
+            throw new GeometryNotProcessedException(
+                    "The geometry could not be processed. The toponym will not be saved. "
+                            + "Check the format of the geojson feature.");
         } else {
             Geometry<Position> geometry = (Geometry<Position>) feature.getGeometry();
             // refuse not handled geometry types
             GeometryType geometryType = geometry.getGeometryType();
             if (!geometryType.equals(GeometryType.POLYGON) && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
                 throw new GeometryNotHandledException(geometryType.toString());
-            }
-            // check geometry is not already present in the database
-            if (this.repository.countByGeometry(geometry.toString()) > 0) {
-                throw new EntityAlreadyExistsException("The geometry parsed already exists in the database. The toponym will not be saved.");
             }
             return geometry;
         }

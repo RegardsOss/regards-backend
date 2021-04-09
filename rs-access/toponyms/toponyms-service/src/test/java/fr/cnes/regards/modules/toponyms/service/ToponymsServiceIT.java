@@ -22,7 +22,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -33,12 +32,6 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,12 +41,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
- *
  * @author Sébastien Binda
- *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_it", "regards.toponyms.expiration=30"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_it",
+        "regards.toponyms.expiration=30" })
 @RegardsTransactional
 public class ToponymsServiceIT extends AbstractRegardsIT {
 
@@ -116,14 +115,16 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
         // Test expiration date of visible toponym
         Optional<ToponymDTO> visibleToponym = service.findOne("France", false);
         Assert.assertTrue(String.format("Toponym %s should be present", visibleToponym), visibleToponym.isPresent());
-        Assert.assertTrue("expirationDate of a visible toponym should always be empty", visibleToponym.get().getToponymMetadata().getExpirationDate() == null);
+        Assert.assertTrue("expirationDate of a visible toponym should always be empty",
+                          visibleToponym.get().getToponymMetadata().getExpirationDate() == null);
 
         // Test expiration date of not visible toponym
         OffsetDateTime oldDateTime = this.temporaryToponyms.get(0).getToponymMetadata().getExpirationDate();
         Optional<ToponymDTO> notVisibleToponym = service.findOne(this.temporaryToponyms.get(0).getBusinessId(), false);
-        Assert.assertTrue(String.format("Toponym %s should be present", notVisibleToponym), notVisibleToponym.isPresent());
-        Assert.assertNotEquals("expirationDate should have been updated", oldDateTime
-                , notVisibleToponym.get().getToponymMetadata().getExpirationDate());
+        Assert.assertTrue(String.format("Toponym %s should be present", notVisibleToponym),
+                          notVisibleToponym.isPresent());
+        Assert.assertNotEquals("expirationDate should have been updated", oldDateTime,
+                               notVisibleToponym.get().getToponymMetadata().getExpirationDate());
 
     }
 
@@ -136,18 +137,39 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
     public void parseValidFeature() throws ModuleException, JsonProcessingException {
         // Init
         String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
-        String multipolygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"MultiPolygon\", \"coordinates\": [" +
-                "[[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]]," +
-                "[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]," +
-                "[[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]]" +
-                "]}}";
+        String multipolygon =
+                "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"MultiPolygon\", \"coordinates\": ["
+                        + "[[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]],"
+                        + "[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]],"
+                        + "[[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]]" + "]}}";
         ToponymDTO polygonToponym = this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
-        ToponymDTO multiPolygonToponym = this.service.generateNotVisibleToponym(multipolygon, "test_user", "test_project");
+        ToponymDTO multiPolygonToponym = this.service
+                .generateNotVisibleToponym(multipolygon, "test_user", "test_project");
 
         // Test result
-        Assert.assertTrue("Geometry should be present and of type Polygon", polygonToponym.getGeometry() != null && polygonToponym.getGeometry().getType().equals(GeoJsonType.POLYGON));
-        Assert.assertTrue("Multipolygon Geometry should be present and of type Multipolygon", multiPolygonToponym.getGeometry() != null && multiPolygonToponym.getGeometry().getType().equals(GeoJsonType.MULTIPOLYGON));
+        Assert.assertTrue("Geometry should be present and of type Polygon",
+                          polygonToponym.getGeometry() != null && polygonToponym.getGeometry().getType()
+                                  .equals(GeoJsonType.POLYGON));
+        Assert.assertTrue("Multipolygon Geometry should be present and of type Multipolygon",
+                          multiPolygonToponym.getGeometry() != null && multiPolygonToponym.getGeometry().getType()
+                                  .equals(GeoJsonType.MULTIPOLYGON));
 
+    }
+
+    @Test
+    @Purpose("Parse already existing geometry")
+    public void parseAlreadyExistingGeometry() throws ModuleException, JsonProcessingException {
+        String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
+        // create toponym
+        ToponymDTO toponymCreated = this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
+        OffsetDateTime toponymCreatedDate = toponymCreated.getToponymMetadata().getExpirationDate();
+        // get toponym
+        ToponymDTO toponymRetrieved = this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
+        // test the same toponym is retrieved but with an updated expiration date
+        Assert.assertEquals("Toponym should be the same", toponymCreated.getBusinessId(),
+                            toponymRetrieved.getBusinessId());
+        Assert.assertNotEquals("Expiration date should have been updated", toponymCreatedDate,
+                               toponymRetrieved.getToponymMetadata().getExpirationDate());
     }
 
     // -------------------------------
@@ -175,14 +197,6 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }
 
-    @Test(expected = EntityAlreadyExistsException.class)
-    @Purpose("Parse already existing geometry")
-    public void parseAlreadyExistingGeometry() throws ModuleException, JsonProcessingException {
-        String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
-        this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
-        this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
-    }
-
     // -------------------------------
     // ------------ UTILS ------------
     // -------------------------------
@@ -193,7 +207,9 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
         for (int i = 0; i < nbToponyms; i++) {
             String name = "ToponymTest " + i;
             OffsetDateTime currentDateTime = OffsetDateTime.now();
-            ToponymMetadata metadata = new ToponymMetadata(currentDateTime, currentDateTime.plusDays(this.defaultExpiration), "test_user", "test_project");
+            ToponymMetadata metadata = new ToponymMetadata(currentDateTime,
+                                                           currentDateTime.plusDays(this.defaultExpiration),
+                                                           "test_user", "test_project");
             notVisibleToponyms.add(new Toponym(name, name, name, null, null, null, false, metadata));
         }
         return this.toponymRepo.saveAll(notVisibleToponyms);
