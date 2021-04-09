@@ -33,21 +33,7 @@ public class AccountSettingsService extends AbstractSettingService {
     }
 
     public boolean isAutoAccept() {
-        boolean isAutoAccept = false;
-        try {
-            isAutoAccept = AccountSettings.ValidationMode.AUTO_ACCEPT.equals(currentMode());
-        } catch (EntityNotFoundException e) {
-            // do Nothing
-        }
-        return isAutoAccept;
-    }
-
-    public AccountSettings.ValidationMode currentMode() throws EntityNotFoundException {
-        return AccountSettings.ValidationMode.fromName(
-                dynamicTenantSettingService
-                        .read(AccountSettings.VALIDATION_SETTING.getName())
-                        .orElseThrow(() -> new EntityNotFoundException(AccountSettings.VALIDATION_SETTING.getName(), DynamicTenantSetting.class))
-                        .getValue());
+        return AccountSettings.ValidationMode.AUTO_ACCEPT.equals(AccountSettings.ValidationMode.fromName(getValue(AccountSettings.VALIDATION)));
     }
 
 }

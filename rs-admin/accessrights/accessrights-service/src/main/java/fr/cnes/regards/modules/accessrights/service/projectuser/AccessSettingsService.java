@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
@@ -42,8 +41,6 @@ import java.util.List;
 @Service
 @RegardsTransactional
 public class AccessSettingsService extends AbstractSettingService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AccessSettingsService.class);
 
     @Autowired
     private AccessSettingsService self;
@@ -88,23 +85,16 @@ public class AccessSettingsService extends AbstractSettingService {
         }
     }
 
-    public boolean isAutoAccept() {
-        boolean isAutoAccept = false;
-        try {
-            isAutoAccept = AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(currentMode());
-        } catch (EntityNotFoundException e) {
-            // do Nothing
-        }
-        return isAutoAccept;
+    public String defaultRole() {
+        return getValue(AccessSettings.DEFAULT_ROLE);
     }
 
-    private AccessSettings.AcceptanceMode currentMode() throws EntityNotFoundException {
-        return AccessSettings.AcceptanceMode.fromName(
-                dynamicTenantSettingService
-                        .read(AccessSettings.MODE_SETTING.getName())
-                        .orElseThrow(() -> new EntityNotFoundException(AccessSettings.MODE_SETTING.getName(), DynamicTenantSetting.class))
-                        .getName()
-        );
+    public List<String> defaultGroups() {
+        return getValue(AccessSettings.DEFAULT_GROUPS);
+    }
+
+    public boolean isAutoAccept() {
+        return AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(AccessSettings.AcceptanceMode.fromName(getValue(AccessSettings.MODE)));
     }
 
 }

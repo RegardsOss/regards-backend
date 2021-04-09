@@ -24,7 +24,7 @@ public class DefaultRoleSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.DEFAULT_ROLE_SETTING.getName().equals(dynamicTenantSetting.getName());
+        return AccessSettings.DEFAULT_ROLE.equals(dynamicTenantSetting.getName());
     }
 
 }

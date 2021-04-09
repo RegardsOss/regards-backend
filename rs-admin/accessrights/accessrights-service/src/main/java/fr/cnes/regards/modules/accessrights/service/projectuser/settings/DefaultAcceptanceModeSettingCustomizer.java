@@ -17,7 +17,7 @@ public class DefaultAcceptanceModeSettingCustomizer implements IDynamicTenantSet
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.MODE_SETTING.getName().equals(dynamicTenantSetting.getName());
+        return AccessSettings.MODE.equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {

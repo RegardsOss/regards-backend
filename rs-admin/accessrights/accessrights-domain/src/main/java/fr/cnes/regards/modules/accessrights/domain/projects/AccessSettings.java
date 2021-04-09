@@ -30,26 +30,27 @@ public final class AccessSettings {
     private AccessSettings() {
     }
 
+    public static final String MODE = "acceptance_mode";
+    public static final String DEFAULT_ROLE = "default_role";
+    public static final String DEFAULT_GROUPS = "default_groups";
+
     public static final AcceptanceMode DEFAULT_MODE = AcceptanceMode.AUTO_ACCEPT;
 
     public static final DynamicTenantSetting MODE_SETTING = new DynamicTenantSetting(
-            "acceptance_mode",
+            MODE,
             "Acceptance Mode",
             DEFAULT_MODE.getName()
     );
-
     public static final DynamicTenantSetting DEFAULT_ROLE_SETTING = new DynamicTenantSetting(
-            "default_role",
+            DEFAULT_ROLE,
             "Default Role",
             DefaultRole.REGISTERED_USER.toString()
     );
-
     public static final DynamicTenantSetting DEFAULT_GROUPS_SETTING = new DynamicTenantSetting(
-            "default_groups",
+            DEFAULT_GROUPS,
             "Default Groups",
             new ArrayList<>()
     );
-
     public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
             MODE_SETTING,
             DEFAULT_ROLE_SETTING,

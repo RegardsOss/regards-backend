@@ -19,7 +19,7 @@ public class DefaultGroupsSettingCustomizer implements IDynamicTenantSettingCust
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return AccessSettings.DEFAULT_GROUPS_SETTING.getName().equals(dynamicTenantSetting.getName());
+        return AccessSettings.DEFAULT_GROUPS.equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {

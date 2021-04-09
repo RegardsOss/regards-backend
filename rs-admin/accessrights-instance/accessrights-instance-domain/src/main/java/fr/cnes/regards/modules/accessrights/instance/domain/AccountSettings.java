@@ -10,14 +10,15 @@ public final class AccountSettings {
     private AccountSettings() {
     }
 
+    public static final String VALIDATION = "account_validation_mode";
+
     public static final ValidationMode DEFAULT_VALIDATION_MODE = ValidationMode.AUTO_ACCEPT;
 
     public static final DynamicTenantSetting VALIDATION_SETTING = new DynamicTenantSetting(
-            "account_validation_mode",
+            VALIDATION,
             "Accept Mode",
             DEFAULT_VALIDATION_MODE.getName()
     );
-
     public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
             VALIDATION_SETTING
     );
