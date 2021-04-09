@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 
 /**
  * JPA {@link Specification} to search for {@link AbstractRequest}s
@@ -47,30 +47,45 @@ public final class FeatureRequestSpecificationsHelper {
 
     /**
      * Creates search {@link Predicate}s for {@link Specification} search request about {@link AbstractFeatureRequest}s
-     * @param filters {@link FeatureRequestSearchParameters}
+     * @param filters {@link FeatureRequestsSelectionDTO}
+     * @param searchProviderIdFromFeature boolean
      * @param root
      * @param query
      * @param cb
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Set<Predicate> init(FeatureRequestSearchParameters filters, boolean searchProviderIdFromFeature,
+    public static Set<Predicate> init(FeatureRequestsSelectionDTO selection, boolean searchProviderIdFromFeature,
             Root<?> root, CriteriaQuery<?> query, CriteriaBuilder cb, Pageable page) {
         Set<Predicate> predicates = Sets.newHashSet();
 
-        if (filters.getStart() != null) {
-            predicates.add(cb.greaterThanOrEqualTo(root.get("registrationDate"), filters.getStart()));
+        if (selection.getFilters() != null) {
+            if (selection.getFilters().getFrom() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("registrationDate"), selection.getFilters().getFrom()));
+            }
+            if (selection.getFilters().getTo() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("registrationDate"), selection.getFilters().getTo()));
+            }
+            if (selection.getFilters().getState() != null) {
+                predicates.add(cb.equal(root.get("state"), selection.getFilters().getState()));
+            }
+            if ((selection.getFilters().getProviderId() != null) && searchProviderIdFromFeature) {
+                Root<FeatureEntity> fr = query.from(FeatureEntity.class);
+                predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+                predicates.add(cb.like(cb.lower(fr.get("providerId")),
+                                       selection.getFilters().getProviderId().toLowerCase() + "%"));
+            }
+            if (!selection.getExcludedIds().isEmpty()) {
+                Set<Predicate> idsPredicates = Sets.newHashSet();
+                selection.getExcludedIds()
+                        .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
+            }
         }
-        if (filters.getEnd() != null) {
-            predicates.add(cb.lessThanOrEqualTo(root.get("registrationDate"), filters.getEnd()));
-        }
-        if (filters.getState() != null) {
-            predicates.add(cb.equal(root.get("state"), filters.getState()));
-        }
-        if ((filters.getProviderId() != null) && searchProviderIdFromFeature) {
-            Root<FeatureEntity> fr = query.from(FeatureEntity.class);
-            predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
-            predicates.add(cb.like(cb.lower(fr.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
+        if (!selection.getIncludedIds().isEmpty()) {
+            Set<Predicate> idsPredicates = Sets.newHashSet();
+            selection.getIncludedIds().forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+            predicates.add(cb.or(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
         }
 
         // Add order

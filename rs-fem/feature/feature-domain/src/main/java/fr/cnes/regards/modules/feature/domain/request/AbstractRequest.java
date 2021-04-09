@@ -174,6 +174,10 @@ public abstract class AbstractRequest {
         this.requestOwner = requestOwner;
     }
 
+    public boolean isDeletable() {
+        return (this.state == RequestState.ERROR) || (this.step == FeatureRequestStep.LOCAL_DELAYED);
+    }
+
     public static FeatureRequestDTO toDTO(AbstractRequest request) {
         FeatureRequestDTO dto = new FeatureRequestDTO();
         dto.setId(request.getId());

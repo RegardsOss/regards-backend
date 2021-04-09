@@ -26,11 +26,12 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
@@ -82,9 +83,16 @@ public interface IFeatureExtractionService extends IRequestDeniedService, IReque
 
     /**
      * Find all {@link FeatureExtractionRequest}s
-     * @param searchParameters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureCreationRequest}s
      */
-    RequestsPage<FeatureRequestDTO> findRequests(FeatureRequestSearchParameters parameters, Pageable page);
+    RequestsPage<FeatureRequestDTO> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Delete requests by selection
+     * @param requestId
+     * @throws EntityOperationForbiddenException
+     */
+    public void deleteRequests(FeatureRequestsSelectionDTO selection);
 }

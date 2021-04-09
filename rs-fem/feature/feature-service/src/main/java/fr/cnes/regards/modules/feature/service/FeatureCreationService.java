@@ -74,7 +74,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -490,19 +490,36 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Page<FeatureCreationRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+    public Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
         return featureCreationRequestRepo
-                .findAll(FeatureCreationRequestSpecification.searchAllByFilters(searchParameters, page), page);
+                .findAll(FeatureCreationRequestSpecification.searchAllByFilters(selection, page), page);
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
-            searchParameters.withState(RequestState.ERROR);
-            return RequestsInfo.build(featureCreationRequestRepo.count(FeatureCreationRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(featureCreationRequestRepo
+                    .count(FeatureCreationRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
+    }
+
+    @Override
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureCreationRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            featureCreationRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
     }
 }

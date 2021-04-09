@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 
 /**
  * JPA Specification to search for {@link FeatureUpdateRequest} from {@link IFeatureUpdateRequestRepository}
@@ -42,19 +42,21 @@ public class FeatureUpdateRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureUpdateRequest}s
-     * @param filters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureUpdateRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureUpdateRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
-
-            if (filters.getProviderId() != null) {
-                predicates.add(cb.like(cb.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
+                                                                                page);
+            if (selection.getFilters() != null) {
+                if (selection.getFilters().getProviderId() != null) {
+                    predicates.add(cb.like(cb.lower(root.get("providerId")),
+                                           selection.getFilters().getProviderId().toLowerCase() + "%"));
+                }
             }
-
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

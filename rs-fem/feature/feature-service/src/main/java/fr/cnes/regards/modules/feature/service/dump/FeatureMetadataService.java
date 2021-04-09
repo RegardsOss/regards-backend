@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
@@ -66,6 +66,8 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 public class FeatureMetadataService implements IFeatureMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMetadataService.class);
+
+    private static final int MAX_PAGE_TO_DELETE = 4;
 
     // Limit number of features to retrieve in one page
     @Value("${regards.feature.dump.zip-limit:1000}")
@@ -185,19 +187,37 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestSearchParameters searchParameters,
-            Pageable page) {
-        return featureSaveMetadataRepository.findAll(page);
+    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return featureSaveMetadataRepository
+                .findAll(FeatureSaveMetadataRequestSpecification.searchAllByFilters(selection, page), page);
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
-            searchParameters.withState(RequestState.ERROR);
+            selection.getFilters().withState(RequestState.ERROR);
             return RequestsInfo.build(featureSaveMetadataRepository.count(FeatureSaveMetadataRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+                    .searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
     }
+
+    @Override
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureSaveMetadataRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            featureSaveMetadataRepository.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
+    }
+
 }

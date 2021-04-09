@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 
 /**
  * JPA Specification to search for {@link FeatureCreationRequest} from {@link IFeatureCreationRequestRepositoryatu}
@@ -42,23 +42,29 @@ public class FeatureCreationRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureCreationRequest}s
-     * @param filters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureCreationRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureCreationRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
 
-            if (filters.getProviderId() != null) {
-                predicates.add(cb.like(cb.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
-            }
-            if (filters.getSource() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("sessionOwner"), filters.getSource()));
-            }
-            if (filters.getSession() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("session"), filters.getSession()));
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
+                                                                                page);
+
+            if (selection.getFilters() != null) {
+                if (selection.getFilters().getProviderId() != null) {
+                    predicates.add(cb.like(cb.lower(root.get("providerId")),
+                                           selection.getFilters().getProviderId().toLowerCase() + "%"));
+                }
+                if (selection.getFilters().getSource() != null) {
+                    predicates.add(cb.equal(root.get("metadata").get("sessionOwner"),
+                                            selection.getFilters().getSource()));
+                }
+                if (selection.getFilters().getSession() != null) {
+                    predicates.add(cb.equal(root.get("metadata").get("session"), selection.getFilters().getSession()));
+                }
             }
 
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

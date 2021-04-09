@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -248,25 +248,43 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     }
 
     @Override
-    public Page<FeatureCopyRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
+    public Page<FeatureCopyRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
         // Session,  source and providerId are unknown for copy requests
-        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
-                || (searchParameters.getProviderId() != null)) {
+        if ((selection.getFilters() != null)
+                && ((selection.getFilters().getSession() != null) || (selection.getFilters().getSource() != null))) {
             return new PageImpl<>(Lists.newArrayList(), page, 0L);
         } else {
-            return featureCopyRequestRepo
-                    .findAll(FeatureCopyRequestSpecification.searchAllByFilters(searchParameters, page), page);
+            return featureCopyRequestRepo.findAll(FeatureCopyRequestSpecification.searchAllByFilters(selection, page),
+                                                  page);
         }
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
-            searchParameters.withState(RequestState.ERROR);
+            selection.getFilters().withState(RequestState.ERROR);
             return RequestsInfo.build(featureCopyRequestRepo
-                    .count(FeatureCopyRequestSpecification.searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+                    .count(FeatureCopyRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
+    }
+
+    @Override
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureCopyRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            featureCopyRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
     }
 }

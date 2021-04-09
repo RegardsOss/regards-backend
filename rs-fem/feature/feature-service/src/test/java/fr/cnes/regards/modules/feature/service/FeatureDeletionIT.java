@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -218,28 +218,28 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         this.featureDeletionService.registerRequests(events);
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.DELETION, FeatureRequestSearchParameters.build(),
-                         PageRequest.of(0, 100));
+                .findAll(FeatureRequestTypeEnum.DELETION, FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.DELETION,
-                         FeatureRequestSearchParameters.build().withState(RequestState.ERROR), PageRequest.of(0, 100));
-        Assert.assertEquals(0, results.getContent().size());
-        Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
-
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION, FeatureRequestSearchParameters
-                .build().withState(RequestState.GRANTED).withStart(OffsetDateTime.now().plusSeconds(5)),
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestSearchParameters.build().withStart(start)
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
+                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(0, results.getContent().size());
+        Assert.assertEquals(0, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                     FeatureRequestsSelectionDTO.build().withStart(start)
                                                              .withEnd(OffsetDateTime.now().plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
@@ -247,14 +247,14 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestSearchParameters.build().withProviderId("id1"),
+                                                     FeatureRequestsSelectionDTO.build().withProviderId("id1"),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(11, results.getContent().size());
         Assert.assertEquals(11, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestSearchParameters.build().withProviderId("id10"),
+                                                     FeatureRequestsSelectionDTO.build().withProviderId("id10"),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());

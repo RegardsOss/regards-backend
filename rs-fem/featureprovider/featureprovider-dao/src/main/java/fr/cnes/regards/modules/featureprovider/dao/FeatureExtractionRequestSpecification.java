@@ -28,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import fr.cnes.regards.modules.feature.dao.FeatureRequestSpecificationsHelper;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 
 /**
@@ -48,16 +49,20 @@ public class FeatureExtractionRequestSpecification {
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureExtractionRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureExtractionRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, false, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
+                                                                                page);
 
-            if (filters.getSource() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("sessionOwner"), filters.getSource()));
-            }
-            if (filters.getSession() != null) {
-                predicates.add(cb.equal(root.get("metadata").get("session"), filters.getSession()));
+            if (selection.getFilters() != null) {
+                if (selection.getFilters().getSource() != null) {
+                    predicates.add(cb.equal(root.get("metadata").get("sessionOwner"),
+                                            selection.getFilters().getSource()));
+                }
+                if (selection.getFilters().getSession() != null) {
+                    predicates.add(cb.equal(root.get("metadata").get("session"), selection.getFilters().getSession()));
+                }
             }
 
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

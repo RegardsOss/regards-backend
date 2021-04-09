@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 
 /**
  * JPA Specification to search for {@link FeatureDeletionRequest} from {@link IFeatureDeletionRequestRepository}
@@ -42,14 +42,14 @@ public class FeatureDeletionRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureDeletionRequest}s
-     * @param filters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureDeletionRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureDeletionRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, true, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb, page);
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

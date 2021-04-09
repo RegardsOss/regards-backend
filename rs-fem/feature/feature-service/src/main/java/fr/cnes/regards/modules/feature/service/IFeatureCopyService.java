@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
@@ -39,6 +39,6 @@ public interface IFeatureCopyService extends IAbstractFeatureService {
      * @param page
      * @return {@link FeatureCopyRequest}s
      */
-    Page<FeatureCopyRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page);
+    Page<FeatureCopyRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 
 }

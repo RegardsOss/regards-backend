@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
@@ -12,9 +12,15 @@ public interface IAbstractFeatureService extends IRequestDeniedService, IRequest
 
     /**
      * Find requests information with search parameters context
-     * @param searchParameters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters);
+    RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
+
+    /**
+     * Delete requests associated to given search parameters
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     */
+    void deleteRequests(FeatureRequestsSelectionDTO selection);
 
 }

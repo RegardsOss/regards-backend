@@ -10,7 +10,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationCollection;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.service.job.FeatureCreationJob;
@@ -51,9 +51,9 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
 
     /**
      * Find all {@link FeatureCreationRequest}s
-     * @param searchParameters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureCreationRequest}s
      */
-    Page<FeatureCreationRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page);
+    Page<FeatureCreationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
 }

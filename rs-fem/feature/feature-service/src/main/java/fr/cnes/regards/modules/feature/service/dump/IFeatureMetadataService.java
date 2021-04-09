@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
@@ -76,17 +76,23 @@ public interface IFeatureMetadataService {
 
     /**
      * Find all {@link FeatureSaveMetadataRequest}s
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureSaveMetadataRequest}s
      */
-    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestSearchParameters searchParameters,
-            Pageable page);
+    public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
+
+    /**
+     * Delete requests associated to given search parameters
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     */
+    void deleteRequests(FeatureRequestsSelectionDTO selection);
 
     /**
      * Find requests information
-     * @param searchParameters {@link FeatureRequestSearchParameters}
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestsInfo}
      */
-    RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters);
+    RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
 
 }

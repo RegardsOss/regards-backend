@@ -27,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 
 /**
  * JPA Specification to search for {@link FeatureCopyRequest} from {@link IFeatureCopyRequestRepository}
@@ -46,10 +47,10 @@ public class FeatureCopyRequestSpecification {
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureCopyRequest> searchAllByFilters(FeatureRequestSearchParameters filters,
+    public static Specification<FeatureCopyRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
             Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(filters, true, root, query, cb, page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb, page);
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

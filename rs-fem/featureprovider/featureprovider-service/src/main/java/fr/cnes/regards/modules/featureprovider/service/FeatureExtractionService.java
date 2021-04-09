@@ -68,7 +68,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -110,6 +110,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     private static final String REFERENCE_GRANTED_FORMAT = PREFIX + "Feature EXTRACTION GRANTED" + PX2;
 
     private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
+
+    private static final int MAX_PAGE_TO_DELETE = 4;
 
     @Autowired
     private IFeatureExtractionRequestRepository featureExtractionRequestRepo;
@@ -429,22 +431,40 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     }
 
     @Override
-    public RequestsPage<FeatureRequestDTO> findRequests(FeatureRequestSearchParameters searchParameters,
-            Pageable page) {
+    public RequestsPage<FeatureRequestDTO> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
         Page<FeatureExtractionRequest> requests = featureExtractionRequestRepo
-                .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(searchParameters, page), page);
+                .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(selection, page), page);
         Page<FeatureRequestDTO> results = requests.map(f -> FeatureExtractionRequest.toDTO(f));
-        return new RequestsPage<>(results.getContent(), getInfo(searchParameters), results.getPageable(),
+        return new RequestsPage<>(results.getContent(), getInfo(selection), results.getPageable(),
                 results.getTotalElements());
     }
 
-    private RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
-            searchParameters.withState(RequestState.ERROR);
-            return RequestsInfo.build(featureExtractionRequestRepo.count(FeatureExtractionRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(featureExtractionRequestRepo
+                    .count(FeatureExtractionRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
+    }
+
+    @Override
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureExtractionRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = featureExtractionRequestRepo
+                    .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(selection, page), page);
+            featureExtractionRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
+
     }
 }

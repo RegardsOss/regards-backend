@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
@@ -65,11 +64,11 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     public static final String ROOT_PATH = "/requests";
 
-    public static final String RETRY_PATH = "/retry";
+    public static final String RETRY_TYPE_PATH = "/retry/{type}";
+
+    public static final String DELETE_TYPE_PATH = "/delete/{type}";
 
     public static final String REQUEST_SEARCH_TYPE_PATH = "/search/{type}";
-
-    public static final String ITEM_PATH = "/{id}";
 
     @Autowired
     private IFeatureRequestService featureRequestService;
@@ -89,46 +88,29 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             FeatureRequestSearchParameters parameters, Pageable page) {
-        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, parameters, page)), HttpStatus.OK);
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withFilters(parameters);
+        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, selection, page)), HttpStatus.OK);
     }
 
     @Operation(summary = "Delete feature requests by selection", description = "Delete feature requests by selection")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
-    @RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.DELETE, path = DELETE_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteRequests(
+            @Parameter(
+                    description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        // TODO
-        return null;
-    }
-
-    @Operation(summary = "Delete feature request by id", description = "Delete feature request by id")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature request by id") })
-    @RequestMapping(method = RequestMethod.DELETE, path = ITEM_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> deleteRequest(
-            @Parameter(description = "Id of request to delete") @PathVariable("id") Long requestId)
-            throws EntityOperationForbiddenException {
-        featureRequestService.delete(requestId);
+        featureRequestService.delete(type, selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
-    }
-
-    @Operation(summary = "Retry feature request by id", description = "Retry feature request by id")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature request by idn") })
-    @RequestMapping(method = RequestMethod.POST, path = RETRY_PATH + ITEM_PATH,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Retry feature request by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> retryRequest(
-            @Parameter(description = "Id of request to delete") @PathVariable("id") Long requestId) {
-        // TODO
-        return null;
     }
 
     @Operation(summary = "Retry feature requests by selection", description = "Retry feature requests by selection")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
-    @RequestMapping(method = RequestMethod.POST, path = RETRY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(method = RequestMethod.POST, path = RETRY_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> retryRequests(
+            @Parameter(
+                    description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
         // TODO
         return null;

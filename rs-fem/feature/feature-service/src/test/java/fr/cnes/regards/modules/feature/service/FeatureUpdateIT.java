@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -243,7 +243,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         // Create features
         prepareCreationTestData(false, nbValid, true, true);
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.UPDATE, FeatureRequestSearchParameters.build(), PageRequest.of(0, 100));
+                .findAll(FeatureRequestTypeEnum.UPDATE, FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
@@ -253,28 +253,29 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
                 .collect(Collectors.toList());
         this.featureUpdateService.registerRequests(prepareUpdateRequests(urns));
 
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestSearchParameters.build(), PageRequest.of(0, 100));
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE, FeatureRequestsSelectionDTO.build(),
+                                                     PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.UPDATE,
-                         FeatureRequestSearchParameters.build().withState(RequestState.ERROR), PageRequest.of(0, 100));
-        Assert.assertEquals(0, results.getContent().size());
-        Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
-
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE, FeatureRequestSearchParameters
-                .build().withState(RequestState.GRANTED).withStart(OffsetDateTime.now().plusSeconds(5)),
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
-                                                     FeatureRequestSearchParameters.build().withStart(start)
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
+                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(0, results.getContent().size());
+        Assert.assertEquals(0, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
+                                                     FeatureRequestsSelectionDTO.build().withStart(start)
                                                              .withEnd(OffsetDateTime.now().plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());

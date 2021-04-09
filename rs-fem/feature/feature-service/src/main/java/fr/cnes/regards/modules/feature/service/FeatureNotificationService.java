@@ -25,12 +25,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -53,7 +51,7 @@ import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
@@ -229,26 +227,37 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     @Override
-    public Page<FeatureNotificationRequest> findRequests(FeatureRequestSearchParameters searchParameters,
-            Pageable page) {
-        // Session,  source and providerId are unknown for notification requests
-        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)
-                || (searchParameters.getProviderId() != null)) {
-            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+    public Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return featureNotificationRequestRepository
+                .findAll(FeatureNotificationRequestSpecification.searchAllByFilters(selection, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
+            return RequestsInfo.build(0L);
         } else {
-            return featureNotificationRequestRepository
-                    .findAll(FeatureNotificationRequestSpecification.searchAllByFilters(searchParameters, page), page);
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification
+                    .searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
-            return RequestsInfo.build(0L);
-        } else {
-            searchParameters.withState(RequestState.ERROR);
-            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
-        }
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureNotificationRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            featureNotificationRequestRepository.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
     }
+
 }

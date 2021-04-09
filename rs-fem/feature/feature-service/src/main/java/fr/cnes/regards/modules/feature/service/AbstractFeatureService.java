@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -35,6 +36,8 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
  * @author Marc SORDI
  */
 public abstract class AbstractFeatureService implements IAbstractFeatureService {
+
+    protected static final int MAX_PAGE_TO_DELETE = 4;
 
     @Autowired
     private IPublisher publisher;
@@ -65,13 +68,8 @@ public abstract class AbstractFeatureService implements IAbstractFeatureService 
         // Monitoring log
         logRequestDenied(requestOwner, requestId, Sets.newHashSet(errorMessage));
         // Publish DENIED request
-        publisher.publish(FeatureRequestEvent.build(getRequestType(),
-                                                    requestId,
-                                                    requestOwner,
-                                                    null,
-                                                    null,
-                                                    RequestState.DENIED,
-                                                    Sets.newHashSet(errorMessage)));
+        publisher.publish(FeatureRequestEvent.build(getRequestType(), requestId, requestOwner, null, null,
+                                                    RequestState.DENIED, Sets.newHashSet(errorMessage)));
         return true;
     }
 

@@ -33,18 +33,16 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -100,40 +98,40 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureMetadataService featureMetadataService;
 
     @Override
-    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
-            FeatureRequestSearchParameters searchParameters, Pageable page) {
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
+            Pageable page) {
         Page<FeatureRequestDTO> results = new PageImpl<>(Lists.newArrayList(), page, 0L);
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                results = featureCopyService.findRequests(searchParameters, page)
+                results = featureCopyService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCopyService.getInfo(searchParameters);
+                info = featureCopyService.getInfo(selection);
                 break;
             case CREATION:
-                results = featureCreationService.findRequests(searchParameters, page)
+                results = featureCreationService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureCreationService.getInfo(searchParameters);
+                info = featureCreationService.getInfo(selection);
                 break;
             case DELETION:
-                results = featureDeletionService.findRequests(searchParameters, page)
+                results = featureDeletionService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureDeletionService.getInfo(searchParameters);
+                info = featureDeletionService.getInfo(selection);
                 break;
             case NOTIFICATION:
-                results = featureNotificationService.findRequests(searchParameters, page)
+                results = featureNotificationService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureNotificationService.getInfo(searchParameters);
+                info = featureNotificationService.getInfo(selection);
                 break;
             case SAVE_METADATA:
-                results = featureMetadataService.findRequests(searchParameters, page)
+                results = featureMetadataService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureMetadataService.getInfo(searchParameters);
+                info = featureMetadataService.getInfo(selection);
                 break;
             case UPDATE:
-                results = featureUpdateService.findRequests(searchParameters, page)
+                results = featureUpdateService.findRequests(selection, page)
                         .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
-                info = featureUpdateService.getInfo(searchParameters);
+                info = featureUpdateService.getInfo(selection);
                 break;
             default:
                 LOGGER.error("Not available type {} for Feature Requests", type.toString());
@@ -145,15 +143,29 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void delete(Long requestId) throws EntityOperationForbiddenException {
-        AbstractFeatureRequest request = abstractFeatureRequestRepo.getOne(requestId);
-        // Only delete requests in error status or not schedule yet.
-        if ((request.getState() == RequestState.ERROR) || (request.getStep() == FeatureRequestStep.LOCAL_DELAYED)) {
-            abstractFeatureRequestRepo.delete(request);
-        } else {
-            throw new EntityOperationForbiddenException(
-                    String.format("Request %d with status %s / %s cannot be deleted.", requestId,
-                                  request.getState().toString(), request.getStep().toString()));
+    public void delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+        switch (type) {
+            case COPY:
+                featureCopyService.deleteRequests(selection);
+                break;
+            case CREATION:
+                featureCreationService.deleteRequests(selection);
+                break;
+            case DELETION:
+                featureDeletionService.deleteRequests(selection);
+                break;
+            case NOTIFICATION:
+                featureNotificationService.deleteRequests(selection);
+                break;
+            case SAVE_METADATA:
+                featureMetadataService.deleteRequests(selection);
+                break;
+            case UPDATE:
+                featureUpdateService.deleteRequests(selection);
+                break;
+            default:
+                LOGGER.error("Not available type {} for Feature Requests", type.toString());
+                break;
         }
     }
 

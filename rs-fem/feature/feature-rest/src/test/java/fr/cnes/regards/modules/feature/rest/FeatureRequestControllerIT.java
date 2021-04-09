@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
@@ -236,13 +237,19 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                                                                         RequestState.ERROR,
                                                                         FeatureRequestStep.LOCAL_ERROR, 10);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusForbidden();
-        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.ITEM_PATH,
-                             requestBuilderCustomizer, "Error retrieving creation requests",
-                             notDeletable.get(0).getId());
-        requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.ITEM_PATH,
-                             requestBuilderCustomizer, "Error retrieving creation requests", deletable.get(0).getId());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withId(notDeletable.get(0).getId());
+        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.DELETE_TYPE_PATH, selection,
+                             requestBuilderCustomizer, "Error deleting requests", FeatureRequestTypeEnum.CREATION);
+
+        Assert.assertTrue("Feature request should not be deleted",
+                          featureRequestCreationRepo.findById(notDeletable.get(0).getId()).isPresent());
+
+        selection = FeatureRequestsSelectionDTO.build().withId(deletable.get(0).getId());
+        performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.DELETE_TYPE_PATH, selection,
+                             requestBuilderCustomizer, "Error deleting requests", FeatureRequestTypeEnum.CREATION);
+        Assert.assertFalse("Feature request should be deleted",
+                           featureRequestCreationRepo.findById(deletable.get(0).getId()).isPresent());
 
     }
 

@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.apache.commons.compress.utils.Lists;
+
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
  *
@@ -29,9 +32,60 @@ import org.apache.commons.compress.utils.Lists;
  */
 public class FeatureRequestsSelectionDTO {
 
-    FeatureRequestSearchParameters filters;
+    FeatureRequestSearchParameters filters = new FeatureRequestSearchParameters();
 
-    List<String> excludedUrns = Lists.newArrayList();
+    List<Long> excludedIds = Lists.newArrayList();
+
+    List<Long> includedIds = Lists.newArrayList();
+
+    public static FeatureRequestsSelectionDTO build() {
+        return new FeatureRequestsSelectionDTO();
+    }
+
+    public FeatureRequestsSelectionDTO withSource(String source) {
+        this.filters.setSource(source);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withSession(String session) {
+        this.filters.setSession(session);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withProviderId(String providerId) {
+        this.filters.setProviderId(providerId);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withStart(OffsetDateTime start) {
+        this.filters.setFrom(start);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withEnd(OffsetDateTime end) {
+        this.filters.setTo(end);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withState(RequestState state) {
+        this.filters.setState(state);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withFilters(FeatureRequestSearchParameters filters) {
+        this.filters = filters;
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withId(Long id) {
+        this.includedIds.add(id);
+        return this;
+    }
+
+    public FeatureRequestsSelectionDTO withoutId(Long id) {
+        this.excludedIds.add(id);
+        return this;
+    }
 
     public FeatureRequestSearchParameters getFilters() {
         return filters;
@@ -41,12 +95,20 @@ public class FeatureRequestsSelectionDTO {
         this.filters = filters;
     }
 
-    public List<String> getExcludedUrns() {
-        return excludedUrns;
+    public List<Long> getExcludedIds() {
+        return excludedIds;
     }
 
-    public void setExcludedUrns(List<String> excludedUrns) {
-        this.excludedUrns = excludedUrns;
+    public void setExcludedIds(List<Long> excludedIds) {
+        this.excludedIds = excludedIds;
+    }
+
+    public List<Long> getIncludedIds() {
+        return includedIds;
+    }
+
+    public void setIncludedIds(List<Long> includedIds) {
+        this.includedIds = includedIds;
     }
 
 }

@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
@@ -141,7 +141,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // Create features
         prepareCreationTestData(false, nbValid, true, true);
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.NOTIFICATION, FeatureRequestSearchParameters.build(),
+                .findAll(FeatureRequestTypeEnum.NOTIFICATION, FeatureRequestsSelectionDTO.build(),
                          PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
@@ -153,27 +153,28 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestSearchParameters.build(), PageRequest.of(0, 100));
+                                                     FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
-        results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                         FeatureRequestSearchParameters.build().withState(RequestState.ERROR), PageRequest.of(0, 100));
-        Assert.assertEquals(0, results.getContent().size());
-        Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
-
-        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION, FeatureRequestSearchParameters
-                .build().withState(RequestState.GRANTED).withStart(OffsetDateTime.now().plusSeconds(5)),
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestSearchParameters.build().withStart(start)
+                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
+                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     PageRequest.of(0, 100));
+        Assert.assertEquals(0, results.getContent().size());
+        Assert.assertEquals(0, results.getTotalElements());
+        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+
+        results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
+                                                     FeatureRequestsSelectionDTO.build().withStart(start)
                                                              .withEnd(OffsetDateTime.now().plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());

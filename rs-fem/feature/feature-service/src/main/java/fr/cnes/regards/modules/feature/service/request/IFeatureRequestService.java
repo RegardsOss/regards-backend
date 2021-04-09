@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import java.security.Policy.Parameters;
 import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
@@ -27,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 
 /**
@@ -39,12 +38,12 @@ public interface IFeatureRequestService {
     /**
      * Retrieve {@link FeatureRequestDTO}s for given {@link FeatureRequestTypeEnum}
      * @param type {@link FeatureRequestTypeEnum}
-     * @param parameters FeatureRequestSearchParameters {@link Parameters} search parameters
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureRequestDTO}s
      */
-    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
-            FeatureRequestSearchParameters searchParameters, Pageable page);
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
+            Pageable page);
 
     /**
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by
@@ -79,10 +78,10 @@ public interface IFeatureRequestService {
     void handleDeletionError(Set<String> groupIds);
 
     /**
-     * Delete request with the given id
-     * @param requestId
+     * Delete requests with given selection
+     * @param selection {@link FeatureRequestsSelectionDTO}
      * @throws EntityOperationForbiddenException
      */
-    public void delete(Long requestId) throws EntityOperationForbiddenException;
+    public void delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
 
 }

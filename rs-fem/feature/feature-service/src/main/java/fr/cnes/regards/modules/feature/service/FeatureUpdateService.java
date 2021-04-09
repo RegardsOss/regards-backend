@@ -28,12 +28,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -64,7 +62,7 @@ import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureHistory;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureUpdateCollection;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -384,24 +382,36 @@ public class FeatureUpdateService extends AbstractFeatureService implements IFea
     }
 
     @Override
-    public Page<FeatureUpdateRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
-        // Session and  source are unknown for update requests
-        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)) {
-            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+    public Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(selection, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
+            return RequestsInfo.build(0L);
         } else {
-            return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(searchParameters, page),
-                                      page);
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(updateRepo
+                    .count(FeatureUpdateRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
-            return RequestsInfo.build(0L);
-        } else {
-            searchParameters.withState(RequestState.ERROR);
-            return RequestsInfo.build(updateRepo.count(FeatureUpdateRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
-        }
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureUpdateRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            updateRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
     }
+
 }

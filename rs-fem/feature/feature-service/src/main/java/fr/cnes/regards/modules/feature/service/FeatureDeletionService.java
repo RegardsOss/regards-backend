@@ -31,12 +31,10 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -68,7 +66,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -407,24 +405,36 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public Page<FeatureDeletionRequest> findRequests(FeatureRequestSearchParameters searchParameters, Pageable page) {
-        // Session,  source and providerId are unknown for deletion requests
-        if ((searchParameters.getSession() != null) || (searchParameters.getSource() != null)) {
-            return new PageImpl<>(Lists.newArrayList(), page, 0L);
+    public Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(selection, page), page);
+    }
+
+    @Override
+    public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR))) {
+            return RequestsInfo.build(0L);
         } else {
-            return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(searchParameters, page),
-                                        page);
+            selection.getFilters().withState(RequestState.ERROR);
+            return RequestsInfo.build(deletionRepo
+                    .count(FeatureDeletionRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
         }
     }
 
     @Override
-    public RequestsInfo getInfo(FeatureRequestSearchParameters searchParameters) {
-        if ((searchParameters.getState() != null) && (searchParameters.getState() != RequestState.ERROR)) {
-            return RequestsInfo.build(0L);
-        } else {
-            searchParameters.withState(RequestState.ERROR);
-            return RequestsInfo.build(deletionRepo.count(FeatureDeletionRequestSpecification
-                    .searchAllByFilters(searchParameters, PageRequest.of(0, 1))));
-        }
+    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, 500);
+        Page<FeatureDeletionRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            deletionRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
     }
+
 }

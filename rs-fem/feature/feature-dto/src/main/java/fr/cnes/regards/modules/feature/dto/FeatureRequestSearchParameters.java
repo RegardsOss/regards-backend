@@ -36,9 +36,9 @@ public class FeatureRequestSearchParameters {
 
     private String providerId;
 
-    private OffsetDateTime start;
+    private OffsetDateTime from;
 
-    private OffsetDateTime end;
+    private OffsetDateTime to;
 
     private RequestState state;
 
@@ -62,12 +62,12 @@ public class FeatureRequestSearchParameters {
     }
 
     public FeatureRequestSearchParameters withStart(OffsetDateTime start) {
-        this.setStart(start);
+        this.setFrom(start);
         return this;
     }
 
     public FeatureRequestSearchParameters withEnd(OffsetDateTime end) {
-        this.setEnd(end);
+        this.setTo(end);
         return this;
     }
 
@@ -100,20 +100,20 @@ public class FeatureRequestSearchParameters {
         this.providerId = providerId;
     }
 
-    public OffsetDateTime getStart() {
-        return start;
+    public OffsetDateTime getFrom() {
+        return from;
     }
 
-    public void setStart(OffsetDateTime start) {
-        this.start = start;
+    public void setFrom(OffsetDateTime from) {
+        this.from = from;
     }
 
-    public OffsetDateTime getEnd() {
-        return end;
+    public OffsetDateTime getTo() {
+        return to;
     }
 
-    public void setEnd(OffsetDateTime end) {
-        this.end = end;
+    public void setTo(OffsetDateTime to) {
+        this.to = to;
     }
 
     public RequestState getState() {

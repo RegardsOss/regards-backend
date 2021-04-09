@@ -70,7 +70,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEnt
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -247,34 +247,34 @@ public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
         createRequests("source2", "session2", 40, RequestState.GRANTED);
         createRequests("source1", "session1", 50, RequestState.ERROR);
 
-        FeatureRequestSearchParameters parameters = FeatureRequestSearchParameters.build();
-        RequestsPage<FeatureRequestDTO> results = featureExtractionService.findRequests(parameters,
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build();
+        RequestsPage<FeatureRequestDTO> results = featureExtractionService.findRequests(selection,
                                                                                         PageRequest.of(0, 10));
         Assert.assertEquals(150, results.getTotalElements());
         Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
 
-        parameters = FeatureRequestSearchParameters.build().withState(RequestState.GRANTED);
-        results = featureExtractionService.findRequests(parameters, PageRequest.of(0, 10));
+        selection = FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED);
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
         Assert.assertEquals(100, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
 
-        parameters = FeatureRequestSearchParameters.build().withState(RequestState.ERROR);
-        results = featureExtractionService.findRequests(parameters, PageRequest.of(0, 10));
+        selection = FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR);
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
         Assert.assertEquals(50, results.getTotalElements());
         Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
 
-        parameters = FeatureRequestSearchParameters.build().withEnd(OffsetDateTime.now().plusDays(1))
+        selection = FeatureRequestsSelectionDTO.build().withEnd(OffsetDateTime.now().plusDays(1))
                 .withStart(OffsetDateTime.now().minusDays(1));
-        results = featureExtractionService.findRequests(parameters, PageRequest.of(0, 10));
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
         Assert.assertEquals(150, results.getTotalElements());
         Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
 
-        parameters = FeatureRequestSearchParameters.build().withSource("source1").withSession("session1");
-        results = featureExtractionService.findRequests(parameters, PageRequest.of(0, 10));
+        selection = FeatureRequestsSelectionDTO.build().withSource("source1").withSession("session1");
+        results = featureExtractionService.findRequests(selection, PageRequest.of(0, 10));
         Assert.assertEquals(60, results.getTotalElements());
         Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
