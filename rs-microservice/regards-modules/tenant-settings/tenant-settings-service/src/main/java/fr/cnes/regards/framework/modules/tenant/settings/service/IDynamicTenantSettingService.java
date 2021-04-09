@@ -38,6 +38,8 @@ public interface IDynamicTenantSettingService {
 
     <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
 
+    void delete(String name) throws EntityNotFoundException;
+
     void reset(String name) throws EntityNotFoundException, EntityInvalidException;
 
 }

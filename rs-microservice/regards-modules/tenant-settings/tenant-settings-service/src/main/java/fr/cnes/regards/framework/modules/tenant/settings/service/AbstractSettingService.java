@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
 import java.util.List;
+import java.util.Optional;
 
 @RegardsTransactional
 public abstract class AbstractSettingService {
@@ -23,6 +24,21 @@ public abstract class AbstractSettingService {
         for (DynamicTenantSetting dynamicTenantSetting : getSettingList()) {
             createSetting(dynamicTenantSetting);
         }
+    }
+
+    public void deleteAll() throws EntityNotFoundException {
+        for (DynamicTenantSetting dynamicTenantSetting : getSettingList()) {
+            dynamicTenantSettingService.delete(dynamicTenantSetting.getName());
+        }
+    }
+
+    public <T> T getValue(String name) {
+        T value = null;
+        Optional<DynamicTenantSetting> dynamicTenantSetting = dynamicTenantSettingService.read(name);
+        if (dynamicTenantSetting.isPresent()) {
+            value = dynamicTenantSetting.get().getValue();
+        }
+        return value;
     }
 
     private void createSetting(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
