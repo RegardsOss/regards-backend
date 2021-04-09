@@ -7,17 +7,17 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Iliana Ghazali
  */
-public class GeometryNotParsedException extends ModuleException {
+public class GeometryNotProcessedException extends ModuleException {
 
-    public GeometryNotParsedException(String errorMessage) {
+    public GeometryNotProcessedException(String errorMessage) {
         super(errorMessage);
     }
 
-    public GeometryNotParsedException(String message, Throwable cause) {
+    public GeometryNotProcessedException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public GeometryNotParsedException(Throwable cause) {
+    public GeometryNotProcessedException(Throwable cause) {
         super(cause);
     }
 

@@ -19,13 +19,14 @@
 package fr.cnes.regards.modules.toponyms;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import java.io.IOException;
 import org.junit.Test;
@@ -61,6 +62,8 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     private final static String LINESTRING = "{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979},\"geometry\": {\"type\": \"LineString\",\"coordinates\": [ [ 6.199999999999898, 7.895833333333167], [ 6.229166666666564, 7.89583333333316], [ 6.262499999999898, 7.862499999999832]] }}";
 
     private final static String POLYGON = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
+    private final static String POLYGON_2 = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [10.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [10.0, 0.0] ]] }}";
+    private final static String POLYGON_3 = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [101.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [101.0, 0.0] ]] }}";
 
     private final static String MULTIPOLYGON = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"MultiPolygon\", \"coordinates\": [" +
             "[[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]]," +
@@ -102,10 +105,10 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Purpose("Test the creation of a not visible toponym with a type not handled by REGARDS")
-    @ExceptionHandler(GeometryNotParsedException.class)
+    @ExceptionHandler(GeometryNotProcessedException.class)
     public void createInvalidNotVisibleToponym() throws IOException {
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(LINESTRING, TEST_USER, TEST_PROJECT),
-                customizer().expectStatus(HttpStatus.BAD_REQUEST), "Should not have created toponym");
+                customizer().expectStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE), "Should not have created toponym");
     }
 
     @Test
@@ -119,10 +122,17 @@ public class ToponymControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Test limit of created toponyms reached for the day")
     @ExceptionHandler(MaxLimitPerDayException.class)
-    public void testLimitToponymsSaving() {
+    public void testLimitToponymsSave() {
         performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
-        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.TOO_MANY_REQUESTS), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON_2, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON_3, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.TOO_MANY_REQUESTS), "Should have created toponym");
+    }
 
+    @Test
+    @Purpose("Test limit of created toponyms reached for the day")
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public void testSameGeomToponymsSave() {
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CREATED), "Should have created toponym");
+        performDefaultPost(ToponymsRestConfiguration.ROOT_MAPPING, new ToponymGeoJson(POLYGON, TEST_USER, TEST_PROJECT), customizer().expectStatus(HttpStatus.CONFLICT), "Should have created toponym");
     }
 }

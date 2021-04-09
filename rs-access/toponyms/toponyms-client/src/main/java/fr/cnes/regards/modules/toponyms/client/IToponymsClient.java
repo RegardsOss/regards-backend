@@ -28,6 +28,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -53,7 +54,7 @@ public interface IToponymsClient {
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(@RequestParam(name = "page") int page,
             @RequestParam(name = "size") int size);
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson);
 
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET)

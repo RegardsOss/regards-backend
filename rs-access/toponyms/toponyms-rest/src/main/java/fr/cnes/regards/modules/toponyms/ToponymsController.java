@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.toponyms;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -46,6 +47,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -124,11 +126,11 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
         } else {
             toponym = service.findOne(businessId, simplified);
         }
-
-        if (toponym.isPresent()) {
-            return new ResponseEntity<>(toResource(toponym.get()), HttpStatus.OK);
-        } else {
+        // if entity was not found, throw exception
+        if (!toponym.isPresent()) {
             throw new EntityNotFoundException(businessId, ToponymDTO.class);
+        } else {
+            return new ResponseEntity<>(toResource(toponym.get()), HttpStatus.OK);
         }
     }
 
@@ -154,10 +156,11 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
             return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
         } else {
             Page<ToponymDTO> page = service.findAllByVisibility(locale, DEFAULT_TOPONYM_VISIBILITY, PageRequest.of(0, MAX_SEARCH_RESULTS));
-            if ((page != null) && (page.getContent() != null)) {
-                return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
+            // if entities were not found
+            if((page == null) || (page.getContent().isEmpty())) {
+                throw new EntityNotFoundException(String.format("Entities requested were not found with partial label %s", partialLabel));
             } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
             }
         }
     }
@@ -169,10 +172,10 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @param toponymGeoJson the object containing the feature in geojson format, the user and the project initiating the request
      * @return toponymDTO
      */
-    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException {
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException, JsonProcessingException {
         ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(), toponymGeoJson.getUser(), toponymGeoJson.getProject());
         return new ResponseEntity<>(toResource(toponymDTO), HttpStatus.CREATED);
     }

@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.toponyms.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -28,7 +31,8 @@ import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -123,33 +127,65 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
 
     }
 
+    // -----------------------------
+    // --- CREATE VALID TOPONYMS ---
+    // -----------------------------
+
     @Test
     @Purpose("Parse valid and handled geometry")
-    public void parseValidGeometry() throws ModuleException {
+    public void parseValidFeature() throws ModuleException, JsonProcessingException {
+        // Init
         String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
         String multipolygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"MultiPolygon\", \"coordinates\": [" +
                 "[[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]]," +
                 "[[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]," +
                 "[[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.8], [100.2, 0.2]]]" +
                 "]}}";
-        this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
-        this.service.generateNotVisibleToponym(multipolygon, "test_user", "test_project");
+        ToponymDTO polygonToponym = this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
+        ToponymDTO multiPolygonToponym = this.service.generateNotVisibleToponym(multipolygon, "test_user", "test_project");
+
+        // Test result
+        Assert.assertTrue("Geometry should be present and of type Polygon", polygonToponym.getGeometry() != null && polygonToponym.getGeometry().getType().equals(GeoJsonType.POLYGON));
+        Assert.assertTrue("Multipolygon Geometry should be present and of type Multipolygon", multiPolygonToponym.getGeometry() != null && multiPolygonToponym.getGeometry().getType().equals(GeoJsonType.MULTIPOLYGON));
+
     }
 
-    @Test(expected = GeometryNotParsedException.class)
-    @Purpose("Parse invalid geometry")
-    public void parseInvalidGeometry() throws ModuleException {
-        String invalidFeature = "{{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979}, \"geometry\": {\"type\": \"LineString\",\"coordinates\": []}}";
+    // -------------------------------
+    // --- CREATE INVALID TOPONYMS ---
+    // -------------------------------
+
+    @Test(expected = JsonProcessingException.class)
+    @Purpose("Parse invalid feature. The json is malformed.")
+    public void parseInvalidFeature() throws ModuleException, JsonProcessingException {
+        String invalidFeature = "{{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979}, \"geometry\": {\"type\": \"Polygon\",\"coordinates\": []}}";
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }
 
-    @Test(expected = GeometryNotParsedException.class)
-    @Purpose("Parse not handled geometry")
-    public void parseNotHandledGeometry() throws ModuleException {
+    @Test(expected = GeometryNotProcessedException.class)
+    @Purpose("Parse invalid feature. The fields are not present as expected (refer to geolatte Feature)")
+    public void parseInvalidFormatFeature() throws ModuleException, JsonProcessingException {
+        String invalidFeature = "{\"type\": \"Random\", \"properties\": {\"test\" : 42}, \"object\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
+        this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
+    }
+
+    @Test(expected = GeometryNotHandledException.class)
+    @Purpose("Parse not handled geometry (LineString)")
+    public void parseNotHandledGeometry() throws ModuleException, JsonProcessingException {
         String invalidFeature = "{\"type\": \"Feature\", \"properties\": {\"test\": 546169.05592760979}, \"geometry\": {\"type\": \"LineString\",\"coordinates\": []}}";
         this.service.generateNotVisibleToponym(invalidFeature, "test_user", "test_project");
     }
 
+    @Test(expected = EntityAlreadyExistsException.class)
+    @Purpose("Parse already existing geometry")
+    public void parseAlreadyExistingGeometry() throws ModuleException, JsonProcessingException {
+        String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
+        this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
+        this.service.generateNotVisibleToponym(polygon, "test_user", "test_project");
+    }
+
+    // -------------------------------
+    // ------------ UTILS ------------
+    // -------------------------------
 
     private List<Toponym> initNotVisibleToponyms() {
         List<Toponym> notVisibleToponyms = new ArrayList<>();

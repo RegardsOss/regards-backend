@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.toponyms.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
@@ -27,7 +29,7 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
-import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotParsedException;
+import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
 import java.time.LocalDate;
@@ -43,8 +45,6 @@ import org.geolatte.geom.Geometry;
 import org.geolatte.geom.GeometryType;
 import org.geolatte.geom.Position;
 import org.geolatte.geom.json.GeolatteGeomModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -104,11 +104,6 @@ public class ToponymsService {
      * Maximum number of points to retrieve for each polygon of a geometry
      */
     private static final int POINT_SAMPLING_FINDALL = 50;
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
 
 
     /**
@@ -195,7 +190,7 @@ public class ToponymsService {
      * @param project the project on which the toponym has been dropped
      * @return a {@link ToponymDTO}
      */
-    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project) throws ModuleException {
+    public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project) throws ModuleException, JsonProcessingException {
         // Count if user has reached the limit of toponyms to save per day
         OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
         int nbCreations = this.repository.countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime, OffsetDateTime.now());
@@ -232,27 +227,31 @@ public class ToponymsService {
      * @param featureString the feature in string format
      * @return the geometry with {@link Geometry} format
      * @throws ModuleException if a problem occurred during the parsing of the geometry
+     * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
-    private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
+    private Geometry<Position> parseGeometry(String featureString) throws ModuleException, JsonProcessingException {
         // define mapper
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new GeolatteGeomModule());
         // parse geometry
-        Geometry<Position> geometry;
-        try {
-            Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
+        Feature<?, ?> feature = mapper.readValue(featureString, Feature.class);
+        // if geometry could not be read
+        if (feature.getGeometry() == null || feature.getGeometry().getGeometryType() == null) {
+            throw new GeometryNotProcessedException("The geometry could not be processed. The toponym will not be saved. " +
+                    "Check the format of the geojson feature");
+        } else {
+            Geometry<Position> geometry = (Geometry<Position>) feature.getGeometry();
             // refuse not handled geometry types
-            geometry = (Geometry<Position>) feature.getGeometry();
             GeometryType geometryType = geometry.getGeometryType();
             if (!geometryType.equals(GeometryType.POLYGON) && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
                 throw new GeometryNotHandledException(geometryType.toString());
             }
-        } catch (Exception e) {
-            String msg = "The geometry could not be parsed. The toponym will not be saved.";
-            LOGGER.error(msg, e);
-            throw new GeometryNotParsedException(msg, e);
+            // check geometry is not already present in the database
+            if (this.repository.countByGeometry(geometry.toString()) > 0) {
+                throw new EntityAlreadyExistsException("The geometry parsed already exists in the database. The toponym will not be saved.");
+            }
+            return geometry;
         }
-        return geometry;
     }
 
 }

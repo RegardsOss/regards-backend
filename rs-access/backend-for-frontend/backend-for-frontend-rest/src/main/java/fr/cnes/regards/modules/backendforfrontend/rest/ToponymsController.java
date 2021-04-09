@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -31,14 +30,12 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJsonDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -57,11 +54,6 @@ import org.springframework.web.client.HttpServerErrorException;
 @RestController
 @RequestMapping(path = ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(AccessSearchController.class);
 
     @Autowired
     private IToponymsClient client;
@@ -88,7 +80,7 @@ public class ToponymsController {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
-            @RequestParam(required = false) Boolean simplified) throws EntityNotFoundException {
+            @RequestParam(required = false) Boolean simplified) throws HttpClientErrorException, HttpServerErrorException  {
         FeignSecurityManager.asInstance();
         try {
             if (simplified != null) {
@@ -96,9 +88,6 @@ public class ToponymsController {
             } else {
                 return client.get(businessId);
             }
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         } finally {
             FeignSecurityManager.reset();
         }
@@ -119,29 +108,24 @@ public class ToponymsController {
             description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
-            @RequestParam(required = false) String locale) throws EntityNotFoundException {
+            @RequestParam(required = false) String locale) throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
             return client.search(partialLabel, locale);
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error(e.getMessage(), e);
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
         } finally {
             FeignSecurityManager.reset();
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity createNotVisibleToponym(@RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) {
+    public ResponseEntity createNotVisibleToponym(@RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO)
+            throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
             String feature = toponymGeoJsonDTO.getToponym();
             return client.createNotVisibleToponym(new ToponymGeoJson(feature, this.authenticationResolver.getUser(), this.tenantResolver.getTenant()));
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error(e.getResponseBodyAsString(), e);
-            return ResponseEntity.status(e.getStatusCode()).body(new ServerErrorResponse(e.getResponseBodyAsString(), e));
         } finally {
             FeignSecurityManager.reset();
         }
