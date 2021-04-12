@@ -43,13 +43,11 @@ public interface IQuotaService<T> {
      */
     Try<T> withQuota(String userEmail, Function<WithQuotaOperationHandler, Try<T>> operation);
 
-    Try<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits();
-
-    Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(DefaultDownloadQuotaLimits newDefaults);
-
     Try<DownloadQuotaLimitsDto> getDownloadQuotaLimits(String userEmail);
 
     Try<List<DownloadQuotaLimitsDto>> getDownloadQuotaLimits(String[] userEmails);
+
+    Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits();
 
     Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits);
 

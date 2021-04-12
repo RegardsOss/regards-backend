@@ -6,10 +6,14 @@ import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
+import fr.cnes.regards.modules.storage.domain.StorageSettingName;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -38,6 +42,7 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -62,6 +67,8 @@ public class DownloadQuotaService<T>
 
     private ISubscriber subscriber;
 
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
     private ApplicationContext applicationContext;
 
     private DownloadQuotaService<T> self;
@@ -76,20 +83,16 @@ public class DownloadQuotaService<T>
     public DownloadQuotaService() {}
 
     @Autowired
-    public DownloadQuotaService(
-        IDownloadQuotaRepository quotaRepository,
-        IQuotaManager quotaManager,
-        ITenantResolver tenantResolver,
-        IRuntimeTenantResolver runtimeTenantResolver,
-        ISubscriber subscriber,
-        ApplicationContext applicationContext
-    ) {
+    public DownloadQuotaService(IDownloadQuotaRepository quotaRepository, IQuotaManager quotaManager, ITenantResolver tenantResolver,
+            IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber, ApplicationContext applicationContext,
+            IDynamicTenantSettingService dynamicTenantSettingService) {
         this.quotaRepository = quotaRepository;
         this.quotaManager = quotaManager;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.applicationContext = applicationContext;
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
     @PostConstruct
@@ -103,7 +106,7 @@ public class DownloadQuotaService<T>
                     HashMap.empty(),
                     (m, tenant) -> {
                         runtimeTenantResolver.forceTenant(tenant);
-                        m = m.put(tenant, self.initDefaultLimits()); //quotaRepository.getDefaultDownloadQuotaLimits());
+                        m = m.put(tenant, self.initDefaultLimits());
                         runtimeTenantResolver.clearTenant();
                         return m;
                     },
@@ -112,7 +115,11 @@ public class DownloadQuotaService<T>
     }
 
     public DefaultDownloadQuotaLimits initDefaultLimits() {
-        return quotaRepository.getDefaultDownloadQuotaLimits();
+        DynamicTenantSetting maxQuota = dynamicTenantSettingService.read(StorageSettingName.MAX_QUOTA)
+                .orElseThrow(() -> new RsRuntimeException("Max default quota has no value. There must be an initialization issue with beans"));
+        DynamicTenantSetting rateLimit = dynamicTenantSettingService.read(StorageSettingName.RATE_LIMIT)
+                .orElseThrow(() -> new RsRuntimeException("Default rate limit has no value. There must be an initialization issue with beans"));
+        return new DefaultDownloadQuotaLimits(maxQuota.getValue(Long.class), rateLimit.getValue(Long.class));
     }
 
     @VisibleForTesting
@@ -170,22 +177,12 @@ public class DownloadQuotaService<T>
     }
 
     @Override
-    public Try<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
+    public Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits() {
         return Try.of(() ->
-            quotaRepository.getDefaultDownloadQuotaLimits());
-    }
-
-    @Override
-    public Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(DefaultDownloadQuotaLimits newDefaults) {
-        return Try.of(() ->
-            self.changeDefaultDownloadQuotaLimits(newDefaults.getMaxQuota(), newDefaults.getRateLimit()))
+                // when there is a change, we act as if it is the first time so we re-init the defaut for this tenant
+            self.initDefaultLimits())
             .peek(d -> defaultLimits.updateAndGet(m ->
                 m.put(runtimeTenantResolver.getTenant(), d)));
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public DefaultDownloadQuotaLimits changeDefaultDownloadQuotaLimits(Long maxQuota, Long rateLimit) {
-        return quotaRepository.changeDefaultDownloadQuotaLimits(maxQuota, rateLimit);
     }
 
     @Override

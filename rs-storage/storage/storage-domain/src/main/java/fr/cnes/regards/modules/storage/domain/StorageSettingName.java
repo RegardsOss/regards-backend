@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.dao;
+package fr.cnes.regards.modules.storage.domain;
 
-import fr.cnes.regards.modules.storage.dao.entity.download.DefaultDownloadQuotaLimitsEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+public final class StorageSettingName {
 
-@Repository
-public interface IDefaultDownloadQuotaLimitsEntityRepository extends JpaRepository<DefaultDownloadQuotaLimitsEntity, Long> {
+    public static final String RATE_LIMIT = "rateLimit";
 
+    public static final String MAX_QUOTA = "maxQuota";
+
+    private StorageSettingName() {
+    }
 }
