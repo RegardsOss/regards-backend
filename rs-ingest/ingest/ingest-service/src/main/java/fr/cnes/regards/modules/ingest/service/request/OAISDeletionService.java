@@ -153,8 +153,7 @@ public class OAISDeletionService implements IOAISDeletionService {
         Set<OAISDeletionRequest> success = new HashSet<>();
 
         // See if notifications are required
-        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
-        boolean isToNotify = notificationSettings.isActiveNotification();
+        boolean isToNotify = aipNotificationSettingsService.isActiveNotification();
 
         // Handle deletion requests
         while (requestIter.hasNext() && !interrupted) {

@@ -490,8 +490,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         // NOTIFICATIONS
         // check if notifications are required - if true send to notifier, if false publish events and delete requests
-        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
-        if (notificationSettings.isActiveNotification()) {
+        if (aipNotificationSettingsService.isActiveNotification()) {
             // Change the step of the request
             aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(requests));
         } else {

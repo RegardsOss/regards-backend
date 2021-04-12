@@ -158,8 +158,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         long numberOfDeletionRequest = 0L;
 
         // See if notifications are required
-        AIPNotificationSettings notificationSettings = aipNotificationSettingsService.retrieve();
-        boolean isToNotify = notificationSettings.isActiveNotification();
+        boolean isToNotify = aipNotificationSettingsService.isActiveNotification();
 
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP

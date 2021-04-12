@@ -24,20 +24,21 @@ import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Configuration manager for current module
@@ -61,7 +62,7 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
     private IDumpSettingsService dumpSettingsService;
 
     @Autowired
-    private IAIPNotificationSettingsService notificationSettingsService;
+    private AIPNotificationSettingsService notificationSettingsService;
 
     @Override
     public Set<String> importConfiguration(ModuleConfiguration configuration) {
@@ -89,7 +90,7 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                     importErrors.add(String.format("New dump settings were not updated, cause by: %s", e.getMessage()));
                     LOGGER.error("New dump settings were not updated, cause by:", e);
                 }
-            } else if (AIPNotificationSettings.class.isAssignableFrom(item.getKey())) {
+            } else if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 notificationSettingsService.update(item.getTypedValue());
             }
         }
@@ -107,10 +108,8 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
             configuration.add(ModuleConfigurationItem.build(dumpSettings));
         }
 
-        AIPNotificationSettings notifSettings = notificationSettingsService.retrieve();
-        if (notifSettings != null) {
-            configuration.add(ModuleConfigurationItem.build(notifSettings));
-        }
+        notificationSettingsService.retrieve()
+                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
 
         return ModuleConfiguration.build(info, configuration);
     }

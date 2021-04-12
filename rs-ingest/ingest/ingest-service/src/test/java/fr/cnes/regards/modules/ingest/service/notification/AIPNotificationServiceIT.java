@@ -23,8 +23,8 @@ package fr.cnes.regards.modules.ingest.service.notification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import java.util.Iterator;
@@ -90,7 +91,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
-    private IAIPNotificationSettingsRepository aipNotificationSettingsRepository;
+    private AIPNotificationSettingsService notificationSettingsService;
 
     /**
      * Services
@@ -326,9 +327,9 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
      * Change state of notification settings
      */
     private void initNotificationSettings(boolean state) {
-       AIPNotificationSettings notificationSettings = new AIPNotificationSettings();
-       notificationSettings.setActiveNotification(state);
-       aipNotificationSettingsRepository.save(notificationSettings);
+       DynamicTenantSetting notificationSettings = AIPNotificationSettings.ACTIVE_NOTIFICATION_SETTING;
+       notificationSettings.setValue(state);
+        notificationSettingsService.update(notificationSettings);
     }
 
 }

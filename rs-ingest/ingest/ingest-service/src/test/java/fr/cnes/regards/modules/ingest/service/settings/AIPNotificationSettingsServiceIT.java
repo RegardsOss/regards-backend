@@ -21,16 +21,22 @@
 package fr.cnes.regards.modules.ingest.service.settings;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.dao.IAIPNotificationSettingsRepository;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
-import java.util.Optional;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -44,38 +50,32 @@ import org.springframework.test.context.TestPropertySource;
 public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceTest {
 
     @Autowired
-    IAIPNotificationSettingsService notificationSettingsService;
+    AIPNotificationSettingsService notificationSettingsService;
 
     @Autowired
-    IAIPNotificationSettingsRepository notificationSettingsRepository;
+    IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Before
+    public void reset() throws EntityException {
+        simulateApplicationStartedEvent();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        notificationSettingsService.resetSettings();
+    }
 
     @Test
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
-        // simulate application started event for notification settings
-        simulateApplicationStartedEvent();
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-
-        // init new configuration
-        AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-
-        // check configuration was saved in db
-        Optional<AIPNotificationSettings> settingsOpt = notificationSettingsRepository.findFirstBy();
-        Assert.assertTrue("Settings were not initialized properly",
-                          settingsOpt.isPresent() && notificationSettings.getId().equals(settingsOpt.get().getId()));
-        Assert.assertEquals("active_notifications was initialized with default value", notificationSettings.isActiveNotification(),
-                          settingsOpt.get().isActiveNotification());
+        List<DynamicTenantSetting> notificationSettings = notificationSettingsService.retrieve();
+        assertEquals(1, notificationSettings.size());
+        assertEquals(AIPNotificationSettings.ACTIVE_NOTIFICATION, notificationSettings.get(0).getName());
+        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, notificationSettings.get(0).getDefaultValue());
+        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, notificationSettings.get(0).getValue());
     }
 
     @Test
     @Purpose("Check the update of existing notification settings")
     public void testUpdate() throws EntityNotFoundException {
-        // init new configuration
-        AIPNotificationSettings notificationSettings = notificationSettingsService.retrieve();
-
-        // Change notification to false
-        notificationSettings.setActiveNotification(false);
-        notificationSettingsService.update(notificationSettings);
-        Assert.assertEquals(false, notificationSettingsRepository.findFirstBy().get().isActiveNotification());
+        notificationSettingsService.update(new DynamicTenantSetting(null, AIPNotificationSettings.ACTIVE_NOTIFICATION, null, true, true));
+        assertEquals(true, notificationSettingsService.retrieve().get(0).getValue());
     }
 }
