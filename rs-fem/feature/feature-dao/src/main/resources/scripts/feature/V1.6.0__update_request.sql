@@ -1,0 +1,1 @@
+update table t_feature_request add column error_step varchar(50);

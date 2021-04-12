@@ -50,13 +50,6 @@ public interface IFeatureUpdateService extends IAbstractFeatureService {
     RequestInfo<FeatureUniformResourceName> registerRequests(FeatureUpdateCollection toHandle);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * A delta of time is kept between request registration and processing to manage concurrent updates.
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
-
-    /**
      * Process batch of requests during job
      * @return updated features
      */

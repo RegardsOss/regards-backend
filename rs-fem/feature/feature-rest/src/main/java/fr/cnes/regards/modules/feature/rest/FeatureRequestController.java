@@ -100,6 +100,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
+        // FIXME : Use a job and do not limit number of requests to delete
         featureRequestService.delete(type, selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -112,7 +113,8 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        // TODO
+        // FIXME : Use a job and do not limit number of requests to retry
+        featureRequestService.retry(type, selection);
         return null;
     }
 

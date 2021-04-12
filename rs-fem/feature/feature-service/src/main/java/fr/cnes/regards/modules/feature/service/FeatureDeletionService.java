@@ -57,6 +57,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecification;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -86,7 +87,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO
  */
 @Service
 @MultitenantTransactional
-public class FeatureDeletionService extends AbstractFeatureService implements IFeatureDeletionService {
+public class FeatureDeletionService extends AbstractFeatureService<FeatureDeletionRequest>
+        implements IFeatureDeletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
@@ -422,19 +424,14 @@ public class FeatureDeletionService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
-        Pageable page = PageRequest.of(0, 500);
-        Page<FeatureDeletionRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            deletionRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
-            } else {
-                stop = true;
-            }
-        } while (!stop);
+    protected IAbstractFeatureRequestRepository<FeatureDeletionRequest> getRequestsRepository() {
+        return deletionRepo;
+    }
+
+    @Override
+    protected FeatureDeletionRequest updateForRetry(FeatureDeletionRequest request) {
+        // nothing to do
+        return request;
     }
 
 }

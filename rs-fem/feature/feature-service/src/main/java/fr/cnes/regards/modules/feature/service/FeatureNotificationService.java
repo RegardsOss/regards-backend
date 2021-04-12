@@ -69,7 +69,8 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
  */
 @Service
 @MultitenantTransactional
-public class FeatureNotificationService extends AbstractFeatureService implements IFeatureNotificationService {
+public class FeatureNotificationService extends AbstractFeatureService<FeatureNotificationRequest>
+        implements IFeatureNotificationService {
 
     public static final String DEBUG_MSG_NOTIFICATION_REQUESTS_IN_MS = "------------->>> {} Notification requests in {} ms";
 
@@ -245,19 +246,20 @@ public class FeatureNotificationService extends AbstractFeatureService implement
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
-        Pageable page = PageRequest.of(0, 500);
-        Page<FeatureNotificationRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            featureNotificationRequestRepository.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
-            } else {
-                stop = true;
-            }
-        } while (!stop);
+    protected IAbstractFeatureRequestRepository<FeatureNotificationRequest> getRequestsRepository() {
+        return featureNotificationRequestRepository;
+    }
+
+    @Override
+    public int scheduleRequests() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    protected FeatureNotificationRequest updateForRetry(FeatureNotificationRequest request) {
+        // nothing to do
+        return request;
     }
 
 }

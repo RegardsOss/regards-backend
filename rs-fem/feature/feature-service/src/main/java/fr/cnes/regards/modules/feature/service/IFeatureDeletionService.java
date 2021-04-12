@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
@@ -46,13 +45,6 @@ public interface IFeatureDeletionService extends IAbstractFeatureService {
      * Register delete requests in database for further processing from incoming request events
      */
     RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureDeletionRequestEvent> events);
-
-    /**
-     * Schedule a job to process a batch of requests<br/>
-     * Inside this list there is only one occurrence of {@link FeatureDeletionRequestEvent} per {@link Feature} id
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
 
     /**
      * Process batch of requests during job

@@ -93,6 +93,13 @@ public abstract class AbstractRequest {
     @Column(name = COLUMN_STEP, length = 50, nullable = false)
     protected FeatureRequestStep step;
 
+    /**
+     * Last execution error step. Used to retry a request from last step
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = COLUMN_STEP, length = 50, nullable = true)
+    protected FeatureRequestStep errorStep;
+
     @NotNull(message = "Priority of the request")
     @Enumerated(EnumType.ORDINAL)
     @Column(name = COLUMN_PRIORITY, length = 50, nullable = false)
@@ -150,6 +157,14 @@ public abstract class AbstractRequest {
         this.step = step;
     }
 
+    public FeatureRequestStep getErrorStep() {
+        return errorStep;
+    }
+
+    public void setErrorStep(FeatureRequestStep errorStep) {
+        this.errorStep = errorStep;
+    }
+
     public PriorityLevel getPriority() {
         return priority;
     }
@@ -176,6 +191,10 @@ public abstract class AbstractRequest {
 
     public boolean isDeletable() {
         return (this.state == RequestState.ERROR) || (this.step == FeatureRequestStep.LOCAL_DELAYED);
+    }
+
+    public boolean isRetryable() {
+        return (this.state == RequestState.ERROR);
     }
 
     public static FeatureRequestDTO toDTO(AbstractRequest request) {

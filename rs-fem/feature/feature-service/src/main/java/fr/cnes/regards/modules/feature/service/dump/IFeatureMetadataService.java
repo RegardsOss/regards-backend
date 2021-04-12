@@ -95,4 +95,10 @@ public interface IFeatureMetadataService {
      */
     RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
 
+    /**
+     * Retry requests associated to given search parameters
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     */
+    void retryRequests(FeatureRequestsSelectionDTO selection);
+
 }

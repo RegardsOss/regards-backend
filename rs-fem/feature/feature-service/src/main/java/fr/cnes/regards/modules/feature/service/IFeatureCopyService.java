@@ -24,12 +24,6 @@ public interface IFeatureCopyService extends IAbstractFeatureService {
     RequestInfo<FeatureUniformResourceName> registerRequests(List<FeatureCopyRequest> requests);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
-
-    /**
      * Process batch of requests during job
      */
     void processRequests(List<FeatureCopyRequest> requests, FeatureCopyJob featureCopyJob);

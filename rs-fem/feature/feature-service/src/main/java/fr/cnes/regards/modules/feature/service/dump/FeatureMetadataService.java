@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -67,7 +68,11 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMetadataService.class);
 
-    private static final int MAX_PAGE_TO_DELETE = 4;
+    private static final int MAX_ENTITY_PER_PAGE = 2000;
+
+    private static final int MAX_PAGE_TO_DELETE = 50;
+
+    private static final int MAX_PAGE_TO_RETRY = 50;
 
     // Limit number of features to retrieve in one page
     @Value("${regards.feature.dump.zip-limit:1000}")
@@ -206,7 +211,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Override
     public void deleteRequests(FeatureRequestsSelectionDTO selection) {
-        Pageable page = PageRequest.of(0, 500);
+        Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
         boolean stop = false;
         do {
@@ -218,6 +223,34 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                 stop = true;
             }
         } while (!stop);
+    }
+
+    @Override
+    public void retryRequests(FeatureRequestsSelectionDTO selection) {
+        Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
+        Page<FeatureSaveMetadataRequest> requestsPage;
+        boolean stop = false;
+        do {
+            requestsPage = findRequests(selection, page);
+            List<FeatureSaveMetadataRequest> toUpdate = requestsPage.filter(r -> r.isRetryable())
+                    .map(this::updateForRetry).toList();
+            featureSaveMetadataRepository.saveAll(toUpdate);
+            if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
+                page = requestsPage.nextPageable();
+            } else {
+                stop = true;
+            }
+        } while (!stop);
+    }
+
+    private FeatureSaveMetadataRequest updateForRetry(FeatureSaveMetadataRequest request) {
+        if (request.getStep() == FeatureRequestStep.REMOTE_NOTIFICATION_ERROR) {
+            request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+        } else {
+            request.setStep(FeatureRequestStep.LOCAL_DELAYED);
+        }
+        request.setState(RequestState.GRANTED);
+        return request;
     }
 
 }

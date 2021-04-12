@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
@@ -170,6 +171,33 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
+    public void retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+        switch (type) {
+            case COPY:
+                featureCopyService.retryRequests(selection);
+                break;
+            case CREATION:
+                featureCreationService.retryRequests(selection);
+                break;
+            case DELETION:
+                featureDeletionService.retryRequests(selection);
+                break;
+            case NOTIFICATION:
+                featureNotificationService.retryRequests(selection);
+                break;
+            case SAVE_METADATA:
+                featureMetadataService.retryRequests(selection);
+                break;
+            case UPDATE:
+                featureUpdateService.retryRequests(selection);
+                break;
+            default:
+                LOGGER.error("Not available type {} for Feature Requests", type.toString());
+                break;
+        }
+    }
+
+    @Override
     public void handleStorageSuccess(Set<String> groupIds) {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
 
@@ -186,6 +214,7 @@ public class FeatureRequestService implements IFeatureRequestService {
                        item.getFeature() != null ? item.getFeature().getId() : null, null, RequestState.ERROR, null)));
         // set FeatureCreationRequest to error state
         request.forEach(item -> item.setState(RequestState.ERROR));
+        request.forEach(item -> item.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR));
 
         this.fcrRepo.saveAll(request);
 

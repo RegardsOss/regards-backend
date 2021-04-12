@@ -31,13 +31,6 @@ public interface IFeatureCreationService extends IAbstractFeatureService {
     RequestInfo<String> registerRequests(FeatureCreationCollection collection);
 
     /**
-     * Schedule a job to process a batch of requests<br/>
-     * Inside this list there is only one occurence of {@link FeatureCreationRequest} per {@link Feature} id
-     * @return number of scheduled requests (0 if no request was scheduled)
-     */
-    int scheduleRequests();
-
-    /**
      * Process batch of requests during job
      * @return new feature created
      */

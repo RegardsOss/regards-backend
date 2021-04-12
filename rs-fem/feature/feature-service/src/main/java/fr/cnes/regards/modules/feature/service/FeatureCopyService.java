@@ -54,6 +54,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecification;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -80,7 +81,7 @@ import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCopyService extends AbstractFeatureService implements IFeatureCopyService {
+public class FeatureCopyService extends AbstractFeatureService<FeatureCopyRequest> implements IFeatureCopyService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCopyService.class);
 
@@ -272,19 +273,13 @@ public class FeatureCopyService extends AbstractFeatureService implements IFeatu
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+    protected IAbstractFeatureRequestRepository<FeatureCopyRequest> getRequestsRepository() {
+        return featureCopyRequestRepo;
+    }
 
-        Pageable page = PageRequest.of(0, 500);
-        Page<FeatureCopyRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            featureCopyRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
-            } else {
-                stop = true;
-            }
-        } while (!stop);
+    @Override
+    protected FeatureCopyRequest updateForRetry(FeatureCopyRequest request) {
+        // Nothing to do
+        return request;
     }
 }

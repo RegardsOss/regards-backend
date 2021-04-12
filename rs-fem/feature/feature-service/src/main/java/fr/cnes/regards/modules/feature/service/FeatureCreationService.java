@@ -60,6 +60,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecification;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -104,7 +105,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  */
 @Service
 @MultitenantTransactional
-public class FeatureCreationService extends AbstractFeatureService implements IFeatureCreationService {
+public class FeatureCreationService extends AbstractFeatureService<FeatureCreationRequest>
+        implements IFeatureCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCreationService.class);
 
@@ -292,7 +294,13 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
 
     @Override
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
-        List<FeatureCreationRequest> requests = featureCreationRequestRepo.findAllByIdIn(requestIds);
+        List<FeatureCreationRequest> allRequests = featureCreationRequestRepo.findAllByIdIn(requestIds);
+        List<FeatureCreationRequest> requests = allRequests.stream()
+                .filter(fcr -> fcr.getErrorStep() != FeatureRequestStep.REMOTE_STORAGE_ERROR)
+                .collect(Collectors.toList());
+        List<FeatureCreationRequest> retryRequests = allRequests.stream()
+                .filter(fcr -> fcr.getErrorStep() == FeatureRequestStep.REMOTE_STORAGE_ERROR)
+                .collect(Collectors.toList());
         long processStart = System.currentTimeMillis();
         long subProcessStart;
 
@@ -333,6 +341,15 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
                 .map(this::handleRequestWithFiles).collect(Collectors.toSet());
         featureCreationRequestRepo.saveAll(requestWithFiles);
         LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", requestWithFiles.size(),
+                     System.currentTimeMillis() - subProcessStart);
+
+        // Update request for storage retry
+        subProcessStart = System.currentTimeMillis();
+        Set<FeatureCreationRequest> updatedRetryRequest = retryRequests.stream()
+                .filter(fcr -> (fcr.getFeature().getFiles() != null) && !fcr.getFeature().getFiles().isEmpty())
+                .map(this::handleRequestWithFiles).collect(Collectors.toSet());
+        featureCreationRequestRepo.saveAll(updatedRetryRequest);
+        LOGGER.trace("------------->>> {} creation requests with files updated in {} ms", updatedRetryRequest.size(),
                      System.currentTimeMillis() - subProcessStart);
 
         // Delete requests without files
@@ -508,18 +525,13 @@ public class FeatureCreationService extends AbstractFeatureService implements IF
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
-        Pageable page = PageRequest.of(0, 500);
-        Page<FeatureCreationRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            featureCreationRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
-            } else {
-                stop = true;
-            }
-        } while (!stop);
+    protected IAbstractFeatureRequestRepository<FeatureCreationRequest> getRequestsRepository() {
+        return featureCreationRequestRepo;
+    }
+
+    @Override
+    protected FeatureCreationRequest updateForRetry(FeatureCreationRequest request) {
+        // nothing to do
+        return request;
     }
 }

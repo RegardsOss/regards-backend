@@ -84,4 +84,11 @@ public interface IFeatureRequestService {
      */
     public void delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
 
+    /**
+     * Retry requests with given selection
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @throws EntityOperationForbiddenException
+     */
+    public void retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
+
 }
