@@ -19,24 +19,8 @@
 
 package fr.cnes.regards.modules.feature.service.settings;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-
-import java.util.List;
-
-/**
- * Service to handle optional notifications
- *
- * @author Iliana Ghazali
- */
 
 public interface IFeatureNotificationSettingsService {
-
-    List<DynamicTenantSetting> retrieve();
-
-    void update(DynamicTenantSetting dynamicTenantSetting);
-
-    void resetSettings() throws EntityException;
 
     boolean isActiveNotification();
 

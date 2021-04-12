@@ -29,8 +29,6 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.feature.domain.settings.FeatureNotificationSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -49,8 +47,6 @@ import java.util.List;
 @Service
 @MultitenantTransactional
 public class FeatureNotificationSettingsService extends AbstractSettingService implements IFeatureNotificationSettingsService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FeatureNotificationSettingsService.class);
 
     private ITenantResolver tenantsResolver;
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -89,26 +85,6 @@ public class FeatureNotificationSettingsService extends AbstractSettingService i
         } finally {
             runtimeTenantResolver.clearTenant();
         }
-    }
-
-    @Override
-    public List<DynamicTenantSetting> retrieve() {
-        return dynamicTenantSettingService.readAll();
-    }
-
-    @Override
-    public void update(DynamicTenantSetting dynamicTenantSetting) {
-        try {
-            dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
-        } catch (EntityException e) {
-            LOG.error("Unable to update setting {}", dynamicTenantSetting.getName());
-        }
-    }
-
-    @Override
-    public void resetSettings() throws EntityException {
-        deleteAll();
-        init();
     }
 
     @Override

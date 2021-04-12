@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
     private FeatureSaveMetadataScheduler featureSaveMetadataScheduler;
 
     @Autowired
-    private IFeatureNotificationSettingsService notificationSettingsService;
+    private FeatureNotificationSettingsService notificationSettingsService;
 
     @Autowired
     private IDumpSettingsService dumpSettingsService;
