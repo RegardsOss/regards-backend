@@ -51,8 +51,9 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     @Override
     public DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting) throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         dynamicTenantSetting.setId(null);
-        customize(dynamicTenantSetting);
+        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
         DynamicTenantSetting savedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
+        customizer.doRightNow(dynamicTenantSetting);
         LOGGER.info("Created Tenant Setting {}", savedDynamicTenantSetting);
         return savedDynamicTenantSetting;
     }
@@ -71,8 +72,9 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     public DynamicTenantSetting update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         Long id = getDynamicTenantSetting(dynamicTenantSetting.getName()).getId();
         dynamicTenantSetting.setId(id);
-        customize(dynamicTenantSetting);
+        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
         DynamicTenantSetting updatedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
+        customizer.doRightNow(dynamicTenantSetting);
         LOGGER.info("Updated Tenant Setting {}", updatedDynamicTenantSetting);
         return updatedDynamicTenantSetting;
     }
@@ -81,8 +83,9 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     public <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         dynamicTenantSetting.setValue(value);
-        customize(dynamicTenantSetting);
+        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
         DynamicTenantSetting updatedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
+        customizer.doRightNow(dynamicTenantSetting);
         LOGGER.info("Updated Tenant Setting {}", updatedDynamicTenantSetting);
         return updatedDynamicTenantSetting;
     }
@@ -106,7 +109,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         return read(name).orElseThrow(() -> new EntityNotFoundException(name, DynamicTenantSetting.class));
     }
 
-    private void customize(DynamicTenantSetting dynamicTenantSetting) throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
+    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting) throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
 
         IDynamicTenantSettingCustomizer settingCustomizer = dynamicTenantSettingCustomizerList
                 .stream()
@@ -122,8 +125,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
             throw new EntityInvalidException("Invalid Tenant Setting");
         }
 
-        settingCustomizer.doRightNow(dynamicTenantSetting);
-        LOGGER.debug("Applied customizer for Tenant Setting {}", dynamicTenantSetting.getName());
+        return settingCustomizer;
     }
 
 }
