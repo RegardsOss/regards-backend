@@ -60,6 +60,7 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -214,6 +215,60 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+    }
+
+    @Test
+    public void testDeleteRequests() {
+
+        int nbValid = 20;
+        // Register valid requests
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        this.featureCreationService.registerRequests(events);
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureCreationService
+                .deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureCreationService
+                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
+    }
+
+    @Test
+    public void testRetryRequests() {
+
+        int nbValid = 20;
+        // Register valid requests
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true);
+        this.featureCreationService.registerRequests(events);
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureCreationService
+                .deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureCreationService
+                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
     }
 
     private void testNotification() {

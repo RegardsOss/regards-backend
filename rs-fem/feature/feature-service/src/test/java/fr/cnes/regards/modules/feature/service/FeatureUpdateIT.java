@@ -50,10 +50,12 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -281,6 +283,68 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+    }
+
+    @Test
+    public void testDeleteRequests() throws InterruptedException {
+
+        int nbValid = 20;
+        // Create features
+        prepareCreationTestData(false, nbValid, true, true);
+        // Notify them
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
+                .collect(Collectors.toList());
+        RequestInfo<FeatureUniformResourceName> results = this.featureUpdateService
+                .registerRequests(prepareUpdateRequests(urns));
+        Assert.assertFalse(results.getGranted().isEmpty());
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureUpdateService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureUpdateService
+                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
+    }
+
+    @Test
+    public void testRetryRequests() throws InterruptedException {
+
+        int nbValid = 20;
+        // Create features
+        prepareCreationTestData(false, nbValid, true, true);
+        // Notify them
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(f -> f.getUrn())
+                .collect(Collectors.toList());
+        RequestInfo<FeatureUniformResourceName> results = this.featureUpdateService
+                .registerRequests(prepareUpdateRequests(urns));
+        Assert.assertFalse(results.getGranted().isEmpty());
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureUpdateService.retryRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureUpdateService
+                .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
     }
 
 }

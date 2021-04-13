@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 
@@ -259,6 +260,62 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceTest {
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+    }
+
+    @Test
+    public void testDeleteRequests() throws InterruptedException {
+
+        int nbValid = 20;
+        // Register valid requests
+        String deletionOwner = "deleter";
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
+        this.featureDeletionService.registerRequests(events);
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureDeletionService
+                .deleteRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureDeletionService
+                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
+    }
+
+    @Test
+    public void testRetryRequests() throws InterruptedException {
+
+        int nbValid = 20;
+        // Register valid requests
+        String deletionOwner = "deleter";
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
+        this.featureDeletionService.registerRequests(events);
+
+        // Try delete all requests.
+        RequestHandledResponse response = this.featureDeletionService
+                .retryRequests(FeatureRequestsSelectionDTO.build());
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+                            response.getTotalRequested());
+
+        response = this.featureDeletionService
+                .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        LOGGER.info(response.getMessage());
+        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", 0,
+                            response.getTotalHandled());
+        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", 0,
+                            response.getTotalRequested());
+
     }
 
     @Override

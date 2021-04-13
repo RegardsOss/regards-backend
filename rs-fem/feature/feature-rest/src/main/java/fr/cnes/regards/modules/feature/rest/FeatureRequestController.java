@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
@@ -95,27 +96,23 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     @Operation(summary = "Delete feature requests by selection", description = "Delete feature requests by selection")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> deleteRequests(
+    @ResourceAccess(description = "Delete feature request by selection", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<RequestHandledResponse> deleteRequests(
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        // FIXME : return number of deleted entities. Possibly not all as synchronous
-        featureRequestService.delete(type, selection);
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        return new ResponseEntity<RequestHandledResponse>(featureRequestService.delete(type, selection), HttpStatus.OK);
     }
 
     @Operation(summary = "Retry feature requests by selection", description = "Retry feature requests by selection")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
     @RequestMapping(method = RequestMethod.POST, path = RETRY_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> retryRequests(
+    public ResponseEntity<RequestHandledResponse> retryRequests(
             @Parameter(
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        // FIXME : return number of retried entities. Possibly not all as synchronous
-        featureRequestService.retry(type, selection);
-        return null;
+        return new ResponseEntity<RequestHandledResponse>(featureRequestService.retry(type, selection), HttpStatus.OK);
     }
 
     /**
@@ -134,10 +131,16 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     private void addLinks(EntityModel<FeatureRequestDTO> resource) {
         // Request are deletable only if not scheduled
         if (!resource.getContent().isProcessing()) {
-            resourceService.addLink(resource, this.getClass(), "deleteRequest", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
-            resourceService.addLink(resource, this.getClass(), "retryRequest", LinkRelation.of("retry"),
-                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
+            resourceService
+                    .addLink(resource, this.getClass(), "deleteRequests", LinkRels.DELETE,
+                             MethodParamFactory.build(FeatureRequestTypeEnum.class,
+                                                      FeatureRequestTypeEnum.valueOf(resource.getContent().getType())),
+                             MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+            resourceService
+                    .addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("retry"),
+                             MethodParamFactory.build(FeatureRequestTypeEnum.class,
+                                                      FeatureRequestTypeEnum.valueOf(resource.getContent().getType())),
+                             MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
         }
     }
 

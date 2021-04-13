@@ -32,7 +32,6 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
@@ -53,6 +52,8 @@ public abstract class AbstractRequest {
     public static final String COLUMN_REGISTRATION_DATE = "registration_date";
 
     public static final String COLUMN_STEP = "step";
+
+    public static final String COLUMN_LAST_EXEC_ERROR_STEP = "last_exec_error_step";
 
     public static final String COLUMN_PRIORITY = "priority";
 
@@ -97,8 +98,8 @@ public abstract class AbstractRequest {
      * Last execution error step. Used to retry a request from last step
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = COLUMN_STEP, length = 50, nullable = true)
-    protected FeatureRequestStep errorStep;
+    @Column(name = COLUMN_LAST_EXEC_ERROR_STEP, length = 50, nullable = true)
+    protected FeatureRequestStep lastExecErrorStep;
 
     @NotNull(message = "Priority of the request")
     @Enumerated(EnumType.ORDINAL)
@@ -157,12 +158,12 @@ public abstract class AbstractRequest {
         this.step = step;
     }
 
-    public FeatureRequestStep getErrorStep() {
-        return errorStep;
+    public FeatureRequestStep getLastExecErrorStep() {
+        return lastExecErrorStep;
     }
 
-    public void setErrorStep(FeatureRequestStep errorStep) {
-        this.errorStep = errorStep;
+    public void setLastExecErrorStep(FeatureRequestStep lastExecErrorStep) {
+        this.lastExecErrorStep = lastExecErrorStep;
     }
 
     public PriorityLevel getPriority() {
@@ -190,7 +191,7 @@ public abstract class AbstractRequest {
     }
 
     public boolean isDeletable() {
-        return (this.state == RequestState.ERROR) || (this.step == FeatureRequestStep.LOCAL_DELAYED);
+        return (this.state == RequestState.ERROR);
     }
 
     public boolean isRetryable() {
@@ -206,25 +207,25 @@ public abstract class AbstractRequest {
         if (request instanceof FeatureCreationRequest) {
             FeatureCreationRequest fcr = (FeatureCreationRequest) request;
             dto.setProviderId(fcr.getProviderId());
-            dto.setType(FeatureRequestType.CREATION.toString());
+            dto.setType(FeatureRequestTypeEnum.CREATION.toString());
             dto.setSession(fcr.getMetadata().getSession());
             dto.setSource(fcr.getMetadata().getSessionOwner());
         }
         if (request instanceof FeatureUpdateRequest) {
             dto.setProviderId(((FeatureUpdateRequest) request).getProviderId());
-            dto.setType(FeatureRequestType.PATCH.toString());
+            dto.setType(FeatureRequestTypeEnum.UPDATE.toString());
         }
         if (request instanceof FeatureSaveMetadataRequest) {
-            dto.setType(FeatureRequestType.SAVE_METADATA.toString());
+            dto.setType(FeatureRequestTypeEnum.SAVE_METADATA.toString());
         }
         if (request instanceof FeatureDeletionRequest) {
-            dto.setType(FeatureRequestType.DELETION.toString());
+            dto.setType(FeatureRequestTypeEnum.DELETION.toString());
         }
         if (request instanceof FeatureNotificationRequest) {
-            dto.setType(FeatureRequestType.NOTIFICATION.toString());
+            dto.setType(FeatureRequestTypeEnum.NOTIFICATION.toString());
         }
         if (request instanceof FeatureCopyRequest) {
-            dto.setType(FeatureRequestType.FILE_COPY.toString());
+            dto.setType(FeatureRequestTypeEnum.COPY.toString());
         }
         return dto;
     }

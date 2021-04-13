@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 
 /**
  * @author Marc SORDI
@@ -85,40 +86,83 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
+        long nbHandled = 0;
+        long total = 0;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<R> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            getRequestsRepository().deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
+        String message;
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
+        } else {
+            int cpt = 0;
+            boolean stop = false;
+            // Delete only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = findRequests(selection, page);
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
+                getRequestsRepository().deleteAll(requestsPage);
+                nbHandled += requestsPage.getNumberOfElements();
+                if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
+                    stop = true;
+                } else {
+                    cpt++;
+                }
+            } while (!stop);
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
+                                        MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
             } else {
-                stop = true;
+                message = "All deletable requested handled";
             }
-        } while (!stop);
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
     }
 
     @Override
-    public void retryRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {
+        long nbHandled = 0;
+        long total = 0;
+        String message;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<R> requestsPage;
         boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            List<R> toUpdate = requestsPage.filter(r -> r.isRetryable()).map(this::globalUpdateForRetry).toList();
-            getRequestsRepository().saveAll(toUpdate);
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
+        } else {
+            // Retry only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = findRequests(selection, page);
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
+                List<R> toUpdate = requestsPage.map(this::globalUpdateForRetry).toList();
+                toUpdate = getRequestsRepository().saveAll(toUpdate);
+                nbHandled += toUpdate.size();
+                if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
+                    page = requestsPage.nextPageable();
+                } else {
+                    stop = true;
+                }
+            } while (!stop);
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
+                                        MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
             } else {
-                stop = true;
+                message = "All retryable requested handled";
             }
-        } while (!stop);
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
     }
 
     private R globalUpdateForRetry(R request) {
-        request.setErrorStep(request.getStep());
+        request.setLastExecErrorStep(request.getStep());
         if (request.getStep() == FeatureRequestStep.REMOTE_NOTIFICATION_ERROR) {
             request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
         } else {

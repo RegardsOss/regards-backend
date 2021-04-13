@@ -52,7 +52,6 @@ public class FeatureCreationRequestSpecification {
 
             Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
                                                                                 page);
-
             if (selection.getFilters() != null) {
                 if (selection.getFilters().getProviderId() != null) {
                     predicates.add(cb.like(cb.lower(root.get("providerId")),
@@ -66,7 +65,6 @@ public class FeatureCreationRequestSpecification {
                     predicates.add(cb.equal(root.get("metadata").get("session"), selection.getFilters().getSession()));
                 }
             }
-
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

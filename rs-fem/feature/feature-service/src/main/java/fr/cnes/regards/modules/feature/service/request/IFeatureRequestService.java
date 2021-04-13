@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 
 /**
@@ -80,15 +81,17 @@ public interface IFeatureRequestService {
     /**
      * Delete requests with given selection
      * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
      * @throws EntityOperationForbiddenException
      */
-    public void delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
+    public RequestHandledResponse delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
 
     /**
      * Retry requests with given selection
      * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
      * @throws EntityOperationForbiddenException
      */
-    public void retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
+    public RequestHandledResponse retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection);
 
 }

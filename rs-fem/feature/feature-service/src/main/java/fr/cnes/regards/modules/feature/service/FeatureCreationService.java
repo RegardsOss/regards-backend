@@ -296,10 +296,10 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
         List<FeatureCreationRequest> allRequests = featureCreationRequestRepo.findAllByIdIn(requestIds);
         List<FeatureCreationRequest> requests = allRequests.stream()
-                .filter(fcr -> fcr.getErrorStep() != FeatureRequestStep.REMOTE_STORAGE_ERROR)
+                .filter(fcr -> fcr.getLastExecErrorStep() != FeatureRequestStep.REMOTE_STORAGE_ERROR)
                 .collect(Collectors.toList());
         List<FeatureCreationRequest> retryRequests = allRequests.stream()
-                .filter(fcr -> fcr.getErrorStep() == FeatureRequestStep.REMOTE_STORAGE_ERROR)
+                .filter(fcr -> fcr.getLastExecErrorStep() == FeatureRequestStep.REMOTE_STORAGE_ERROR)
                 .collect(Collectors.toList());
         long processStart = System.currentTimeMillis();
         long subProcessStart;

@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.feature.service;
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
@@ -24,15 +25,21 @@ public interface IAbstractFeatureService extends IRequestDeniedService, IRequest
     RequestsInfo getInfo(FeatureRequestsSelectionDTO selection);
 
     /**
-     * Delete requests associated to given search parameters
+     * Delete requests associated to given search parameters.
+     * Number of requests deletable is limited as this method is synchronous. Number of handled requests is returned in response.
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
      */
-    void deleteRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
 
     /**
      * Retry requests associated to given search parameters
+     * Number of requests retryable is limited as this method is synchronous. Number of handled requests is returned in response.
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
      */
-    void retryRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
 
 }

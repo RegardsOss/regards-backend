@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameExcep
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
@@ -84,9 +85,11 @@ public interface IFeatureMetadataService {
 
     /**
      * Delete requests associated to given search parameters
+     * Number of requests deletable is limited as this method is synchonous. Number of handled requests is returned in response.
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      */
-    void deleteRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
 
     /**
      * Find requests information
@@ -97,8 +100,10 @@ public interface IFeatureMetadataService {
 
     /**
      * Retry requests associated to given search parameters
+     * Number of requests deletable is limited as this method is synchonous. Number of handled requests is returned in response.
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      */
-    void retryRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
 
 }

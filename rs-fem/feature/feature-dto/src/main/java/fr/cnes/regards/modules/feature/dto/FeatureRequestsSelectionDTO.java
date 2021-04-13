@@ -34,9 +34,9 @@ public class FeatureRequestsSelectionDTO {
 
     FeatureRequestSearchParameters filters = new FeatureRequestSearchParameters();
 
-    List<Long> excludedIds = Lists.newArrayList();
+    List<Long> requestIds = Lists.newArrayList();
 
-    List<Long> includedIds = Lists.newArrayList();
+    FeatureRequestsSelectionMode requestIdSelectionMode = FeatureRequestsSelectionMode.INCLUDE;
 
     public static FeatureRequestsSelectionDTO build() {
         return new FeatureRequestsSelectionDTO();
@@ -78,12 +78,12 @@ public class FeatureRequestsSelectionDTO {
     }
 
     public FeatureRequestsSelectionDTO withId(Long id) {
-        this.includedIds.add(id);
+        this.requestIds.add(id);
         return this;
     }
 
-    public FeatureRequestsSelectionDTO withoutId(Long id) {
-        this.excludedIds.add(id);
+    public FeatureRequestsSelectionDTO withSelectionMode(FeatureRequestsSelectionMode mode) {
+        this.requestIdSelectionMode = mode;
         return this;
     }
 
@@ -95,20 +95,20 @@ public class FeatureRequestsSelectionDTO {
         this.filters = filters;
     }
 
-    public List<Long> getExcludedIds() {
-        return excludedIds;
+    public List<Long> getRequestIds() {
+        return requestIds;
     }
 
-    public void setExcludedIds(List<Long> excludedIds) {
-        this.excludedIds = excludedIds;
+    public void setRequestIds(List<Long> requestIds) {
+        this.requestIds = requestIds;
     }
 
-    public List<Long> getIncludedIds() {
-        return includedIds;
+    public FeatureRequestsSelectionMode getRequestIdSelectionMode() {
+        return requestIdSelectionMode;
     }
 
-    public void setIncludedIds(List<Long> includedIds) {
-        this.includedIds = includedIds;
+    public void setRequestIdSelectionMode(FeatureRequestsSelectionMode requestIdSelectionMode) {
+        this.requestIdSelectionMode = requestIdSelectionMode;
     }
 
 }

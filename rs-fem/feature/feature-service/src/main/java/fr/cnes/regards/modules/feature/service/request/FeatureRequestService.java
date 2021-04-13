@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -144,56 +145,46 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse delete(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
         switch (type) {
             case COPY:
-                featureCopyService.deleteRequests(selection);
-                break;
+                return featureCopyService.deleteRequests(selection);
             case CREATION:
-                featureCreationService.deleteRequests(selection);
-                break;
+                return featureCreationService.deleteRequests(selection);
             case DELETION:
-                featureDeletionService.deleteRequests(selection);
-                break;
+                return featureDeletionService.deleteRequests(selection);
             case NOTIFICATION:
-                featureNotificationService.deleteRequests(selection);
-                break;
+                return featureNotificationService.deleteRequests(selection);
             case SAVE_METADATA:
-                featureMetadataService.deleteRequests(selection);
-                break;
+                return featureMetadataService.deleteRequests(selection);
             case UPDATE:
-                featureUpdateService.deleteRequests(selection);
-                break;
+                return featureUpdateService.deleteRequests(selection);
             default:
-                LOGGER.error("Not available type {} for Feature Requests", type.toString());
-                break;
+                String message = String.format("Not available type %s for Feature Requests", type.toString());
+                LOGGER.error(message);
+                return RequestHandledResponse.build(0, 0, message);
         }
     }
 
     @Override
-    public void retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retry(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection) {
         switch (type) {
             case COPY:
-                featureCopyService.retryRequests(selection);
-                break;
+                return featureCopyService.retryRequests(selection);
             case CREATION:
-                featureCreationService.retryRequests(selection);
-                break;
+                return featureCreationService.retryRequests(selection);
             case DELETION:
-                featureDeletionService.retryRequests(selection);
-                break;
+                return featureDeletionService.retryRequests(selection);
             case NOTIFICATION:
-                featureNotificationService.retryRequests(selection);
-                break;
+                return featureNotificationService.retryRequests(selection);
             case SAVE_METADATA:
-                featureMetadataService.retryRequests(selection);
-                break;
+                return featureMetadataService.retryRequests(selection);
             case UPDATE:
-                featureUpdateService.retryRequests(selection);
-                break;
+                return featureUpdateService.retryRequests(selection);
             default:
-                LOGGER.error("Not available type {} for Feature Requests", type.toString());
-                break;
+                String message = String.format("Not available type %s for Feature Requests", type.toString());
+                LOGGER.error(message);
+                return RequestHandledResponse.build(0, 0, message);
         }
     }
 

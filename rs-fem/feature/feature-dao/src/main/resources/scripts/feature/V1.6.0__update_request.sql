@@ -1,1 +1,1 @@
-update table t_feature_request add column error_step varchar(50);
+alter table t_feature_request add column last_exec_error_step varchar(50);

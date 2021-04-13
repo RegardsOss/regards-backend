@@ -55,6 +55,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 
 /**
@@ -210,37 +211,76 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            featureSaveMetadataRepository.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
+        long nbHandled = 0;
+        long total = 0;
+        String message;
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
+        } else {
+            boolean stop = false;
+            // Delete only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = findRequests(selection, page);
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
+                featureSaveMetadataRepository.deleteAll(requestsPage);
+                nbHandled += requestsPage.getNumberOfElements();
+                if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
+                    page = requestsPage.nextPageable();
+                } else {
+                    stop = true;
+                }
+            } while (!stop);
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
+                                        MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
             } else {
-                stop = true;
+                message = "All deletable requested handled";
             }
-        } while (!stop);
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
     }
 
     @Override
-    public void retryRequests(FeatureRequestsSelectionDTO selection) {
+    public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {
+        long nbHandled = 0;
+        long total = 0;
+        String message;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
-        boolean stop = false;
-        do {
-            requestsPage = findRequests(selection, page);
-            List<FeatureSaveMetadataRequest> toUpdate = requestsPage.filter(r -> r.isRetryable())
-                    .map(this::updateForRetry).toList();
-            featureSaveMetadataRepository.saveAll(toUpdate);
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
+        } else {
+            boolean stop = false;
+            // Retry only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = findRequests(selection, page);
+                List<FeatureSaveMetadataRequest> toUpdate = requestsPage.filter(r -> r.isRetryable())
+                        .map(this::updateForRetry).toList();
+                featureSaveMetadataRepository.saveAll(toUpdate);
+                if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
+                    page = requestsPage.nextPageable();
+                } else {
+                    stop = true;
+                }
+            } while (!stop);
+
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
+                                        MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
             } else {
-                stop = true;
+                message = "All retryable requested handled";
             }
-        } while (!stop);
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
     }
 
     private FeatureSaveMetadataRequest updateForRetry(FeatureSaveMetadataRequest request) {

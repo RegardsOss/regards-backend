@@ -75,17 +75,24 @@ public final class FeatureRequestSpecificationsHelper {
                 predicates.add(cb.like(cb.lower(fr.get("providerId")),
                                        selection.getFilters().getProviderId().toLowerCase() + "%"));
             }
-            if (!selection.getExcludedIds().isEmpty()) {
+            if (!selection.getRequestIds().isEmpty()) {
                 Set<Predicate> idsPredicates = Sets.newHashSet();
-                selection.getExcludedIds()
-                        .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
-                predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
+                switch (selection.getRequestIdSelectionMode()) {
+                    case EXCLUDE:
+                        selection.getRequestIds()
+                                .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                        break;
+                    case INCLUDE:
+                        selection.getRequestIds()
+                                .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+                        break;
+                    default:
+                        break;
+                }
+                if (!idsPredicates.isEmpty()) {
+                    predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
+                }
             }
-        }
-        if (!selection.getIncludedIds().isEmpty()) {
-            Set<Predicate> idsPredicates = Sets.newHashSet();
-            selection.getIncludedIds().forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
-            predicates.add(cb.or(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
         }
 
         // Add order

@@ -141,7 +141,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                 .expectToHaveSize("$.content", 1).expectValue("$.info.nbErrors", 0);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "10");
-        requestBuilderCustomizer.addParameter("providerId", "feature1_1");
+        requestBuilderCustomizer.addParameter("providerId", "feature1_10");
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                           requestBuilderCustomizer, "Error retrieving creation requests",
                           FeatureRequestTypeEnum.CREATION);
@@ -161,7 +161,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                 .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 20);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("start", date.toString());
+        requestBuilderCustomizer.addParameter("from", date.toString());
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                           requestBuilderCustomizer, "Error retrieving creation requests",
                           FeatureRequestTypeEnum.CREATION);

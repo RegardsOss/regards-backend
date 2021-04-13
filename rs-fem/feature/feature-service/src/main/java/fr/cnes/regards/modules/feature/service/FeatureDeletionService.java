@@ -31,10 +31,12 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -408,6 +410,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     @Override
     public Page<FeatureDeletionRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
+        if ((selection.getFilters() != null)
+                && ((selection.getFilters().getSession() != null) || (selection.getFilters().getSource() != null))) {
+            return new PageImpl<FeatureDeletionRequest>(Lists.newArrayList(), page, 0L);
+        }
         return deletionRepo.findAll(FeatureDeletionRequestSpecification.searchAllByFilters(selection, page), page);
     }
 
