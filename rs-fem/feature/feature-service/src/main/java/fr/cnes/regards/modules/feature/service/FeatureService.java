@@ -38,11 +38,12 @@ import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
  *  @author Kevin Marchois
+ *  @author Sébastien Binda
  *
  */
 @Service
 @MultitenantTransactional
-public class DataObjectFeatureService implements IDataObjectFeatureService {
+public class FeatureService implements IDataObjectFeatureService {
 
     @Autowired
     private IFeatureEntityRepository featureRepo;
@@ -61,6 +62,9 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
         dto.setSession(entity.getSession());
         dto.setSessionOwner(entity.getSessionOwner());
         dto.setFeature(entity.getFeature());
+        dto.setProviderId(entity.getProviderId());
+        dto.setVersion(entity.getVersion());
+        dto.setLastUpdate(entity.getLastUpdate());
         return dto;
     }
 

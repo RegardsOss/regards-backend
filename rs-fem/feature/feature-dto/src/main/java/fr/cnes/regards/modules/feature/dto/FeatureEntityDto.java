@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import java.time.OffsetDateTime;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -43,12 +45,25 @@ public class FeatureEntityDto {
     @Valid
     private Feature feature;
 
+    @NotNull
+    private String providerId;
+
+    @NotNull
+    private Integer version;
+
+    @NotNull
+    private OffsetDateTime lastUpdate;
+
     public static FeatureEntityDto build(String sessionOwner, String session, Feature feature,
-            FeatureUniformResourceName previousVersionUrn, String model) {
+            FeatureUniformResourceName previousVersionUrn, String model, String providerId, Integer version,
+            OffsetDateTime lastUpdate) {
         FeatureEntityDto featureEntity = new FeatureEntityDto();
         featureEntity.setSessionOwner(sessionOwner);
         featureEntity.setSession(session);
         featureEntity.setFeature(feature);
+        featureEntity.setProviderId(providerId);
+        featureEntity.setVersion(version);
+        featureEntity.setLastUpdate(lastUpdate);
         return featureEntity;
     }
 
@@ -74,6 +89,30 @@ public class FeatureEntityDto {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
+    }
+
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
 }
