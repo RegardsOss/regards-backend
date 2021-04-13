@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 @RegardsTransactional
 public abstract class AbstractSettingService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractSettingService.class);
-
     protected final IDynamicTenantSettingService dynamicTenantSettingService;
 
     protected AbstractSettingService(IDynamicTenantSettingService dynamicTenantSettingService) {
@@ -42,12 +40,8 @@ public abstract class AbstractSettingService {
         return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toList()));
     }
 
-    public void update(DynamicTenantSetting dynamicTenantSetting) {
-        try {
+    public void update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
             dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
-        } catch (EntityException e) {
-            LOG.error("Unable to update setting {}", dynamicTenantSetting.getName());
-        }
     }
 
     public void resetSettings() throws EntityException {
