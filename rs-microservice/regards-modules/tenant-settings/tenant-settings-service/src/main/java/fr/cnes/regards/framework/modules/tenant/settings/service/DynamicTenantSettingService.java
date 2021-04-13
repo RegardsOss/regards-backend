@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -74,25 +75,16 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public DynamicTenantSetting update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-        Long id = getDynamicTenantSetting(dynamicTenantSetting.getName()).getId();
-        dynamicTenantSetting.setId(id);
-        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
-        DynamicTenantSetting updatedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
-        customizer.doRightNow(dynamicTenantSetting);
-        LOGGER.info("Updated Tenant Setting {}", updatedDynamicTenantSetting);
-        return updatedDynamicTenantSetting;
-    }
-
-    @Override
     public <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-        dynamicTenantSetting.setValue(value);
-        IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
-        DynamicTenantSetting updatedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
-        customizer.doRightNow(dynamicTenantSetting);
-        LOGGER.info("Updated Tenant Setting {}", updatedDynamicTenantSetting);
-        return updatedDynamicTenantSetting;
+        if (!Objects.equals(value, dynamicTenantSetting.getValue())) {
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+            dynamicTenantSetting.setValue(value);
+            dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
+            customizer.doRightNow(dynamicTenantSetting);
+            LOGGER.info("Updated Tenant Setting {}", dynamicTenantSetting);
+        }
+        return dynamicTenantSetting;
     }
 
     @Override
@@ -103,10 +95,14 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public void reset(String name) throws EntityNotFoundException, EntityInvalidException {
+    public void reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
-        dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
-        dynamicTenantSettingRepository.save(dynamicTenantSetting);
+        if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
+            dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
+            dynamicTenantSettingRepository.save(dynamicTenantSetting);
+            customizer.doRightNow(dynamicTenantSetting);
+        }
         LOGGER.info("Reset Tenant Setting {}", dynamicTenantSetting);
     }
 

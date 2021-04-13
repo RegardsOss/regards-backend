@@ -36,12 +36,10 @@ public interface IDynamicTenantSettingService {
 
     List<DynamicTenantSetting> readAll();
 
-    DynamicTenantSetting update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
-
     <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
 
     void delete(String name) throws EntityNotFoundException;
 
-    void reset(String name) throws EntityNotFoundException, EntityInvalidException;
+    void reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException;
 
 }
