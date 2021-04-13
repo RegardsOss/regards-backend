@@ -29,6 +29,6 @@ import java.util.Optional;
 public interface IDynamicTenantSettingRepository extends JpaRepository<DynamicTenantSetting, Long> {
 
     Optional<DynamicTenantSetting> findByName(String name);
-    List<DynamicTenantSetting> findAllByName(List<String> nameList);
+    List<DynamicTenantSetting> findAllByNameIn(List<String> nameList);
 
 }
