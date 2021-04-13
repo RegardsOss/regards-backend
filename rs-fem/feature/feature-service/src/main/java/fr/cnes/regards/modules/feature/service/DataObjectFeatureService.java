@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,9 +29,11 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
@@ -47,17 +48,12 @@ public class DataObjectFeatureService implements IDataObjectFeatureService {
     private IFeatureEntityRepository featureRepo;
 
     @Override
-    public Page<FeatureEntityDto> findAll(String model, Pageable pageable, OffsetDateTime date) {
-        Page<FeatureEntity> entities;
-        if (date == null) {
-            entities = featureRepo.findByModel(model, pageable);
-        } else {
-            entities = featureRepo.findByModelAndLastUpdateAfter(model, date, pageable);
-        }
-
+    public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
+        Page<FeatureEntity> entities = featureRepo
+                .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
         List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
                 .collect(Collectors.toList());
-        return new PageImpl<FeatureEntityDto>(elements, pageable, entities.getTotalElements());
+        return new PageImpl<FeatureEntityDto>(elements, page, entities.getTotalElements());
     }
 
     private FeatureEntityDto initDataObjectFeature(FeatureEntity entity) {

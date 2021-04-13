@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.feature.conf;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
-import fr.cnes.regards.modules.feature.service.IFeatureValidationService;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
@@ -54,11 +52,5 @@ public class FeatureTestConfiguration {
     @Bean
     public IModelClient modelClient() {
         return Mockito.mock(IModelClient.class);
-    }
-
-    @Bean
-    @Primary
-    public IFeatureValidationService validation() {
-        return Mockito.mock(IFeatureValidationService.class);
     }
 }

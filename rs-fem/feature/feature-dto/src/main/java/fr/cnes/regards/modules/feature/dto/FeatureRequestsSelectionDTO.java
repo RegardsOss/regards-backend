@@ -27,6 +27,8 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
  *
+ * Parameters to define a selection of feature requests
+ *
  * @author Sébastien Binda
  *
  */

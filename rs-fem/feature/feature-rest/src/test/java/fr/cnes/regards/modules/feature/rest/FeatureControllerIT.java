@@ -59,7 +59,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     @Test
     public void testCreateValidFeatureCreationRequest() throws Exception {
 
-        Feature featureToAdd = initValidFeature();
+        Feature featureToAdd = initValidFeature("MyId");
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.add(featureToAdd);
         collection.setRequestOwner("test");

@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 
 /**
  * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
@@ -36,11 +34,11 @@ public interface IDataObjectFeatureService {
 
     /**
      * Get a {@link Page} of {@link FeatureEntityDto} dto
-     * The {@link Page} will be initialized from a list of {@link FeatureEntity} match with a model and
-     * @param model of {@link FeatureEntity} to extract
+     * The {@link Page} will be initialized from a list of {@link FeatureEntityDto}
+     *
+     * @param selection {@link FeaturesSelectionDTO} search filters
      * @param pageable
-     * @param date get {@link FeatureEntity} with last update date after this param
-     * @return {@link Page} of {@link DataObjectFeature}
+     * @return {@link Page} of {@link FeatureEntityDto}
      */
-    Page<FeatureEntityDto> findAll(String model, Pageable pageable, OffsetDateTime date);
+    Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
 }

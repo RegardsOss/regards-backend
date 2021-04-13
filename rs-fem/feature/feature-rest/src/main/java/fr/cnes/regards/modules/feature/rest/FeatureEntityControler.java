@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.time.OffsetDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -43,6 +40,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -83,12 +81,9 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get features according last update date")
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
-            @Parameter(description = "Model used to filter feature") @RequestParam("model") String model,
-            @Parameter(description = "Last update date used to filter features") @RequestParam(value = "lastUpdateDate",
-                    required = false) OffsetDateTime lastUpdateDate,
-            Pageable page, PagedResourcesAssembler<FeatureEntityDto> assembler) {
-
-        return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(model, page, lastUpdateDate), assembler),
+            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection, Pageable page,
+            PagedResourcesAssembler<FeatureEntityDto> assembler) {
+        return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(selection, page), assembler),
                 HttpStatus.OK);
     }
 
@@ -96,7 +91,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public EntityModel<FeatureEntityDto> toResource(FeatureEntityDto element, Object... extras) {
         EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getFeatures", LinkRels.SELF,
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(FeaturesSelectionDTO.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;

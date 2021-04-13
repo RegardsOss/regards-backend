@@ -18,31 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 
 /**
  * @author Sébastien Binda
@@ -54,30 +38,44 @@ import fr.cnes.regards.modules.feature.service.IFeatureCreationService;
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public class FeatureEntityControllerIT extends AbstractFeatureIT {
 
-    @Autowired
-    private IFeatureCreationService featureService;
-
     @Test
     public void getFeatures() throws Exception {
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
-        Feature featureToAdd = initValidFeature();
-        FeatureCreationMetadataEntity meta = FeatureCreationMetadataEntity.build("test", "1", Lists.newArrayList(),
-                                                                                 true);
-        meta.setStorages(Lists.newArrayList(StorageMetadata.build("disk")));
-        FeatureCreationRequest request = FeatureCreationRequest
-                .build(UUID.randomUUID().toString(), "owner", OffsetDateTime.now(), RequestState.GRANTED, null,
-                       featureToAdd, meta, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
 
-        Set<Long> ids = Sets.newHashSet(request.getId());
-        featureService.processRequests(ids, null);
-
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        createFeatures("feature_1_", 10, "source1", "session1");
+        createFeatures("feature_2_", 10, "source1", "session2");
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 20);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.addParameter("model", "FEATURE01");
-
         performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
                           "Error retrieving features");
 
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 10);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.addParameter("session", "session2");
+        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
+                          "Error retrieving features");
+
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 1);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.addParameter("source", "source1");
+        requestBuilderCustomizer.addParameter("model", "FEATURE01");
+        requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
+        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
+                          "Error retrieving features");
+
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 0);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer.addParameter("source", "source1");
+        requestBuilderCustomizer.addParameter("session", "session2");
+        requestBuilderCustomizer.addParameter("model", "FEATURE01");
+        requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
+        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
+                          "Error retrieving features");
     }
 
 }
