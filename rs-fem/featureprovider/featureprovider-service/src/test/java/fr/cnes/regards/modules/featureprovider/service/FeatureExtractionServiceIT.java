@@ -76,6 +76,7 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
@@ -278,6 +279,46 @@ public class FeatureExtractionServiceIT extends AbstractMultitenantServiceTest {
         Assert.assertEquals(60, results.getTotalElements());
         Assert.assertEquals(new Long(50), results.getInfo().getNbErrors());
         Assert.assertEquals(10, results.getNumberOfElements());
+    }
+
+    @Test
+    public void testDeleteRequests() {
+        createRequests("source1", "session1", 10, RequestState.GRANTED);
+        createRequests("source1", "session1", 50, RequestState.ERROR);
+
+        RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000));
+        Assert.assertEquals(60, searchResp.getTotalElements());
+
+        RequestHandledResponse response = featureExtractionService.deleteRequests(FeatureRequestsSelectionDTO.build());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalHandled());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalRequested());
+
+        searchResp = featureExtractionService.findRequests(FeatureRequestsSelectionDTO.build(),
+                                                           PageRequest.of(0, 1000));
+        Assert.assertEquals("The 50 request in error state should be deleted", 10, searchResp.getTotalElements());
+    }
+
+    @Test
+    public void testRetryRequests() {
+
+        createRequests("source1", "session1", 10, RequestState.GRANTED);
+        createRequests("source1", "session1", 50, RequestState.ERROR);
+
+        RequestsPage<FeatureRequestDTO> searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
+                              PageRequest.of(0, 1000));
+        Assert.assertEquals(10, searchResp.getTotalElements());
+
+        RequestHandledResponse response = featureExtractionService.retryRequests(FeatureRequestsSelectionDTO.build());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalHandled());
+        Assert.assertEquals("There should 50 requests in error state deleted", 50, response.getTotalRequested());
+
+        searchResp = featureExtractionService
+                .findRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED),
+                              PageRequest.of(0, 1000));
+        Assert.assertEquals("All error request  should be granted now", 60, searchResp.getTotalElements());
+
     }
 
     /**

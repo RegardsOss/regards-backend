@@ -74,6 +74,7 @@ import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.featureprovider.dao.FeatureExtractionRequestSpecification;
@@ -111,7 +112,11 @@ public class FeatureExtractionService implements IFeatureExtractionService {
 
     private static final String REFERENCE_ERROR_FORMAT = PREFIX + "Feature EXTRACTION ERROR" + PX3;
 
-    private static final int MAX_PAGE_TO_DELETE = 4;
+    private static final int MAX_PAGE_TO_DELETE = 50;
+
+    private static final int MAX_PAGE_TO_RETRY = 50;
+
+    private static final int MAX_ENTITY_PER_PAGE = 2000;
 
     @Autowired
     private IFeatureExtractionRequestRepository featureExtractionRequestRepo;
@@ -451,20 +456,96 @@ public class FeatureExtractionService implements IFeatureExtractionService {
     }
 
     @Override
-    public void deleteRequests(FeatureRequestsSelectionDTO selection) {
-        Pageable page = PageRequest.of(0, 500);
+    public RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection) {
+        long nbHandled = 0;
+        long total = 0;
+        String message;
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
+        } else {
+            Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
+            Page<FeatureExtractionRequest> requestsPage;
+            boolean stop = false;
+            int cpt = 0;
+            // Delete only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = featureExtractionRequestRepo
+                        .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(selection, page), page);
+                featureExtractionRequestRepo.deleteAll(requestsPage);
+                nbHandled += requestsPage.getNumberOfElements();
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
+                if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
+                    stop = true;
+                } else {
+                    cpt++;
+                }
+            } while (!stop);
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of deletable requests (%d) exceeded",
+                                        MAX_PAGE_TO_DELETE * MAX_ENTITY_PER_PAGE);
+            } else {
+                message = "All deletable requested handled";
+            }
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
+    }
+
+    @Override
+    public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {
+        long nbHandled = 0;
+        long total = 0;
+        String message;
+        Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureExtractionRequest> requestsPage;
         boolean stop = false;
-        do {
-            requestsPage = featureExtractionRequestRepo
-                    .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(selection, page), page);
-            featureExtractionRequestRepo.deleteAll(requestsPage.filter(r -> r.isDeletable()));
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_DELETE) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
+                && (selection.getFilters().getState() != RequestState.ERROR)) {
+            message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
+        } else {
+            // Retry only error requests
+            selection.getFilters().setState(RequestState.ERROR);
+            do {
+                requestsPage = featureExtractionRequestRepo
+                        .findAll(FeatureExtractionRequestSpecification.searchAllByFilters(selection, page), page);
+                if (total == 0) {
+                    total = requestsPage.getTotalElements();
+                }
+                List<FeatureExtractionRequest> toUpdate = requestsPage.map(this::updateForRetry).toList();
+                toUpdate = featureExtractionRequestRepo.saveAll(toUpdate);
+                nbHandled += toUpdate.size();
+                if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
+                    page = requestsPage.nextPageable();
+                } else {
+                    stop = true;
+                }
+            } while (!stop);
+            if (nbHandled < total) {
+                message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
+                                        MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
             } else {
-                stop = true;
+                message = "All retryable requested handled";
             }
-        } while (!stop);
+        }
+        return RequestHandledResponse.build(total, nbHandled, message);
+    }
 
+    /**
+     * Update request state to set it as to retry
+     * @param request {@link FeatureExtractionRequest} to retry
+     * @return updated {@link FeatureExtractionRequest}
+     */
+    private FeatureExtractionRequest updateForRetry(FeatureExtractionRequest request) {
+        request.setLastExecErrorStep(request.getStep());
+        if (request.getStep() == FeatureRequestStep.REMOTE_NOTIFICATION_ERROR) {
+            request.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+        } else {
+            request.setStep(FeatureRequestStep.LOCAL_DELAYED);
+        }
+        request.setState(RequestState.GRANTED);
+        return request;
     }
 }

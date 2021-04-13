@@ -26,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.event.IRequestDeniedService;
 import fr.cnes.regards.framework.amqp.event.IRequestValidation;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureReferenceCollection;
@@ -34,6 +33,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequestEvent;
@@ -91,8 +91,15 @@ public interface IFeatureExtractionService extends IRequestDeniedService, IReque
 
     /**
      * Delete requests by selection
-     * @param requestId
-     * @throws EntityOperationForbiddenException
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
      */
-    public void deleteRequests(FeatureRequestsSelectionDTO selection);
+    RequestHandledResponse deleteRequests(FeatureRequestsSelectionDTO selection);
+
+    /**
+     * Retry requests by selection
+     * @param selection {@link FeatureRequestsSelectionDTO}
+     * @return {@link RequestHandledResponse}
+     */
+    RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection);
 }

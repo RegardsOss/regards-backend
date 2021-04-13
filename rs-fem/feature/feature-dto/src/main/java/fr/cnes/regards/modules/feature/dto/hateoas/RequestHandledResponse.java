@@ -35,7 +35,7 @@ public class RequestHandledResponse {
     public static RequestHandledResponse build(long totalRequested, long totalHandled, String message) {
         RequestHandledResponse resp = new RequestHandledResponse();
         resp.setTotalHandled(totalHandled);
-        resp.setTotalHandled(totalRequested);
+        resp.setTotalRequested(totalRequested);
         resp.setMessage(message);
         return resp;
     }

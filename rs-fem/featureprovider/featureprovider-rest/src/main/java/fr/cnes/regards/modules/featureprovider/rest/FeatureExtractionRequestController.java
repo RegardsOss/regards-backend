@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 import fr.cnes.regards.modules.featureprovider.domain.FeatureExtractionRequest;
@@ -92,20 +93,20 @@ public class FeatureExtractionRequestController implements IResourceController<F
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
     @RequestMapping(method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete feature request by id", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> deleteRequests(
+    public ResponseEntity<RequestHandledResponse> deleteRequests(
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        featureExtractionService.deleteRequests(selection);
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        return new ResponseEntity<RequestHandledResponse>(featureExtractionService.deleteRequests(selection),
+                HttpStatus.OK);
     }
 
     @Operation(summary = "Retry feature requests by selection", description = "Retry feature requests by selection")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
     @RequestMapping(method = RequestMethod.POST, path = RETRY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> retryRequests(
+    public ResponseEntity<RequestHandledResponse> retryRequests(
             @Parameter(description = "Requests selection") @Valid @RequestBody FeatureRequestsSelectionDTO selection) {
-        // TODO
-        return null;
+        return new ResponseEntity<RequestHandledResponse>(featureExtractionService.retryRequests(selection),
+                HttpStatus.OK);
     }
 
     /**
