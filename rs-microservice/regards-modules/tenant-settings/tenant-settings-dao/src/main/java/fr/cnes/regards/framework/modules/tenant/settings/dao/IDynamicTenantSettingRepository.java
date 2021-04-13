@@ -22,11 +22,13 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface IDynamicTenantSettingRepository extends JpaRepository<DynamicTenantSetting, Long> {
 
     Optional<DynamicTenantSetting> findByName(String name);
+    List<DynamicTenantSetting> findAllByName(List<String> nameList);
 
 }

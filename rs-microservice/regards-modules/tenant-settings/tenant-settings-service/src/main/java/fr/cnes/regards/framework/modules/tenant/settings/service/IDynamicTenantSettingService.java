@@ -32,6 +32,8 @@ public interface IDynamicTenantSettingService {
 
     Optional<DynamicTenantSetting> read(String name);
 
+    List<DynamicTenantSetting> readAll(List<String> nameList);
+
     List<DynamicTenantSetting> readAll();
 
     DynamicTenantSetting update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;

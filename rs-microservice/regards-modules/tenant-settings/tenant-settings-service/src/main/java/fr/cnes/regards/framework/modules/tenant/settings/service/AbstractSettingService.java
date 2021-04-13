@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RegardsTransactional
 public abstract class AbstractSettingService {
@@ -38,7 +39,7 @@ public abstract class AbstractSettingService {
     }
 
     public List<DynamicTenantSetting> retrieve() {
-        return dynamicTenantSettingService.readAll();
+        return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toList()));
     }
 
     public void update(DynamicTenantSetting dynamicTenantSetting) {

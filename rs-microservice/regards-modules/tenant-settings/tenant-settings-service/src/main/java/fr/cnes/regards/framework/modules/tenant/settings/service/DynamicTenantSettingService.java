@@ -64,6 +64,11 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
+    public List<DynamicTenantSetting> readAll(List<String> nameList) {
+        return dynamicTenantSettingRepository.findAllByName(nameList);
+    }
+
+    @Override
     public List<DynamicTenantSetting> readAll() {
         return dynamicTenantSettingRepository.findAll();
     }
