@@ -200,7 +200,9 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
             if (entitiesToUpdate.get(request.getUrn()) != null) {
                 updateFeature(entitiesToUpdate.get(request.getUrn()).getFeature(), request, successCopyRequest);
             } else {
-                LOGGER.error(String.format("No FeatureEntity found for URN %s", request.getUrn().toString()));
+                String errorMessage = String.format("No FeatureEntity found for URN %s", request.getUrn().toString());
+                LOGGER.error(errorMessage);
+                request.addError(errorMessage);
                 request.setState(RequestState.ERROR);
             }
             featureCopyJob.advanceCompletion();
@@ -230,8 +232,10 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
             successCopyRequest.add(request);
             fileToUpdate.get().getLocations().add(FeatureFileLocation.build(request.getStorage()));
         } else {
+            String errorMessage = String.format("No file found for checksum %s", request.getUrn().toString());
             request.setState(RequestState.ERROR);
-            LOGGER.error(String.format("No file found for checksum %s", request.getUrn().toString()));
+            request.addError(errorMessage);
+            LOGGER.error(errorMessage);
         }
     }
 

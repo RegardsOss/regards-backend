@@ -293,6 +293,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
                                            errors));
                 // Publish ERROR request
                 request.setState(RequestState.ERROR);
+                request.addError(e.getMessage());
                 publisher.publish(new FeatureExtractionResponseEvent(request.getRequestId(), request.getRequestOwner(),
                         RequestState.ERROR, errors));
             }
@@ -546,6 +547,8 @@ public class FeatureExtractionService implements IFeatureExtractionService {
             request.setStep(FeatureRequestStep.LOCAL_DELAYED);
         }
         request.setState(RequestState.GRANTED);
+        // Reset errors
+        request.setErrors(Sets.newHashSet());
         return request;
     }
 }

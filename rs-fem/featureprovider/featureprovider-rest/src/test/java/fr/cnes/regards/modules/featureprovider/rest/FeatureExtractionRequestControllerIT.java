@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.featureprovider.dao.IFeatureExtractionRequestRepository;
@@ -103,7 +104,7 @@ public class FeatureExtractionRequestControllerIT extends AbstractRegardsIT {
                 .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 20);
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
-        requestBuilderCustomizer.addParameter("start", date.toString());
+        requestBuilderCustomizer.addParameter("from", date.toString());
         performDefaultGet(FeatureExtractionRequestController.ROOT_PATH
                 + FeatureExtractionRequestController.REQUEST_SEARCH_TYPE_PATH, requestBuilderCustomizer,
                           "Error retrieving extraction requests");
@@ -128,6 +129,56 @@ public class FeatureExtractionRequestControllerIT extends AbstractRegardsIT {
         performDefaultGet(FeatureExtractionRequestController.ROOT_PATH
                 + FeatureExtractionRequestController.REQUEST_SEARCH_TYPE_PATH, requestBuilderCustomizer,
                           "Error retrieving extraction requests");
+
+    }
+
+    @Test
+    public void deleteRequests() {
+        // Create 10 requests scheduled, so they cannot be deleted
+        createRequests("delete_source", "test1", 10, RequestState.GRANTED);
+        // Create 10 requests in error status, so theu can be deleted
+        createRequests("delete_source", "test1", 10, RequestState.ERROR);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withSource("delete_source");
+        performDefaultDelete(FeatureExtractionRequestController.ROOT_PATH, selection, requestBuilderCustomizer,
+                             "Error deleting requests");
+
+        // Now all error feature of source retry_source should be deleted
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 10).expectValue("$.info.nbErrors", 0);
+        requestBuilderCustomizer.addParameter("page", "0");
+        requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("source", "delete_source");
+        performDefaultGet(FeatureExtractionRequestController.ROOT_PATH
+                + FeatureExtractionRequestController.REQUEST_SEARCH_TYPE_PATH, requestBuilderCustomizer,
+                          "Invlid number of requests from source retry_source");
+
+    }
+
+    @Test
+    public void retryRequests() {
+        // Create 10 requests scheduled, so they cannot be deleted
+        createRequests("retry_source", "test1", 10, RequestState.GRANTED);
+        // Create 10 requests in error status, so theu can be deleted
+        createRequests("retry_source", "test1", 10, RequestState.ERROR);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withSource("retry_source");
+        performDefaultPost(FeatureExtractionRequestController.ROOT_PATH + FeatureExtractionRequestController.RETRY_PATH,
+                           selection, requestBuilderCustomizer, "Error retrying requests");
+
+        // Now all error feature of source retry_source should be deleted
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0);
+        requestBuilderCustomizer.addParameter("page", "0");
+        requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("source", "retry_source");
+        performDefaultGet(FeatureExtractionRequestController.ROOT_PATH
+                + FeatureExtractionRequestController.REQUEST_SEARCH_TYPE_PATH, requestBuilderCustomizer,
+                          "Invlid number of requests from source retry_source");
 
     }
 

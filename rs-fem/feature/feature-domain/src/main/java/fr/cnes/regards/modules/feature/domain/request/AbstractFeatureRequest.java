@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -35,11 +34,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -76,10 +72,6 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
     @GeneratedValue(generator = "featureRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(columnDefinition = "jsonb", name = "errors")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    protected Set<String> errors;
-
     @Column(name = GROUP_ID)
     protected String groupId;
 
@@ -102,21 +94,6 @@ public abstract class AbstractFeatureRequest extends AbstractRequest {
         super.with(requestId, requestOwner, requestDate, priority, state, step);
         this.errors = errors;
         return (T) this;
-    }
-
-    public Set<String> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(Set<String> errors) {
-        this.errors = errors;
-    }
-
-    public void addError(String error) {
-        if (errors == null) {
-            errors = new HashSet<>();
-        }
-        errors.add(error);
     }
 
     public String getGroupId() {

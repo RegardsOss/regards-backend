@@ -125,10 +125,10 @@ public class FeatureExtractionRequestController implements IResourceController<F
     private void addLinks(EntityModel<FeatureRequestDTO> resource) {
         // Request are deletable only if not scheduled
         if (!resource.getContent().isProcessing()) {
-            resourceService.addLink(resource, this.getClass(), "deleteRequest", LinkRels.DELETE,
-                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
-            resourceService.addLink(resource, this.getClass(), "retryRequest", LinkRelation.of("retry"),
-                                    MethodParamFactory.build(Long.class, resource.getContent().getId()));
+            resourceService.addLink(resource, this.getClass(), "deleteRequests", LinkRels.DELETE,
+                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+            resourceService.addLink(resource, this.getClass(), "retryRequests", LinkRelation.of("retry"),
+                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
         }
     }
 

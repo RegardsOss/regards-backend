@@ -253,6 +253,33 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
     }
 
+    @Test
+    public void retryRequests() {
+        // Create 10 requests scheduled, so they cannot be deleted
+        createCreationRequests("to_delete_", "retry_source", "test1", RequestState.GRANTED,
+                               FeatureRequestStep.LOCAL_SCHEDULED, 10);
+        // Create 10 requests in error status, so they can be deleted
+        createCreationRequests("to_delete_", "retry_source", "test1", RequestState.ERROR,
+                               FeatureRequestStep.LOCAL_ERROR, 10);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
+        FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withSource("retry_source");
+        performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.RETRY_TYPE_PATH, selection,
+                           requestBuilderCustomizer, "Error retrying requests", FeatureRequestTypeEnum.CREATION);
+
+        // Now all feature of source retry_source should be on GRANTED state
+        requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
+                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0);
+        requestBuilderCustomizer.addParameter("page", "0");
+        requestBuilderCustomizer.addParameter("size", "1000");
+        requestBuilderCustomizer.addParameter("source", "retry_source");
+        performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
+                          requestBuilderCustomizer, "Invlid number of requests from source retry_source",
+                          FeatureRequestTypeEnum.CREATION);
+
+    }
+
     private List<FeatureCreationRequest> createCreationRequests(String featureIdPrefix, String source, String session,
             RequestState state, FeatureRequestStep step, int nbRequests) {
         List<FeatureCreationRequest> requests = Lists.newArrayList();

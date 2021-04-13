@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -27,9 +29,12 @@ import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -106,6 +111,10 @@ public abstract class AbstractRequest {
     @Column(name = COLUMN_PRIORITY, length = 50, nullable = false)
     protected PriorityLevel priority;
 
+    @Column(columnDefinition = "jsonb", name = "errors")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    protected Set<String> errors;
+
     @SuppressWarnings("unchecked")
     protected <T extends AbstractRequest> T with(String requestId, String requestOwner, OffsetDateTime requestDate,
             PriorityLevel priority, RequestState state, FeatureRequestStep step) {
@@ -158,6 +167,21 @@ public abstract class AbstractRequest {
         this.step = step;
     }
 
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
+    }
+
+    public void addError(String error) {
+        if (errors == null) {
+            errors = new HashSet<>();
+        }
+        errors.add(error);
+    }
+
     public FeatureRequestStep getLastExecErrorStep() {
         return lastExecErrorStep;
     }
@@ -204,6 +228,7 @@ public abstract class AbstractRequest {
         dto.setRegistrationDate(request.getRegistrationDate());
         dto.setState(request.getState());
         dto.setProcessing(request.getStep().isProcessing());
+        dto.setErrors(request.getErrors());
         if (request instanceof FeatureCreationRequest) {
             FeatureCreationRequest fcr = (FeatureCreationRequest) request;
             dto.setProviderId(fcr.getProviderId());

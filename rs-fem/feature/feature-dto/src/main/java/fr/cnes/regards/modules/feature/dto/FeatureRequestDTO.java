@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -80,6 +81,11 @@ public class FeatureRequestDTO {
      * Session of the feature request
      */
     private String session;
+
+    /**
+     * List of error messages
+     */
+    private Set<String> errors;
 
     public Long getId() {
         return id;
@@ -151,6 +157,14 @@ public class FeatureRequestDTO {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public Set<String> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(Set<String> errors) {
+        this.errors = errors;
     }
 
 }

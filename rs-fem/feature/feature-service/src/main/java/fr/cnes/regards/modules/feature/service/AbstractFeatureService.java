@@ -169,6 +169,8 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
             request.setStep(FeatureRequestStep.LOCAL_DELAYED);
         }
         request.setState(RequestState.GRANTED);
+        // Reset errors
+        request.setErrors(Sets.newHashSet());
         return updateForRetry(request);
     }
 
