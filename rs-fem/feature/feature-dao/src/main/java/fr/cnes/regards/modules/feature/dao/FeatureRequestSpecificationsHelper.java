@@ -48,14 +48,14 @@ public final class FeatureRequestSpecificationsHelper {
     /**
      * Creates search {@link Predicate}s for {@link Specification} search request about {@link AbstractFeatureRequest}s
      * @param filters {@link FeatureRequestsSelectionDTO}
-     * @param searchProviderIdFromFeature boolean
+     * @param searchFiltersFromAssociatedFeature boolean
      * @param root
      * @param query
      * @param cb
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Set<Predicate> init(FeatureRequestsSelectionDTO selection, boolean searchProviderIdFromFeature,
+    public static Set<Predicate> init(FeatureRequestsSelectionDTO selection, boolean searchFiltersFromAssociatedFeature,
             Root<?> root, CriteriaQuery<?> query, CriteriaBuilder cb, Pageable page) {
         Set<Predicate> predicates = Sets.newHashSet();
 
@@ -69,11 +69,24 @@ public final class FeatureRequestSpecificationsHelper {
             if (selection.getFilters().getState() != null) {
                 predicates.add(cb.equal(root.get("state"), selection.getFilters().getState()));
             }
-            if ((selection.getFilters().getProviderId() != null) && searchProviderIdFromFeature) {
-                Root<FeatureEntity> fr = query.from(FeatureEntity.class);
-                predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
-                predicates.add(cb.like(cb.lower(fr.get("providerId")),
-                                       selection.getFilters().getProviderId().toLowerCase() + "%"));
+            // Some filters are not provided on request itself, we have to join with assocciated feature by urn if present
+            if (searchFiltersFromAssociatedFeature) {
+                if ((selection.getFilters().getProviderId() != null)) {
+                    Root<FeatureEntity> fr = query.from(FeatureEntity.class);
+                    predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+                    predicates.add(cb.like(cb.lower(fr.get("providerId")),
+                                           selection.getFilters().getProviderId().toLowerCase() + "%"));
+                }
+                if ((selection.getFilters().getSource() != null)) {
+                    Root<FeatureEntity> fr = query.from(FeatureEntity.class);
+                    predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+                    predicates.add(cb.equal(fr.get("sessionOwner"), selection.getFilters().getSource()));
+                }
+                if ((selection.getFilters().getSession() != null)) {
+                    Root<FeatureEntity> fr = query.from(FeatureEntity.class);
+                    predicates.add(cb.equal(fr.get("urn"), root.get("urn")));
+                    predicates.add(cb.equal(fr.get("session"), selection.getFilters().getSession()));
+                }
             }
             if (!selection.getRequestIds().isEmpty()) {
                 Set<Predicate> idsPredicates = Sets.newHashSet();

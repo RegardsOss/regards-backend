@@ -28,12 +28,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -387,10 +385,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     public Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        if ((selection.getFilters() != null)
-                && ((selection.getFilters().getSession() != null) || (selection.getFilters().getSource() != null))) {
-            return new PageImpl<FeatureUpdateRequest>(Lists.newArrayList(), page, 0L);
-        }
         return updateRepo.findAll(FeatureUpdateRequestSpecification.searchAllByFilters(selection, page), page);
     }
 

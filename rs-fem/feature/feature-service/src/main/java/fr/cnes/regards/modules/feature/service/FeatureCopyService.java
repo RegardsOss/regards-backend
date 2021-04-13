@@ -29,12 +29,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -250,14 +248,8 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
     @Override
     public Page<FeatureCopyRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        // Session,  source and providerId are unknown for copy requests
-        if ((selection.getFilters() != null)
-                && ((selection.getFilters().getSession() != null) || (selection.getFilters().getSource() != null))) {
-            return new PageImpl<>(Lists.newArrayList(), page, 0L);
-        } else {
-            return featureCopyRequestRepo.findAll(FeatureCopyRequestSpecification.searchAllByFilters(selection, page),
-                                                  page);
-        }
+        return featureCopyRequestRepo.findAll(FeatureCopyRequestSpecification.searchAllByFilters(selection, page),
+                                              page);
     }
 
     @Override

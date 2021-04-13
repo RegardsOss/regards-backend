@@ -90,7 +90,8 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
                     description = "Type of requests to search for") @PathVariable("type") FeatureRequestTypeEnum type,
             FeatureRequestSearchParameters parameters, Pageable page) {
         FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withFilters(parameters);
-        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, selection, page)), HttpStatus.OK);
+        return new ResponseEntity<>(toResources(featureRequestService.findAll(type, selection, page), type),
+                HttpStatus.OK);
     }
 
     @Operation(summary = "Delete feature requests by selection", description = "Delete feature requests by selection")
@@ -117,14 +118,26 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     /**
      * Format response with HATEOAS
+     * @param type
      */
-    private RequestsPagedModel<EntityModel<FeatureRequestDTO>> toResources(
-            RequestsPage<FeatureRequestDTO> requestsPage) {
+    private RequestsPagedModel<EntityModel<FeatureRequestDTO>> toResources(RequestsPage<FeatureRequestDTO> requestsPage,
+            FeatureRequestTypeEnum type) {
         RequestsPagedModel<EntityModel<FeatureRequestDTO>> pagedResource = RequestsPagedModel
                 .wrap(requestsPage.getContent(), new PagedModel.PageMetadata(requestsPage.getSize(),
                         requestsPage.getNumber(), requestsPage.getTotalElements(), requestsPage.getTotalPages()),
                       requestsPage.getInfo());
         pagedResource.getContent().forEach(resource -> addLinks(resource));
+
+        // Add global links for entire search selection
+        if (pagedResource.getInfo().getNbErrors() > 0) {
+            resourceService.addLink(pagedResource, this.getClass(), "deleteRequests", LinkRels.DELETE,
+                                    MethodParamFactory.build(FeatureRequestTypeEnum.class, type),
+                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+            resourceService.addLink(pagedResource, this.getClass(), "retryRequests", LinkRelation.of("retry"),
+                                    MethodParamFactory.build(FeatureRequestTypeEnum.class, type),
+                                    MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
+        }
+
         return pagedResource;
     }
 
