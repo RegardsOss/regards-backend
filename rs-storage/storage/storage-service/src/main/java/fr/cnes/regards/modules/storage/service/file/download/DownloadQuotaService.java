@@ -13,7 +13,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
-import fr.cnes.regards.modules.storage.domain.StorageSettingName;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -42,7 +42,6 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -115,9 +114,9 @@ public class DownloadQuotaService<T>
     }
 
     public DefaultDownloadQuotaLimits initDefaultLimits() {
-        DynamicTenantSetting maxQuota = dynamicTenantSettingService.read(StorageSettingName.MAX_QUOTA)
+        DynamicTenantSetting maxQuota = dynamicTenantSettingService.read(StorageSetting.MAX_QUOTA_NAME)
                 .orElseThrow(() -> new RsRuntimeException("Max default quota has no value. There must be an initialization issue with beans"));
-        DynamicTenantSetting rateLimit = dynamicTenantSettingService.read(StorageSettingName.RATE_LIMIT)
+        DynamicTenantSetting rateLimit = dynamicTenantSettingService.read(StorageSetting.RATE_LIMIT_NAME)
                 .orElseThrow(() -> new RsRuntimeException("Default rate limit has no value. There must be an initialization issue with beans"));
         return new DefaultDownloadQuotaLimits(maxQuota.getValue(Long.class), rateLimit.getValue(Long.class));
     }

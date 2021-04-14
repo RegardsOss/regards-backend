@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
-import fr.cnes.regards.modules.storage.domain.StorageSettingName;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -22,6 +22,6 @@ public class DefaultRateSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return Objects.equals(dynamicTenantSetting.getName(), StorageSettingName.RATE_LIMIT);
+        return Objects.equals(dynamicTenantSetting.getName(), StorageSetting.RATE_LIMIT_NAME);
     }
 }

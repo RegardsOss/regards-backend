@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
-import fr.cnes.regards.modules.storage.domain.StorageSettingName;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -22,6 +22,11 @@ public class DefaultQuotaSettingCustomizer implements IDynamicTenantSettingCusto
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return Objects.equals(dynamicTenantSetting.getName(), StorageSettingName.MAX_QUOTA);
+        return Objects.equals(dynamicTenantSetting.getName(), StorageSetting.MAX_QUOTA_NAME);
+    }
+
+    @Override
+    public void doRightNow(DynamicTenantSetting dynamicTenantSetting) {
+
     }
 }
