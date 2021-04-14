@@ -185,7 +185,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         EntityFeature entity = searchService.get(context.getUrn().get());
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
         context.setPageable(PageRequest.of(0, 1));
-        FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
+        FacetPage<EntityFeature> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
                 getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
@@ -204,7 +204,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if (context.getExtra().isPresent() && context.getExtra().get().equalsIgnoreCase(EXTRA_DESCRIPTION)) {
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
-            // The dataset will be used to set specific metadatas into the descriptor like title, tags, ...
+            // The dataset will be used to set specific metadata into the descriptor like title, tags, ...
             Optional<EntityFeature> dataset = Optional.empty();
             if (context.getDatasetUrn().isPresent()) {
                 // Search dataset entity
@@ -224,7 +224,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     /**
-     * Parse request parameters and and add dataset context if necessary
+     * Parse request parameters and add dataset context if necessary
      */
     @Override
     public ICriterion parse(SearchContext context) throws ModuleException {
@@ -243,8 +243,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * Format search response for the given {@link MediaType} in the {@link SearchContext}
      * @param page search response
      * @param context {@link SearchContext} containing MediaType
-     * @return formated response
-     * @throws UnsupportedMediaTypesException
+     * @return formatted response
+     * @throws UnsupportedMediaTypesException from {@link #getBuilder(SearchContext)}
      */
     private Object formatResponse(FacetPage<EntityFeature> page, SearchContext context, IEntityLinkBuilder linkBuilder)
             throws UnsupportedMediaTypesException {
@@ -252,7 +252,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration, linkBuilder
                 .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION).getHref(), context,
                             configuration, page, linkBuilder.buildPaginationLinks(resourceService, page, context));
-        page.getContent().stream()
+        page.getContent()
                 .forEach(e -> builder.addEntity(e, getEntityLastUpdateDate(e), paramConfigurations,
                                                 linkBuilder.buildEntityLinks(resourceService, context, e)));
         return builder.build();
@@ -277,9 +277,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     /**
      * Parse openSearch query to find all parameters from standard open search parameters extension.
-     * @param queryParams
-     * @return {@link ICriterion}
-     * @throws ExtensionException
      */
     private ICriterion parseParametersExt(MultiValueMap<String, String> queryParams) throws ExtensionException {
         // Find AttributeModel for each parameter
@@ -330,6 +327,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 }
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn("Parameter not found in REGARDS models attributes. Cause : {}", e.getMessage());
+                LOGGER.trace(e.getMessage(), e);
                 // Adding unknown parameters in search parameters in case an IOpenSearchExtension can handle it.
                 searchParameters.add(new SearchParameter(queryParam.getKey(), null, null, queryParam.getValue()));
             }
@@ -341,7 +339,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * Retrieve a response builder from existing ones matching the {@link MediaType} from the {@link SearchContext}
      * @param context {@link SearchContext}
      * @return {@link IResponseBuilder}
-     * @throws UnsupportedMediaTypesException
+     * @throws UnsupportedMediaTypesException when asked media type is not handled
      */
     private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
         IResponseBuilder<?> responseBuilder;
@@ -389,11 +387,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     /**
      * Try to read pagination parameters from :<ul>
-     * <li>1. From opensearch specific parameters 'count' & 'startPage'. Startpage is from 1 to X where X is last page.</li>
+     * <li>1. From opensearch specific parameters 'count' & 'startPage'. Startpage is from 0 to X where X is last page.</li>
      * <li>2. From spring standard parameters 'size' & 'page'
      * </ul>
-     * @param context
-     * @return
      */
     private Pageable getPagination(SearchContext context) {
         List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
@@ -402,7 +398,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         int size = context.getPageable().getPageSize();
         if ((count != null) && (count.size() == 1)) {
             try {
-                size = Integer.valueOf(count.get(0));
+                size = Integer.parseInt(count.get(0));
                 if (size > SEARCH_PAGE_SIZE_LIMIT) {
                     size = SEARCH_PAGE_SIZE_LIMIT;
                 }
@@ -413,16 +409,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
         int start = context.getPageable().getPageNumber();
         if ((startPage != null) && (startPage.size() == 1)) {
-            start = Integer.valueOf(startPage.get(0));
-        }
-
-        if ((startPage != null) && (startPage.size() == 1)) {
             try {
-                start = Integer.valueOf(startPage.get(0));
-                // Handle page starts at 1 but 0 for spring Pageable
-                if (start > 0) {
-                    start = start - 1;
-                }
+                start = Integer.parseInt(startPage.get(0));
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -451,7 +439,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             throws ModuleException {
         List<PropertyBound<?>> bounds = catalogSearchService
                 .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
-        return ResponseEntity.ok(bounds.stream().map(bound -> new EntityModel<PropertyBound<?>>(bound))
+        return ResponseEntity.ok(bounds.stream().map(EntityModel<PropertyBound<?>>::new)
                 .collect(Collectors.toList()));
     }
 

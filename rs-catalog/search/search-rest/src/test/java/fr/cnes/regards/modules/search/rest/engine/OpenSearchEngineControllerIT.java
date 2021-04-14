@@ -34,6 +34,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import javax.xml.xpath.XPathExpressionException;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -63,8 +64,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataAtom() throws XPathExpressionException {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.addParameter("page", "2");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_ATOM_XML));
+        customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "3");
         customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
         customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("14")));
@@ -76,7 +77,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataAtomWithParams() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_ATOM_XML));
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "10");
         customizer.addParameter("properties.planet", "Mercury");
@@ -87,7 +88,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchAllDataJson() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         // Test specific opensearch pagination parameters
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
@@ -99,8 +100,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataJsonWithParams() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("planet", "Mercury");
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
@@ -114,8 +115,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataAtomWithGeoBboxParams() throws XPathExpressionException {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_ATOM_XML));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("box", "15.0,15.0,20.0,20.0");
         customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("100")));
@@ -139,8 +140,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataJsonWithGeoBboxParams() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("box", "15.0,15.0,20.0,20.0");
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
@@ -151,8 +152,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataJsonWithTimeParams() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("TimePeriod.startDate",
                                 startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
@@ -162,8 +163,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
@@ -173,8 +174,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
         // Now lets try with alias parameter names
         customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("debut", startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
@@ -183,8 +184,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("debut", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
@@ -193,8 +194,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("q",
                                 String.format("(TimePeriod.startDate:[%s TO %s])",
@@ -208,8 +209,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataJsonWithGeoCircleParams() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.addParameter("page", "1");
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("lon", "20.0");
         customizer.addParameter("lat", "20.0");
@@ -228,7 +229,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         String geoJsonUrl = "OpenSearchDescription/Url[@type='" + GeoJsonMediaType.APPLICATION_GEOJSON_VALUE + "']";
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(new MediaType("application", "xml", StandardCharsets.UTF_8)));
+        customizer.headers().setAccept(Collections.singletonList(new MediaType("application", "xml", StandardCharsets.UTF_8)));
 
         // Check metadatas
         customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription").exists());
@@ -323,7 +324,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         Assert.assertNotNull(solarSystem);
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING
                 + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
                           "open search description error", ENGINE_TYPE, solarSystem.getIpId().toString(),
@@ -344,7 +345,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     public void searchAllAtom() throws XPathExpressionException {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addParameter("page", "1");
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("20")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
@@ -355,7 +356,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     public void searchAllDataAtom() throws XPathExpressionException {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addParameter("page", "1");
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("14")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -371,7 +372,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addParameter("page", "1");
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
@@ -382,7 +383,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     public void searchAllGeojson() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        customizer.addParameter("page", "1");
+        customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(20)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
