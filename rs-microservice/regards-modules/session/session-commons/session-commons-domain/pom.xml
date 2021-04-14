@@ -21,16 +21,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework</groupId>
-    <artifactId>regards-modules</artifactId>
-    <description>REGARDS framework modules</description>
-    <packaging>pom</packaging>
+    <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+    <artifactId>session-commons-domain</artifactId>
+    <packaging>jar</packaging>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <groupId>fr.cnes.regards.framework.modules.session</groupId>
+        <artifactId>session-commons</artifactId>
         <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -54,14 +52,16 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>plugins</module>
-        <module>jobs</module>
-        <module>templates</module>
-        <module>workspace</module>
-        <module>locks</module>
-        <module>dump</module>
-        <module>session</module>
-    </modules>
-
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-commons-regards</artifactId>
+		</dependency>
+		<!-- Test -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

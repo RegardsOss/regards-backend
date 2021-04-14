@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
  Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
@@ -16,21 +16,18 @@
  
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework</groupId>
-    <artifactId>regards-modules</artifactId>
-    <description>REGARDS framework modules</description>
+    <groupId>fr.cnes.regards.framework.modules.session</groupId>
+    <artifactId>session-commons</artifactId>
+    <description>Commons module</description>
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <groupId>fr.cnes.regards.framework.modules</groupId>
+        <artifactId>session</artifactId>
         <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -54,14 +51,24 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>plugins</module>
-        <module>jobs</module>
-        <module>templates</module>
-        <module>workspace</module>
-        <module>locks</module>
-        <module>dump</module>
-        <module>session</module>
-    </modules>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Module layers -->
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+                <artifactId>session-commons-dao</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+                <artifactId>session-commons-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+    <modules>
+    <module>session-commons-domain</module>
+    <module>session-commons-dao</module>
+  </modules>
 </project>
