@@ -78,8 +78,8 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     public <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!Objects.equals(value, dynamicTenantSetting.getValue())) {
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
             dynamicTenantSetting.setValue(value);
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
             dynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
             customizer.doRightNow(dynamicTenantSetting);
             LOGGER.info("Updated Tenant Setting {}", dynamicTenantSetting);
@@ -98,8 +98,8 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     public void reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
-            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
             dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
+            IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting);
             dynamicTenantSettingRepository.save(dynamicTenantSetting);
             customizer.doRightNow(dynamicTenantSetting);
         }
