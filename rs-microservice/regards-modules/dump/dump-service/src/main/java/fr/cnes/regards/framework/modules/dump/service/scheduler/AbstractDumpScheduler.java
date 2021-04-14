@@ -19,33 +19,25 @@
 
 package fr.cnes.regards.framework.modules.dump.service.scheduler;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.CronSequenceGenerator;
-import org.springframework.scheduling.support.CronTrigger;
-
 import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Abstract class to handle dump scheduling
@@ -74,6 +66,7 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
      * Create schedulers when the application context has been refreshed see {@link ApplicationStartedEvent}
      */
     @EventListener
+    @Order(10)
     public void onApplicationStartedEvent(ApplicationStartedEvent event) {
         initSchedulers();
     }
@@ -104,7 +97,6 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
     public void updateScheduler(String tenant) {
         try {
             runtimeTenantResolver.forceTenant(tenant);
-            DumpSettings newDumpSettings = dumpSettingsService.retrieve();
             getLogger().info("[DUMP] Updating  {}", getNotificationTitle());
             // cancel the existing scheduler, wait until the end to cancel it
             ScheduledFuture schedulerToRestart = schedulersByTenant.get(tenant);
@@ -112,47 +104,29 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
                 schedulerToRestart.cancel(false);
             }
             // update scheduler only if the module is active
-            if (newDumpSettings.isActiveModule()) {
+            if (dumpSettingsService.getDumpParameters().isActiveModule()) {
                 schedulersByTenant.put(tenant, taskScheduler.schedule(() -> {
                     runtimeTenantResolver.forceTenant(tenant);
                     traceScheduling(tenant, getType());
                     try {
-                        lockingTaskExecutors.executeWithLock(getDumpTask(), new LockConfiguration(getLockName(),
-                                                                                                  Instant.now()
-                                                                                                          .plusSeconds(
-                                                                                                                  60L)));
+                        lockingTaskExecutors.executeWithLock(
+                                getDumpTask(),
+                                new LockConfiguration(getLockName(), Instant.now().plusSeconds(60L))
+                        );
                     } catch (Throwable e) {
                         handleSchedulingError(getType(), getNotificationTitle(), e);
                     } finally {
                         runtimeTenantResolver.clearTenant();
                     }
-                }, new CronTrigger(newDumpSettings.getCronTrigger())));
+                }, new CronTrigger(dumpSettingsService.getDumpParameters().getCronTrigger())));
             }
         } finally {
             runtimeTenantResolver.clearTenant();
         }
     }
 
-    /**
-     * Update the {@link DumpSettings} and the {@link AbstractDumpScheduler} with the new configuration
-     * @param newDumpSettings the new dump configuration
-     */
-    @RegardsTransactional
-    public void updateDumpAndScheduler(DumpSettings newDumpSettings) throws ModuleException {
-        // SET ID (only one id is allowed for dumpSettings)
-        newDumpSettings.setId();
-
-        // PARAMETER CHECK
-        // check cron expression
-        String cronTrigger = newDumpSettings.getCronTrigger();
-        if (!CronSequenceGenerator.isValidExpression(cronTrigger)) {
-            throw new EntityInvalidException(String.format("Cron Expression %s is not valid.", cronTrigger));
-        }
-
-        // UPDATE DUMP SETTINGS AND SCHEDULER if they were modified
-        if(dumpSettingsService.update(newDumpSettings)) {
-            updateScheduler(runtimeTenantResolver.getTenant());
-        }
+    public void update() {
+        updateScheduler(runtimeTenantResolver.getTenant());
     }
 
     protected abstract String getLockName();

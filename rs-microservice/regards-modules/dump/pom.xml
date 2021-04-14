@@ -38,7 +38,6 @@
     </developers>
 
     <modules>
-        <module>dump-dao</module>
         <module>dump-domain</module>
         <module>dump-service</module>
         <module>dump-rest</module>
@@ -49,11 +48,6 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.dump</groupId>
                 <artifactId>dump-domain</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.dump</groupId>
-                <artifactId>dump-dao</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

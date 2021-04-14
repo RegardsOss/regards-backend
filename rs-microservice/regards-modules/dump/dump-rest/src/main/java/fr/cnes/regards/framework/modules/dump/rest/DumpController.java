@@ -18,6 +18,7 @@ package fr.cnes.regards.framework.modules.dump.rest;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -48,7 +49,7 @@ public class DumpController {
 
     @RequestMapping(path = RESET_LAST_DUMP_DATE, method = RequestMethod.PATCH)
     @ResourceAccess(description = "Reset last dump date", role = DefaultRole.ADMIN)
-    public void resetLastDumpDate() {
+    public void resetLastDumpDate() throws EntityException {
         dumpSettingsService.resetLastDumpDate();
     }
 }
