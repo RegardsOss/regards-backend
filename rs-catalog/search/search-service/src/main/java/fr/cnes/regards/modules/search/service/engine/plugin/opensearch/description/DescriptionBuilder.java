@@ -288,7 +288,7 @@ public class DescriptionBuilder {
         startPageParameter.setTitle("Results page to return");
         startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE_NAME);
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
-        startPageParameter.setMinInclusive("1");
+        startPageParameter.setMinInclusive("0");
         parameters.add(startPageParameter);
 
         return parameters;

@@ -173,7 +173,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
             IEntityLinkBuilder linkBuilder) throws ModuleException {
         FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
-                                                                  getPagination(context));
+                                                                  context.getPageable());
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
@@ -185,7 +185,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
         context.setPageable(PageRequest.of(0,1));
         FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
-                getPagination(context), 1);
+                context.getPageable(), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
@@ -384,61 +384,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                                                        context.getDateTypes().get());
         // Build response
         return ResponseEntity.ok(summary);
-    }
-
-    /**
-     * Try to read pagination parameters from :<ul>
-     * <li>1. From opensearch specific parameters 'count' & 'startPage'. Startpage is from 1 to X where X is last page.</li>
-     * <li>2. From spring standard parameters 'size' & 'page'
-     * </ul>
-     * @param context
-     * @return
-     */
-    private Pageable getPagination(SearchContext context) {
-        List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
-        List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
-
-        int size = context.getPageable().getPageSize();
-        if ((count != null) && (count.size() == 1)) {
-            try {
-                size = Integer.valueOf(count.get(0));
-                if (size > SEARCH_PAGE_SIZE_LIMIT) {
-                    size = SEARCH_PAGE_SIZE_LIMIT;
-                }
-            } catch (NumberFormatException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
-
-        int start = context.getPageable().getPageNumber();
-        if ((startPage != null) && (startPage.size() == 1)) {
-            try {
-                start = Integer.valueOf(startPage.get(0));
-                // Handle page starts at 1 but 0 for spring Pageable
-                if (start > 0) {
-                    start = start - 1;
-                }
-            } catch (NumberFormatException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
-
-        // Build sort parameters from parameter configuration
-        List<Order> orders = Lists.newArrayList();
-        context.getPageable().getSort().get().forEach(order -> {
-            try {
-                if (order.isAscending()) {
-                    orders.add(Order.asc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
-                } else {
-                    orders.add(Order.desc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
-                }
-            } catch (OpenSearchUnknownParameter e) {
-                // Nothing to do
-                LOGGER.info("Sort parameter invalid {}", order.getProperty(), e);
-            }
-        });
-
-        return PageRequest.of(start, size, Sort.by(orders));
     }
 
     @Override
