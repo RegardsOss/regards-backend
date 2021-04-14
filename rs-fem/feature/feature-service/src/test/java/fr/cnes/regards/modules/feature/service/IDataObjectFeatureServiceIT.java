@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -82,19 +82,19 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
 
         this.featureRepo.save(secondFeature);
 
-        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(model);
+        FeaturesSearchParameters selection = FeaturesSearchParameters.build().withModel(model);
         // Retrieve all from model
         Pageable page = PageRequest.of(0, 10);
         Page<FeatureEntityDto> results = dataObjectService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
         // Retrieve with an unknown model
-        selection = FeaturesSelectionDTO.build().withModel("unknown");
+        selection = FeaturesSearchParameters.build().withModel("unknown");
         results = dataObjectService.findAll(selection, page);
         assertEquals(0, results.getNumberOfElements());
 
         // Retrieve from model and  lastUpdateDate to retrieve only second feature
-        selection = FeaturesSelectionDTO.build().withModel(model).withLastUpdateDate(date);
+        selection = FeaturesSearchParameters.build().withModel(model).withFrom(date);
         results = dataObjectService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
         FeatureEntityDto dof = results.getContent().get(0);

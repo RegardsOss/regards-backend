@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
@@ -59,6 +60,10 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
 
     public static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
+    public static final String NOTIFY_PATH = "/notify";
+
+    public static final String DELETE_PATH = "/delete";
+
     @Autowired
     private IDataObjectFeatureService dataObjectFeature;
 
@@ -74,24 +79,58 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
      * @param lastUpdateDate las modification date that we want {@link Feature}
      * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
      */
-    @Operation(summary = "Get features according last update date and model",
-            description = "Get features according last update date and model")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Get features according last update date and model") })
+    @Operation(summary = "Get features according to search parameters",
+            description = "Get features according to search parameters")
+    @ApiResponses(
+            value = { @ApiResponse(responseCode = "200", description = "Get features according to search parameters") })
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get features according last update date")
+    @ResourceAccess(description = "Get features according to search parameters")
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
-            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection, Pageable page,
+            @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
             PagedResourcesAssembler<FeatureEntityDto> assembler) {
         return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(selection, page), assembler),
                 HttpStatus.OK);
+    }
+
+    /**
+     * Creates job to send notify notification for each feature matching given search parameters
+     * @param selection
+     * @return
+     */
+    @Operation(summary = "Notify features according to search parameters",
+            description = "Notify features according to search parameters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notify features according to search parameters") })
+    @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Notify features according to search parameters")
+    public ResponseEntity<Void> notifyFeatures(
+            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
+        // TODO
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    /**
+     * Creates job to send deletion notification for each feature matching given search parameters
+     * @param selection
+     * @return
+     */
+    @Operation(summary = "Delete features according to search parameters",
+            description = "Delete features according to search parameters")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Delete features according to search parameters") })
+    @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Delete features according to search parameters")
+    public ResponseEntity<Void> deleteFeatures(
+            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
+        // TODO
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @Override
     public EntityModel<FeatureEntityDto> toResource(FeatureEntityDto element, Object... extras) {
         EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getFeatures", LinkRels.SELF,
-                                MethodParamFactory.build(FeaturesSelectionDTO.class),
+                                MethodParamFactory.build(FeaturesSearchParameters.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;

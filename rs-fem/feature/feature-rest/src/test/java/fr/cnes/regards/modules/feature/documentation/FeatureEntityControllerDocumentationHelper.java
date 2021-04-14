@@ -79,14 +79,6 @@ public class FeatureEntityControllerDocumentationHelper {
                              Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")
                  )
         );
-        params.add(
-                   RequestDocumentation.parameterWithName("lastUpdate")
-                        .optional()
-                        .description("Search for features with lastUpdate date greather than this parameter")
-                        .attributes(
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Date ISO-8601")
-                        )
-               );
         // @formatter:on
         return params;
     }

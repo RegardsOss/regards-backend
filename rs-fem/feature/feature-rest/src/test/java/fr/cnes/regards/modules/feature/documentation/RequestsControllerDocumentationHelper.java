@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionMode;
+import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
@@ -94,8 +94,8 @@ public class RequestsControllerDocumentationHelper {
                           "Array of requests ids to search for or to exclude form search. Depends on requestIdSelectionMode.")
                 .type("String[]").optional());
         fd.add(fields.withPath("requestIdSelectionMode", "requestIdSelectionMode",
-                               "requestIds selection mode. Default value = " + FeatureRequestsSelectionMode.INCLUDE,
-                               Arrays.toString(FeatureRequestsSelectionMode.values()))
+                               "requestIds selection mode. Default value = " + SearchSelectionMode.INCLUDE,
+                               Arrays.toString(SearchSelectionMode.values()))
                 .type("String").optional());
         return fd;
     }

@@ -23,7 +23,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 
 /**
  * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
@@ -36,9 +36,9 @@ public interface IDataObjectFeatureService {
      * Get a {@link Page} of {@link FeatureEntityDto} dto
      * The {@link Page} will be initialized from a list of {@link FeatureEntityDto}
      *
-     * @param selection {@link FeaturesSelectionDTO} search filters
+     * @param selection {@link FeaturesSearchParameters} search filters
      * @param pageable
      * @return {@link Page} of {@link FeatureEntityDto}
      */
-    Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
+    Page<FeatureEntityDto> findAll(FeaturesSearchParameters selection, Pageable pageable);
 }

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
@@ -49,7 +49,7 @@ public class FeatureService implements IDataObjectFeatureService {
     private IFeatureEntityRepository featureRepo;
 
     @Override
-    public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
+    public Page<FeatureEntityDto> findAll(FeaturesSearchParameters selection, Pageable page) {
         Page<FeatureEntity> entities = featureRepo
                 .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
         List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))

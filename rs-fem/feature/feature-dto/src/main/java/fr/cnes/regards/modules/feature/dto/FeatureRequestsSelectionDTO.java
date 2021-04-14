@@ -38,7 +38,7 @@ public class FeatureRequestsSelectionDTO {
 
     List<Long> requestIds = Lists.newArrayList();
 
-    FeatureRequestsSelectionMode requestIdSelectionMode = FeatureRequestsSelectionMode.INCLUDE;
+    SearchSelectionMode requestIdSelectionMode = SearchSelectionMode.INCLUDE;
 
     public static FeatureRequestsSelectionDTO build() {
         return new FeatureRequestsSelectionDTO();
@@ -84,7 +84,7 @@ public class FeatureRequestsSelectionDTO {
         return this;
     }
 
-    public FeatureRequestsSelectionDTO withSelectionMode(FeatureRequestsSelectionMode mode) {
+    public FeatureRequestsSelectionDTO withSelectionMode(SearchSelectionMode mode) {
         this.requestIdSelectionMode = mode;
         return this;
     }
@@ -105,11 +105,11 @@ public class FeatureRequestsSelectionDTO {
         this.requestIds = requestIds;
     }
 
-    public FeatureRequestsSelectionMode getRequestIdSelectionMode() {
+    public SearchSelectionMode getRequestIdSelectionMode() {
         return requestIdSelectionMode;
     }
 
-    public void setRequestIdSelectionMode(FeatureRequestsSelectionMode requestIdSelectionMode) {
+    public void setRequestIdSelectionMode(SearchSelectionMode requestIdSelectionMode) {
         this.requestIdSelectionMode = requestIdSelectionMode;
     }
 

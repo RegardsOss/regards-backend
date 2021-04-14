@@ -24,7 +24,7 @@ package fr.cnes.regards.modules.feature.dto;
  * @author Sébastien Binda
  *
  */
-public enum FeatureRequestsSelectionMode {
+public enum SearchSelectionMode {
 
     INCLUDE,
 

@@ -19,122 +19,95 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import java.time.OffsetDateTime;
+import java.util.List;
+
+import org.apache.commons.compress.utils.Lists;
 
 /**
- * POJO to define a selection filters for {@link FeatureEntityDto}
+ *
+ * Parameters to define a selection of {@link FeatureEntityDto}
  *
  * @author Sébastien Binda
  *
  */
 public class FeaturesSelectionDTO {
 
-    private String model;
+    /**
+     * Search parameters
+     */
+    FeaturesSearchParameters filters = new FeaturesSearchParameters();
 
-    private OffsetDateTime lastUpdateDate;
+    /**
+     * List of ids to include/exclude according to {@link FeaturesSelectionDTO#featureIdsSelectionMode}
+     */
+    List<Long> featureIds = Lists.newArrayList();
 
-    private String providerId;
-
-    private String source;
-
-    private String session;
-
-    private OffsetDateTime from;
-
-    private OffsetDateTime to;
+    /**
+     * Feature ids selection mode
+     */
+    SearchSelectionMode featureIdsSelectionMode = SearchSelectionMode.INCLUDE;
 
     public static FeaturesSelectionDTO build() {
         return new FeaturesSelectionDTO();
     }
 
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public OffsetDateTime getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
-    }
-
-    public OffsetDateTime getFrom() {
-        return from;
-    }
-
-    public void setFrom(OffsetDateTime from) {
-        this.from = from;
-    }
-
-    public OffsetDateTime getTo() {
-        return to;
-    }
-
-    public void setTo(OffsetDateTime to) {
-        this.to = to;
-    }
-
-    public FeaturesSelectionDTO withModel(String model) {
-        this.setModel(model);
-        return this;
-    }
-
     public FeaturesSelectionDTO withSource(String source) {
-        this.setSource(source);
+        this.filters.setSource(source);
         return this;
     }
 
     public FeaturesSelectionDTO withSession(String session) {
-        this.setSession(session);
+        this.filters.setSession(session);
         return this;
     }
 
     public FeaturesSelectionDTO withProviderId(String providerId) {
-        this.setProviderId(providerId);
+        this.filters.setProviderId(providerId);
         return this;
     }
 
-    public FeaturesSelectionDTO withFrom(OffsetDateTime from) {
-        this.setFrom(from);
+    public FeaturesSelectionDTO withStart(OffsetDateTime start) {
+        this.filters.setFrom(start);
         return this;
     }
 
-    public FeaturesSelectionDTO withTo(OffsetDateTime to) {
-        this.setTo(to);
+    public FeaturesSelectionDTO withEnd(OffsetDateTime end) {
+        this.filters.setTo(end);
         return this;
     }
 
-    public FeaturesSelectionDTO withLastUpdateDate(OffsetDateTime lastUpdateDate) {
-        this.setLastUpdateDate(lastUpdateDate);
+    public FeaturesSelectionDTO withId(Long id) {
+        this.featureIds.add(id);
         return this;
+    }
+
+    public FeaturesSelectionDTO withSelectionMode(SearchSelectionMode mode) {
+        this.featureIdsSelectionMode = mode;
+        return this;
+    }
+
+    public FeaturesSearchParameters getFilters() {
+        return filters;
+    }
+
+    public void setFilters(FeaturesSearchParameters filters) {
+        this.filters = filters;
+    }
+
+    public SearchSelectionMode getFeatureIdsSelectionMode() {
+        return featureIdsSelectionMode;
+    }
+
+    public void setFeatureIdsSelectionMode(SearchSelectionMode featureIdsSelectionMode) {
+        this.featureIdsSelectionMode = featureIdsSelectionMode;
+    }
+
+    public List<Long> getFeatureIds() {
+        return featureIds;
+    }
+
+    public void setFeatureIds(List<Long> featureIds) {
+        this.featureIds = featureIds;
     }
 
 }

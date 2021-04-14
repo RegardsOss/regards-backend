@@ -30,7 +30,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 
 /**
  * JPA {@link Specification} builder for {@link FeatureEntity}
@@ -46,11 +46,11 @@ public class FeatureEntitySpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureEntity}s
-     * @param selection {@link FeaturesSelectionDTO}
+     * @param selection {@link FeaturesSearchParameters}
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
+    public static Specification<FeatureEntity> searchAllByFilters(FeaturesSearchParameters selection, Pageable page) {
         return (root, query, cb) -> {
 
             Set<Predicate> predicates = Sets.newHashSet();
@@ -67,14 +67,11 @@ public class FeatureEntitySpecification {
             if (selection.getProviderId() != null) {
                 predicates.add(cb.equal(root.get("providerId"), selection.getProviderId()));
             }
-            if (selection.getLastUpdateDate() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), selection.getLastUpdateDate()));
-            }
             if (selection.getFrom() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("from"), selection.getFrom()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), selection.getFrom()));
             }
             if (selection.getTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("to"), selection.getTo()));
+                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), selection.getTo()));
             }
 
             // Add order
