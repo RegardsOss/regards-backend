@@ -20,6 +20,27 @@
 
 package fr.cnes.regards.modules.feature.service.dump;
 
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
+import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,27 +53,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.feature.dao.IFeatureSaveMetadataRequestRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceTest;
 
 /**
  * Test for {@link FeatureMetadataService}
@@ -68,8 +68,6 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
 
     private Path tmpZipLocation;
 
-    private DumpSettings conf;
-
     @Value("${regards.feature.dump.zip-limit}")
     private int zipLimit;
 
@@ -77,18 +75,21 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
     private IFeatureMetadataService metadataService;
 
     @Autowired
-    private IDumpSettingsRepository dumpConf;
+    private DumpSettingsService dumpSettingsService;
 
     @Autowired
     private IFeatureSaveMetadataRequestRepository metadataRequestRepository;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
-        conf = new DumpSettings(true, "* * * 1-7 * SUN", "target/dump", null);
-        dumpConf.save(conf);
+
+        dumpSettingsService.setDumpParameters(new DumpParameters()
+                .setActiveModule(true)
+                .setDumpLocation("target/dump")
+                .setCronTrigger("0 * * * * *"));
     }
 
     @Test
@@ -154,7 +155,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
 
         // CHECK RESULTS
         // Number of dump created
-        File[] dumpFolder = Paths.get(this.conf.getDumpLocation()).toFile().listFiles();
+        File[] dumpFolder = Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile().listFiles();
         Assert.assertEquals("Only one dump was expected", 1, dumpFolder.length);
 
         // Number of zips in dump
@@ -171,7 +172,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         return FeatureSaveMetadataRequest
                 .build(AbstractRequestEvent.generateRequestId(), "NONE", OffsetDateTime.now(), RequestState.GRANTED,
                        null, FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL, this.lastDumpReqDate,
-                       this.conf.getDumpLocation());
+                       dumpSettingsService.getDumpParameters().getDumpLocation());
     }
 
     /**
@@ -217,7 +218,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceT
         abstractFeatureRequestRepo.deleteAll();
         featureRepo.deleteAll();
         //clear dump location
-        FileUtils.deleteDirectory(Paths.get(conf.getDumpLocation()).toFile());
+        FileUtils.deleteDirectory(Paths.get(dumpSettingsService.getDumpParameters().getDumpLocation()).toFile());
         FileUtils.deleteDirectory(this.tmpZipLocation.toFile());
     }
 }

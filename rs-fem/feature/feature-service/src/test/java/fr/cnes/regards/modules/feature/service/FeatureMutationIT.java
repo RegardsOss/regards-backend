@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -30,7 +33,6 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
-import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
@@ -73,7 +75,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
     private FeatureNotificationSettingsService notificationSettingsService;
 
     @Test
-    public void createAndUpdateTest() {
+    public void createAndUpdateTest() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
 
 
         DynamicTenantSetting setting = notificationSettingsService.retrieve().get(0);

@@ -21,6 +21,9 @@
 package fr.cnes.regards.modules.feature.service.notification;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -71,7 +74,7 @@ public class FeatureNotificationSettingsServiceIT extends AbstractFeatureMultite
 
     @Test
     @Purpose("Check the update of existing notification settings")
-    public void testUpdate() {
+    public void testUpdate() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         notificationSettingsService.update(new DynamicTenantSetting(null, FeatureNotificationSettings.ACTIVE_NOTIFICATION, null, true, false));
         assertEquals(false, notificationSettingsService.retrieve().get(0).getValue());
     }

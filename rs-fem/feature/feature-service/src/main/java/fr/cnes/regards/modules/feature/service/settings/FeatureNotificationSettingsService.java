@@ -48,8 +48,8 @@ import java.util.List;
 @MultitenantTransactional
 public class FeatureNotificationSettingsService extends AbstractSettingService implements IFeatureNotificationSettingsService {
 
-    private ITenantResolver tenantsResolver;
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final ITenantResolver tenantsResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private FeatureNotificationSettingsService self;

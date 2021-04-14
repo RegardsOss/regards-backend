@@ -22,15 +22,11 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
-import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
-import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
-import fr.cnes.regards.modules.feature.service.task.FeatureSaveMetadataScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,6 +36,7 @@ import java.util.Set;
 
 /**
  * Configuration manager for current module
+ *
  * @author Marc Sordi
  */
 @Component
@@ -47,28 +44,38 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
 
-    @Autowired
-    private FeatureSaveMetadataScheduler featureSaveMetadataScheduler;
+    private final FeatureNotificationSettingsService notificationSettingsService;
+    private final DumpSettingsService dumpSettingsService;
 
-    @Autowired
-    private FeatureNotificationSettingsService notificationSettingsService;
-
-    @Autowired
-    private IDumpSettingsService dumpSettingsService;
+    public FeatureConfigurationManager(FeatureNotificationSettingsService notificationSettingsService, DumpSettingsService dumpSettingsService) {
+        this.notificationSettingsService = notificationSettingsService;
+        this.dumpSettingsService = dumpSettingsService;
+    }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
+
         Set<String> importErrors = new HashSet<>();
+        List<DynamicTenantSetting> dumpSettingList = dumpSettingsService.retrieve();
+        List<DynamicTenantSetting> notificationSettingList = notificationSettingsService.retrieve();
+
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
-            if (DumpSettings.class.isAssignableFrom(item.getKey())) {
+            if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
+                DynamicTenantSetting setting = item.getTypedValue();
+                String settingName = setting.getName();
                 try {
-                    featureSaveMetadataScheduler.updateDumpAndScheduler(item.getTypedValue());
+                    if (dumpSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
+                        dumpSettingsService.update(setting);
+                    } else if (notificationSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
+                        notificationSettingsService.update(setting);
+                    } else {
+                        importErrors.add(String.format("Configuration item not imported : Unknown Tenant Setting %s", setting));
+                        LOGGER.error("Configuration item not imported : Unknown Tenant Setting {}", setting);
+                    }
                 } catch (ModuleException e) {
-                    importErrors.add(String.format("New dump settings were not updated, cause by: %s", e.getMessage()));
-                    LOGGER.error("Not able to update new dump settings, cause by:", e);
+                    importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
+                    LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
                 }
-            } else if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
-                notificationSettingsService.update(item.getTypedValue());
             } else {
                 String message = String.format(
                         "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
@@ -86,15 +93,10 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
     @Override
     public ModuleConfiguration exportConfiguration() {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
-
-        DumpSettings dumpSettings = dumpSettingsService.retrieve();
-        if (dumpSettings != null) {
-            configurations.add(ModuleConfigurationItem.build(dumpSettings));
-        }
-
+        dumpSettingsService.retrieve()
+                .forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
         notificationSettingsService.retrieve()
-                .forEach(setting ->configurations.add(ModuleConfigurationItem.build(setting)));
-
+                .forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
         return ModuleConfiguration.build(info, true, configurations);
     }
 
@@ -117,4 +119,5 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
         }
         return errors;
     }
+
 }
