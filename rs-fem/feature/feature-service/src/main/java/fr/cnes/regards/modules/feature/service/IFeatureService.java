@@ -24,13 +24,14 @@ import org.springframework.data.domain.Pageable;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 
 /**
  * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
  * @author Kevin Marchois
  *
  */
-public interface IDataObjectFeatureService {
+public interface IFeatureService {
 
     /**
      * Get a {@link Page} of {@link FeatureEntityDto} dto
@@ -40,5 +41,17 @@ public interface IDataObjectFeatureService {
      * @param pageable
      * @return {@link Page} of {@link FeatureEntityDto}
      */
-    Page<FeatureEntityDto> findAll(FeaturesSearchParameters selection, Pageable pageable);
+    Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
+
+    /**
+     * Creates a job to creates new notification requests for all features matching selection parameters
+     * @param selection {@link FeaturesSelectionDTO}
+     */
+    void scheduleNotificationsJob(FeaturesSelectionDTO selection);
+
+    /**
+     * Creates a job to creates new deletion requests for all features matching selection parameters
+     * @param selection {@link FeaturesSelectionDTO}
+     */
+    void scheduleDeletionJob(FeaturesSelectionDTO selection);
 }

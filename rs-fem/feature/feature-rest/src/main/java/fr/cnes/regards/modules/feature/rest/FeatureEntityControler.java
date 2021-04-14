@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
-import fr.cnes.regards.modules.feature.service.IDataObjectFeatureService;
+import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -65,7 +65,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public static final String DELETE_PATH = "/delete";
 
     @Autowired
-    private IDataObjectFeatureService dataObjectFeature;
+    private IFeatureService featureService;
 
     /**
      * {@link IResourceService} instance
@@ -88,7 +88,9 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
             PagedResourcesAssembler<FeatureEntityDto> assembler) {
-        return new ResponseEntity<>(toPagedResources(dataObjectFeature.findAll(selection, page), assembler),
+        return new ResponseEntity<>(
+                toPagedResources(featureService.findAll(FeaturesSelectionDTO.build().withFilters(selection), page),
+                                 assembler),
                 HttpStatus.OK);
     }
 
@@ -105,7 +107,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ResourceAccess(description = "Notify features according to search parameters")
     public ResponseEntity<Void> notifyFeatures(
             @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
-        // TODO
+        featureService.scheduleNotificationsJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
@@ -122,7 +124,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @ResourceAccess(description = "Delete features according to search parameters")
     public ResponseEntity<Void> deleteFeatures(
             @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
-        // TODO
+        featureService.scheduleDeletionJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 

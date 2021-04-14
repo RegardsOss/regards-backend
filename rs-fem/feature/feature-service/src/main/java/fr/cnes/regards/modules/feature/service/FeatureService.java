@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,21 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
 
 /**
  *  Serive to create {@link DataObjectFeature} from {@link FeatureEntity}
@@ -43,13 +52,19 @@ import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
  */
 @Service
 @MultitenantTransactional
-public class FeatureService implements IDataObjectFeatureService {
+public class FeatureService implements IFeatureService {
 
     @Autowired
     private IFeatureEntityRepository featureRepo;
 
+    @Autowired
+    private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private IJobInfoService jobInfoService;
+
     @Override
-    public Page<FeatureEntityDto> findAll(FeaturesSearchParameters selection, Pageable page) {
+    public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
         Page<FeatureEntity> entities = featureRepo
                 .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
         List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
@@ -66,6 +81,31 @@ public class FeatureService implements IDataObjectFeatureService {
         dto.setVersion(entity.getVersion());
         dto.setLastUpdate(entity.getLastUpdate());
         return dto;
+    }
+
+    @Override
+    public void scheduleNotificationsJob(FeaturesSelectionDTO selection) {
+        // Schedule job
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
+
+        // the job priority will be set according the priority of the first request to schedule
+        JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
+                authResolver.getUser(), ScheduleFeatureDeletionJobsJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
+
+    }
+
+    @Override
+    public void scheduleDeletionJob(FeaturesSelectionDTO selection) {
+        // Schedule job
+        Set<JobParameter> jobParameters = Sets.newHashSet();
+        jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
+
+        // the job priority will be set according the priority of the first request to schedule
+        JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
+                authResolver.getUser(), ScheduleFeatureDeletionJobsJob.class.getName());
+        jobInfoService.createAsQueued(jobInfo);
     }
 
 }

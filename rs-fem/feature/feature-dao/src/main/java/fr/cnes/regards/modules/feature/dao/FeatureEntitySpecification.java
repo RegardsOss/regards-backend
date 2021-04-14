@@ -31,6 +31,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 
 /**
  * JPA {@link Specification} builder for {@link FeatureEntity}
@@ -50,28 +51,49 @@ public class FeatureEntitySpecification {
      * @param page {@link Pageable}
      * @return {@link Specification}
      */
-    public static Specification<FeatureEntity> searchAllByFilters(FeaturesSearchParameters selection, Pageable page) {
+    public static Specification<FeatureEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
         return (root, query, cb) -> {
 
             Set<Predicate> predicates = Sets.newHashSet();
+            FeaturesSearchParameters filters = selection.getFilters();
 
-            if (selection.getModel() != null) {
-                predicates.add(cb.equal(root.get("model"), selection.getModel()));
+            if (filters != null) {
+                if (filters.getModel() != null) {
+                    predicates.add(cb.equal(root.get("model"), filters.getModel()));
+                }
+                if (filters.getSource() != null) {
+                    predicates.add(cb.equal(root.get("sessionOwner"), filters.getSource()));
+                }
+                if (filters.getSession() != null) {
+                    predicates.add(cb.equal(root.get("session"), filters.getSession()));
+                }
+                if (filters.getProviderId() != null) {
+                    predicates.add(cb.equal(root.get("providerId"), filters.getProviderId()));
+                }
+                if (filters.getFrom() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
+                }
+                if (filters.getTo() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
+                }
             }
-            if (selection.getSource() != null) {
-                predicates.add(cb.equal(root.get("sessionOwner"), selection.getSource()));
-            }
-            if (selection.getSession() != null) {
-                predicates.add(cb.equal(root.get("session"), selection.getSession()));
-            }
-            if (selection.getProviderId() != null) {
-                predicates.add(cb.equal(root.get("providerId"), selection.getProviderId()));
-            }
-            if (selection.getFrom() != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), selection.getFrom()));
-            }
-            if (selection.getTo() != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get("lastUpdate"), selection.getTo()));
+            if (!selection.getFeatureIds().isEmpty()) {
+                Set<Predicate> idsPredicates = Sets.newHashSet();
+                switch (selection.getFeatureIdsSelectionMode()) {
+                    case EXCLUDE:
+                        selection.getFeatureIds()
+                                .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                        break;
+                    case INCLUDE:
+                        selection.getFeatureIds()
+                                .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+                        break;
+                    default:
+                        break;
+                }
+                if (!idsPredicates.isEmpty()) {
+                    predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
+                }
             }
 
             // Add order

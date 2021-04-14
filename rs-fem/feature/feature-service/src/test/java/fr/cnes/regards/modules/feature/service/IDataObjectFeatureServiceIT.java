@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
-    private IDataObjectFeatureService dataObjectService;
+    private IFeatureService dataObjectService;
 
     @Test
     public void testFindAll() {
@@ -82,19 +82,19 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
 
         this.featureRepo.save(secondFeature);
 
-        FeaturesSearchParameters selection = FeaturesSearchParameters.build().withModel(model);
+        FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(model);
         // Retrieve all from model
         Pageable page = PageRequest.of(0, 10);
         Page<FeatureEntityDto> results = dataObjectService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
         // Retrieve with an unknown model
-        selection = FeaturesSearchParameters.build().withModel("unknown");
+        selection = FeaturesSelectionDTO.build().withModel("unknown");
         results = dataObjectService.findAll(selection, page);
         assertEquals(0, results.getNumberOfElements());
 
         // Retrieve from model and  lastUpdateDate to retrieve only second feature
-        selection = FeaturesSearchParameters.build().withModel(model).withFrom(date);
+        selection = FeaturesSelectionDTO.build().withModel(model).withFrom(date);
         results = dataObjectService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
         FeatureEntityDto dof = results.getContent().get(0);

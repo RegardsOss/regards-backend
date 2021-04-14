@@ -66,13 +66,13 @@ public class FeaturesSelectionDTO {
         return this;
     }
 
-    public FeaturesSelectionDTO withStart(OffsetDateTime start) {
-        this.filters.setFrom(start);
+    public FeaturesSelectionDTO withFrom(OffsetDateTime from) {
+        this.filters.setFrom(from);
         return this;
     }
 
-    public FeaturesSelectionDTO withEnd(OffsetDateTime end) {
-        this.filters.setTo(end);
+    public FeaturesSelectionDTO withTo(OffsetDateTime to) {
+        this.filters.setTo(to);
         return this;
     }
 
@@ -108,6 +108,16 @@ public class FeaturesSelectionDTO {
 
     public void setFeatureIds(List<Long> featureIds) {
         this.featureIds = featureIds;
+    }
+
+    public FeaturesSelectionDTO withModel(String model) {
+        this.filters.withModel(model);
+        return this;
+    }
+
+    public FeaturesSelectionDTO withFilters(FeaturesSearchParameters filters) {
+        this.setFilters(filters);
+        return this;
     }
 
 }
