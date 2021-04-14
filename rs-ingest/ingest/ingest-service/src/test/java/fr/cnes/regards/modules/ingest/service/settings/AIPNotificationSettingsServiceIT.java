@@ -22,14 +22,15 @@ package fr.cnes.regards.modules.ingest.service.settings;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -74,7 +75,7 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
 
     @Test
     @Purpose("Check the update of existing notification settings")
-    public void testUpdate() throws EntityNotFoundException {
+    public void testUpdate() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         notificationSettingsService.update(new DynamicTenantSetting(null, AIPNotificationSettings.ACTIVE_NOTIFICATION, null, true, true));
         assertEquals(true, notificationSettingsService.retrieve().get(0).getValue());
     }

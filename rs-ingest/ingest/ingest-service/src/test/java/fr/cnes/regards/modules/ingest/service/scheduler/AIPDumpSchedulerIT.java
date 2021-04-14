@@ -20,22 +20,24 @@
 
 package fr.cnes.regards.modules.ingest.service.scheduler;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.dao.IDumpSettingsRepository;
-import fr.cnes.regards.framework.modules.dump.domain.DumpSettings;
+import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.schedule.AIPSaveMetadataScheduler;
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Test for {@link AIPSaveMetadataScheduler}
@@ -54,25 +56,25 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
     private AIPSaveMetadataScheduler saveMetadataScheduler;
 
     @Autowired
-    private IDumpSettingsRepository dumpRepository;
+    private DumpSettingsService dumpSettingsService;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityException {
         this.tenant = getDefaultTenant();
-        dumpRepository.deleteAll();
+        dumpSettingsService.resetSettings();
     }
 
     @Test
     @Purpose("Test update of a scheduler")
     public void testUpdateDumpAndScheduler() throws ExecutionException, InterruptedException, ModuleException {
-        // Create new dump configuration and scheduler
-        // activate task execution every minute
-        dumpRepository.save(new DumpSettings(true, "0 * * * * *", "target/dump", null));
-        saveMetadataScheduler.initSchedulers();
+        DumpParameters dumpParameters = new DumpParameters()
+                .setActiveModule(true)
+                .setDumpLocation("target/dump")
+                .setCronTrigger("0 * * * * *");
 
-        // Update scheduler with a new dump configuration
-        // change task execution every 10 seconds
-        saveMetadataScheduler.updateDumpAndScheduler(new DumpSettings(true, "*/10 * * * * *", "target/dump", null));
+        dumpSettingsService.setDumpParameters(dumpParameters);
+
+        dumpSettingsService.setDumpParameters(dumpParameters.setCronTrigger("*/10 * * * * *"));
 
         // Wait for scheduler execution
         // if the get() execution time exceeds trigger newly scheduled, then the new scheduler was not taken into account
@@ -87,11 +89,12 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
     @Test
     @Purpose("Test update of a scheduler with an incorrect dump configuration")
     public void testUpdateDumpAndSchedulerError() {
-        // CHECK PARAMETER EXCEPTION
-        // Test update dump with incorrect cron
-        DumpSettings dumpSettings = new DumpSettings(true, "* * *", "target/dump", null);
+        DumpParameters dumpParameters = new DumpParameters()
+                .setActiveModule(true)
+                .setDumpLocation("target/dump")
+                .setCronTrigger("* * *");
         try {
-            saveMetadataScheduler.updateDumpAndScheduler(dumpSettings);
+            dumpSettingsService.setDumpParameters(dumpParameters);
             Assert.fail(String.format("%s was expected", EntityInvalidException.class.getName()));
         } catch (ModuleException e) {
             LOGGER.error("Exception successfully thrown", e);
@@ -99,8 +102,8 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceTest {
     }
 
     @Override
-    public void doAfter() {
-        dumpRepository.deleteAll();
+    public void doAfter() throws EntityException {
+        dumpSettingsService.resetSettings();
     }
 }
 

@@ -23,6 +23,9 @@ package fr.cnes.regards.modules.ingest.service.notification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -49,9 +52,6 @@ import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -60,10 +60,11 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomCategories;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomSessionOwner;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomStorage;
-import static fr.cnes.regards.modules.ingest.service.TestData.getRandomTags;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
 /**
  * Test for {@link AIPNotificationService}
@@ -107,7 +108,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Override
-    public void doInit() {
+    public void doInit() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         initNotificationSettings(true);
     }
 
@@ -326,7 +327,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     /**
      * Change state of notification settings
      */
-    private void initNotificationSettings(boolean state) {
+    private void initNotificationSettings(boolean state) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
        DynamicTenantSetting notificationSettings = AIPNotificationSettings.ACTIVE_NOTIFICATION_SETTING;
        notificationSettings.setValue(state);
         notificationSettingsService.update(notificationSettings);
