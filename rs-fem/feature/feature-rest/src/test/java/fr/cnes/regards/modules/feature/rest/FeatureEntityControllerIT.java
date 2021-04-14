@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -27,6 +30,8 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocumentationHelper;
+import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
 
 /**
  * @author Sébastien Binda
@@ -74,6 +79,9 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addParameter("session", "session2");
         requestBuilderCustomizer.addParameter("model", "FEATURE01");
         requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
+        List<ParameterDescriptor> params = FeatureEntityControllerDocumentationHelper.featureEntitySelectionDTODoc();
+        params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
+        requestBuilderCustomizer.documentRequestParameters(params);
         performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
                           "Error retrieving features");
     }

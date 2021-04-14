@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -40,6 +41,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -183,13 +185,19 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.addParameter("size", "1000");
         requestBuilderCustomizer.addParameter("source", "source1");
         requestBuilderCustomizer.addParameter("session", "session2");
+        List<ParameterDescriptor> params = RequestsControllerDocumentationHelper.featureRequestSearchParametersDoc();
+        params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
+        requestBuilderCustomizer
+                .documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc("type"))
+                .documentRequestParameters(params)
+                .documentResponseBody(RequestsControllerDocumentationHelper.featureRequestDTOResponseDoc());
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
                           requestBuilderCustomizer, "Error retrieving creation requests",
                           FeatureRequestTypeEnum.CREATION);
 
         // Retrieve deletion without filters
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
-                .expectToHaveSize("$.content", 10).expectValue("$.info.nbErrors", 0);
+                .expectToHaveSize("$.content", 10).expectValue("$.info.nbErrors", 0).skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
@@ -198,7 +206,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
         // Retrieve deletion with source/session filter should never return results
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
-                .expectToHaveSize("$.content", 0).expectValue("$.info.nbErrors", 0);
+                .expectToHaveSize("$.content", 0).expectValue("$.info.nbErrors", 0).skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
         requestBuilderCustomizer.addParameter("source", "source1");
@@ -209,7 +217,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
         // Retrieve update without filters
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
-                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0);
+                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0).skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
@@ -218,7 +226,7 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
         // Retrieve notification without filters
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
-                .expectToHaveSize("$.content", 5).expectValue("$.info.nbErrors", 0);
+                .expectToHaveSize("$.content", 5).expectValue("$.info.nbErrors", 0).skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
         performDefaultGet(FeatureRequestController.ROOT_PATH + FeatureRequestController.REQUEST_SEARCH_TYPE_PATH,
@@ -246,6 +254,10 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
                           featureRequestCreationRepo.findById(notDeletable.get(0).getId()).isPresent());
 
         selection = FeatureRequestsSelectionDTO.build().withId(deletable.get(0).getId());
+        requestBuilderCustomizer
+                .documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc("type"))
+                .documentRequestBody(RequestsControllerDocumentationHelper.featureRequestsSelectionDTODoc())
+                .documentResponseBody(RequestsControllerDocumentationHelper.requestHandledResponseDoc());
         performDefaultDelete(FeatureRequestController.ROOT_PATH + FeatureRequestController.DELETE_TYPE_PATH, selection,
                              requestBuilderCustomizer, "Error deleting requests", FeatureRequestTypeEnum.CREATION);
         Assert.assertFalse("Feature request should be deleted",
@@ -264,13 +276,17 @@ public class FeatureRequestControllerIT extends AbstractRegardsIT {
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                 .expectValue("$.totalHandled", 10).expectValue("$.totalRequested", 10);
+        requestBuilderCustomizer
+                .documentPathParameters(RequestsControllerDocumentationHelper.featureRequestTypeEnumDoc("type"))
+                .documentRequestBody(RequestsControllerDocumentationHelper.featureRequestsSelectionDTODoc())
+                .documentResponseBody(RequestsControllerDocumentationHelper.requestHandledResponseDoc());
         FeatureRequestsSelectionDTO selection = FeatureRequestsSelectionDTO.build().withSource("retry_source");
         performDefaultPost(FeatureRequestController.ROOT_PATH + FeatureRequestController.RETRY_TYPE_PATH, selection,
                            requestBuilderCustomizer, "Error retrying requests", FeatureRequestTypeEnum.CREATION);
 
         // Now all feature of source retry_source should be on GRANTED state
         requestBuilderCustomizer = customizer().expectStatusOk().expectIsArray("$.content")
-                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0);
+                .expectToHaveSize("$.content", 20).expectValue("$.info.nbErrors", 0).skipDocumentation();
         requestBuilderCustomizer.addParameter("page", "0");
         requestBuilderCustomizer.addParameter("size", "1000");
         requestBuilderCustomizer.addParameter("source", "retry_source");
