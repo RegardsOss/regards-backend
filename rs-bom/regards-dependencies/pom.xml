@@ -575,11 +575,6 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
-				<artifactId>dump-dao</artifactId>
-				<version>${dump.starter.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 				<artifactId>dump-service</artifactId>
 				<version>${dump.starter.version}</version>
 			</dependency>
