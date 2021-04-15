@@ -101,7 +101,7 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
         assertEquals(secondFeature.getFeature().getProperties(), dof.getFeature().getProperties());
         assertEquals(secondFeature.getSession(), dof.getSession());
-        assertEquals(secondFeature.getSessionOwner(), dof.getSessionOwner());
+        assertEquals(secondFeature.getSessionOwner(), dof.getSource());
         assertEquals(secondFeature.getFeature().getModel(), dof.getFeature().getModel());
 
     }

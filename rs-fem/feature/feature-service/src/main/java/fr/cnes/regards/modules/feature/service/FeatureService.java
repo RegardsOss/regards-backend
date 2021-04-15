@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
 
@@ -68,19 +69,29 @@ public class FeatureService implements IFeatureService {
     public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
         Page<FeatureEntity> entities = featureRepo
                 .findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
-        List<FeatureEntityDto> elements = entities.stream().map(entity -> initDataObjectFeature(entity))
+        List<FeatureEntityDto> elements = entities.stream()
+                .map(entity -> initDataObjectFeature(entity, selection.getFilters().isFull()))
                 .collect(Collectors.toList());
         return new PageImpl<FeatureEntityDto>(elements, page, entities.getTotalElements());
     }
 
-    private FeatureEntityDto initDataObjectFeature(FeatureEntity entity) {
+    @Override
+    public FeatureEntityDto findOne(FeatureUniformResourceName urn) {
+        return initDataObjectFeature(featureRepo.findByUrn(urn), true);
+    }
+
+    private FeatureEntityDto initDataObjectFeature(FeatureEntity entity, boolean addFeatureContent) {
         FeatureEntityDto dto = new FeatureEntityDto();
         dto.setSession(entity.getSession());
-        dto.setSessionOwner(entity.getSessionOwner());
-        dto.setFeature(entity.getFeature());
+        dto.setSource(entity.getSessionOwner());
         dto.setProviderId(entity.getProviderId());
         dto.setVersion(entity.getVersion());
         dto.setLastUpdate(entity.getLastUpdate());
+        dto.setUrn(entity.getUrn());
+        dto.setId(entity.getId());
+        if (addFeatureContent) {
+            dto.setFeature(entity.getFeature());
+        }
         return dto;
     }
 

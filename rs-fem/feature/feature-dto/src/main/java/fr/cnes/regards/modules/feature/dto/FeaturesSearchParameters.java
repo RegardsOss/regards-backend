@@ -40,6 +40,8 @@ public class FeaturesSearchParameters {
 
     private OffsetDateTime to;
 
+    private boolean full = true;
+
     public static FeaturesSearchParameters build() {
         return new FeaturesSearchParameters();
     }
@@ -90,6 +92,14 @@ public class FeaturesSearchParameters {
 
     public void setTo(OffsetDateTime to) {
         this.to = to;
+    }
+
+    public boolean isFull() {
+        return full;
+    }
+
+    public void setFull(boolean full) {
+        this.full = full;
     }
 
     public FeaturesSearchParameters withModel(String model) {

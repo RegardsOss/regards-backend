@@ -27,6 +27,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +44,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -63,6 +65,8 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public static final String NOTIFY_PATH = "/notify";
 
     public static final String DELETE_PATH = "/delete";
+
+    public static final String URN_PATH = "/{urn}";
 
     @Autowired
     private IFeatureService featureService;
@@ -88,11 +92,25 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
             PagedResourcesAssembler<FeatureEntityDto> assembler) {
-        // FIXME : Optimization do not return complete feature
         return new ResponseEntity<>(
                 toPagedResources(featureService.findAll(FeaturesSelectionDTO.build().withFilters(selection), page),
                                  assembler),
                 HttpStatus.OK);
+    }
+
+    /**
+     * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
+     * @param model model of wanted {@link Feature}
+     * @param lastUpdateDate las modification date that we want {@link Feature}
+     * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
+     */
+    @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
+    @RequestMapping(method = RequestMethod.GET, path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Retrieve one feature by its urn")
+    public ResponseEntity<FeatureEntityDto> getFeature(
+            @Parameter(description = "URN of the feature") @PathVariable("urn") String urn) {
+        return new ResponseEntity<>(featureService.findOne(FeatureUniformResourceName.fromString(urn)), HttpStatus.OK);
     }
 
     /**

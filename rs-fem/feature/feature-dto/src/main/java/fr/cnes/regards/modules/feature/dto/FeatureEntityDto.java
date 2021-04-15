@@ -35,15 +35,16 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 public class FeatureEntityDto {
 
     @NotNull
-    private String sessionOwner;
+    private Long id;
+
+    @NotNull
+    private FeatureUniformResourceName urn;
+
+    @NotNull
+    private String source;
 
     @NotNull
     private String session;
-
-    @NotNull
-    @Type(type = "jsonb")
-    @Valid
-    private Feature feature;
 
     @NotNull
     private String providerId;
@@ -54,17 +55,29 @@ public class FeatureEntityDto {
     @NotNull
     private OffsetDateTime lastUpdate;
 
-    public static FeatureEntityDto build(String sessionOwner, String session, Feature feature,
+    @Type(type = "jsonb")
+    @Valid
+    private Feature feature;
+
+    public static FeatureEntityDto build(String source, String session, Feature feature,
             FeatureUniformResourceName previousVersionUrn, String model, String providerId, Integer version,
             OffsetDateTime lastUpdate) {
         FeatureEntityDto featureEntity = new FeatureEntityDto();
-        featureEntity.setSessionOwner(sessionOwner);
+        featureEntity.setSource(source);
         featureEntity.setSession(session);
         featureEntity.setFeature(feature);
         featureEntity.setProviderId(providerId);
         featureEntity.setVersion(version);
         featureEntity.setLastUpdate(lastUpdate);
         return featureEntity;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Feature getFeature() {
@@ -75,12 +88,12 @@ public class FeatureEntityDto {
         this.feature = feature;
     }
 
-    public String getSessionOwner() {
-        return sessionOwner;
+    public String getSource() {
+        return source;
     }
 
-    public void setSessionOwner(String sessionOwner) {
-        this.sessionOwner = sessionOwner;
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getSession() {
@@ -113,6 +126,14 @@ public class FeatureEntityDto {
 
     public void setLastUpdate(OffsetDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public FeatureUniformResourceName getUrn() {
+        return urn;
+    }
+
+    public void setUrn(FeatureUniformResourceName urn) {
+        this.urn = urn;
     }
 
 }

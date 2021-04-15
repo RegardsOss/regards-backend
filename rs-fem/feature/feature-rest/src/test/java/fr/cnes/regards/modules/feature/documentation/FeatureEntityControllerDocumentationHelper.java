@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.request.ParameterDescriptor;
@@ -34,6 +35,7 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
 
 /**
  *
@@ -107,8 +109,46 @@ public class FeatureEntityControllerDocumentationHelper {
                              Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")
                  )
         );
+        params.add(
+                   RequestDocumentation.parameterWithName("full")
+                        .optional()
+                        .description("Returned feature are complet (with all geojson content) if true. Default true.")
+                        .attributes(
+                                    Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Boolean")
+                        )
+               );
         // @formatter:on
         return params;
+    }
+
+    public static List<FieldDescriptor> featureEntityDTOPageResponseDoc() {
+        List<FieldDescriptor> fd = Lists.newArrayList();
+        ConstrainedFields fields = new ConstrainedFields(RequestsPagedModel.class);
+        fd.add(fields.withPath("metadata", "Pagination information"));
+        fd.add(fields.withPath("content", "Current page of features"));
+        fd.addAll(featureEntityDTOResponseDoc(Optional.of("content[].content.")));
+        fd.add(fields.withPath("content[].links", "Hateoas links fot he current feature"));
+        fd.add(fields.withPath("links", "Hateoas links information about results"));
+        return fd;
+
+    }
+
+    public static List<FieldDescriptor> featureEntityDTOResponseDoc(Optional<String> prefix) {
+        List<FieldDescriptor> fd = Lists.newArrayList();
+        ConstrainedFields fields = new ConstrainedFields(RequestsPagedModel.class);
+        fd.add(fields.withPath(prefix.orElse("") + "id", "Feature identifier").type("Long"));
+        fd.add(fields.withPath(prefix.orElse("") + "urn", "Feature Uniforme Resource Name").type("String"));
+        fd.add(fields.withPath(prefix.orElse("") + "providerId", "Feature provider identifier").type("String"));
+        fd.add(fields.withPath(prefix.orElse("") + "source", "Source of the feature").type("Boolean"));
+        fd.add(fields.withPath(prefix.orElse("") + "session", "Acquisition session name of the feature")
+                .type("String"));
+        fd.add(fields.withPath(prefix.orElse("") + "version", "Feature version").type("Integer"));
+        fd.add(fields.withPath(prefix.orElse("") + "lastUpdate", "lastUpdate", "Last update date of the feature",
+                               OffsetDateTime.now().toString())
+                .type("Date ISO-8601"));
+        fd.add(fields.withPath(prefix.orElse("") + "feature", "Feature content geojson format").type("Geojson"));
+        return fd;
+
     }
 
 }

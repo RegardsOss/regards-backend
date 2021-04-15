@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 
 /**
+ * Test class to check {@link PublishFeatureNotificationJob}s
  *
  * @author Sébastien Binda
  *

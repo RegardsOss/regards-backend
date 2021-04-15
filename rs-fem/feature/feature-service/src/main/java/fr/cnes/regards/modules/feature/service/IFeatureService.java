@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
@@ -43,6 +44,13 @@ public interface IFeatureService {
      * @return {@link Page} of {@link FeatureEntityDto}
      */
     Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
+
+    /**
+     * Get a {@link FeatureEntityDto} by its urn
+     * @param urn {@link FeatureUniformResourceName}
+     * @return {@link FeatureEntityDto}
+     */
+    FeatureEntityDto findOne(FeatureUniformResourceName urn);
 
     /**
      * Creates a job to creates new notification requests for all features matching selection parameters
