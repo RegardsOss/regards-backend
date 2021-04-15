@@ -22,12 +22,11 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
-import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -48,26 +47,21 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     private final IIngestProcessingChainService processingService;
     private final IIngestProcessingChainRepository ingestChainRepository;
-    private final DumpSettingsService dumpSettingsService;
-    private final AIPNotificationSettingsService notificationSettingsService;
+    private final DynamicTenantSettingService dynamicTenantSettingService;
 
     public IngestConfigurationManager(IIngestProcessingChainService processingService,
                                       IIngestProcessingChainRepository ingestChainRepository,
-                                      DumpSettingsService dumpSettingsService,
-                                      AIPNotificationSettingsService notificationSettingsService
+                                      DynamicTenantSettingService dynamicTenantSettingService
     ) {
         this.processingService = processingService;
         this.ingestChainRepository = ingestChainRepository;
-        this.dumpSettingsService = dumpSettingsService;
-        this.notificationSettingsService = notificationSettingsService;
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
     @Override
     public Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
-        List<DynamicTenantSetting> dumpSettingList = dumpSettingsService.retrieve();
-        List<DynamicTenantSetting> notificationSettingList = notificationSettingsService.retrieve();
 
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             if (IngestProcessingChain.class.isAssignableFrom(item.getKey())) {
@@ -87,16 +81,8 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
                 }
             } else if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 DynamicTenantSetting setting = item.getTypedValue();
-                String settingName = setting.getName();
                 try {
-                    if (dumpSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
-                        dumpSettingsService.update(setting);
-                    } else if (notificationSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
-                        notificationSettingsService.update(setting);
-                    } else {
-                        importErrors.add(String.format("Configuration item not imported : Unknown Tenant Setting %s", setting));
-                        LOGGER.error("Configuration item not imported : Unknown Tenant Setting {}", setting);
-                    }
+                    dynamicTenantSettingService.update(setting.getName(), setting.getValue());
                 } catch (ModuleException e) {
                     importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
                     LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
@@ -111,9 +97,7 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
         List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
         ingestChainRepository.findAll()
                 .forEach(ipc -> configuration.add(ModuleConfigurationItem.build(ipc)));
-        dumpSettingsService.retrieve()
-                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
-        notificationSettingsService.retrieve()
+        dynamicTenantSettingService.readAll()
                 .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
         return ModuleConfiguration.build(info, configuration);
     }
@@ -122,19 +106,15 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
     public Set<String> resetConfiguration() {
         Set<String> errors = new HashSet<>();
         try {
-            dumpSettingsService.resetSettings();
+            for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
+                dynamicTenantSettingService.reset(dynamicTenantSetting.getName());
+            }
         } catch (Exception e) {
-            String error = "Error occurred while resetting dump settings.";
-            LOGGER.error(error, e);
-            errors.add(error);
-        }
-        try {
-            notificationSettingsService.resetSettings();
-        } catch (Exception e) {
-            String error = "Error occurred while resetting notification settings.";
+            String error = "Error occurred while resetting settings.";
             LOGGER.error(error, e);
             errors.add(error);
         }
         return errors;
     }
+
 }
