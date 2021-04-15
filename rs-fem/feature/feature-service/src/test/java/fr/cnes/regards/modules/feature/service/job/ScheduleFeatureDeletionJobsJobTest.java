@@ -94,7 +94,8 @@ public class ScheduleFeatureDeletionJobsJobTest extends AbstractFeatureMultitena
         Assert.assertEquals("There should be 100/regards.feature.deletion.notification.job.size jobs scheduled ",
                             new Long(4L),
                             jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
-                                                             JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.SUCCEEDED));
+                                                             JobStatus.TO_BE_RUN, JobStatus.QUEUED, JobStatus.RUNNING,
+                                                             JobStatus.SUCCEEDED));
         Thread.sleep(2_000);
         Assert.assertEquals("All 100 feature should be notified", 100, listener.getNumberOfRequests());
     }

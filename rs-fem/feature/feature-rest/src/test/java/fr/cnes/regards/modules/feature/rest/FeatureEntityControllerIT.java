@@ -151,8 +151,10 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         performDefaultPost(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.NOTIFY_PATH,
                            FeaturesSelectionDTO.build(), requestBuilderCustomizer,
                            "Error during feature notification request");
-        Assert.assertEquals(new Long(1), jobInfoService.retrieveJobsCount(PublishFeatureNotificationJob.class.getName(),
-                                                                          JobStatus.QUEUED));
+        Assert.assertEquals(new Long(1),
+                            jobInfoService.retrieveJobsCount(PublishFeatureNotificationJob.class.getName(),
+                                                             JobStatus.QUEUED, JobStatus.TO_BE_RUN, JobStatus.SUCCEEDED,
+                                                             JobStatus.RUNNING));
     }
 
     @Test
@@ -165,8 +167,10 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         performDefaultDelete(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.DELETE_PATH,
                              FeaturesSelectionDTO.build(), requestBuilderCustomizer,
                              "Error during feature deltion request");
-        Assert.assertEquals(new Long(1), jobInfoService
-                .retrieveJobsCount(ScheduleFeatureDeletionJobsJob.class.getName(), JobStatus.QUEUED));
+        Assert.assertEquals(new Long(1),
+                            jobInfoService.retrieveJobsCount(ScheduleFeatureDeletionJobsJob.class.getName(),
+                                                             JobStatus.QUEUED, JobStatus.TO_BE_RUN, JobStatus.SUCCEEDED,
+                                                             JobStatus.RUNNING));
     }
 
 }
