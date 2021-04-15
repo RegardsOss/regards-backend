@@ -71,7 +71,6 @@
 		<encryption.starter.version>${regards.version}</encryption.starter.version>
 		<metric.starter.version>${regards.version}</metric.starter.version>
 		<random.starter.version>${regards.version}</random.starter.version>
-		<dump.starter.version>${regards.version}</dump.starter.version>
 
         <!-- Bootstrap -->
 		<config.bootstrap.version>${regards.version}</config.bootstrap.version>
@@ -108,9 +107,12 @@
 		<framework.modules.workspace.version>${regards.version}</framework.modules.workspace.version>
 		<framework.modules.plugins.version>${regards.version}</framework.modules.plugins.version>
 		<framework.modules.locks.version>${regards.version}</framework.modules.locks.version>
-		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>    
-        
-        <!-- MODULES -->
+		<framework.modules.templates.version>${regards.version}</framework.modules.templates.version>
+		<framework.modules.dump.version>${regards.version}</framework.modules.dump.version>
+		<framework.modules.session.version>${regards.version}</framework.modules.session.version>
+
+
+		<!-- MODULES -->
 		<modules.project.version>${regards.version}</modules.project.version>
 		<modules.session-manager.version>${regards.version}</modules.session-manager.version>
 		<modules.crawler.version>${regards.version}</modules.crawler.version>
@@ -349,11 +351,6 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
-				<artifactId>json-dump-starter</artifactId>
-				<version>${dump.starter.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>metric-regards-starter</artifactId>
 				<version>${metric.starter.version}</version>
 			</dependency>
@@ -570,22 +567,70 @@
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 				<artifactId>dump-domain</artifactId>
-				<version>${dump.starter.version}</version>
+				<version>${framework.modules.dump.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 				<artifactId>dump-dao</artifactId>
-				<version>${dump.starter.version}</version>
+				<version>${framework.modules.dump.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 				<artifactId>dump-service</artifactId>
-				<version>${dump.starter.version}</version>
+				<version>${framework.modules.dump.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.dump</groupId>
 				<artifactId>dump-rest</artifactId>
-				<version>${dump.starter.version}</version>
+				<version>${framework.modules.dump.version}</version>
+			</dependency>
+			<!-- Session -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-agent</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-commons</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session agent -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-rest</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
+				<artifactId>session-agent-client</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session commons -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
 			</dependency>
             <!-- Regards Locks -->
 			<dependency>
