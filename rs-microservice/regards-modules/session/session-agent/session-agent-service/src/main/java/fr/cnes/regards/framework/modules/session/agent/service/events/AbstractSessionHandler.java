@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service;
+package fr.cnes.regards.framework.modules.session.agent.service.events;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -18,6 +18,11 @@ public abstract class AbstractSessionHandler<T extends ISubscribable> implements
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Override
+    public boolean validate(String tenant, T message) {
+        return true;
+    }
 
     @Override
     public void handleBatch(String tenant, List<T> messages) {

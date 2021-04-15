@@ -1,9 +1,9 @@
-package fr.cnes.regards.framework.domain;
+package fr.cnes.regards.framework.modules.session.agent.domain;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
 
 import java.time.OffsetDateTime;
 

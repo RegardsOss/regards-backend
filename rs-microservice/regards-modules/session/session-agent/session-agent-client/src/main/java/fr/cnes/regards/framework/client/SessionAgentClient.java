@@ -19,10 +19,10 @@
 package fr.cnes.regards.framework.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.domain.EventTypeEnum;
-import fr.cnes.regards.framework.domain.StepEvent;
-import fr.cnes.regards.framework.domain.StepEventStateEnum;
-import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

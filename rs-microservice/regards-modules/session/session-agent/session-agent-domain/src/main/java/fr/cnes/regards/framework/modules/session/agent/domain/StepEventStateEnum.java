@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.domain;
+package fr.cnes.regards.framework.modules.session.agent.domain;
 
 /**
  *

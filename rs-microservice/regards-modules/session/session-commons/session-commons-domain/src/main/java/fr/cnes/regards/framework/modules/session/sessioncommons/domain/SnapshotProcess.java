@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.commons.domain;
+package fr.cnes.regards.framework.modules.session.sessioncommons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 

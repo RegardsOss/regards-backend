@@ -54,12 +54,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+            <artifactId>session-commons-dao</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
             <artifactId>session-agent-dao</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
-            <artifactId>session-commons-dao</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>multitenant-regards-starter</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.locks</groupId>
@@ -70,15 +74,6 @@
             <artifactId>jobs-service</artifactId>
         </dependency>
         <!-- Test dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-            <artifactId>jobs-domain</artifactId>
-        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>

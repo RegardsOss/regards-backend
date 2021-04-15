@@ -1,7 +1,7 @@
 package fr.cnes.regards.framework.modules.session.agent.service.jobs;
 
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.domain.StepEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;

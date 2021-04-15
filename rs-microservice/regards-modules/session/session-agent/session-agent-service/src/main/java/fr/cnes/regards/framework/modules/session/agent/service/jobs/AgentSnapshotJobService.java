@@ -1,24 +1,23 @@
 package fr.cnes.regards.framework.modules.session.agent.service.jobs;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.domain.StepEvent;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.events.AgentSnapshotListenerService;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
-import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SnapshotProcess;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author Iliana Ghazali

@@ -3,15 +3,15 @@ package fr.cnes.regards.framework.modules.session.agent.service.jobs;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.domain.EventTypeEnum;
-import fr.cnes.regards.framework.domain.StepEvent;
-import fr.cnes.regards.framework.domain.StepEventStateEnum;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
-import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
+import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SessionStepProperties;
+import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepState;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,6 @@ import java.util.Set;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 /**
  * @author Iliana Ghazali
@@ -41,11 +40,14 @@ public class AgentSnapshotService {
     public int generateSessionStep(String source, Set<StepEvent> stepEvents) {
         Map<String, Map<String, SessionStep>> sessionStepsBySession = new HashMap<>();
         int nbSessionSteps = 0;
-        initSessionStepsBySession(sessionStepsBySession, sessionStepRepo.findSessionStepBySource(source));
+
         for (StepEvent stepEvent : stepEvents) {
             // GET OR CREATE SESSION if not already in sessionStepsBySession
             String session = stepEvent.getSession();
             String stepId = stepEvent.getStepId();
+            // init session with data received
+            initSessionStepsBySession(sessionStepsBySession,
+                                      sessionStepRepo.findSessionStepBySourceAndSession(source, session));
             sessionStepsBySession.computeIfAbsent(session, sessionStepsByStepId -> new HashMap<>());
 
             // GET OR CREATE SESSION STEP if not already in sessionStepsBySession[session]

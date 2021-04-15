@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.session.agent.service.events;
 
-import fr.cnes.regards.framework.domain.StepEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.jobs.AgentSnapshotJobService;
 import org.springframework.stereotype.Service;
 

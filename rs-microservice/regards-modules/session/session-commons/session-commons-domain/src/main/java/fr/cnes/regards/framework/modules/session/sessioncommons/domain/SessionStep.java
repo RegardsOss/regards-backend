@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.commons.domain;
+package fr.cnes.regards.framework.modules.session.sessioncommons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
@@ -59,7 +59,7 @@ public class SessionStep {
 
     @Column(name = "last_update")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime last_update;
+    private OffsetDateTime lastUpdate;
 
     public SessionStep(@Unique String stepId, @NotNull String source, @NotNull String session,
             @NotNull StepTypeEnum type, @NotNull StepState state, SessionStepProperties properties) {
@@ -135,11 +135,11 @@ public class SessionStep {
         this.properties = properties;
     }
 
-    public OffsetDateTime getLast_update() {
-        return last_update;
+    public OffsetDateTime getLastUpdate() {
+        return lastUpdate;
     }
 
-    public void setLast_update(OffsetDateTime last_update) {
-        this.last_update = last_update;
+    public void setLastUpdate(OffsetDateTime lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 }
