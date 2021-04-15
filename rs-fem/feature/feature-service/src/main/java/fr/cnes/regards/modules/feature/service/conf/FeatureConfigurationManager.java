@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.modules.feature.service.settings.FeatureNotificationSettingsService;
+import fr.cnes.regards.framework.modules.tenant.settings.service.DynamicTenantSettingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -44,34 +43,22 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureConfigurationManager.class);
 
-    private final FeatureNotificationSettingsService notificationSettingsService;
-    private final DumpSettingsService dumpSettingsService;
+    private final DynamicTenantSettingService dynamicTenantSettingService;
 
-    public FeatureConfigurationManager(FeatureNotificationSettingsService notificationSettingsService, DumpSettingsService dumpSettingsService) {
-        this.notificationSettingsService = notificationSettingsService;
-        this.dumpSettingsService = dumpSettingsService;
+    public FeatureConfigurationManager(DynamicTenantSettingService dynamicTenantSettingService) {
+        this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration) {
 
         Set<String> importErrors = new HashSet<>();
-        List<DynamicTenantSetting> dumpSettingList = dumpSettingsService.retrieve();
-        List<DynamicTenantSetting> notificationSettingList = notificationSettingsService.retrieve();
 
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             if (DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 DynamicTenantSetting setting = item.getTypedValue();
-                String settingName = setting.getName();
                 try {
-                    if (dumpSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
-                        dumpSettingsService.update(setting);
-                    } else if (notificationSettingList.stream().anyMatch(s -> s.getName().equals(settingName))) {
-                        notificationSettingsService.update(setting);
-                    } else {
-                        importErrors.add(String.format("Configuration item not imported : Unknown Tenant Setting %s", setting));
-                        LOGGER.error("Configuration item not imported : Unknown Tenant Setting {}", setting);
-                    }
+                    dynamicTenantSettingService.update(setting.getName(), setting.getValue());
                 } catch (ModuleException e) {
                     importErrors.add(String.format("Configuration item not imported : Invalid Tenant Setting %s", setting));
                     LOGGER.error("Configuration item not imported : Invalid Tenant Setting {}", setting);
@@ -92,28 +79,21 @@ public class FeatureConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleConfiguration exportConfiguration() {
-        List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
-        dumpSettingsService.retrieve()
-                .forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
-        notificationSettingsService.retrieve()
-                .forEach(setting -> configurations.add(ModuleConfigurationItem.build(setting)));
-        return ModuleConfiguration.build(info, true, configurations);
+        List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
+        dynamicTenantSettingService.readAll()
+                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
+        return ModuleConfiguration.build(info, true, configuration);
     }
 
     @Override
     public Set<String> resetConfiguration() {
         Set<String> errors = new HashSet<>();
         try {
-            dumpSettingsService.resetSettings();
+            for (DynamicTenantSetting dynamicTenantSetting : dynamicTenantSettingService.readAll()) {
+                dynamicTenantSettingService.reset(dynamicTenantSetting.getName());
+            }
         } catch (Exception e) {
-            String error = "Error occurred while resetting dump settings.";
-            LOGGER.error(error, e);
-            errors.add(error);
-        }
-        try {
-            notificationSettingsService.resetSettings();
-        } catch (Exception e) {
-            String error = "Error occurred while resetting notification settings.";
+            String error = "Error occurred while resetting settings.";
             LOGGER.error(error, e);
             errors.add(error);
         }
