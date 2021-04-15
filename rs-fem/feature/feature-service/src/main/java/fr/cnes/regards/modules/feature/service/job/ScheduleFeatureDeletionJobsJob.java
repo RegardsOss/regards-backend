@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,12 +25,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import com.google.common.collect.Sets;
-import com.google.gson.reflect.TypeToken;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -66,53 +65,55 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
     @Autowired
     private IJobInfoService jobInfoService;
 
+    @Value("${regards.feature.deletion.notification.job.size:1000}")
+    private int pageSize;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        Type type = new TypeToken<Set<Long>>() {
-
-        }.getType();
-        selection = getValue(parameters, SELECTION_PARAMETER, type);
-        owner = getValue(parameters, OWNER_PARAMETER, type);
+        selection = getValue(parameters, SELECTION_PARAMETER);
+        owner = getValue(parameters, OWNER_PARAMETER);
     }
 
     @Override
     public void run() {
-        Pageable page = PageRequest.of(0, 1000);
+        Pageable page = PageRequest.of(0, pageSize);
         Page<FeatureEntityDto> results = null;
         long totalElementCheck = 0;
         boolean firstPass = true;
         do {
             // Search features to delete
             results = featureService.findAll(selection, page);
-            if (firstPass) {
-                totalElementCheck = results.getTotalElements();
-                LOGGER.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
-                firstPass = false;
+            if (!results.isEmpty()) {
+                if (firstPass) {
+                    totalElementCheck = results.getTotalElements();
+                    LOGGER.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
+                    firstPass = false;
+                }
+                // Prepare urns
+                Set<String> ids = new HashSet<>();
+                for (FeatureEntityDto feature : results.getContent()) {
+                    ids.add(feature.getFeature().getUrn().toString());
+                    totalElementCheck--;
+                }
+                // Scheduling page deletion job
+                schedulePageDeletion(ids);
+                LOGGER.info("Scheduling job for {} feature deletion requests (remaining {}).", ids.size(),
+                            totalElementCheck);
+                page = page.next();
             }
-            // Prepare urns
-            Set<String> ids = new HashSet<>();
-            for (FeatureEntityDto feature : results.getContent()) {
-                ids.add(feature.getFeature().getUrn().toString());
-                totalElementCheck--;
-            }
-            // Scheduling page deletion job
-            schedulePageDeletion(ids);
-            LOGGER.info("Scheduling job for {} feature deletion requests (remaining {}).", ids.size(),
-                        totalElementCheck);
-            page = page.next();
         } while ((results != null) && results.hasNext());
     }
 
     /**
      * @param ids
      */
-    private void schedulePageDeletion(Set<String> ids) {
+    private JobInfo schedulePageDeletion(Set<String> ids) {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(PublishFeatureDeletionEventsJob.URNS_PARAMETER, ids));
         jobParameters.add(new JobParameter(PublishFeatureDeletionEventsJob.OWNER_PARAMETER, owner));
         JobInfo jobInfo = new JobInfo(false, 0, jobParameters, owner, PublishFeatureDeletionEventsJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
+        return jobInfoService.createAsQueued(jobInfo);
     }
 
 }

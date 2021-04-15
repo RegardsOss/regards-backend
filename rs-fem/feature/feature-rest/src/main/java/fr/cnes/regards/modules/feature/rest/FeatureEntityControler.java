@@ -88,6 +88,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
             @Parameter(description = "Features selection filters") FeaturesSearchParameters selection, Pageable page,
             PagedResourcesAssembler<FeatureEntityDto> assembler) {
+        // FIXME : Optimization do not return complete feature
         return new ResponseEntity<>(
                 toPagedResources(featureService.findAll(FeaturesSelectionDTO.build().withFilters(selection), page),
                                  assembler),

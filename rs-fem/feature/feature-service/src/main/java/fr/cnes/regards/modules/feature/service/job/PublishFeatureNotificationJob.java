@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import com.google.gson.reflect.TypeToken;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -70,19 +67,19 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
     @Autowired
     private IPublisher publisher;
 
+    @Value("${regards.feature.notify.notification.job.size:1000}")
+    private int pageSize;
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        Type type = new TypeToken<Set<Long>>() {
-
-        }.getType();
-        selection = getValue(parameters, SELECTION_PARAMETER, type);
-        owner = getValue(parameters, OWNER_PARAMETER, type);
+        selection = getValue(parameters, SELECTION_PARAMETER);
+        owner = getValue(parameters, OWNER_PARAMETER);
     }
 
     @Override
     public void run() {
-        Pageable page = PageRequest.of(0, 1000);
+        Pageable page = PageRequest.of(0, pageSize);
         Page<FeatureEntityDto> results = null;
         long totalElementCheck = 0;
         boolean firstPass = true;

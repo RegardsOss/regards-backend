@@ -19,15 +19,21 @@
 package fr.cnes.regards.modules.feature.documentation;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
 
 /**
  *
@@ -36,7 +42,29 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
  */
 public class FeatureEntityControllerDocumentationHelper {
 
-    public static List<ParameterDescriptor> featureEntitySelectionDTODoc() {
+    public static List<FieldDescriptor> featureSelectionDTODoc() {
+        ConstrainedFields fields = new ConstrainedFields(FeaturesSelectionDTO.class);
+        List<FieldDescriptor> fd = new ArrayList<FieldDescriptor>();
+        fd.add(fields.withPath("filters.source", "Source of the feature").type("String").optional());
+        fd.add(fields.withPath("filters.session", "Session of the feature").type("String").optional());
+        fd.add(fields.withPath("filters.providerId", "ProviderId of the feature").type("String").optional());
+        fd.add(fields.withPath("filters.from", "Search for features with lastupdate date greather than this parameter")
+                .type("Date ISO-8601").optional());
+        fd.add(fields.withPath("filters.to", "Search for features with lastupdate date lower than this parameter")
+                .type("Date ISO-8601").optional());
+        fd.add(fields.withPath("filters.model", "Model of the features to search for").type("String").optional());
+        fd.add(fields
+                .withPath("featureIds",
+                          "Array of feature ids to search for or to exclude form search. Depends on featureIdsSelectionMode.")
+                .type("String[]").optional());
+        fd.add(fields.withPath("featureIdsSelectionMode", "featureIdsSelectionMode",
+                               "featureIds selection mode. Default value = " + SearchSelectionMode.INCLUDE,
+                               Arrays.toString(SearchSelectionMode.values()))
+                .type("String").optional());
+        return fd;
+    }
+
+    public static List<ParameterDescriptor> featuresSearchParametersDoc() {
         List<ParameterDescriptor> params = Lists.newArrayList();
         // @formatter:off
         params.add(

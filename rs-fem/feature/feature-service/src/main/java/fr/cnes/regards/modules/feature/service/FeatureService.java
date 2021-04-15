@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
 
 /**
@@ -84,28 +85,27 @@ public class FeatureService implements IFeatureService {
     }
 
     @Override
-    public void scheduleNotificationsJob(FeaturesSelectionDTO selection) {
+    public JobInfo scheduleNotificationsJob(FeaturesSelectionDTO selection) {
         // Schedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
-
+        jobParameters.add(new JobParameter(PublishFeatureNotificationJob.SELECTION_PARAMETER, selection));
+        jobParameters.add(new JobParameter(PublishFeatureNotificationJob.OWNER_PARAMETER, authResolver.getUser()));
         // the job priority will be set according the priority of the first request to schedule
         JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
-                authResolver.getUser(), ScheduleFeatureDeletionJobsJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
-
+                authResolver.getUser(), PublishFeatureNotificationJob.class.getName());
+        return jobInfoService.createAsQueued(jobInfo);
     }
 
     @Override
-    public void scheduleDeletionJob(FeaturesSelectionDTO selection) {
+    public JobInfo scheduleDeletionJob(FeaturesSelectionDTO selection) {
         // Schedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
-
+        jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.OWNER_PARAMETER, authResolver.getUser()));
         // the job priority will be set according the priority of the first request to schedule
         JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
                 authResolver.getUser(), ScheduleFeatureDeletionJobsJob.class.getName());
-        jobInfoService.createAsQueued(jobInfo);
+        return jobInfoService.createAsQueued(jobInfo);
     }
 
 }

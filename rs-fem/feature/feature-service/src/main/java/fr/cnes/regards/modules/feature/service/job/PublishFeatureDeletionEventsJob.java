@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service.job;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.compress.utils.Lists;
@@ -27,6 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -50,6 +54,13 @@ public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
 
     @Autowired
     private IPublisher publisher;
+
+    @Override
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        urns = getValue(parameters, URNS_PARAMETER);
+        owner = getValue(parameters, OWNER_PARAMETER);
+    }
 
     @Override
     public void run() {

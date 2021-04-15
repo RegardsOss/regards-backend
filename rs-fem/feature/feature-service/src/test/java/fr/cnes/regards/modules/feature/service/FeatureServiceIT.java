@@ -42,17 +42,17 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
 /**
- * Test of {@link IDataObjectFeatureServiceIT}
+ * Test of {@link FeatureServiceIT}
  * @author Kevin Marchois
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" }, locations = {
         "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "noscheduler", "nohandler" })
-public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
+public class FeatureServiceIT extends AbstractFeatureMultitenantServiceTest {
 
     @Autowired
-    private IFeatureService dataObjectService;
+    private IFeatureService featureService;
 
     @Test
     public void testFindAll() {
@@ -85,17 +85,17 @@ public class IDataObjectFeatureServiceIT extends AbstractFeatureMultitenantServi
         FeaturesSelectionDTO selection = FeaturesSelectionDTO.build().withModel(model);
         // Retrieve all from model
         Pageable page = PageRequest.of(0, 10);
-        Page<FeatureEntityDto> results = dataObjectService.findAll(selection, page);
+        Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
         // Retrieve with an unknown model
         selection = FeaturesSelectionDTO.build().withModel("unknown");
-        results = dataObjectService.findAll(selection, page);
+        results = featureService.findAll(selection, page);
         assertEquals(0, results.getNumberOfElements());
 
         // Retrieve from model and  lastUpdateDate to retrieve only second feature
         selection = FeaturesSelectionDTO.build().withModel(model).withFrom(date);
-        results = dataObjectService.findAll(selection, page);
+        results = featureService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
         FeatureEntityDto dof = results.getContent().get(0);
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same

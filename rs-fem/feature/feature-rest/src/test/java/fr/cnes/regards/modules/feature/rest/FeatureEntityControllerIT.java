@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.feature.rest;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,9 +32,14 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocumentationHelper;
 import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
+import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
 
 /**
  * @author Sébastien Binda
@@ -43,6 +50,9 @@ import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumenta
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
 public class FeatureEntityControllerIT extends AbstractFeatureIT {
+
+    @Autowired
+    private IJobInfoService jobInfoService;
 
     @Test
     public void getFeatures() throws Exception {
@@ -106,11 +116,39 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addParameter("session", "session2");
         requestBuilderCustomizer.addParameter("model", "FEATURE01");
         requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
-        List<ParameterDescriptor> params = FeatureEntityControllerDocumentationHelper.featureEntitySelectionDTODoc();
+        List<ParameterDescriptor> params = FeatureEntityControllerDocumentationHelper.featuresSearchParametersDoc();
         params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
         requestBuilderCustomizer.documentRequestParameters(params);
         performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT, requestBuilderCustomizer,
                           "Error retrieving features");
+    }
+
+    @Test
+    public void notifyFeatures() {
+        createFeatures("feature", 10, "source1", "session1");
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer
+                .documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
+        performDefaultPost(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.NOTIFY_PATH,
+                           FeaturesSelectionDTO.build(), requestBuilderCustomizer,
+                           "Error during feature notification request");
+        Assert.assertEquals(new Long(1), jobInfoService.retrieveJobsCount(PublishFeatureNotificationJob.class.getName(),
+                                                                          JobStatus.QUEUED));
+    }
+
+    @Test
+    public void deleteFeatures() {
+        createFeatures("feature", 10, "source1", "session1");
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        requestBuilderCustomizer
+                .documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
+        performDefaultDelete(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.DELETE_PATH,
+                             FeaturesSelectionDTO.build(), requestBuilderCustomizer,
+                             "Error during feature deltion request");
+        Assert.assertEquals(new Long(1), jobInfoService
+                .retrieveJobsCount(ScheduleFeatureDeletionJobsJob.class.getName(), JobStatus.QUEUED));
     }
 
 }

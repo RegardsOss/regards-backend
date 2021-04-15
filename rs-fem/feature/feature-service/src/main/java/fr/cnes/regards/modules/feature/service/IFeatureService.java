@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
@@ -47,11 +48,11 @@ public interface IFeatureService {
      * Creates a job to creates new notification requests for all features matching selection parameters
      * @param selection {@link FeaturesSelectionDTO}
      */
-    void scheduleNotificationsJob(FeaturesSelectionDTO selection);
+    JobInfo scheduleNotificationsJob(FeaturesSelectionDTO selection);
 
     /**
      * Creates a job to creates new deletion requests for all features matching selection parameters
      * @param selection {@link FeaturesSelectionDTO}
      */
-    void scheduleDeletionJob(FeaturesSelectionDTO selection);
+    JobInfo scheduleDeletionJob(FeaturesSelectionDTO selection);
 }
