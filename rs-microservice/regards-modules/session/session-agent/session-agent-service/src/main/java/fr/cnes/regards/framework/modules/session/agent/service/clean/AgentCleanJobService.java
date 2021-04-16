@@ -1,9 +1,9 @@
-package fr.cnes.regards.framework.modules.session.agent.service.jobs;
+package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.framework.modules.session.agent.service.events.AgentSnapshotListenerService;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISnapshotProcessRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +22,6 @@ public class AgentCleanJobService {
 
     @Autowired
     private ISnapshotProcessRepository snapshotProcessRepo;
-
-    @Autowired
-    private AgentSnapshotListenerService agentSnapshotListenerService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotJobService.class);
 

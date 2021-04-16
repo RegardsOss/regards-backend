@@ -1,12 +1,10 @@
-package fr.cnes.regards.framework.modules.session.agent.service.jobs;
+package fr.cnes.regards.framework.modules.session.agent.service.update;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SessionStep;
@@ -14,6 +12,7 @@ import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SessionSt
 import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepState;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -37,27 +36,30 @@ public class AgentSnapshotService {
     @Autowired
     private Gson gson;
 
-    public int generateSessionStep(String source, Set<StepEvent> stepEvents) {
+    public int generateSessionStep(String source, List<StepPropertyUpdateRequest> stepPropertyUpdateRequests) {
         Map<String, Map<String, SessionStep>> sessionStepsBySession = new HashMap<>();
         int nbSessionSteps = 0;
 
-        for (StepEvent stepEvent : stepEvents) {
+        // init session with data received
+        for (StepPropertyUpdateRequest stepPropertyUpdateRequest : stepPropertyUpdateRequests) {
             // GET OR CREATE SESSION if not already in sessionStepsBySession
-            String session = stepEvent.getSession();
-            String stepId = stepEvent.getStepId();
-            // init session with data received
-            initSessionStepsBySession(sessionStepsBySession,
-                                      sessionStepRepo.findSessionStepBySourceAndSession(source, session));
-            sessionStepsBySession.computeIfAbsent(session, sessionStepsByStepId -> new HashMap<>());
+            String session = stepPropertyUpdateRequest.getSession();
+            String stepId = stepPropertyUpdateRequest.getStepId();
+
+            if (!sessionStepsBySession.containsKey(session)) {
+                sessionStepsBySession.put(session, new HashMap<>());
+                // init eventually with sessionSteps from the database some are already linked to this session
+                initSessionStepsBySession(source, session, sessionStepsBySession);
+            }
 
             // GET OR CREATE SESSION STEP if not already in sessionStepsBySession[session]
             SessionStep sessionStep = sessionStepsBySession.get(session).get(stepId);
             if (sessionStep == null) {
-                sessionStep = new SessionStep(stepId, stepEvent.getSource(), session, stepEvent.getStepType(),
+                sessionStep = new SessionStep(stepId, stepPropertyUpdateRequest.getSource(), session, stepPropertyUpdateRequest.getStepType(),
                                               new StepState(), new SessionStepProperties());
             }
             // UPDATE SESSION STEP WITH STEP EVENT INFO
-            updateSessionStepInfo(sessionStep, stepEvent);
+            updateSessionStepInfo(sessionStep, stepPropertyUpdateRequest);
 
             // UPDATE OR ADD SESSION STEP in sessionStepsBySession
             sessionStepsBySession.get(session).put(stepId, sessionStep);
@@ -75,46 +77,41 @@ public class AgentSnapshotService {
         return nbSessionSteps;
     }
 
-    private void initSessionStepsBySession(Map<String, Map<String, SessionStep>> sessionStepsBySession,
-            Set<SessionStep> sessionStepsRetrieved) {
+    private void initSessionStepsBySession(String source, String session, Map<String, Map<String, SessionStep>> sessionStepsBySession) {
         // loop on all the session steps retrieved from the database and init sessionStepsBySession map with
         // their values
-        for (SessionStep sessionStep : sessionStepsRetrieved) {
-            String session = sessionStep.getSession();
-            String stepId = sessionStep.getStepId();
-            // create session if not already existing in sessionStepsBySession
-            if (!sessionStepsBySession.containsKey(session)) {
-                sessionStepsBySession.put(session, Maps.newHashMap(ImmutableMap.of(stepId, sessionStep)));
-            } else if (!sessionStepsBySession.get(session).containsKey(stepId)) {
-                // create stepId if not already existing in the session
-                sessionStepsBySession.get(session).put(stepId, sessionStep);
+        Set<SessionStep> sessionStepsRetrieved = this.sessionStepRepo.findSessionStepBySourceAndSession(source, session);
+        if (!sessionStepsRetrieved.isEmpty()) {
+            for (SessionStep sessionStep : sessionStepsRetrieved) {
+                sessionStepsBySession.get(session).put(sessionStep.getStepId(), sessionStep);
             }
         }
     }
 
-    private void updateSessionStepInfo(SessionStep sessionStep, StepEvent stepEvent) {
+    private void updateSessionStepInfo(SessionStep sessionStep, StepPropertyUpdateRequest stepPropertyUpdateRequest) {
         // addition of input relative
-        if (stepEvent.isInput_related()) {
+        if (stepPropertyUpdateRequest.isInput_related()) {
             sessionStep.setIn(sessionStep.getIn() + 1);
         }
         // addition of output relative
-        if (stepEvent.isInput_related()) {
+        if (stepPropertyUpdateRequest.isInput_related()) {
             sessionStep.setIn(sessionStep.getOut() + 1);
         }
         // set state
-        StepEventStateEnum state = stepEvent.getState();
-        if (state.equals(StepEventStateEnum.WAITING)) {
+        StepPropertyEventStateEnum state = stepPropertyUpdateRequest.getState();
+        if (state.equals(StepPropertyEventStateEnum.WAITING)) {
             sessionStep.getState().setErrors(sessionStep.getState().getWaiting() + 1);
-        } else if (state.equals(StepEventStateEnum.ERROR)) {
+        } else if (state.equals(StepPropertyEventStateEnum.ERROR)) {
             sessionStep.getState().setErrors(sessionStep.getState().getErrors() + 1);
 
-        } else if (!sessionStep.getState().isRunning() && stepEvent.getState().equals(StepEventStateEnum.RUNNING)) {
+        } else if (!sessionStep.getState().isRunning() && stepPropertyUpdateRequest.getState()
+                .equals(StepPropertyEventStateEnum.RUNNING)) {
             sessionStep.getState().setRunning(true);
         }
         // update properties
-        String property = stepEvent.getProperty();
-        String value = stepEvent.getValue();
-        EventTypeEnum type = stepEvent.getEventTypeEnum();
+        String property = stepPropertyUpdateRequest.getProperty();
+        String value = stepPropertyUpdateRequest.getValue();
+        StepPropertyEventTypeEnum type = stepPropertyUpdateRequest.getType();
 
         // find if property is already in sessionStep.properties
         if (!sessionStep.getProperties().containsKey(property)) {
@@ -128,16 +125,21 @@ public class AgentSnapshotService {
             String valueToUpdate = sessionStep.getProperties().get(property);
 
             if (NumberUtils.isCreatable(valueToUpdate) && NumberUtils.isCreatable(value)) {
-                if (type.equals(EventTypeEnum.INC)) {
+                if (type.equals(StepPropertyEventTypeEnum.INC)) {
                     sessionStep.getProperties().put(property, String.valueOf(
                             NumberUtils.toLong(valueToUpdate) + NumberUtils.toLong(value)));
-                } else if (type.equals(EventTypeEnum.DEC)) {
+                } else if (type.equals(StepPropertyEventTypeEnum.DEC)) {
                     sessionStep.getProperties().put(property, String.valueOf(
                             NumberUtils.toLong(valueToUpdate) - NumberUtils.toLong(value)));
                 }
             } else {
                 sessionStep.getProperties().put(property, value);
             }
+        }
+
+        // update lastUpdateDate of SessionStep with the most recent date of stepPropertyUpdateRequest
+        if(sessionStep.getLastUpdate() == null || sessionStep.getLastUpdate().isBefore(stepPropertyUpdateRequest.getDate())) {
+            sessionStep.setLastUpdate(stepPropertyUpdateRequest.getDate());
         }
     }
 }

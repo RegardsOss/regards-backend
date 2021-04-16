@@ -10,13 +10,19 @@ import javax.persistence.Embeddable;
 public class StepState {
 
     @Column(name="errors")
-    private Long errors = 0L;
+    private Long errors;
 
     @Column(name="waiting")
-    private Long waiting = 0L;
+    private Long waiting;
 
     @Column(name="running")
-    private boolean running = false;
+    private boolean running;
+
+    public StepState() {
+        this.errors = 0L;
+        this.waiting = 0L;
+        this.running = false;
+    }
 
     public Long getErrors() {
         return errors;

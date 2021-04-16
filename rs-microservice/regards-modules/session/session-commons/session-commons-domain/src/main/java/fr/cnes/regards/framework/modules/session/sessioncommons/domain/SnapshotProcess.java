@@ -22,13 +22,13 @@ public class SnapshotProcess {
     private OffsetDateTime lastUpdate;
 
     @Column(name = "job_id")
-    private UUID job_id;
+    private UUID jobId;
 
 
-    public SnapshotProcess(String source, OffsetDateTime lastUpdate, UUID job_id) {
+    public SnapshotProcess(String source, OffsetDateTime lastUpdate, UUID jobId) {
         this.source = source;
         this.lastUpdate = lastUpdate;
-        this.job_id = job_id;
+        this.jobId = jobId;
     }
 
     public String getSource() {
@@ -47,11 +47,11 @@ public class SnapshotProcess {
         this.lastUpdate = lastUpdate;
     }
 
-    public UUID getJob_id() {
-        return job_id;
+    public UUID getJobId() {
+        return jobId;
     }
 
-    public void setJob_id(UUID job_id) {
-        this.job_id = job_id;
+    public void setJobId(UUID jobId) {
+        this.jobId = jobId;
     }
 }

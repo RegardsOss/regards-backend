@@ -1,15 +1,18 @@
 package fr.cnes.regards.framework.modules.session.agent.service;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.service.jobs.AgentSnapshotService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +22,10 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = {"spring.application.name=rs-test", "spring.jpa.properties.hibernate"
-        + ".default_schema=service_it", "regards.cipher.key-location=src/test/resources"
-        + "/testKey", "regards.cipher.iv=1234567812345678" })
-@ActiveProfiles(value = { "noscheduler"})
+@TestPropertySource(properties = { "spring.application.name=rs-test",
+        "spring.jpa.properties.hibernate" + ".default_schema=service_it",
+        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678" })
+@ActiveProfiles(value = { "noscheduler" })
 public class AgentSnapshotJobServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
@@ -33,41 +36,46 @@ public class AgentSnapshotJobServiceIT extends AbstractRegardsServiceTransaction
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+
+    @Autowired
+    private EntityManager entityManager;
+
 
     @Test
     @Purpose("The the generation of SessionStep following the publication of StepEvents")
     public void generateSessionStepTest() {
-        Set<StepEvent> stepEvents = createStepEvents();
-        int nbSessionStepsCreated = agentSnapshotService.generateSessionStep(SOURCE, stepEvents);
+        List<StepPropertyUpdateRequest> stepPropertyRequest = createStepEvents();
+        int nbSessionStepsCreated = agentSnapshotService.generateSessionStep(SOURCE, stepPropertyRequest);
         Assert.assertEquals("Wrong number of session steps created", 3, nbSessionStepsCreated);
     }
 
-
-    private Set<StepEvent> createStepEvents() {
-        Set<StepEvent> stepEvents = new HashSet<>();
+    private List<StepPropertyUpdateRequest> createStepEvents() {
+        List<StepPropertyUpdateRequest> stepPropertyUpdateRequests = new ArrayList<>();
 
         // create INC events
-        stepEvents.add(new StepEvent("scan", SOURCE, "session 1", StepTypeEnum.ACQUISITION,
-                                             StepEventStateEnum.OK, "gen.products", "2", EventTypeEnum.INC, true,
-                                             false));
+        stepPropertyUpdateRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, "session 1", OffsetDateTime.now(),
+                                                            StepTypeEnum.ACQUISITION, StepPropertyEventStateEnum.OK,
+                                                            "gen.products", "2", StepPropertyEventTypeEnum.INC, true,
+                                                            false));
 
-        stepEvents.add(new StepEvent("scan", SOURCE, "session 1", StepTypeEnum.STORAGE, StepEventStateEnum.OK,
-                                             "store.products", "10", EventTypeEnum.INC, true, false));
+        stepPropertyUpdateRequests.add(new StepPropertyUpdateRequest("scan", SOURCE, "session 1", OffsetDateTime.now(),
+                                                            StepTypeEnum.STORAGE, StepPropertyEventStateEnum.OK,
+                                                            "store.products", "10", StepPropertyEventTypeEnum.INC, true,
+                                                            false));
         // create dec events
-        stepEvents.add(new StepEvent("storage", SOURCE, "session 1", StepTypeEnum.STORAGE,
-                                             StepEventStateEnum.OK, "store.products", "2", EventTypeEnum.DEC, false,
-                                             true));
+        stepPropertyUpdateRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, "session 1", OffsetDateTime.now(),
+                                                            StepTypeEnum.STORAGE, StepPropertyEventStateEnum.OK,
+                                                            "store.products", "2", StepPropertyEventTypeEnum.DEC, false,
+                                                            true));
 
         // create value events
-        stepEvents.add(new StepEvent("oais", SOURCE, "session 2", StepTypeEnum.REFERENCEMENT,
-                                             StepEventStateEnum.OK, "gen.state", "RUNNING", EventTypeEnum.VALUE,
-                                             false, true));
+        stepPropertyUpdateRequests.add(new StepPropertyUpdateRequest("oais", SOURCE, "session 2", OffsetDateTime.now(),
+                                                            StepTypeEnum.REFERENCEMENT, StepPropertyEventStateEnum.OK,
+                                                            "gen.state", "RUNNING", StepPropertyEventTypeEnum.VALUE,
+                                                            false, true));
 
-
-
-
-        return stepEvents;
+        return this.stepPropertyRepo.saveAll(stepPropertyUpdateRequests);
     }
-
-
 }

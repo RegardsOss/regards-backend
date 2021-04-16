@@ -1,5 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.modules.session.agent.service.jobs.AgentSnapshotScheduler,\
-fr.cnes.regards.framework.modules.session.agent.service.jobs.AgentSnapshotService,\
-fr.cnes.regards.framework.modules.session.agent.service.jobs.AgentSnapshotJobService,\
-fr.cnes.regards.framework.modules.session.agent.service.events.AgentSnapshotListenerService
+fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler,\
+fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService,\
+fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService

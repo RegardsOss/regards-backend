@@ -19,9 +19,9 @@
 package fr.cnes.regards.framework.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
 import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,31 +40,31 @@ public class SessionAgentClient {
 
     public void increment(String stepId, String source, String session, StepTypeEnum stepType, String property,
             String value,
-                          StepEventStateEnum state, boolean input_related, boolean output_related) {
+                          StepPropertyEventStateEnum state, boolean input_related, boolean output_related) {
         // Create new event
-        StepEvent stepEvent = new StepEvent(stepId, source, session, stepType, state, property, value,
-                EventTypeEnum.INC, input_related, output_related);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session, stepType, state, property, value,
+                                                                                              StepPropertyEventTypeEnum.INC, input_related, output_related);
         // Publish event
-        publisher.publish(stepEvent);
+        publisher.publish(stepPropertyEvent);
     }
 
     public void decrement(String stepId, String source, String session, StepTypeEnum stepType, String property,
             String value,
-                          StepEventStateEnum state, boolean input_related, boolean output_related) {
+                          StepPropertyEventStateEnum state, boolean input_related, boolean output_related) {
         // Create new event
-        StepEvent stepEvent = new StepEvent(stepId, source, session, stepType, state, property, value,
-                EventTypeEnum.DEC, input_related, output_related);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session, stepType, state, property, value,
+                                                                                              StepPropertyEventTypeEnum.DEC, input_related, output_related);
         // Publish event
-        publisher.publish(stepEvent);
+        publisher.publish(stepPropertyEvent);
     }
 
     public void stepValue(String stepId, String source, String session, StepTypeEnum stepType, String property,
-            String value, StepEventStateEnum state, boolean input_related, boolean output_related) {
+            String value, StepPropertyEventStateEnum state, boolean input_related, boolean output_related) {
         // Create new event
-        StepEvent stepEvent = new StepEvent(stepId, source, session, stepType, state, property, value,
-                EventTypeEnum.VALUE, input_related, output_related);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session, stepType, state, property, value,
+                                                                                              StepPropertyEventTypeEnum.VALUE, input_related, output_related);
         // Publish event
-        publisher.publish(stepEvent);
+        publisher.publish(stepPropertyEvent);
     }
 
 

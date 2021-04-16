@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.session.agent.service.jobs;
+package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import net.javacrumbs.shedlock.core.LockAssert;

@@ -41,11 +41,11 @@ public class SessionStep {
     @Enumerated(value = EnumType.STRING)
     private StepTypeEnum type;
 
-    @Column(name = "in")
+    @Column(name = "input_related")
     @NotNull
     private Long in = 0L;
 
-    @Column(name = "out")
+    @Column(name = "output_related")
     @NotNull
     private Long out = 0L;
 

@@ -54,10 +54,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
-            <artifactId>session-commons-dao</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
             <artifactId>session-agent-dao</artifactId>
         </dependency>

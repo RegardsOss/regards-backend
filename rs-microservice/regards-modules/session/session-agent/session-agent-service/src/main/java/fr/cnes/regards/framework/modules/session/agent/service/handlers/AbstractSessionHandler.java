@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.events;
+package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;

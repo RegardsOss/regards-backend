@@ -1,9 +1,9 @@
 package fr.cnes.regards.framework.modules.session.agent.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.modules.session.agent.domain.EventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEvent;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
 import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import org.junit.Test;
@@ -27,10 +27,10 @@ public class AgentSnapshotJobIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void handleStepEvents() throws InterruptedException {
         // public INC event
-        StepEvent stepEvent = new StepEvent("extract", "source 1", "session 1", StepTypeEnum.ACQUISITION,
-                                            StepEventStateEnum.OK, "gen.products", "RUNNING", EventTypeEnum.INC, true,
-                                            false);
-        publisher.publish(stepEvent);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent("extract", "source 1", "session 1", StepTypeEnum.ACQUISITION,
+                                                                                              StepPropertyEventStateEnum.OK, "gen.products", "RUNNING", StepPropertyEventTypeEnum.INC, true,
+                                                                                              false);
+        publisher.publish(stepPropertyEvent);
 
         Thread.sleep(10000L);
     }

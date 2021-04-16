@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.domain;
+package fr.cnes.regards.framework.modules.session.agent.domain.events;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
  * @author Iliana Ghazali
  **/
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class StepEvent implements ISubscribable {
+public class StepPropertyUpdateRequestEvent implements ISubscribable {
 
     private String stepId;
 
@@ -23,22 +23,23 @@ public class StepEvent implements ISubscribable {
 
     private StepTypeEnum stepType;
 
-    private StepEventStateEnum state;
+    private StepPropertyEventStateEnum state;
 
     private String property;
 
     private String value;
 
-    private EventTypeEnum eventTypeEnum;
+    private StepPropertyEventTypeEnum stepPropertyEventTypeEnum;
 
     private boolean input_related;
 
     private boolean output_related;
 
 
-    public StepEvent(String stepId, String source, String session, StepTypeEnum stepType, StepEventStateEnum state,
+    public StepPropertyUpdateRequestEvent(String stepId, String source, String session, StepTypeEnum stepType, StepPropertyEventStateEnum state,
             String property
-            , String value, EventTypeEnum eventTypeEnum, boolean input_related, boolean output_related) {
+            , String value, StepPropertyEventTypeEnum stepPropertyEventTypeEnum, boolean input_related, boolean output_related) {
+        this.stepId = stepId;
         this.source = source;
         this.session = session;
         this.date = OffsetDateTime.now();
@@ -46,7 +47,7 @@ public class StepEvent implements ISubscribable {
         this.state = state;
         this.property = property;
         this.value = value;
-        this.eventTypeEnum = eventTypeEnum;
+        this.stepPropertyEventTypeEnum = stepPropertyEventTypeEnum;
         this.input_related = input_related;
         this.output_related = output_related;
     }
@@ -88,11 +89,11 @@ public class StepEvent implements ISubscribable {
         this.stepType = stepType;
     }
 
-    public StepEventStateEnum getState() {
+    public StepPropertyEventStateEnum getState() {
         return state;
     }
 
-    public void setState(StepEventStateEnum state) {
+    public void setState(StepPropertyEventStateEnum state) {
         this.state = state;
     }
 
@@ -112,12 +113,12 @@ public class StepEvent implements ISubscribable {
         this.value = value;
     }
 
-    public EventTypeEnum getEventTypeEnum() {
-        return eventTypeEnum;
+    public StepPropertyEventTypeEnum getEventTypeEnum() {
+        return stepPropertyEventTypeEnum;
     }
 
-    public void setEventTypeEnum(EventTypeEnum eventTypeEnum) {
-        this.eventTypeEnum = eventTypeEnum;
+    public void setEventTypeEnum(StepPropertyEventTypeEnum stepPropertyEventTypeEnum) {
+        this.stepPropertyEventTypeEnum = stepPropertyEventTypeEnum;
     }
 
     public boolean isInput_related() {

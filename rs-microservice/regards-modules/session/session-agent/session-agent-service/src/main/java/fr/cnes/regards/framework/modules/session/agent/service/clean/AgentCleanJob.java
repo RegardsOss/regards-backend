@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.jobs;
+package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import org.springframework.beans.factory.annotation.Autowired;
