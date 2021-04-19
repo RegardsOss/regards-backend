@@ -95,6 +95,11 @@ public class AIPNotificationSettingsService extends AbstractSettingService imple
     }
 
     @Override
+    public void setActiveNotification(Boolean isActiveNotification) throws EntityException {
+        dynamicTenantSettingService.update(AIPNotificationSettings.ACTIVE_NOTIFICATION, isActiveNotification);
+    }
+
+    @Override
     protected List<DynamicTenantSetting> getSettingList() {
         return AIPNotificationSettings.SETTING_LIST;
     }

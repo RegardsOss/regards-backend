@@ -23,10 +23,7 @@ package fr.cnes.regards.modules.ingest.service.notification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -37,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestSte
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
@@ -108,7 +104,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     private IAIPService aipService;
 
     @Override
-    public void doInit() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+    public void doInit() throws EntityException {
         initNotificationSettings(true);
     }
 
@@ -327,10 +323,8 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceTest {
     /**
      * Change state of notification settings
      */
-    private void initNotificationSettings(boolean state) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-       DynamicTenantSetting notificationSettings = AIPNotificationSettings.ACTIVE_NOTIFICATION_SETTING;
-       notificationSettings.setValue(state);
-        notificationSettingsService.update(notificationSettings);
+    private void initNotificationSettings(boolean state) throws EntityException {
+        notificationSettingsService.setActiveNotification(state);
     }
 
 }
