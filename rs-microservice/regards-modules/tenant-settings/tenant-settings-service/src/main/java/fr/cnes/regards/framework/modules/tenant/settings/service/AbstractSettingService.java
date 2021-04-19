@@ -38,10 +38,6 @@ public abstract class AbstractSettingService {
         return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toList()));
     }
 
-    public void update(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
-            dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
-    }
-
     public void resetSettings() throws EntityException {
         deleteAll();
         init();

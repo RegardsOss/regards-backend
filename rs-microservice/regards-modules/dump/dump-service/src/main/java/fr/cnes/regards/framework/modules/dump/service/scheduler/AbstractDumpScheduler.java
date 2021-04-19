@@ -23,6 +23,7 @@ import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService;
 import fr.cnes.regards.framework.modules.dump.service.settings.IDumpSettingsService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -64,6 +65,7 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
 
     /**
      * Create schedulers when the application context has been refreshed see {@link ApplicationStartedEvent}
+     * Needs to be run after settings initialization (see {@link DumpSettingsService}, hence lower order
      */
     @EventListener
     @Order(10)
