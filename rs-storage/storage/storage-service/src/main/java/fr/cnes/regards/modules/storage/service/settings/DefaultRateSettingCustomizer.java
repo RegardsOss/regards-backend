@@ -19,13 +19,13 @@ public class DefaultRateSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Autowired
     @Lazy
-    private IQuotaService quotaService;
+    private IQuotaService<?> quotaService;
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
         Object settingValue = dynamicTenantSetting.getValue();
         Object defaultSettingValue = dynamicTenantSetting.getDefaultValue();
-        boolean valueIsValid = settingValue == null || (settingValue instanceof Long && (Long) settingValue > -2);
+        boolean valueIsValid = settingValue != null && settingValue instanceof Long && (Long) settingValue > -2;
         boolean defaultValueIsValid = defaultSettingValue instanceof Long && (Long) defaultSettingValue > -2;
         return valueIsValid && defaultValueIsValid;
     }
@@ -37,6 +37,6 @@ public class DefaultRateSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Override
     public void doRightNow(DynamicTenantSetting dynamicTenantSetting) {
-        quotaService.changeDefaultDownloadQuotaLimits();
+        quotaService.changeDefaultRateLimits(dynamicTenantSetting.getValue());
     }
 }

@@ -8,8 +8,11 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
+import io.vavr.control.Try;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -19,13 +22,13 @@ public class DefaultQuotaSettingCustomizer implements IDynamicTenantSettingCusto
 
     @Autowired
     @Lazy
-    private IQuotaService quotaService;
+    private IQuotaService<?> quotaService;
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
         Object settingValue = dynamicTenantSetting.getValue();
         Object defaultSettingValue = dynamicTenantSetting.getDefaultValue();
-        boolean valueIsValid = settingValue == null || (settingValue instanceof Long && (Long) settingValue > -2);
+        boolean valueIsValid = settingValue != null && settingValue instanceof Long && (Long) settingValue > -2;
         boolean defaultValueIsValid = defaultSettingValue instanceof Long && (Long) defaultSettingValue > -2;
         return valueIsValid && defaultValueIsValid;
     }
@@ -37,6 +40,6 @@ public class DefaultQuotaSettingCustomizer implements IDynamicTenantSettingCusto
 
     @Override
     public void doRightNow(DynamicTenantSetting dynamicTenantSetting) {
-        quotaService.changeDefaultDownloadQuotaLimits();
+        quotaService.changeDefaultQuotaLimits(dynamicTenantSetting.getValue());
     }
 }

@@ -47,7 +47,9 @@ public interface IQuotaService<T> {
 
     Try<List<DownloadQuotaLimitsDto>> getDownloadQuotaLimits(String[] userEmails);
 
-    Try<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits();
+    void changeDefaultQuotaLimits(Long newDefaultQuota);
+
+    void changeDefaultRateLimits(Long newDefaultRate);
 
     Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits);
 
