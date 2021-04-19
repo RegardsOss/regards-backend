@@ -20,8 +20,12 @@
 package fr.cnes.regards.modules.feature.service.settings;
 
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+
 public interface IFeatureNotificationSettingsService {
 
     boolean isActiveNotification();
+
+    void setActiveNotification(Boolean isActiveNotification) throws EntityException;
 
 }

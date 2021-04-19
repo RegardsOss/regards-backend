@@ -94,6 +94,11 @@ public class FeatureNotificationSettingsService extends AbstractSettingService i
     }
 
     @Override
+    public void setActiveNotification(Boolean isActiveNotification) throws EntityException {
+        dynamicTenantSettingService.update(FeatureNotificationSettings.ACTIVE_NOTIFICATION, isActiveNotification);
+    }
+
+    @Override
     protected List<DynamicTenantSetting> getSettingList() {
         return FeatureNotificationSettings.SETTING_LIST;
     }

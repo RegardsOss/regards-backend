@@ -19,10 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
@@ -75,12 +72,10 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceTest {
     private FeatureNotificationSettingsService notificationSettingsService;
 
     @Test
-    public void createAndUpdateTest() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+    public void createAndUpdateTest() throws EntityException {
 
 
-        DynamicTenantSetting setting = notificationSettingsService.retrieve().get(0);
-        setting.setValue(false);
-        notificationSettingsService.update(setting);
+        notificationSettingsService.setActiveNotification(false);
 
 
         FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
