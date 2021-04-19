@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.plugins;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -36,10 +28,18 @@ import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntityRequest;
 import fr.cnes.regards.modules.dam.service.entities.IStorageService;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -52,11 +52,8 @@ public class StoragePlugin implements IStorageService {
 
     private final static String URI_TEMPLATE = "%s?scope=%s";
 
-    @Value("${regards.dam.store.files.plugin.storage.name:#{null}}")
-    private String storage;
-
-    @Value("${regards.dam.store.files.plugin.storage.subdirectory:#{null}}")
-    private String storageSubDirectory;
+    @Autowired
+    private IDamSettingsService damSettingsService;
 
     @Autowired
     private IStorageClient storageClient;
@@ -75,9 +72,11 @@ public class StoragePlugin implements IStorageService {
 
     @Override
     public <T extends AbstractEntity<?>> T store(T toPersist) {
+
         Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
                 .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
-        if ((storage != null) && !storage.isEmpty() && (!files.isEmpty())) {
+
+        if (!StringUtils.isEmpty(damSettingsService.getStorageLocation()) && (!files.isEmpty())) {
             Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
                     .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
                     .collect(Collectors.toSet());
@@ -85,7 +84,7 @@ public class StoragePlugin implements IStorageService {
         } else {
             String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";
-            String[] users = new String[] { authResolver.getUser() };
+            String[] users = new String[]{authResolver.getUser()};
             notificationClient.notify(message, title, NotificationLevel.INFO, users);
         }
         return toPersist;
@@ -93,7 +92,8 @@ public class StoragePlugin implements IStorageService {
 
     @Override
     public <T extends AbstractEntity<?>> T update(T toUpdate, T oldEntity) {
-        if (storage != null) {
+
+        if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
             // manage added files in toUpdate and not in oldEntity
             Collection<FileStorageRequestDTO> filesToAdd = toUpdate.getFiles().values().stream()
@@ -122,7 +122,7 @@ public class StoragePlugin implements IStorageService {
 
     @Override
     public void delete(AbstractEntity<?> toDelete) {
-        if (storage != null) {
+        if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
             Collection<FileDeletionRequestDTO> files = toDelete.getFiles().values().stream()
                     .map(entry -> initDeletionRequest(entry, toDelete.getIpId().toString()))
@@ -132,15 +132,24 @@ public class StoragePlugin implements IStorageService {
     }
 
     private FileStorageRequestDTO initStorageRequest(DataFile file, UniformResourceName urn) {
-
-        return FileStorageRequestDTO.build(file.getFilename(), file.getChecksum(), file.getDigestAlgorithm(),
-                                           file.getMimeType().toString(), urn.toString(),
-                                           String.format(URI_TEMPLATE, file.getUri(),
-                                                         this.tenantResolver.getTenant().toString()),
-                                           this.storage, Optional.ofNullable(this.storageSubDirectory));
+        return FileStorageRequestDTO.build(
+                file.getFilename(),
+                file.getChecksum(),
+                file.getDigestAlgorithm(),
+                file.getMimeType().toString(),
+                urn.toString(),
+                String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant()),
+                damSettingsService.getStorageLocation(),
+                Optional.ofNullable(damSettingsService.getStorageSubDirectory())
+        );
     }
 
     private FileDeletionRequestDTO initDeletionRequest(DataFile file, String urn) {
-        return FileDeletionRequestDTO.build(file.getChecksum(), storage, urn, false);
+        return FileDeletionRequestDTO.build(
+                file.getChecksum(),
+                damSettingsService.getStorageLocation(),
+                urn,
+                false
+        );
     }
 }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.rest;
 
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,4 +60,10 @@ public class DamRestConfiguration {
     public IToponymsClient toponymClient() {
         return Mockito.mock(IToponymsClient.class);
     }
+
+    @Bean
+    public IStorageRestClient storageRestClient() {
+        return Mockito.mock(IStorageRestClient.class);
+    }
+
 }

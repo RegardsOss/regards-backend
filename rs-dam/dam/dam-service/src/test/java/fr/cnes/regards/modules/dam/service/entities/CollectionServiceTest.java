@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -39,10 +29,20 @@ import fr.cnes.regards.modules.dam.dao.entities.ICollectionRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDeletedEntityRepository;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author lmieulet
@@ -68,12 +68,17 @@ public class CollectionServiceTest {
 
     private IAbstractEntityRepository<AbstractEntity<?>> entitiesRepositoryMocked;
 
+    private IDamSettingsService damSettingsService;
+
     /**
      * initialize the repo before each test
      */
     @SuppressWarnings({ "unchecked" })
     @Before
     public void init() {
+
+        damSettingsService = Mockito.mock(IDamSettingsService.class);
+        Mockito.when(damSettingsService.isStoreFiles()).thenReturn(false);
 
         // populate the repository
         pModel1 = new Model();
@@ -118,7 +123,7 @@ public class CollectionServiceTest {
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("Tenant");
 
         collectionServiceMocked = new CollectionService(Mockito.mock(IModelFinder.class), entitiesRepositoryMocked,
-                pModelService, deletedEntityRepositoryMocked, collectionRepositoryMocked, null, null, publisherMocked,
+                pModelService, damSettingsService, deletedEntityRepositoryMocked, collectionRepositoryMocked, null, null, publisherMocked,
                 runtimeTenantResolver, Mockito.mock(IAbstractEntityRequestRepository.class));
     }
 
