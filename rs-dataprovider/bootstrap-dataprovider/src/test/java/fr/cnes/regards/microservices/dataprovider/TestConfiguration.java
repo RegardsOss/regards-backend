@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.microservices.dataprovider;
 
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 
 /**
  *
@@ -31,10 +27,5 @@ import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClie
  */
 @Configuration
 public class TestConfiguration {
-
-    @Bean
-    public IExternalAuthenticationClient externalAuthentClient() {
-        return Mockito.mock(IExternalAuthenticationClient.class);
-    }
 
 }

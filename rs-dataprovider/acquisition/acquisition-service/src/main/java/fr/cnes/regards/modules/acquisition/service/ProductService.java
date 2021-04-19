@@ -161,14 +161,17 @@ public class ProductService implements IProductService {
         } else {
             List<ContentInformation> productCIList = product.getSip().getProperties().getContentInformations();
             for (ContentInformation productCI : productCIList) {
-                for (OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
-                    if (productCI.getDataObject().getFileSize() != null) {
-                        location.setStorage(acquisitionChain.getReferenceLocation());
-                    } else {
-                        String message = String
-                                .format("Files size must be calculated by the metadata plugin generation for referenced files.",
-                                        product.getProductName());
-                        throw new SIPGenerationException(message);
+                if ((productCI.getDataObject() != null) && (productCI.getDataObject().getLocations() != null)
+                        && !productCI.getDataObject().getLocations().isEmpty()) {
+                    for (OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
+                        if (productCI.getDataObject().getFileSize() != null) {
+                            location.setStorage(acquisitionChain.getReferenceLocation());
+                        } else {
+                            String message = String
+                                    .format("Files size must be calculated by the metadata plugin generation for referenced files.",
+                                            product.getProductName());
+                            throw new SIPGenerationException(message);
+                        }
                     }
                 }
             }
