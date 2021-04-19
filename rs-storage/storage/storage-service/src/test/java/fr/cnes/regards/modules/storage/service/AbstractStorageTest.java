@@ -231,6 +231,8 @@ public abstract class AbstractStorageTest extends AbstractMultitenantServiceTest
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
     }
 
     protected StorageLocationConfiguration initDataStorageOLPluginConfiguration(String label) throws ModuleException {

@@ -30,8 +30,10 @@ import io.vavr.control.Try;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -54,7 +56,7 @@ import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLim
 @Service
 @MultitenantTransactional
 public class DownloadQuotaService<T>
-    implements IQuotaService<T>,ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ProjectUserEvent> {
+    implements IQuotaService<T>, IBatchHandler<ProjectUserEvent> {
 
     private IDownloadQuotaRepository quotaRepository;
 
@@ -94,8 +96,8 @@ public class DownloadQuotaService<T>
         this.dynamicTenantSettingService = dynamicTenantSettingService;
     }
 
-    @PostConstruct
-    public void init() {
+    @EventListener
+    public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         self = applicationContext.getBean(DownloadQuotaService.class);
 
         defaultLimits = new AtomicReference<>(
@@ -111,6 +113,8 @@ public class DownloadQuotaService<T>
                     },
                     (l, r) -> l)
         );
+
+        subscriber.subscribeTo(ProjectUserEvent.class, this);
     }
 
     public DefaultDownloadQuotaLimits initDefaultLimits() {
@@ -134,11 +138,6 @@ public class DownloadQuotaService<T>
     @VisibleForTesting
     public void setDefaultLimits(AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits) {
         this.defaultLimits = defaultLimits;
-    }
-
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(ProjectUserEvent.class, this);
     }
 
     @Override
