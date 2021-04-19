@@ -546,6 +546,7 @@ public class FeatureExtractionService implements IFeatureExtractionService {
         } else {
             request.setStep(FeatureRequestStep.LOCAL_DELAYED);
         }
+        request.setRequestDate(OffsetDateTime.now());
         request.setState(RequestState.GRANTED);
         // Reset errors
         request.setErrors(Sets.newHashSet());

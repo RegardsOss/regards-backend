@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -168,6 +169,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         } else {
             request.setStep(FeatureRequestStep.LOCAL_DELAYED);
         }
+        request.setRequestDate(OffsetDateTime.now());
         request.setState(RequestState.GRANTED);
         // Reset errors
         request.setErrors(Sets.newHashSet());
