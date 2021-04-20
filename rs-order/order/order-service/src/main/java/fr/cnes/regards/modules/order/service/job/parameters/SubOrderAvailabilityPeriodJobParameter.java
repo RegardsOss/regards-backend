@@ -21,8 +21,7 @@ package fr.cnes.regards.modules.order.service.job.parameters;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
- * Expiration date specific job parameter, it contains the pair "expirationDate" : date
- * @author oroussel
+ * Sub Order Availability duration, in hours
  */
 public class SubOrderAvailabilityPeriodJobParameter extends JobParameter {
 
@@ -32,11 +31,6 @@ public class SubOrderAvailabilityPeriodJobParameter extends JobParameter {
         super(NAME, value);
     }
 
-    /**
-     * Check if given JobParameter is compatible with ExpirationDateJobParameter ie same name
-     * @param param
-     * @return {@link Boolean}
-     */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);
     }
