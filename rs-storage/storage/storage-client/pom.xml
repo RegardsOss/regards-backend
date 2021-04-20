@@ -79,5 +79,11 @@
 			<artifactId>storage-rest</artifactId>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-client</artifactId>
+            <version>1.4.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

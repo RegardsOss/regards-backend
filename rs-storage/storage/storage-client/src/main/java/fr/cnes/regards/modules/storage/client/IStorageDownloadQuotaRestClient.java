@@ -30,11 +30,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSettingClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 
-//TODO extends DynamicTenantSettingsClient
-public interface IStorageDownloadQuotaRestClient {
+public interface IStorageDownloadQuotaRestClient extends IDynamicTenantSettingClient {
 
     String PATH_USER_QUOTA = "/quota/{user_email}";
 

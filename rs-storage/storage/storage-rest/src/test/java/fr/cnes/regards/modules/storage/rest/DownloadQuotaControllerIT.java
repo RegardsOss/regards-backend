@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
+import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
@@ -70,9 +71,6 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
     private DownloadQuotaService quotaService;
 
     @Autowired
-    private IDefaultDownloadQuotaLimitsEntityRepository defaultQuotaLimitsRepository;
-
-    @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
@@ -80,61 +78,14 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
     private final Random random = new Random();
     private Cache<QuotaKey, DownloadQuotaLimits> userLimitsCache;
-    private AtomicReference<HashMap<String, DefaultDownloadQuotaLimits>> defaultLimitsCache;
 
     @Before
     @After
     public void clean() {
         tenantResolver.forceTenant(getDefaultTenant());
         quotaRepository.deleteAll();
-        DefaultDownloadQuotaLimitsEntity defaultLimits =
-            defaultQuotaLimitsRepository.save(new DefaultDownloadQuotaLimitsEntity(0L, -1L, -1L));
         userLimitsCache = Caffeine.newBuilder().build();
         quotaService.setCache(userLimitsCache);
-        defaultLimitsCache = new AtomicReference<>(HashMap.of(getDefaultTenant(), mapper.toDomain(defaultLimits)));
-        quotaService.setDefaultLimits(defaultLimitsCache);
-    }
-
-    @Test
-    public void getDefaultDownloadQuotaLimits() {
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", -1L)
-                .expectValue("$.rateLimit", -1L);
-        performDefaultGet(PATH_DEFAULT_QUOTA, customizer, "Failed to get default quota limits");
-    }
-
-    @Test
-    public void changeDefaultDownloadQuotaLimits() {
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", -1L)
-                .expectValue("$.rateLimit", -1L);
-        performDefaultGet(PATH_DEFAULT_QUOTA, customizer, "Failed to get default quota cached");
-
-        long maxQuota = random.nextInt(Integer.MAX_VALUE);
-        long rateLimit = random.nextInt(Integer.MAX_VALUE);
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
-
-        DefaultDownloadQuotaLimits dto = new DefaultDownloadQuotaLimits(maxQuota, rateLimit);
-        performDefaultPut(PATH_DEFAULT_QUOTA, dto, customizer, "Failed to update default quota cached");
-
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
-        performDefaultGet(PATH_DEFAULT_QUOTA, customizer, "Failed to get updated default quota cached");
-
-        DefaultDownloadQuotaLimits cached = defaultLimitsCache.get().get(getDefaultTenant()).get();
-        assertEquals(dto.getMaxQuota(), cached.getMaxQuota());
-        assertEquals(dto.getRateLimit(), cached.getRateLimit());
     }
 
     @Test
