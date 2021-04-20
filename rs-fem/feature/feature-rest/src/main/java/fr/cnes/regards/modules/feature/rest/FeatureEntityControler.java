@@ -18,16 +18,20 @@
  */
 package fr.cnes.regards.modules.feature.rest;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -125,7 +129,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @RequestMapping(method = RequestMethod.POST, path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Notify features according to search parameters")
     public ResponseEntity<Void> notifyFeatures(
-            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
+            @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
         featureService.scheduleNotificationsJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -142,7 +146,7 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete features according to search parameters")
     public ResponseEntity<Void> deleteFeatures(
-            @Parameter(description = "Features selection filters") FeaturesSelectionDTO selection) {
+            @Parameter(description = "Features selection filters") @Valid @RequestBody FeaturesSelectionDTO selection) {
         featureService.scheduleDeletionJob(selection);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -154,6 +158,10 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
                                 MethodParamFactory.build(FeaturesSearchParameters.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "notifyFeatures", LinkRelation.of("notify"),
+                                MethodParamFactory.build(FeaturesSelectionDTO.class));
+        resourceService.addLink(resource, this.getClass(), "deleteFeatures", LinkRelation.of("delete"),
+                                MethodParamFactory.build(FeaturesSelectionDTO.class));
         return resource;
     }
 }

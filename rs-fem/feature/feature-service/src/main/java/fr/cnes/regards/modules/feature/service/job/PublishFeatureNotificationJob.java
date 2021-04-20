@@ -84,16 +84,16 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
         long totalElementCheck = 0;
         boolean firstPass = true;
         do {
-            // Search features to delete
+            // Search features to notify
             results = featureService.findAll(selection, page);
             if (firstPass) {
                 totalElementCheck = results.getTotalElements();
-                LOGGER.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
+                LOGGER.info("Starting scheduling {} feature notification requests.", totalElementCheck);
                 firstPass = false;
             }
             // Scheduling page deletion job
             publishNotificationEvents(results.map(f -> f.getFeature().getUrn()).toList());
-            LOGGER.info("Scheduling job for {} feature deletion requests (remaining {}).",
+            LOGGER.info("Scheduling job for {} feature notification requests (remaining {}).",
                         results.getNumberOfElements(), totalElementCheck);
             page = page.next();
         } while ((results != null) && results.hasNext());

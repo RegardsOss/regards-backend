@@ -149,7 +149,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer
                 .documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
         performDefaultPost(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.NOTIFY_PATH,
-                           FeaturesSelectionDTO.build(), requestBuilderCustomizer,
+                           FeaturesSelectionDTO.build().withId(150L), requestBuilderCustomizer,
                            "Error during feature notification request");
         Assert.assertEquals(new Long(1),
                             jobInfoService.retrieveJobsCount(PublishFeatureNotificationJob.class.getName(),
