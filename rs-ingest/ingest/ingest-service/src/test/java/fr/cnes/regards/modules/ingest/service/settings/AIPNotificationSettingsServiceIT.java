@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -63,17 +63,18 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
     @Test
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
-        List<DynamicTenantSetting> notificationSettings = notificationSettingsService.retrieve();
+        Set<DynamicTenantSetting> notificationSettings = notificationSettingsService.retrieve();
         assertEquals(1, notificationSettings.size());
-        assertEquals(AIPNotificationSettings.ACTIVE_NOTIFICATION, notificationSettings.get(0).getName());
-        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, notificationSettings.get(0).getDefaultValue());
-        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, notificationSettings.get(0).getValue());
+        DynamicTenantSetting setting = notificationSettings.stream().findFirst().get();
+        assertEquals(AIPNotificationSettings.ACTIVE_NOTIFICATION, setting.getName());
+        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getDefaultValue());
+        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getValue());
     }
 
     @Test
     @Purpose("Check the update of existing notification settings")
     public void testUpdate() throws EntityException {
         notificationSettingsService.setActiveNotification(true);
-        assertEquals(true, notificationSettingsService.retrieve().get(0).getValue());
+        assertEquals(true, notificationSettingsService.isActiveNotification());
     }
 }
