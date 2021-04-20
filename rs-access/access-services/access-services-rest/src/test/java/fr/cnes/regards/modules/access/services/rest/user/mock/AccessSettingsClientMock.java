@@ -18,16 +18,10 @@
  */
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.access.services.rest.user.AccessSettingsController;
-import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -35,45 +29,49 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Random;
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 @Primary
 @Component
-public class AccessSettingsClientMock implements IAccessSettingsClient, IResourceController<AccessSettings> {
+public class AccessSettingsClientMock implements IAccessRightSettingClient, IResourceController<DynamicTenantSetting> {
 
-    public static final long ACCESS_SETTINGS_STUB_ID = new Random().nextInt(10_000);
-    public static final String ACCESS_SETTINGS_STUB_MODE = AccessSettings.AUTO_ACCEPT_MODE;
-    public static final Role ACCESS_SETTINGS_STUB_ROLE = new Role(DefaultRole.REGISTERED_USER.toString());
     public static final List<String> ACCESS_SETTINGS_STUB_GROUPS = Lists.newArrayList("dummy");
-    public static final AccessSettings ACCESS_SETTINGS_STUB;
-    static {
-        ACCESS_SETTINGS_STUB = new AccessSettings();
-        ACCESS_SETTINGS_STUB.setId(ACCESS_SETTINGS_STUB_ID);
-        ACCESS_SETTINGS_STUB.setMode(ACCESS_SETTINGS_STUB_MODE);
-        ACCESS_SETTINGS_STUB.setDefaultRole(ACCESS_SETTINGS_STUB_ROLE);
-        ACCESS_SETTINGS_STUB.setDefaultGroups(ACCESS_SETTINGS_STUB_GROUPS);
-    }
+
+    public static final List<DynamicTenantSetting> ACCESS_SETTINGS_STUB = Arrays
+            .asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
+                    AccessSettings.DEFAULT_ROLE_SETTING,
+                    AccessSettings.MODE_SETTING);
 
     @Autowired
     private IResourceService resourceService;
 
     @Override
-    public ResponseEntity<EntityModel<AccessSettings>> retrieveAccessSettings() {
-        return new ResponseEntity<>(toResource(ACCESS_SETTINGS_STUB), HttpStatus.OK);
+    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
+        return new ResponseEntity<>(HateoasUtils.wrapList(ACCESS_SETTINGS_STUB), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<EntityModel<AccessSettings>> updateAccessSettings(AccessSettings accessSettings) {
-        return new ResponseEntity<>(toResource(accessSettings), HttpStatus.OK);
+    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
+        return new ResponseEntity<>(toResource(setting), HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<AccessSettings> toResource(final AccessSettings element, final Object... extras) {
-        EntityModel<AccessSettings> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveAccessSettings", LinkRels.SELF);
-        resourceService.addLink(resource, this.getClass(), "updateAccessSettings", LinkRels.UPDATE,
-            MethodParamFactory.build(AccessSettings.class));
+    public EntityModel<DynamicTenantSetting> toResource(final DynamicTenantSetting element, final Object... extras) {
+        EntityModel<DynamicTenantSetting> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "update",
+                                LinkRels.UPDATE,
+                                MethodParamFactory.build(AccessSettings.class));
 
         return resource;
     }

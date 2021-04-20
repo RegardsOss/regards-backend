@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.access.services.client;
 
 import feign.Response;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Make Spring DI happy.
@@ -36,12 +38,12 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
+    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
         return null;
     }
 
     @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
+    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
         return null;
     }
 
