@@ -28,10 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RegardsTransactional
@@ -72,7 +69,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
 
     @Override
     public Set<DynamicTenantSetting> readAll() {
-        return dynamicTenantSettingRepository.getAll();
+        return new HashSet<>(dynamicTenantSettingRepository.findAll());
     }
 
     @Override

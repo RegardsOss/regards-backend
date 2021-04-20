@@ -28,8 +28,6 @@ import java.util.Set;
 @Repository
 public interface IDynamicTenantSettingRepository extends JpaRepository<DynamicTenantSetting, Long> {
 
-    Set<DynamicTenantSetting> getAll();
-
     Optional<DynamicTenantSetting> findByName(String name);
 
     Set<DynamicTenantSetting> findAllByNameIn(Set<String> nameList);
