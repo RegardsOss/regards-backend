@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Primary
 @Component
@@ -56,16 +58,6 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> getDefaultDownloadQuotaLimits() {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DefaultDownloadQuotaLimits> changeDefaultDownloadQuotaLimits(@Valid DefaultDownloadQuotaLimits newDefaults) {
-        return null;
-    }
-
-    @Override
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(String userEmail) {
         return null;
     }
@@ -97,6 +89,16 @@ public class StorageRestClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
         return null;
     }
 }
