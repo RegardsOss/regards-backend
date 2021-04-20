@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IDynamicTenantSettingService {
 
@@ -32,9 +32,9 @@ public interface IDynamicTenantSettingService {
 
     Optional<DynamicTenantSetting> read(String name);
 
-    List<DynamicTenantSetting> readAll(List<String> nameList);
+    Set<DynamicTenantSetting> readAll(Set<String> nameList);
 
-    List<DynamicTenantSetting> readAll();
+    Set<DynamicTenantSetting> readAll();
 
     <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
 

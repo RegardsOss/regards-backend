@@ -9,6 +9,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RegardsTransactional
@@ -34,8 +35,8 @@ public abstract class AbstractSettingService {
         }
     }
 
-    public List<DynamicTenantSetting> retrieve() {
-        return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toList()));
+    public Set<DynamicTenantSetting> retrieve() {
+        return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toSet()));
     }
 
     public void resetSettings() throws EntityException {

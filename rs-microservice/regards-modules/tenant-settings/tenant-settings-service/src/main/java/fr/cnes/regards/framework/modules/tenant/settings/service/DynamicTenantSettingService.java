@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RegardsTransactional
@@ -65,13 +66,13 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public List<DynamicTenantSetting> readAll(List<String> nameList) {
+    public Set<DynamicTenantSetting> readAll(Set<String> nameList) {
         return dynamicTenantSettingRepository.findAllByNameIn(nameList);
     }
 
     @Override
-    public List<DynamicTenantSetting> readAll() {
-        return dynamicTenantSettingRepository.findAll();
+    public Set<DynamicTenantSetting> readAll() {
+        return dynamicTenantSettingRepository.getAll();
     }
 
     @Override
