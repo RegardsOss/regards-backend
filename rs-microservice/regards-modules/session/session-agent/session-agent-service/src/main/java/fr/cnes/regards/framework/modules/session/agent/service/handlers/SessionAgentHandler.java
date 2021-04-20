@@ -2,19 +2,22 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 /**
+ * Handler for new {@link StepPropertyUpdateRequestEvent}s
+ *
  * @author Iliana Ghazali
  **/
+@Component
+@Profile("!nohandler")
 public class SessionAgentHandler
         implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StepPropertyUpdateRequestEvent> {
 
@@ -25,7 +28,7 @@ public class SessionAgentHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+    private SessionAgentHandlerService sessionAgentHandlerService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -43,29 +46,11 @@ public class SessionAgentHandler
         try {
             LOGGER.info("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
             long start = System.currentTimeMillis();
-            handle(messages);
+            sessionAgentHandlerService.handle(messages);
             LOGGER.info("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
-                         System.currentTimeMillis() - start);
+                        System.currentTimeMillis() - start);
         } finally {
             runtimeTenantResolver.clearTenant();
         }
-    }
-
-    /**
-     * Handle event by calling the listener method associated to the event type.
-     *
-     * @param events {@link StepPropertyUpdateRequestEvent}s
-     */
-    private void handle(List<StepPropertyUpdateRequestEvent> events) {
-        List<StepPropertyUpdateRequest> stepPropertiesToSave = new ArrayList<>();
-        for (StepPropertyUpdateRequestEvent e : events) {
-            stepPropertiesToSave
-                    .add(new StepPropertyUpdateRequest(e.getStepId(), e.getSource(), e.getSession(), e.getDate(),
-                                                       e.getStepType(), e.getState(), e.getProperty(), e.getValue(),
-                                                       e.getEventTypeEnum(), e.isInput_related(),
-                                                       e.isOutput_related()));
-
-        }
-        this.stepPropertyRepo.saveAll(stepPropertiesToSave);
     }
 }

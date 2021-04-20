@@ -38,9 +38,10 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 
 /**
- * TODO Description
+ * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
+ * and {@link fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest }
  *
- * @author TODO
+ * @author Iliana Ghazali
  */
 @Profile("!noscheduler")
 @Component
@@ -94,11 +95,9 @@ public class AgentCleanScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION_STEPS);
-                lockingTaskExecutors.executeWithLock(snapshotProcessTask, new LockConfiguration(
-                        CLEAN_SESSION_STEPS_LOCK,
-                        Instant.now()
-                                                                                                        .plusSeconds(
-                                                                                                                MAX_TASK_DELAY)));
+                lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                                                     new LockConfiguration(CLEAN_SESSION_STEPS_LOCK,
+                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SESSION_STEPS, CLEAN_SESSION_STEPS_TITLE, e);
             } finally {

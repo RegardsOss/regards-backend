@@ -1,23 +1,34 @@
 package fr.cnes.regards.framework.modules.session.agent.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.sessioncommons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 /**
+ * Entity created after receiving a
+ * {@link fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent}.
+ * <p>
+ * {@link StepPropertyUpdateRequest}s will then be used to create {@link SessionStep}s, they are an aggregation of
+ * these steps.
+ *
  * @author Iliana Ghazali
  **/
 @Entity
@@ -42,55 +53,38 @@ public class StepPropertyUpdateRequest {
     private String session;
 
     @Column(name = "date")
+    @NotNull
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime date;
-
-    @Column(name = "step_type")
-    @NotNull
-    @Enumerated(value = EnumType.STRING)
-    private StepTypeEnum stepType;
-
-    @Column(name = "state")
-    @NotNull
-    @Enumerated(value = EnumType.STRING)
-    private StepPropertyEventStateEnum state;
-
-    @Column(name = "property")
-    @NotNull
-    private String property;
-
-    @Column(name = "value")
-    @NotNull
-    private String value;
 
     @Column(name = "type")
     @NotNull
     @Enumerated(value = EnumType.STRING)
     private StepPropertyEventTypeEnum type;
 
-    @Column(name = "input_related")
+    @Embedded
     @NotNull
-    private boolean input_related;
+    private StepPropertyInfo stepPropertyInfo;
 
-    @Column(name = "output_related")
-    @NotNull
-    private boolean output_related;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "session_step_id", foreignKey = @ForeignKey(name = "fk_session_step"))
+    private SessionStep sessionStep;
 
-    public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session, OffsetDateTime date,
-            @NotNull StepTypeEnum stepType, @NotNull StepPropertyEventStateEnum state, @NotNull String property,
-            @NotNull String value, @NotNull StepPropertyEventTypeEnum type, @NotNull boolean input_related,
-            @NotNull boolean output_related) {
+    public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,
+            @NotNull OffsetDateTime date, @NotNull StepPropertyEventTypeEnum type,
+            @NotNull StepPropertyInfo stepPropertyInfo) {
         this.stepId = stepId;
         this.source = source;
         this.session = session;
         this.date = date;
-        this.stepType = stepType;
-        this.state = state;
-        this.property = property;
-        this.value = value;
         this.type = type;
-        this.input_related = input_related;
-        this.output_related = output_related;
+        this.stepPropertyInfo = stepPropertyInfo;
+    }
+    public StepPropertyUpdateRequest(){
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getStepId() {
@@ -125,38 +119,6 @@ public class StepPropertyUpdateRequest {
         this.date = date;
     }
 
-    public StepTypeEnum getStepType() {
-        return stepType;
-    }
-
-    public void setStepType(StepTypeEnum stepType) {
-        this.stepType = stepType;
-    }
-
-    public StepPropertyEventStateEnum getState() {
-        return state;
-    }
-
-    public void setState(StepPropertyEventStateEnum state) {
-        this.state = state;
-    }
-
-    public String getProperty() {
-        return property;
-    }
-
-    public void setProperty(String property) {
-        this.property = property;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     public StepPropertyEventTypeEnum getType() {
         return type;
     }
@@ -165,19 +127,19 @@ public class StepPropertyUpdateRequest {
         this.type = type;
     }
 
-    public boolean isInput_related() {
-        return input_related;
+    public StepPropertyInfo getStepPropertyInfo() {
+        return stepPropertyInfo;
     }
 
-    public void setInput_related(boolean input_related) {
-        this.input_related = input_related;
+    public void setStepPropertyInfo(StepPropertyInfo stepPropertyInfo) {
+        this.stepPropertyInfo = stepPropertyInfo;
     }
 
-    public boolean isOutput_related() {
-        return output_related;
+    public SessionStep getSessionStep() {
+        return sessionStep;
     }
 
-    public void setOutput_related(boolean output_related) {
-        this.output_related = output_related;
+    public void setSessionStep(SessionStep sessionStep) {
+        this.sessionStep = sessionStep;
     }
 }

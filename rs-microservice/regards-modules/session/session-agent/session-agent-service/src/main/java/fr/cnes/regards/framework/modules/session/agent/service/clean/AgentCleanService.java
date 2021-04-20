@@ -1,8 +1,10 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.modules.session.sessioncommons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.sessioncommons.domain.SessionStep;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
+ * Service to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
+ * and {@link fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest }
+ *
  * @author Iliana Ghazali
  **/
 @Service
@@ -23,22 +28,36 @@ public class AgentCleanService {
     @Autowired
     private ISessionStepRepository sessionStepRepo;
 
+    @Autowired
+    private ISnapshotProcessRepository snapshotRepo;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+
     @Value("${regards.session-agent.limit.store.session-steps:30}")
     private int limitStoreSessionSteps;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanService.class);
 
-
     public int clean() {
-        int nbStepsDeleted = 0;
-        OffsetDateTime startClean = OffsetDateTime.now();
-        LOGGER.debug("Check old session steps. Current date : {}", startClean);
+        // Init startClean with the current date minus the limit of SessionStep save configured
+        OffsetDateTime startClean = OffsetDateTime.now().minusDays(this.limitStoreSessionSteps);
+        LOGGER.debug("Check old session steps before {}", startClean);
 
+        int nbSessionStepsDeleted = 0;
+        //FIXME set ppt for page
         Pageable page = PageRequest.of(0, 100);
         Page<SessionStep> sessionStepsToDelete;
         do {
+            // Get all session steps to delete older than startClean
             sessionStepsToDelete = sessionStepRepo.findByLastUpdateBefore(startClean, page);
+            // Delete all related StepPropertyUpdateRequests
+            this.stepPropertyRepo
+                    .deleteInBatch(stepPropertyRepo.findBySessionStepIn(sessionStepsToDelete.getContent()));
+            // Delete SesionSteps
+            this.sessionStepRepo.deleteInBatch(sessionStepsToDelete);
+            nbSessionStepsDeleted += sessionStepsToDelete.getNumberOfElements();
         } while (sessionStepsToDelete.hasNext());
-        return nbStepsDeleted;
+        return nbSessionStepsDeleted;
     }
 }

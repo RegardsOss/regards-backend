@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.sessioncommons.domain;
+package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
@@ -12,51 +12,85 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
+ * A {@link SessionStep} represents a step in which data are added or processed. Currently 4 steps mainly exist to
+ * process data during its life cycle (acquisition/referencing/storage/dissemination). They are created or updated
+ * through step property events from the session agent.
+ *
  * @author Iliana Ghazali
  **/
 @Entity
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Table(name = "t_session_step")
 public class SessionStep {
 
+    /**
+     * Id of the SessionStep
+     */
     @Id
     @SequenceGenerator(name = "sessionSequence", initialValue = 1, sequenceName = "seq_session")
     @GeneratedValue(generator = "sessionSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
+    /**
+     * Unique step identifier
+     */
     @Column(name = "step_id")
     @Unique
     private String stepId;
 
+    /**
+     * Name of the source
+     */
     @Column(name = "source")
     @NotNull
     private String source;
 
+    /**
+     * Name of the session
+     */
     @Column(name = "session")
     @NotNull
     private String session;
 
+    /**
+     * Type of the step. It depends on which microservice has initiated the step.
+     */
     @Column(name = "type")
     @NotNull
     @Enumerated(value = EnumType.STRING)
     private StepTypeEnum type;
 
+    /**
+     * Sum of step inputs. Accumulation of inputs from StepPropertyUpdateEventRequest
+     */
     @Column(name = "input_related")
     @NotNull
-    private Long in = 0L;
+    private long inputRelated = 0L;
 
+    /**
+     * Sum of step outputs. Accumulation of outputs from StepPropertyUpdateEventRequest
+     */
     @Column(name = "output_related")
     @NotNull
-    private Long out = 0L;
+    private long outputRelated = 0L;
 
+    /**
+     * Current state of the SessionStep. Number steps waiting or in error state and running state.
+     */
     @Embedded
     @NotNull
     private StepState state;
 
+    /**
+     * Set of property/value retrieved from StepPropertyUpdateEventRequests
+     */
     @Column(name = "properties", columnDefinition = "jsonb")
     @Type(type = "jsonb")
     private SessionStepProperties properties;
 
+    /**
+     * Most recent StepPropertyUpdateEventRequest
+     */
     @Column(name = "last_update")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdate;
@@ -69,6 +103,9 @@ public class SessionStep {
         this.type = type;
         this.state = state;
         this.properties = properties;
+    }
+
+    public SessionStep() {
     }
 
     public String getStepId() {
@@ -103,20 +140,20 @@ public class SessionStep {
         this.type = type;
     }
 
-    public Long getIn() {
-        return in;
+    public long getInputRelated() {
+        return inputRelated;
     }
 
-    public void setIn(Long in) {
-        this.in = in;
+    public void setInputRelated(long inputRelated) {
+        this.inputRelated = inputRelated;
     }
 
-    public Long getOut() {
-        return out;
+    public long getOutputRelated() {
+        return outputRelated;
     }
 
-    public void setOut(Long out) {
-        this.out = out;
+    public void setOutputRelated(long outputRelated) {
+        this.outputRelated = outputRelated;
     }
 
     public StepState getState() {

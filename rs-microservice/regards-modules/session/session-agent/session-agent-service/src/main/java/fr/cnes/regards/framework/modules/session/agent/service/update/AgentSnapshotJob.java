@@ -6,8 +6,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import java.util.List;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,31 +22,28 @@ public class AgentSnapshotJob extends AbstractJob<Void> {
     @Autowired
     private AgentSnapshotService agentSnapshotService;
 
-    public static final String STEP_EVENTS = "STEP_EVENTS";
+    public static final String FREEZE_DATE = "FREEZE_DATE";
 
-    public static final String SOURCE = "SOURCE";
+    public static final String SNAPSHOT_PROCESS = "SNAPSHOT_PROCESS";
 
-    private List<StepPropertyUpdateRequest> stepPropertyEvent;
+    private SnapshotProcess snapshotProcess;
 
-    private String source;
+    private OffsetDateTime freezeDate;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
-        this.stepPropertyEvent = getValue(parameters, STEP_EVENTS, new TypeToken<List<StepPropertyUpdateRequest>>() {
+        this.snapshotProcess = getValue(parameters, SNAPSHOT_PROCESS, new TypeToken<SnapshotProcess>() {}.getType());
 
-        }.getType());
-
-        this.source = getValue(parameters, STEP_EVENTS, new TypeToken<String>() {
-
-        }.getType());
+        this.freezeDate = getValue(parameters, FREEZE_DATE, new TypeToken<OffsetDateTime>() {}.getType());
     }
 
     @Override
     public void run() {
+        String source = snapshotProcess.getSource();
         logger.debug("[{}] AgentSnapshot job starts for source {}", jobInfoId, source);
         long start = System.currentTimeMillis();
-        int nbSessionStep = agentSnapshotService.generateSessionStep(source, stepPropertyEvent);
+        int nbSessionStep = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
         logger.debug("[{}] AgentSnapshot job ends in {} ms. {} session step created for source {}", jobInfoId,
                      System.currentTimeMillis() - start, nbSessionStep, source);
     }

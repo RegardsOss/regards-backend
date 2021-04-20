@@ -11,7 +11,11 @@ CREATE TABLE t_step_property_update_request (
     type                varchar(100)    NOT NULL,
     input_related       boolean         NOT NULL,
     output_related      boolean         NOT NULL,
+    session_step_id     int8                    ,
     primary key (id)
 );
 
 create sequence seq_step_property start 1 increment 50;
+
+alter table t_step_property_update_request add constraint fk_session_step_id foreign key (session_step_id) references
+t_session_step;

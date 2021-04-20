@@ -1,0 +1,77 @@
+package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * Service for {@link SessionAgentHandler}. It handles new amqp events received by saving
+ * {@link StepPropertyUpdateRequestEvent}s in the database. It creates {@link SnapshotProcess}es related to the
+ * source if they do not exist
+ *
+ * @author Iliana Ghazali
+ **/
+@Service
+@RegardsTransactional
+public class SessionAgentHandlerService {
+
+    /**
+     * Repository to save events received
+     */
+    @Autowired
+    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+
+    /**
+     * Repository to save snapshot processes
+     */
+    @Autowired
+    private ISnapshotProcessRepository snapshotRepo;
+
+    /**
+     * Events handled by {@link SessionAgentHandler}
+     *
+     * @param events {@link StepPropertyUpdateRequestEvent}s
+     */
+    public void handle(List<StepPropertyUpdateRequestEvent> events) {
+        List<StepPropertyUpdateRequest> stepPropertiesToSave = new ArrayList<>();
+        Set<String> sourcesToBeUpdated = new HashSet<>();
+        // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
+        // create the list of sources impacted by these events and create snapshot processes if not existing
+        for (StepPropertyUpdateRequestEvent e : events) {
+            String source = e.getSource();
+            StepPropertyEventInfo stepInfo = e.getStepPropertyEventInfo();
+            stepPropertiesToSave
+                    .add(new StepPropertyUpdateRequest(e.getStepId(), source, e.getSession(), e.getDate(), e.getType(),
+                                                       new StepPropertyInfo(stepInfo.getStepType(), stepInfo.getState(),
+                                                                            stepInfo.getProperty(), stepInfo.getValue(),
+                                                                            stepInfo.isInputRelated(),
+                                                                            stepInfo.isOutputRelated())));
+            sourcesToBeUpdated.add(source);
+        }
+
+        // get the list of snapshot processes from the database
+        Set<SnapshotProcess> snapshotProcessesRetrieved = snapshotRepo.findBySourceIn(sourcesToBeUpdated);
+        Set<SnapshotProcess> snapshotProcessesToBeCreated = new HashSet<>();
+        // loop on every source impacted and create snapshot process if not existing
+        for (String source : sourcesToBeUpdated) {
+            if (snapshotProcessesRetrieved.stream().noneMatch(s -> s.getSource().equals(source))) {
+                snapshotProcessesToBeCreated.add(new SnapshotProcess(source, null, null));
+            }
+        }
+
+        // save changes
+        this.stepPropertyRepo.saveAll(stepPropertiesToSave);
+        this.snapshotRepo.saveAll(snapshotProcessesToBeCreated);
+    }
+}

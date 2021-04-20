@@ -37,9 +37,9 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 
 /**
- * TODO Description
+ * Scheduler to launch {@link AgentSnapshotJob}
  *
- * @author TODO
+ * @author Iliana Ghazali
  */
 @Profile("!noscheduler")
 @Component

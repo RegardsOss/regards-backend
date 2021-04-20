@@ -4,6 +4,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * See {@link AgentCleanService}
+ *
  * @author Iliana Ghazali
  **/
 public class AgentCleanJob extends AbstractJob<Void> {
@@ -16,7 +18,8 @@ public class AgentCleanJob extends AbstractJob<Void> {
         logger.debug("[{}] AgentCleanJob starts for source {}", jobInfoId);
         long start = System.currentTimeMillis();
         int nbSessionStep = agentCleanService.clean();
-        logger.debug("[{}] AgentCleanJob ends in {} ms. {} session step deleted", jobInfoId, System.currentTimeMillis() - start, nbSessionStep);
+        logger.debug("[{}] AgentCleanJob ends in {} ms. {} session step deleted", jobInfoId,
+                     System.currentTimeMillis() - start, nbSessionStep);
     }
 
 }
