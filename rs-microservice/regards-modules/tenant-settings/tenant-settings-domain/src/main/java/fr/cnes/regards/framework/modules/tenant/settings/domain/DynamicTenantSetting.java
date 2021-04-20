@@ -19,13 +19,20 @@
 
 package fr.cnes.regards.framework.modules.tenant.settings.domain;
 
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+
+import org.hibernate.annotations.Type;
+
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 @Entity
 @Table(name = "t_dynamic_tenant_setting")
@@ -85,11 +92,12 @@ public class DynamicTenantSetting {
         }
     }
 
-    public final <T> void setDefaultValue(T defaultValue) {
+    public final <T> DynamicTenantSetting setDefaultValue(T defaultValue) {
         if (defaultValue != null) {
             this.className = defaultValue.getClass().getName();
         }
         this.defaultValue = GsonUtil.toString(defaultValue);
+        return this;
     }
 
     public <T> T getDefaultValue(java.lang.reflect.Type type) {
@@ -104,11 +112,12 @@ public class DynamicTenantSetting {
         }
     }
 
-    public final <T> void setValue(T value) {
+    public final <T> DynamicTenantSetting setValue(T value) {
         if (value != null && className == null) {
             this.className = value.getClass().getName();
         }
         this.value = GsonUtil.toString(value);
+        return this;
     }
 
     public <T> T getValue(java.lang.reflect.Type type) {
@@ -119,32 +128,37 @@ public class DynamicTenantSetting {
         return id;
     }
 
-    public void setId(Long id) {
+    public DynamicTenantSetting setId(Long id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public DynamicTenantSetting setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public DynamicTenantSetting setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof DynamicTenantSetting))
+        }
+        if (!(o instanceof DynamicTenantSetting)) {
             return false;
+        }
         DynamicTenantSetting that = (DynamicTenantSetting) o;
         return name.equals(that.name);
     }
@@ -156,8 +170,8 @@ public class DynamicTenantSetting {
 
     @Override
     public String toString() {
-        return "DynamicTenantSetting{" + "name='" + name + '\'' + ", description='" + description + '\'' + ", " +
-                "value='" + value + '\'' + ", defaultValue='" + defaultValue + '\'' + '}';
+        return "DynamicTenantSetting{" + "name='" + name + '\'' + ", description='" + description + '\'' + ", "
+                + "value='" + value + '\'' + ", defaultValue='" + defaultValue + '\'' + '}';
     }
 
 }

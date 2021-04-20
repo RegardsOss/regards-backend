@@ -59,28 +59,34 @@
             <!-- Module layers -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules</groupId>
+                <artifactId>tenant-settings-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules</groupId>
                 <artifactId>tenant-settings-dao</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules</groupId>
                 <artifactId>tenant-settings-domain</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules</groupId>
                 <artifactId>tenant-settings-rest</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules</groupId>
                 <artifactId>tenant-settings-service</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
+        <module>tenant-settings-client</module>
         <module>tenant-settings-domain</module>
         <module>tenant-settings-dao</module>
         <module>tenant-settings-rest</module>
