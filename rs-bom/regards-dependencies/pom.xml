@@ -602,6 +602,11 @@
 			<!-- Regards Tenant Settings -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+				<artifactId>tenant-settings-client</artifactId>
+				<version>${framework.modules.tenant-settings.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
 				<artifactId>tenant-settings-dao</artifactId>
 				<version>${framework.modules.tenant-settings.version}</version>
 			</dependency>
