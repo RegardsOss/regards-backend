@@ -69,6 +69,8 @@ public class FeatureEntitySpecification {
                 }
                 if (filters.getProviderId() != null) {
                     predicates.add(cb.equal(root.get("providerId"), filters.getProviderId()));
+                    predicates.add(cb.like(cb.lower(root.get("providerId")),
+                                           selection.getFilters().getProviderId().toLowerCase() + "%"));
                 }
                 if (filters.getFrom() != null) {
                     predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));

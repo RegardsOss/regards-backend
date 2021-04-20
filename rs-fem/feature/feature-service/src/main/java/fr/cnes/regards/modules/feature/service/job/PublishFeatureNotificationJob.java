@@ -94,7 +94,7 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
             // Scheduling page deletion job
             publishNotificationEvents(results.map(f -> f.getFeature().getUrn()).toList());
             LOGGER.info("Scheduling job for {} feature notification requests (remaining {}).",
-                        results.getNumberOfElements(), totalElementCheck);
+                        results.getNumberOfElements(), totalElementCheck - results.getNumberOfElements());
             page = page.next();
         } while ((results != null) && results.hasNext());
     }

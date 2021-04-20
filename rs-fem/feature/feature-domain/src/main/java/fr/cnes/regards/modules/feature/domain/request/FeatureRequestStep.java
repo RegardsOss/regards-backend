@@ -63,15 +63,18 @@ public enum FeatureRequestStep {
     private boolean timeout = false;
 
     private FeatureRequestStep(boolean processing) {
+        this.processing = processing;
     }
 
     private FeatureRequestStep(boolean processing, boolean remote) {
         this.remote = remote;
+        this.processing = processing;
     }
 
     private FeatureRequestStep(boolean processing, boolean remote, boolean timeout) {
         this.remote = remote;
         this.timeout = timeout;
+        this.processing = processing;
     }
 
     /**
