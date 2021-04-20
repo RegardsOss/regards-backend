@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.service;
 
-import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
@@ -36,8 +36,8 @@ import org.springframework.context.annotation.Configuration;
 public class FeignMockConfiguration {
 
     @Bean
-    public IAccessSettingsClient accessSettingsClient() {
-        return Mockito.mock(IAccessSettingsClient.class);
+    public IAccessRightSettingClient accessSettingsClient() {
+        return Mockito.mock(IAccessRightSettingClient.class);
     }
 
     @Bean
