@@ -1,0 +1,15 @@
+create table t_notification_action (id int8 not null, action varchar(255) not null, action_date timestamp not null, element jsonb not null, state varchar(255) not null, primary key (id));
+create table t_recipient_error (id int8 not null, job_id uuid not null, notification_action_id int8 not null, recipient_id int8 not null, primary key (id));
+create table t_rule (id int8 not null, rule_plugin_id int8 not null, primary key (id));
+create table ta_rule_recipients (rule_id int8 not null, recipient_id int8 not null, primary key (rule_id, recipient_id));
+alter table ta_rule_recipients drop constraint if exists UK_qml46c9btebccwqc5vtgbqovs;
+alter table ta_rule_recipients add constraint UK_qml46c9btebccwqc5vtgbqovs unique (recipient_id);
+create sequence seq_notification_action start 1 increment 50;
+create sequence seq_recipient_error start 1 increment 50;
+create sequence seq_rule start 1 increment 50;
+alter table t_recipient_error add constraint fk_job_id foreign key (job_id) references t_job_info;
+alter table t_recipient_error add constraint fk_notification_action_id foreign key (notification_action_id) references t_notification_action;
+alter table t_recipient_error add constraint fk_recipient_id foreign key (recipient_id) references t_plugin_configuration;
+alter table t_rule add constraint fk_rule_plugin_id foreign key (rule_plugin_id) references t_plugin_configuration;
+alter table ta_rule_recipients add constraint FKegd782tj6jts8vmp18m332lp9 foreign key (recipient_id) references t_plugin_configuration;
+alter table ta_rule_recipients add constraint FK3qln4h2mro8y8t6ede2k2hbb3 foreign key (rule_id) references t_rule;

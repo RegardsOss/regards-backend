@@ -1,0 +1,1 @@
+alter table ta_rule_recipients drop constraint if exists uk_recipient_id;
