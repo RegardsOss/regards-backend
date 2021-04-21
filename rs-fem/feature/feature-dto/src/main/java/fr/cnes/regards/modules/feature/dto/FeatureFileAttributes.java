@@ -51,6 +51,7 @@ public class FeatureFileAttributes {
     /**
      * The file size
      */
+    @NotNull
     private Long filesize;
 
     /**
