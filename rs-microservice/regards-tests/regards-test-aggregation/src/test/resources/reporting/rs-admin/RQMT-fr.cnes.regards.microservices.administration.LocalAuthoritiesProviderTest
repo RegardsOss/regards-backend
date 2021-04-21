@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_030">
+        <test>
+            <purpose>Check cors requests access by role with date limitation</purpose>
+            <name>checkCorsRequestsAccessByRole</name>
+            <class>fr.cnes.regards.microservices.administration.LocalAuthoritiesProviderTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_040">
+        <test>
+            <purpose>Check cors requests access by role with date limitation</purpose>
+            <name>checkCorsRequestsAccessByRole</name>
+            <class>fr.cnes.regards.microservices.administration.LocalAuthoritiesProviderTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for multitenant throught local resolver. The the tenant resolver should create a datasource not defined in application.properties</purpose>
+            <name>checkJpaTenants</name>
+            <class>fr.cnes.regards.microservices.administration.LocalTenantConnectionTest</class>
+        </test>
+    </requirement>
+</requirements>

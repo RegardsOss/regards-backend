@@ -1,0 +1,4 @@
+{
+    "id":"{{uuid()}}",
+    "urn":"{{urn('URN:FEATURE:DATA:geode:%s:V1',id)}}"
+}

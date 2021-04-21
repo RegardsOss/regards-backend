@@ -1,0 +1,20 @@
+### Response
+
+* **Code:** {{statusCode}} {{statusReason}}
+
+**Headers:**
+
+{{#headers}}
+`{{name}}:{{value}}`  
+{{/headers}}
+
+**Content:**
+
+    {{#responseBody}}
+```json
+    {{responseBody}}
+```
+    {{/responseBody}}
+    {{^responseBody}}
+        None
+    {{/responseBody}}
