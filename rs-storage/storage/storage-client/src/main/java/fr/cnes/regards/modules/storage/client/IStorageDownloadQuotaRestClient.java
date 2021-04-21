@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSe
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 
-public interface IStorageDownloadQuotaRestClient extends IDynamicTenantSettingClient {
+public interface IStorageDownloadQuotaRestClient {
 
     String PATH_USER_QUOTA = "/quota/{user_email}";
 

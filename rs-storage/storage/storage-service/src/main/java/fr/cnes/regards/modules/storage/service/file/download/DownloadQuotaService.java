@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.storage.service.file.download;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,6 +27,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSettingService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -41,6 +43,7 @@ import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuota
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadQuotaExceededException;
 import static fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException.buildDownloadRateExceededException;
+import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
@@ -145,13 +148,15 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     private Cache<QuotaKey, DownloadQuotaLimits> cache = Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES)
             .maximumSize(10_000).build();
 
+    private StorageSettingService storageSettingService;
+
     public DownloadQuotaService() {
     }
 
     @Autowired
     public DownloadQuotaService(IDownloadQuotaRepository quotaRepository, IQuotaManager quotaManager,
             ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber,
-            ApplicationContext applicationContext, IDynamicTenantSettingService dynamicTenantSettingService) {
+            ApplicationContext applicationContext, IDynamicTenantSettingService dynamicTenantSettingService, StorageSettingService storageSettingService) {
         this.quotaRepository = quotaRepository;
         this.quotaManager = quotaManager;
         this.tenantResolver = tenantResolver;
@@ -159,6 +164,7 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         this.subscriber = subscriber;
         this.applicationContext = applicationContext;
         this.dynamicTenantSettingService = dynamicTenantSettingService;
+        this.storageSettingService = storageSettingService;
     }
 
     @EventListener
@@ -166,7 +172,14 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         self = applicationContext.getBean(DownloadQuotaService.class);
         subscriber.subscribeTo(ProjectUserEvent.class, this);
-        // default limits are being initialized by dynamicTenantSetting initialization
+        for(DynamicTenantSetting setting : storageSettingService.retrieve()) {
+            if(Objects.equals(StorageSetting.MAX_QUOTA_NAME, setting.getName())) {
+                changeDefaultQuotaLimits(setting.getValue());
+            }
+            if(Objects.equals(StorageSetting.RATE_LIMIT_NAME, setting.getName())) {
+                changeDefaultRateLimits(setting.getValue());
+            }
+        }
     }
 
     @VisibleForTesting

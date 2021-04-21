@@ -13,6 +13,7 @@ import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
+import fr.cnes.regards.modules.storage.service.settings.StorageSettingService;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
@@ -65,6 +66,8 @@ public class DownloadQuotaServiceTest {
 
     @Mock private IDynamicTenantSettingService dynamicTenantSettingService;
 
+    @Mock private StorageSettingService storageSettinService;
+
     private DownloadQuotaService<Unit> quotaService;
 
     private final Random random = new Random();
@@ -87,7 +90,7 @@ public class DownloadQuotaServiceTest {
                 tenantResolver,
                 runtimeTenantResolver,
                 subscriber,
-                applicationContext, dynamicTenantSettingService)
+                applicationContext, dynamicTenantSettingService, storageSettinService)
         );
         quotaService.setSelf(quotaService);
         quotaService.setCache(Caffeine.newBuilder().build());
