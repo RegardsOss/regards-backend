@@ -1,0 +1,10 @@
+{
+  "one:num": 1,
+  "one:bool": true,
+  "all:obj": {
+    "one:num": 1,
+    "all:str": "all:obj.str value",
+    "all:arr": ["one:1", "one:2"]
+  },
+  "all:str": "all:str value"
+}

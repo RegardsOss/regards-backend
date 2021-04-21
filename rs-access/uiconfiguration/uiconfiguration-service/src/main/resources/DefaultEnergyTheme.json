@@ -1,0 +1,35 @@
+{
+  "mainTheme": {
+    "palette": {
+      "backgroundImage": "",
+      "primary2Color": "#454545",
+      "accent1Color": "#64dd17",
+      "accent2Color": "#8ced4f",
+      "accent3Color": "#9e9e9e",
+      "textColor": "rgba(0, 0, 0, 0.87)",
+      "secondaryTextColor": "rgba(0, 0, 0, 0.54)",
+      "borderColor": "#e0e0e0",
+      "disabledColor": "rgba(0, 0, 0, 0.3)",
+      "shadowColor": "rgba(0, 0, 0, 1)",
+      "canvasColor": "rgba(245, 245, 245, 1)",
+      "alternateTextColor": "#ffffff",
+      "primary3Color": "rgba(0, 0, 0, 0.26)",
+      "primary1Color": "#212121",
+      "pickerHeaderColor": "#64dd17",
+      "clockCircleColor": "#eeeeee"
+    },
+    "themeName": "Xab",
+    "toolbar": {
+      "hoverColor": "#d84315",
+      "color": "#ffffff"
+    },
+    "toggle": {
+      "thumbOnColor": "#64dd17",
+      "thumbOffColor": "#9e9e9e",
+      "thumbDisabledColor": "#e0e0e0",
+      "trackOnColor": "#9ccc65"
+    }
+  },
+  "alternativeTheme": {
+  }
+}

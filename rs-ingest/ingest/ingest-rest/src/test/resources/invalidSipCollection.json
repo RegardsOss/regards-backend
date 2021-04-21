@@ -1,0 +1,94 @@
+{
+    "type": "FeatureCollection",
+    "metadata": {
+        "sessionOwner": "sampleSessionOwner",
+        "session": "sampleSession",
+        "ingestChain": "DefaultProcessingChain",
+        "versioningMode": "INC_VERSION",
+        "categories": [
+            "CAT"
+        ],
+        "storages": [
+            {
+                "pluginBusinessId": "disk",
+                "targetTypes": []
+            }
+        ]
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "id": "providerId31",
+            "ipType": "DATA",
+            "geometry": null,
+            "properties": {
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "regardsDataType": "RAWDATA",
+                            "locations": [
+                                {
+                                    "url": "file:/home/test.xml"
+                                }
+                            ],
+                            "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "reference": false,
+                            "filename": "test.xml",
+                            "algorithm": "MD5"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "name": "XML",
+                                "mimeType": "application/xml",
+                                "description": "https://en.wikipedia.org/wiki/XML"
+                            }
+                        }
+                    }
+                ],
+                "pdi": {
+                    "contextInformation": {},
+                    "provenanceInformation": {
+                        "history": []
+                    },
+                    "accessRightInformation": {}
+                },
+                "descriptiveInformation": {}
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "providerId32",
+            "geometry": null,
+            "properties": {
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "regardsDataType": "RAWDATA",
+                            "locations": [
+                                {
+                                    "url": "file:/home/test.xml"
+                                }
+                            ],
+                            "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "reference": false,
+                            "filename": "test.xml",
+                            "algorithm": "PLOUF"
+                        }
+                    }
+                ],
+                "pdi": {
+                    "contextInformation": {
+                        "categories": [
+                            "CAT"
+                        ]
+                    },
+                    "provenanceInformation": {
+                        "history": []
+                    },
+                    "accessRightInformation": {}
+                },
+                "descriptiveInformation": {}
+            }
+        }
+    ]
+}

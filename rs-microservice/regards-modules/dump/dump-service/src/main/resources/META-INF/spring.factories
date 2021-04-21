@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.modules.dump.service.DumpService,\
+fr.cnes.regards.framework.modules.dump.service.settings.DumpSettingsService

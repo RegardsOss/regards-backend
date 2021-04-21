@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_sip_last on t_sip (provider_id) where last;

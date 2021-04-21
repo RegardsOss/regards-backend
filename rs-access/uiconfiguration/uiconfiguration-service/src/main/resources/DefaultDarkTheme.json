@@ -1,0 +1,62 @@
+{
+  "mainTheme": {
+    "palette": {
+      "backgroundImage": "/img/background.jpg",
+      "primary2Color": "#0097A7",
+      "primary3Color": "#757575",
+      "textColor": "#FFFFFF",
+      "secondaryTextColor": "rgba(255, 255, 255, 0.7)",
+      "alternateTextColor": "#303030",
+      "canvasColor": "#303030",
+      "borderColor": "rgba(255, 255, 255, 0.3)",
+      "disabledColor": "rgba(255, 255, 255, 0.3)",
+      "pickerHeaderColor": "rgba(255, 255, 255, 0.12)",
+      "clockCircleColor": "rgba(255, 255, 255, 0.12)",
+      "shadowColor": "rgba(0, 0, 0, 1)",
+      "accent2Color": "#2196f3",
+      "accent3Color": "#ff6d00",
+      "primary1Color": "#2196f3",
+      "accent1Color": "#ff6d00"
+    },
+    "themeName": "Dark",
+    "tableRow": {
+      "stripeColor": "#212121",
+      "hoverColor": "#424242"
+    },
+    "menuItem": {
+      "rightIconDesktopFill": "#fb8c00",
+      "selectedTextColor": "#ff6d00",
+      "hoverColor": "#1e88e5"
+    },
+    "badge": {
+      "primaryTextColor": "#FFFFFF",
+      "secondaryTextColor": "#FFFFFF",
+      "primaryColor": "#ff6d00",
+      "secondaryColor": "#2196f3"
+    },
+    "appBar": {
+      "textColor": "#FFFFFF"
+    },
+    "tabs": {
+      "textColor": "#fafafa",
+      "selectedTextColor": "#ff9100"
+    },
+    "raisedButton": {
+      "primaryTextColor": "#fafafa",
+      "secondaryTextColor": "#fafafa"
+    },
+    "stepper": {
+      "disabledTextColor": "#757575",
+      "textColor": "#ffffff"
+    },
+    "toggle": {
+      "thumbOnColor": "#8bc34a",
+      "thumbOffColor": "#f44336",
+      "thumbDisabledColor": "#757575",
+      "trackOffColor": "#f5f5f5",
+      "trackOnColor": "#f5f5f5"
+    }
+  },
+  "alternativeTheme": {
+  }
+}

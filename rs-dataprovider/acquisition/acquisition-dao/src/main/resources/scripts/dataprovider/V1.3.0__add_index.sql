@@ -1,0 +1,1 @@
+create index IF NOT EXISTS idx_acq_file_in_progress on t_acquisition_file (acq_file_info_id) where state = 'IN_PROGRESS';
