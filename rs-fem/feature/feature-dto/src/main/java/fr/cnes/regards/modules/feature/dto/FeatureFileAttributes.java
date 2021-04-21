@@ -56,12 +56,14 @@ public class FeatureFileAttributes {
     /**
      * The checksum algorithm (<b>required</b> if data object is not a reference)
      */
+    @NotBlank
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
     /**
      * The checksum (<b>required</b> if data object is not a reference)
      */
+    @NotBlank
     private String checksum;
 
     public DataType getDataType() {

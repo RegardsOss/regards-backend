@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
 /**
  * @author kevin
@@ -58,9 +60,9 @@ public interface IFeatureRequestService {
      * Set the status STORAGE_ERROR to the {@link FeatureEntity} references by
      * group id in the list send in parameter
      *
-     * @param groupId
+     * @param errorRequests request errors {@link RequestResultInfoDTO}
      */
-    void handleStorageError(Set<String> groupIds);
+    void handleStorageError(Collection<RequestResultInfoDTO> errorRequests);
 
     /**
      * Delete all {@link FeatureEntity} references by
@@ -76,7 +78,7 @@ public interface IFeatureRequestService {
      *
      * @param groupId
      */
-    void handleDeletionError(Set<String> groupIds);
+    void handleDeletionError(Collection<RequestResultInfoDTO> errorRequests);
 
     /**
      * Delete requests with given selection

@@ -58,6 +58,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.feature.dao.FeatureDeletionRequestSpecification;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -96,6 +97,9 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     @Autowired
     private IFeatureDeletionRequestRepository deletionRepo;
+
+    @Autowired
+    private IFeatureCreationRequestRepository creationRepo;
 
     @Autowired
     private IPublisher publisher;
@@ -341,6 +345,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
 
         // Delete all features without files, related requests will be deleted once we know notifier has successfully sent the notification about it
+        this.creationRepo.deleteByFeatureEntityIn(sucessfullRequests.values());
         this.featureRepo.deleteAll(sucessfullRequests.values());
     }
 
