@@ -1,0 +1,34 @@
+{
+  "id": "user-app-root",
+  "type": "MainContainer",
+  "classes": [],
+  "styles": {},
+  "containers": [
+    {
+      "id": "page-top-header",
+      "type": "RowContainer",
+      "classes": [],
+      "styles": {}
+    },
+    {
+      "id": "page-sub-header",
+      "type": "RowContainer",
+      "classes": [],
+      "styles": {},
+      "dynamicContent": false
+    },
+    {
+      "id": "page-content-module",
+      "type": "ContentRowContainer",
+      "classes": [],
+      "styles": {},
+      "dynamicContent": true
+    },
+    {
+      "id": "page-footer",
+      "type": "RowContainer",
+      "classes": [],
+      "styles": {}
+    }
+  ]
+}

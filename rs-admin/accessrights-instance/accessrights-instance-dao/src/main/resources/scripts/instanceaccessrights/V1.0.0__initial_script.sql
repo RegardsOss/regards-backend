@@ -1,0 +1,12 @@
+create table t_account (id int8 not null, status varchar(20), authentication_failed_counter int8, email varchar(100), external boolean, firstName varchar(100), invalidityDate timestamp, lastName varchar(100), password varchar(200), password_update_date timestamp, primary key (id));
+create table t_account_settings (id int8 not null, mode varchar(16), primary key (id));
+create table t_account_unlock_token (id int8 not null, expiry_date timestamp, token varchar(255), verified boolean, account_id int8 not null, primary key (id));
+create table t_password_reset_token (id int8 not null, expiryDate timestamp, token varchar(255), account_id int8 not null, primary key (id));
+alter table t_account add constraint uk_account_email unique (email);
+alter table t_account_unlock_token add constraint uk_account_unlock_token_account_id unique (account_id);
+alter table t_password_reset_token add constraint uk_password_reset_token_account_id unique (account_id);
+create sequence hibernate_sequence start 1 increment 1;
+create sequence seq_account start 1 increment 50;
+create sequence seq_account_settings start 1 increment 50;
+alter table t_account_unlock_token add constraint fk_unlock_token foreign key (account_id) references t_account;
+alter table t_password_reset_token add constraint fk_password_reset_token foreign key (account_id) references t_account;

@@ -1,0 +1,8 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+<p>One or more files could not be acquired. Validation step failed for :<br/>
+	<ul>
+		<#list invalidFiles as invalidFile>
+		    <li>${invalidFile.filePath}</li>
+		</#list>
+	</ul>
+</p>

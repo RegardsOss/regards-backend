@@ -1,0 +1,16 @@
+<html>
+<body>
+<h1>Account created</h1>
+<p>Your registration to project ${project} has been validated.</p>
+<p>Please click on the following link to validate your email address: <a href="${confirmationUrl}">email validation</a>.</p>
+<#if quota != -1 || rate != -1>
+<p>The following quota restrictions have been set by the administrator:
+<ul>
+    <#if quota != -1><li>Maximum number of allowed downloads: <#if quota == 0>none<#else>${quota}</#if></li></#if>
+    <#if rate != -1><li>Maximum number of simultaneous downloads: <#if rate == 0>none<#else>${rate}</#if></li></#if>
+</ul>
+</p>
+</#if>
+<p>Best REGARDS,</p>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve one configured Service Provider plugin of the Authentication module</purpose>
+            <name>retrieveInexistantServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve one configured Service Provider plugin of the Authentication module</purpose>
+            <name>retrieveInexistantServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to delete a configured Service Provider plugin of the Authentication module with error</purpose>
+            <name>deleteInexistantIndentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to delete a configured Service Provider plugin of the Authentication module with error</purpose>
+            <name>deleteInexistantIndentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module with eror</purpose>
+            <name>updateInvalidServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module with eror</purpose>
+            <name>updateInvalidServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module with error</purpose>
+            <name>updateInexistantServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module with error</purpose>
+            <name>updateInexistantServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve one configured Service Provider plugin of the Authentication module</purpose>
+            <name>retrieveServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve one configured Service Provider plugin of the Authentication module</purpose>
+            <name>retrieveServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to create a configured Service Provider plugin of the Authentication module</purpose>
+            <name>createServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to create a configured Service Provider plugin of the Authentication module</purpose>
+            <name>createServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve all configured Service Provider plugins of the Authentication module</purpose>
+            <name>retrieveServiceProviders</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve all configured Service Provider plugins of the Authentication module</purpose>
+            <name>retrieveServiceProviders</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module</purpose>
+            <name>updateServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Service Provider plugin of the Authentication module</purpose>
+            <name>updateServiceProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to delete a configured Service Provider plugin of the Authentication module</purpose>
+            <name>deleteIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to delete a configured Service Provider plugin of the Authentication module</purpose>
+            <name>deleteIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.ExternalAuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to delete a configured Identity Provider plugin of the Authentication module with error</purpose>
+            <name>deleteInexistantIndentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to delete a configured Identity Provider plugin of the Authentication module with error</purpose>
+            <name>deleteInexistantIndentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve one configured Identity Provider plugin of the Authentication module</purpose>
+            <name>retrieveIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve one configured Identity Provider plugin of the Authentication module</purpose>
+            <name>retrieveIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve all configured Identity Provider plugins of the Authentication module</purpose>
+            <name>retrieveIdentityProviders</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve all configured Identity Provider plugins of the Authentication module</purpose>
+            <name>retrieveIdentityProviders</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to create a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>createIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to create a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>createIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module with eror</purpose>
+            <name>updateInvalidIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module with eror</purpose>
+            <name>updateInvalidIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to delete a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>deleteIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to delete a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>deleteIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>updateIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module</purpose>
+            <name>updateIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module with error</purpose>
+            <name>updateInexistantIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to update a configured Identity Provider plugin of the Authentication module with error</purpose>
+            <name>updateInexistantIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_010">
+        <test>
+            <purpose>Integration test to retrieve one configured Identity Provider plugin of the Authentication module</purpose>
+            <name>retrieveInexistantIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ARC_020">
+        <test>
+            <purpose>Integration test to retrieve one configured Identity Provider plugin of the Authentication module</purpose>
+            <name>retrieveInexistantIdentityProvider</name>
+            <class>fr.cnes.regards.framework.authentication.AuthenticationControllerIT</class>
+        </test>
+    </requirement>
+</requirements>

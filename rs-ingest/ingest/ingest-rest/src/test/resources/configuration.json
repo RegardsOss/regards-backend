@@ -1,0 +1,91 @@
+{
+    "microservice": "rs-ingest",
+    "modules": [
+        {
+            "module": {
+                "id": "ingest",
+                "name": "SIP management module",
+                "description": "SIP submission and management",
+                "version": "2.0.0-SNAPSHOT",
+                "author": "CSSI",
+                "legalOwner": "CNES",
+                "documentation": "https://github.com/RegardsOss"
+            },
+            "configuration": [
+                {
+                    "key": "fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain",
+                    "value": {
+                        "name": "DefaultProcessingChain",
+                        "validationPlugin": {
+                            "pluginId": "DefaultSipValidation",
+                            "label": "DefaultSIPValidation",
+                            "version": "1.0.0",
+                            "priorityOrder": 0,
+                            "active": true,
+                            "pluginClassName": "fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation",
+                            "interfaceNames": [
+                                "fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation"
+                            ],
+                            "parameters": []
+                        },
+                        "generationPlugin": {
+                            "pluginId": "DefaultSingleAIPGeneration",
+                            "label": "DefaultAIPGeneration",
+                            "version": "1.0.0",
+                            "priorityOrder": 0,
+                            "active": true,
+                            "pluginClassName": "fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration",
+                            "interfaceNames": [
+                                "fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration"
+                            ],
+                            "parameters": []
+                        }
+                    }
+                },
+                {
+                    "key": "fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain",
+                    "value": {
+                        "name": "MyProcessingChain",
+                        "validationPlugin": {
+                            "pluginId": "DefaultSipValidation",
+                            "label": "MySIPValidation",
+                            "version": "1.0.0",
+                            "priorityOrder": 0,
+                            "active": true,
+                            "pluginClassName": "fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation",
+                            "interfaceNames": [
+                                "fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation"
+                            ],
+                            "parameters": []
+                        },
+                        "generationPlugin": {
+                            "pluginId": "DefaultSingleAIPGeneration",
+                            "label": "MyAIPGeneration",
+                            "version": "1.0.0",
+                            "priorityOrder": 0,
+                            "active": true,
+                            "pluginClassName": "fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration",
+                            "interfaceNames": [
+                                "fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration"
+                            ],
+                            "parameters": []
+                        }
+                    }
+                },
+                {
+                    "key": "fr.cnes.regards.framework.modules.dump.domain.DumpSettings",
+                    "value": {
+                        "activeModule": true,
+                        "cronTrigger": "0 0 0 1-7 * SUN"
+                    }
+                },
+                {
+                    "key": "fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings",
+                    "value": {
+                        "activeNotification": false
+                    }
+                }
+            ]
+        }
+    ]
+}

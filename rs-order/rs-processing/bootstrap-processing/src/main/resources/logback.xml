@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ 
+ This file is part of REGARDS.
+ 
+ REGARDS is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ REGARDS is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+-->
+<configuration>
+        <property name="APP_NAME"
+              value="rs-processing"/>
+        <include resource="fr/cnes/regards/framework/logbackappender/console_appender.xml" />
+        <include resource="fr/cnes/regards/framework/logbackappender/syslog_appender.xml" />
+        <include resource="fr/cnes/regards/framework/logbackappender/file_appender.xml" />
+        <root level="INFO">
+                <appender-ref ref="STDOUT"/>
+        </root>
+
+        <logger name="com.netflix" level="OFF"/>
+
+        <logger name="reactor.ipc.netty.channel.ChannelOperationsHandler" level="DEBUG"/>
+        <logger name="reactor.ipc.netty.http.server.HttpServer" level="DEBUG"/>
+        <logger name="reactor.ipc.netty.http.client" level="DEBUG"/>
+        <logger name="io.reactivex.netty.protocol.http.client" level="DEBUG"/>
+        <logger name="io.netty.handler" level="DEBUG"/>
+        <logger name="io.netty.handler.proxy.HttpProxyHandler" level="DEBUG"/>
+        <logger name="io.netty.handler.proxy.ProxyHandler" level="DEBUG"/>
+        <logger name="org.springframework.web.reactive.function.client" level="DEBUG"/>
+        <logger name="reactor.ipc.netty.channel" level="DEBUG"/>
+
+</configuration>

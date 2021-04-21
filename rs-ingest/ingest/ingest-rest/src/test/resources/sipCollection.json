@@ -1,0 +1,74 @@
+{
+	"type": "FeatureCollection",
+	"metadata": {
+		"sessionOwner": "sampleSessionOwner",
+		"session": "sampleSession",
+		"ingestChain": "DefaultProcessingChain",
+		"versioningMode": "INC_VERSION",
+		"categories" : [
+			"CAT"
+		],
+		"storages": [
+			{
+				"pluginBusinessId": "disk",
+				"targetTypes": []
+			}
+		]
+	},
+	"features": [
+		{
+			"type": "Feature",
+			"id": "JA2_VPF_AXVCNE20081204_095500_20081204_215527_20081205_002323",
+			"ipType": "DATA",
+			"geometry": null,
+			"properties": {
+				"contentInformations": [
+					{
+						"dataObject": {
+							"regardsDataType": "RAWDATA",
+							"locations": [	
+								{
+									"url": "file:/home/test.xml"
+								}
+							],
+							"checksum": "c8a5f0b675909fc265395b9ab50a5755",
+							"filename": "test.xml",
+							"algorithm": "MD5"
+						},
+						"representationInformation": {
+							"syntax": {
+								"mimeType": "application/octet-stream"
+							}
+						}
+					}
+				],
+				"pdi": {
+					"contextInformation": {
+						"tags": [
+							"DA_TC_JASON2_CORPFALTI_POE"
+						]
+					},
+					"provenanceInformation": {
+						"history": [],
+						"facility": "CNES"
+					},
+					"accessRightInformation": {}
+				},
+				"descriptiveInformation": {
+					"mission": "JASON2",
+					"radical": "JA2_VPF_AXVCNE_20081204_215527_20081205_002323",
+					"cycle_range": {
+						"cycle_max": 15,
+						"cycle_min": 15
+					},
+					"time_period": {
+						"stop_date": "2008-12-05T00:23:23Z",
+						"start_date": "2008-12-04T21:55:27Z"
+					},
+					"product_name": "JA2_VPF_AXVCNE20081204_095500_20081204_215527_20081205_002323",
+					"file_creation_date": "2008-12-04T09:55:00Z"
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_CMP_ARC_170">
+        <test>
+            <purpose>test the polling ONE_TO_MANY to message broker</purpose>
+            <name>testPollOneToManyExternal</name>
+            <class>fr.cnes.regards.framework.amqp.test.PollerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_ARC_170">
+        <test>
+            <purpose>test the polling ONE_TO_ONE to message broker</purpose>
+            <name>testPollOneToOneExternal</name>
+            <class>fr.cnes.regards.framework.amqp.test.PollerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_ARC_030">
+        <test>
+            <purpose>Send a message to the message broker using the publish client</purpose>
+            <name>testPublishOneToManyExternal</name>
+            <class>fr.cnes.regards.framework.amqp.test.PublisherIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_CMP_ARC_160">
+        <test>
+            <purpose>test the subscription to message broker</purpose>
+            <name>testSubscribeToOneToManyExternal</name>
+            <class>fr.cnes.regards.framework.amqp.test.SubscriberIT</class>
+        </test>
+    </requirement>
+</requirements>

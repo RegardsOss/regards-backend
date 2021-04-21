@@ -1,0 +1,1 @@
+create index IF NOT EXISTS idx_acq_file_product_id on t_acquisition_file (product_id);

@@ -1,0 +1,42 @@
+######################
+# Eclipse
+######################
+.project
+.metadata
+.classpath
+.settings/
+.springBeans
+
+######################
+# Intellij
+######################
+.idea/**
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+######################
+# Maven
+######################
+target/
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+######################
+# Logs
+######################
+
+
+deliver_brutaly\.sh
+
+deliver_config_brutaly\.sh
+
+deliver_gateway_brutaly\.sh
+
+*.swp

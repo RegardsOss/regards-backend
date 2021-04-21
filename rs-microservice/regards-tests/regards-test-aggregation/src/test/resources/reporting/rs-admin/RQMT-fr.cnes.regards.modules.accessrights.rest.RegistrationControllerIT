@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to delete a registration request.</purpose>
+            <name>deleteAccessRequest</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RegistrationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to reactivate access to an access denied project user.</purpose>
+            <name>acceptAccessRequest</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RegistrationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_510">
+        <test>
+            <purpose>Check that the system allows the user to request a registration.</purpose>
+            <name>requestAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RegistrationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to deny access to an already access granted project user.</purpose>
+            <name>denyAccessRequest</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RegistrationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve all access requests for a project.</purpose>
+            <name>getAllAccesses</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RegistrationControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the allows to retrieve roles.</purpose>
+            <name>retrieveRoleList</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerNoTransactionIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to delete an account linked to no project user.</purpose>
+            <name>deleteAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_470">
+        <test>
+            <purpose>Check that the system allows the user to request to receive a mail in order to reset its password.</purpose>
+            <name>requestResetPassword</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows to unlock an instance user's account.</purpose>
+            <name>unlockAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user for an instance and handle fail cases.</purpose>
+            <name>getAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user for an instance and handle fail cases.</purpose>
+            <name>getAccountByEmail</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to create a user for an instance and handle fail cases.</purpose>
+            <name>createAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_470">
+        <test>
+            <purpose>Check that the system allows to reset an instance user's password.</purpose>
+            <name>performResetPassword</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to update user for an instance and handle fail cases.</purpose>
+            <name>updateAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve all users for an instance.</purpose>
+            <name>getAllAccounts</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.AccountControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_230">
+        <test>
+            <purpose>Check that the system allows to delete a user's permissions.</purpose>
+            <name>deleteUserPermissions</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_270">
+        <test>
+            <purpose>Check that the system allows a user to connect using a hierarchically inferior role.</purpose>
+            <name>getUserPermissions_withBorrowedRoleInferior</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve all user on a project.</purpose>
+            <name>getAllUsers</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to update a project user and handles fail cases.</purpose>
+            <name>updateUser</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_230">
+        <test>
+            <purpose>Check that the system allows to update a user's permissions.</purpose>
+            <name>updateUserPermissions</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve a single user on a project.</purpose>
+            <name>getUser</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_330">
+        <test>
+            <purpose>Check that the system allows to retrieve a user's metadata.</purpose>
+            <name>getUserMetaData</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to delete a project user.</purpose>
+            <name>deleteUser</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_330">
+        <test>
+            <purpose>Check that the system allows to delete a user's metadata.</purpose>
+            <name>deleteUserMetaData</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_270">
+        <test>
+            <purpose>Check that the system prevents a user to connect using a hierarchically superior role.</purpose>
+            <name>getUserPermissions_withBorrowedRoleSuperior</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_330">
+        <test>
+            <purpose>Check that the system allows to update a user's metadata.</purpose>
+            <name>updateUserMetaData</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ProjectUsersControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_230">
+        <test>
+            <purpose>Check that the system allows to retrieve a user's permissions.</purpose>
+            <name>getUserPermissions</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.ResourceControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system prevents from deleting a native role.</purpose>
+            <name>removeRoleNative</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to update resources accesses of a role.</purpose>
+            <name>updateRoleResourcesAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to remove all resources accesses of a role.</purpose>
+            <name>clearRoleResourcesAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to retrieve all users of a role.</purpose>
+            <name>retrieveRoleProjectUserList</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to update a role and handle fail cases.</purpose>
+            <name>updateRole</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the allows to retrieve a single role and handle fail cases.</purpose>
+            <name>retrieveRole</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to delete a role.</purpose>
+            <name>removeRole</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check hierachy of roles</purpose>
+            <name>retrieveInheritedRoles</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to create a role and handle fail cases.</purpose>
+            <name>createRole</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to retrieve all resources accesses of a role.</purpose>
+            <name>retrieveRoleResourcesAccessList</name>
+            <class>fr.cnes.regards.modules.accessrights.rest.RolesControllerIT</class>
+        </test>
+    </requirement>
+</requirements>

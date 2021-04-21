@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../../../../models/models-domain/src/main/resources/model_V1.0.xsd">
+	<name>MISSION</name>
+	<description>Sample mission</description>
+	<type>COLLECTION</type>
+	<attribute>
+		<label>forTests</label>
+		<name>reference</name>
+		<type>STRING</type>
+	</attribute>
+	<attribute alterable="false">
+		<label>forTests</label>
+		<name>active</name>
+		<type>BOOLEAN</type>
+	</attribute>
+	<fragment>
+		<name>geo</name>
+		<description>Geographic information</description>
+		<attribute>
+			<label>forTests</label>
+			<name>crs</name>
+			<type>STRING</type>
+			<restriction>
+				<enumeration>
+					<value>Earth</value>
+					<value>Mars</value>
+					<value>Venus</value>
+				</enumeration>
+			</restriction>
+		</attribute>
+	</fragment>
+</model>

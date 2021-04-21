@@ -1,0 +1,226 @@
+= Ingest module API
+
+[[overview]]
+== Overview
+
+ This API allows to submit and search SIP (Submission Information Package).
+ 
+== SIP management
+
+=== Ingestion of a SIP collection
+
+Submit a SIP collection as a bulk POST request.
+
+:TestClass: SIPControllerIT
+:TestMethod: ingestSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+
+=== Import a SIP collection
+
+Submit SIP collection to REGARDS by upload a file containing the SIP collection in GeoJson format to REGARDS.
+
+:TestClass: SIPControllerIT
+:TestMethod: importValidSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/importPartialInvalidSips/http-response.adoc[]
+
+include::{snippets}/{TestClass}/importAllInvalidSips/http-response.adoc[]
+
+=== Search SIP
+
+:TestClass: SIPControllerIT
+:TestMethod: getSips 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+[[sip-collection-response, SIP collection]]
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get one SIP
+
+Retrieve one SIP by is ipId.
+
+:TestClass: SIPControllerIT
+:TestMethod: getOneSession 
+
+=== Retry to store a SIP already submitted
+
+A SIP can be retry to be stored via a `POST /sips/{ipId}/retry` request. +
+This action will be rejected if the SIP states is not *AIP_GEN_ERROR*, *INVALID* or *DELETED*. +
+This action consists to change the SIP states to *CREATED*. +
+
+The response is the SIP in GeoJson format.
+
+[[ip-parameter-description, ipIP parameter description]]
+* *URL params*
+
+|===
+|Parameter|Type|Description|Constraints
+
+|`+ipId+`
+|String
+|The REGARDS id of the SIP
+|Must match the following format *URN:OAISIdentifier:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]* +
+with *OAISIdentifier* is *SIP*, *AIP*, *DIP*. +
+and *entityTpe* is *COLLECTION*, *DOCUMENT*, *DATA*, *DATASET*.
+|===
+
+=== Delete a SIP identified by ipId
+
+A SIP can be deleted via a `DELETE /sips/{ipId}` request. +
+The response is a set with the SIP that can not be deleted. 
+
+* *URL params*
+
+See <<ip-parameter-description>>.
+
+==== Example response
+
+See <<sip-collection-response>>.
+
+=== Delete SIP identified by providerId
+
+Several SIP can be deleted via a `DELETE /sips?providerId=XYZ` request. +
+The response is a set of SIP that can not be deleted.
+
+* *Query params*
+
+|===
+|Parameter|Type|Description|Constraints
+
+|`+providerId+`
+|String
+|The provider id 
+|
+|===
+
+==== Example response
+
+See <<sip-collection-response>>.
+
+== Ingestion session management
+
+=== Get an ingestion's session
+
+:TestClass: SIPControllerIT
+:TestMethod: getOneSession 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Search ingestion's sessions
+
+:TestClass: SIPControllerIT
+:TestMethod: getSession 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Delete all SIP for a session id
+
+All the SIP of a session can be deleted via a `DELETE /sessions/{id}` request. +
+
+* *URL params*
+
+|===
+|Parameter|Type|Description|Constraints
+
+|`+id+`
+|String
+|The session id
+|
+|===
+
+== Ingestion processing chain management
+
+=== Create an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: createIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Update an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: updateIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: getOneIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Delete an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: deleteIngestProcessingChain
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Import an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: importProcessingChain 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Export an Ingestion processing chain
+
+:TestClass: IngestProcessingChainControllerIT
+:TestMethod: exportProcessingChain 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]

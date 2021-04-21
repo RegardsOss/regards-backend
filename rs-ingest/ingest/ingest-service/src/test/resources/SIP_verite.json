@@ -1,0 +1,39 @@
+{
+      "ipType": "DATA",
+      "id": "90",
+      "geometry": {
+        "coordinates": [
+          -0.280065,
+          -41.887544
+        ],
+        "type": "Point"
+      },
+      "properties": {
+        "contentInformations": [],
+        "pdi": {
+          "contextInformation": {
+            "tags": []
+          },
+          "referenceInformation": {},
+          "provenanceInformation": {
+            "history": []
+          },
+          "fixityInformation": {},
+          "accessRightInformation": {}
+        },
+        "descriptiveInformation": {
+          "spect": "F5IV/V",
+          "absmag": 2.37,
+          "mag": 7.64,
+          "con": "Phe",
+          "dec": -41.887544,
+          "name": "",
+          "spect_desig": "F",
+          "dist": 113.2503,
+          "greek_letters": "",
+          "id": "90",
+          "ra": 0.018671
+        }
+      },
+      "type": "Feature"
+    }

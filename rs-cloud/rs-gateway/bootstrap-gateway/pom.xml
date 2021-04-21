@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ 
+ This file is part of REGARDS.
+ 
+ REGARDS is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ REGARDS is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.cnes.regards.cloud</groupId>
+    <artifactId>bootstrap-gateway</artifactId>
+    <description>REGARDS Cloud - Gateway server</description>
+
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>1.5.0</version>
+        <relativePath></relativePath>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sonar.language>java</sonar.language>
+        <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+        <fr.cnes.regards.docker.image.name>rs-gateway</fr.cnes.regards.docker.image.name>
+        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs-authentication:9034", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]</docker.entryPoint>
+        <docker.guest.port>9030</docker.guest.port>
+    </properties>
+
+    <dependencies>
+    	<dependency>
+      		<groupId>org.springdoc</groupId>
+      		<artifactId>springdoc-openapi-ui</artifactId>
+   		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-logger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+    		<groupId>fr.cnes.regards.framework</groupId>
+    		<artifactId>proxy-starter</artifactId>
+    	</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.authentication</groupId>
+            <artifactId>authentication-client</artifactId>
+        </dependency>
+        <!-- Spring boot config -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+        <!-- Activate actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Misc -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>development</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>docker</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>delivery</id>
+        </profile>
+    </profiles>
+</project>
+

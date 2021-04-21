@@ -1,0 +1,78 @@
+{
+  "microservice": "Test application",
+  "modules": [
+    {
+      "module": {
+        "id": "testModule",
+        "name": "testModule",
+        "description": "Test module",
+        "version": "Test",
+        "author": "Author",
+        "legalOwner": "CSSI",
+        "documentation": "http://test.com"
+      },
+      "configuration": [
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 0"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 1"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 2"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 3"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 4"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 5"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 6"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 7"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 8"
+          }
+        },
+        {
+          "key": "fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo",
+          "value": {
+            "attribute": "Configuration 9"
+          }
+        }
+      ]
+    }
+  ]
+}

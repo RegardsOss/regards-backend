@@ -1,0 +1,131 @@
+{
+  "layout": {
+    "id": "application",
+    "type": "FormMainContainer",
+    "classes": [],
+    "styles": {},
+    "containers": [
+      {
+        "id": "defaultCriterionLine",
+        "type": "RowContainer",
+        "classes": [],
+        "styles": {},
+        "containers": []
+      },
+      {
+        "type": "ColumnContainer50PercentWidth",
+        "classes": [],
+        "styles": {},
+        "id": "Colon1"
+      }
+    ]
+  },
+  "primaryPane": "EXPANDED_COLLAPSIBLE",
+  "searchResult": {
+    "primaryPane": "EXPANDED_COLLAPSIBLE",
+    "facets": {
+      "enabledFor": {
+        "DATA": true,
+        "DATASET": true
+      },
+      "initiallyEnabled": true,
+      "list": []
+    },
+    "restrictions": {
+      "byDataset": {
+        "type": "NONE",
+        "selection": []
+      }
+    },
+    "viewsGroups": {
+      "DATA": {
+        "enabled": true,
+        "tabTitle": {},
+        "initialMode": "TABLE",
+        "enableDownload": false,
+        "sorting": [],
+        "views": {
+          "TABLE": {
+            "enabled": true,
+            "attributes": []
+          },
+          "QUICKLOOK": {
+            "enabled": false,
+            "attributes": []
+          },
+          "MAP": {
+            "enabled": false,
+            "attributes": [],
+            "backgroundLayer": {
+              "url": null,
+              "type": "AsynchroneWMS"
+            }
+          }
+        }
+      },
+      "DATASET": {
+        "enabled": false,
+        "tabTitle": {},
+        "initialMode": "TABLE",
+        "sorting": [],
+        "views": {
+          "TABLE": {
+            "enabled": true,
+            "attributes": []
+          }
+        }
+      }
+    }
+  },
+  "criterion": [
+    {
+      "pluginInstanceId": "1583932375648",
+      "label": "criteria",
+      "active": true,
+      "conf": {
+        "attributes": {
+          "searchField": "label"
+        }
+      },
+      "pluginId": 1,
+      "container": "defaultCriterionLine"
+    },
+    {
+      "pluginInstanceId": "1587377105384",
+      "label": "criteria",
+      "active": true,
+      "conf": {
+        "attributes": {
+          "firstField": "properties.value_d1",
+          "secondField": "properties.value_l1"
+        }
+      },
+      "pluginId": 4,
+      "container": "defaultCriterionLine"
+    },
+    {
+      "pluginInstanceId": "1587377134403",
+      "label": "criteria",
+      "active": true,
+      "conf": {
+        "attributes": {
+          "searchField": "model"
+        }
+      },
+      "pluginId": 7,
+      "container": "Colon1"
+    },
+    {
+      "pluginInstanceId": "1587377150314",
+      "label": "criteria",
+      "active": true,
+      "conf": {
+        "attributes": {
+          "searchField": "properties.date"
+        }
+      },
+      "pluginId": 5,
+      "container": "Colon1"
+    }
+  ]
+}

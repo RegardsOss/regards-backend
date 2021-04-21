@@ -1,0 +1,90 @@
+{
+    "type": "FeatureCollection",
+    "metadata": {
+        "processing": "DefaultProcessingChain",
+        "session": "sampleSession"
+    },
+    "features": [
+        {
+            "id": "ISO_DENS_19820416_1538",
+            "type": "Feature",
+            "ipType": "DATA",
+            "geometry": null,
+            "properties": {
+                "pdi": {
+                    "fixityInformation": {},
+                    "contextInformation": {},
+                    "referenceInformation": {},
+                    "provenanceInformation": {
+                        "history": [
+                            {
+                                "date": "2018-03-30T15:52:59.674Z",
+                                "comment": "Product SIP generation"
+                            }
+                        ]
+                    },
+                    "accessRightInformation": {}
+                },
+                "contentInformations": [
+                    {
+                        "dataObject": {
+                            "urls": [
+                                "file:/regards-input/cdpp/DA_TC_ARC_ISO_DENSITE/data/ISO_DENS_19820416_1538"
+                            ],
+                            "checksum": "d20f8f0fe06e98a1a3403080cb1ebeed",
+                            "algorithm": "MD5",
+                            "filename": "ISO_DENS_19820416_1538.txt",
+                            "reference": false,
+                            "regardsDataType": "RAWDATA"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "mimeType": "text/plain"
+                            }
+                        }
+                    },
+                    {
+                        "dataObject": {
+                            "urls": [
+                                "file:/regards-input/cdpp/DA_TC_ARC_ISO_DENSITE/browse/iso_nete_19820416_1538C.png"
+                            ],
+                            "checksum": "d54f707f42e0a00c42b0a9be46e209a6",
+                            "algorithm": "MD5",
+                            "filename": "iso_nete_19820416_1538C.txt",
+                            "reference": false,
+                            "regardsDataType": "QUICKLOOK_MD"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "mimeType": "image/png"
+                            }
+                        }
+                    },
+                    {
+                        "dataObject": {
+                            "urls": [
+                                "file:/regards-input/cdpp/DA_TC_ARC_ISO_DENSITE/browse/iso_nete_19820416_1538B.png"
+                            ],
+                            "checksum": "9a56c4625a796476f730ddc58035df20",
+                            "algorithm": "MD5",
+                            "filename": "iso_nete_19820416_1538B.txt",
+                            "reference": false,
+                            "regardsDataType": "QUICKLOOK_SD"
+                        },
+                        "representationInformation": {
+                            "syntax": {
+                                "mimeType": "image/png"
+                            }
+                        }
+                    }
+                ],
+                "descriptiveInformation": {
+                    "time_period": {
+                        "stop_date": "1982-04-16T15:54:49.537Z",
+                        "start_date": "1982-04-16T15:38:31.155Z"
+                    }
+                }
+            }
+        }
+    ]
+}

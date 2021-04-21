@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ 
+ This file is part of REGARDS.
+ 
+ REGARDS is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ REGARDS is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.cnes.regards.modules.accessrights</groupId>
+	<artifactId>accessrights-service</artifactId>
+
+	<parent>
+		<groupId>fr.cnes.regards.modules</groupId>
+		<artifactId>accessrights</artifactId>
+		<version>1.5.0</version>
+	</parent>
+
+	<dependencies>
+		<!-- REGARDS Framework -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.utils</groupId>
+			<artifactId>exception-utils</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>authentication-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-regards</artifactId>
+		</dependency>
+		<!-- Microservice internal dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-dao</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>feign-regards-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.project</groupId>
+			<artifactId>project-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.storage</groupId>
+			<artifactId>storage-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.templates</groupId>
+			<artifactId>templates-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.emails</groupId>
+			<artifactId>emails-service</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
+			<artifactId>accessrights-instance-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-logger</artifactId>
+		</dependency>
+		<!-- Tests -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+	<name>planet</name>
+	<type>DATA</type>
+	<attribute>
+		<label>Planet name</label>
+		<name>planet</name>
+		<type>STRING</type>
+	</attribute>
+	<attribute>
+		<label>Planet type</label>
+		<name>planet_type</name>
+		<type>STRING</type>
+		<restriction>
+			<enumeration>
+				<value>Gas giant</value>
+				<value>Ice giant</value>
+				<value>Telluric</value>
+			</enumeration>
+		</restriction>
+	</attribute>
+	<attribute>
+		<label>Diameter</label>
+		<name>diameter</name>
+		<type unit="km">INTEGER</type>
+	</attribute>
+	<attribute>
+		<label>Sun distance</label>
+		<name>sun_distance</name>
+		<type unit="km">LONG</type>
+	</attribute>
+	<attribute optional="true">
+		<label>Parameters</label>
+		<name>params</name>
+		<description>List of planet parameters</description>
+		<type>STRING_ARRAY</type>
+	</attribute>
+	<attribute optional="true">
+		<label>origine</label>
+		<name>origine</name>
+		<description>informations origine</description>
+		<type>JSON</type>
+		<restriction>
+			<json_schema><![CDATA[{"type":"object","properties":{"name":{"type":"string"},"link":{"type":"string","format":"uri","pattern":"^.*//.*"},"contacts":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"locations":{"type":"array","items":{"type":"object","properties":{"institut":{"type":"string"},"code":{"type":"integer"}}}}}}}}}]]></json_schema>
+		</restriction>
+	</attribute>
+	<fragment>
+		<name>TimePeriod</name>
+		<description>Période temporelle (date début - date fin) au format YYYY-MM-DDThh:mm:ss</description>
+		<version>1</version>
+		<attribute alterable="true" optional="false">
+			<label>Date et temps début</label>
+			<name>startDate</name>
+			<description>Date et temps début</description>
+			<type unit="unitless">DATE_ISO8601</type>
+		</attribute>
+		<attribute alterable="true" optional="false">
+			<label>Date et temps fin</label>
+			<name>stopDate</name>
+			<description>Date et temps fin</description>
+			<type unit="unitless">DATE_ISO8601</type>
+		</attribute>
+	</fragment>
+</model>

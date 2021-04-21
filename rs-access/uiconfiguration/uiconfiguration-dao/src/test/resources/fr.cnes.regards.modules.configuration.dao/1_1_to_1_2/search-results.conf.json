@@ -1,0 +1,110 @@
+{
+  "primaryPane": "ALWAYS_EXPANDED",
+  "facets": {
+    "enabledFor": {
+      "DATA": false,
+      "DATASET": false
+    },
+    "initiallyEnabled": false,
+    "list": []
+  },
+  "restrictions": {
+    "byDataset": {
+      "type": "SELECTED_MODELS",
+      "selection": [
+        "SpaceSet"
+      ]
+    }
+  },
+  "viewsGroups": {
+    "DATA": {
+      "enableDownload": true,
+      "tabTitle": {
+        "en": "Constellations",
+        "fr": "Constellations"
+      },
+      "initialMode": "TABLE",
+      "sorting": [],
+      "enabled": true,
+      "views": {
+        "TABLE": {
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "id"
+                }
+              ],
+              "label": {
+                "en": "Identifier",
+                "fr": "Identifiant"
+              }
+            }
+          ],
+          "enabled": true
+        },
+        "QUICKLOOK": {
+          "attributes": [],
+          "enabled": false
+        },
+        "MAP": {
+          "attributes": [],
+          "enabled": true,
+          "backgroundLayer": {
+            "url": "https://s3-eu-west-1.amazonaws.com/vito-lcv/2015/full_level0",
+            "type": "OSM",
+            "conf": "{\"baseLevel\":1}"
+          }
+        }
+      },
+      "facets": {
+        "initiallyEnabled": false,
+        "list": [],
+        "enabled": false
+      }
+    },
+    "DATASET": {
+      "tabTitle": {},
+      "initialMode": "LIST",
+      "sorting": [],
+      "enabled": true,
+      "views": {
+        "TABLE": {
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Label"
+              }
+            }
+          ],
+          "enabled": true
+        },
+        "QUICKLOOK": {
+          "attributes": [],
+          "enabled": false
+        },
+        "MAP": {
+          "attributes": [],
+          "enabled": false
+        }
+      }
+    }
+  }
+}

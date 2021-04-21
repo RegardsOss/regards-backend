@@ -1,0 +1,5 @@
+Ceci est un fichier texte
+de
+ base
+ avec des sauts de ligne...
+ Rien de bien méchant donc.

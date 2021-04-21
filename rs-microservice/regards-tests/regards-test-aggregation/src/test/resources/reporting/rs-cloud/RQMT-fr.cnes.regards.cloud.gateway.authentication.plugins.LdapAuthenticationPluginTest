@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_SEC_120">
+        <test>
+            <purpose>Check authentication to REGARDS system with a kerberos ticket</purpose>
+            <name>checkKerberosTicketValidation</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.KerberosServiceProviderPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testRequestErrorAuthenticationException</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_620">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testRequestErrorAuthenticationException</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testErrorAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_620">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testErrorAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testRequestErrorAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_620">
+        <test>
+            <purpose>Check a authentication throught the Regards internal authentication system with error</purpose>
+            <name>testRequestErrorAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check a valid authentication throught the Regards internal authentication system</purpose>
+            <name>testValidAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_620">
+        <test>
+            <purpose>Check a valid authentication throught the Regards internal authentication system</purpose>
+            <name>testValidAuthentication</name>
+            <class>fr.cnes.regards.cloud.gateway.authentication.plugins.RegardsInternalAuthenticationPluginTest</class>
+        </test>
+    </requirement>
+</requirements>

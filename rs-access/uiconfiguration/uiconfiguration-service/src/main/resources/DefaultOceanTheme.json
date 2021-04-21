@@ -1,0 +1,159 @@
+{
+  "mainTheme": {
+    "palette": {
+      "background": "",
+      "backgroundImage": "/img/background.jpg",
+      "primary2Color": "#0097A7",
+      "primary3Color": "#757575",
+      "textColor": "#FFFFFF",
+      "secondaryTextColor": "rgba(255, 255, 255, 0.7)",
+      "alternateTextColor": "#303030",
+      "canvasColor": "#00202f",
+      "borderColor": "rgba(255, 255, 255, 0.3)",
+      "disabledColor": "rgba(255, 255, 255, 0.3)",
+      "pickerHeaderColor": "rgba(255, 255, 255, 0.12)",
+      "clockCircleColor": "rgba(255, 255, 255, 0.12)",
+      "shadowColor": "rgba(0, 0, 0, 1)",
+      "accent3Color": "#ff6d00",
+      "primary1Color": "#2196f3",
+      "accent1Color": "#ff6d00",
+      "accent2Color": "#64b5f6"
+    },
+    "ACE-editor": {
+      "theme": "monokai"
+    },
+    "components:infinite-table": {
+      "lineHeight": 50,
+      "fixedColumnsWidth": 48,
+      "minRowCount": 13,
+      "maxRowCount": 13,
+      "minHeaderRowHeight": 40,
+      "multipleValuesSeparatorMargin": "0 10px",
+      "multipleValuesSeparatorHeight": 14,
+      "thumbnailPadding": 5
+    },
+    "forms-extension:validation": {
+      "validColor": "#4CAF50",
+      "warningColor": "#FF9800",
+      "errorColor": "#f44336"
+    },
+    "forms-extension:jsonField": {
+      "marginTop": "8px",
+      "padding": "24px 0 12px 0",
+      "lineHeight": 1,
+      "height": "140px",
+      "showLineNumbers": true
+    },
+    "forms-extension:dateField": {
+      "marginTop": "14px",
+      "innerMargins": "0 10px 0 0",
+      "height": "58px",
+      "textTop": "-13px"
+    },
+    "module:menu": {
+      "background": "rgba(0, 32, 47, 0.85)",
+      "borderWidth": "0 0 1px 0",
+      "borderColor": "rgba(255, 255, 255, 0.175)",
+      "borderStyle": "solid",
+      "navigationBarMaxHeight": 36,
+      "navigationItemTextTransform": "none",
+      "separatorBorderWidth": 2,
+      "separatorBorderRadius": 2,
+      "separatorBorderStyle": "solid",
+      "separatorMargin": "12px 10px"
+    },
+    "module:search-results": {
+      "minListRowCount": 4,
+      "maxListRowCount": 4,
+      "listLineHeight": 160,
+      "listRowsByColumnCount": 4
+    },
+    "module:storage-plugins": {
+      "usedSpaceColor": "#133e63",
+      "unusedSpaceColor": "#FFFFFF",
+      "chartBorderColor": "#94a4b2",
+      "chartBorderWidth": "1px",
+      "legendMarginTop": 16,
+      "legendItemMarginTop": 8,
+      "legendItemIconToText": 10,
+      "circleIconSize": 12
+    },
+    "module:order-history": {
+      "statusIconMargin": "0 7px 0 15px",
+      "color.PENDING": "#00BCD4",
+      "color.RUNNING": "white",
+      "color.WAITING_USER_DOWNLOAD": "#00BCD4",
+      "color.PAUSED": "#00BCD4",
+      "color.EXPIRED": "#9E9E9E",
+      "color.FAILED": "#f44336",
+      "color.DONE_WITH_WARNING": "#FF9800",
+      "color.DONE": "#9E9E9E",
+      "color.DELETED": "#9E9E9E",
+      "color.REMOVED": "#9E9E9E",
+      "color.UNKNOWN": "#9E9E9E",
+      "waiting.user.download.animation": "shake 3s infinite",
+      "color.file.PENDING": "#00BCD4",
+      "color.file.AVAILABLE": "white",
+      "color.file.ONLINE": "white",
+      "color.file.DOWNLOADED": "#9E9E9E",
+      "color.file.ERROR": "#f44336",
+      "color.file.UNKNOWN": "#9E9E9E",
+      "clearEmailFilterPadding": "7px 16px 7px 8px"
+    },
+    "components:button-anchor-scroll-top": {
+      "iconColor": "#303030",
+      "buttonColor": "#2196f3",
+      "buttonRight": "10px",
+      "buttonBottom": "10px"
+    },
+    "themeName": "Dark",
+    "tableRow": {
+      "stripeColor": "#0a415b",
+      "hoverColor": "#003047",
+      "selectedColor": "#214f6c"
+    },
+    "badge": {
+      "primaryTextColor": "#FFFFFF",
+      "secondaryTextColor": "#FFFFFF",
+      "primaryColor": "#ff6d00",
+      "secondaryColor": "#2196f3"
+    },
+    "appBar": {
+      "textColor": "#FFFFFF"
+    },
+    "tabs": {
+      "textColor": "#fafafa",
+      "selectedTextColor": "#ff9100"
+    },
+    "raisedButton": {
+      "primaryTextColor": "#fafafa",
+      "secondaryTextColor": "#fafafa",
+      "color": "#285165",
+      "disabledColor": "#184155"
+    },
+    "stepper": {
+      "disabledTextColor": "#757575",
+      "textColor": "#ffffff"
+    },
+    "toggle": {
+      "thumbOnColor": "#8bc34a",
+      "thumbOffColor": "#f44336",
+      "thumbDisabledColor": "#757575",
+      "trackOffColor": "#f5f5f5",
+      "trackOnColor": "#f5f5f5"
+    },
+    "menu": {
+      "backgroundColor": "#00202f",
+      "containerBackgroundColor": "#00202f"
+    },
+    "tableHeaderColumn": {
+      "height": 48
+    },
+    "module": {
+      "common": {
+        "titleMarginLeft": 0
+      }
+    }
+  },
+  "alternativeTheme": {}
+}
