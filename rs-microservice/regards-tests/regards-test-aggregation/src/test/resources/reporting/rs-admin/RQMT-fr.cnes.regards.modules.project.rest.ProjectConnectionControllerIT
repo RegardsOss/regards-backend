@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to project connections by id.</purpose>
+            <name>testRetrieveProjectConnectionsById</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to get a project connection and Hateoas returned links</purpose>
+            <name>retrieveProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to get a project connection and Hateoas returned links</purpose>
+            <name>retrieveProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to create a project connection and Hateoas returned links</purpose>
+            <name>createProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to create a project connection and Hateoas returned links</purpose>
+            <name>createProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to update a project connection and Hateoas returned links</purpose>
+            <name>updateProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to update a project connection and Hateoas returned links</purpose>
+            <name>updateProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to all projects database connections and Hateoas returned links</purpose>
+            <name>retrieveAllProjectsConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to all projects database connections and Hateoas returned links</purpose>
+            <name>retrieveAllProjectsConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to project connections by project name and Hateoas returned links.</purpose>
+            <name>testRetrieveProjectConnectionsByProjectName</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check REST Access to update a project connection and Hateoas returned links</purpose>
+            <name>deleteProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to update a project connection and Hateoas returned links</purpose>
+            <name>deleteProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectConnectionControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check REST Access for project update and Hateoas returned links</purpose>
+            <name>updateProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access for project update and Hateoas returned links</purpose>
+            <name>updateProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_130">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrievePublicProjectsTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrievePublicProjectsTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check REST Access for project creation and Hateoas returned links</purpose>
+            <name>createProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access for project creation and Hateoas returned links</purpose>
+            <name>createProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_130">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrieveAllProjectsByPage</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrieveAllProjectsByPage</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check REST Access to project resource and Hateoas returned links</purpose>
+            <name>retrieveProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to project resource and Hateoas returned links</purpose>
+            <name>retrieveProjectTest</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_130">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrieveAllProjects</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check REST Access to project resources and returned Hateoas links</purpose>
+            <name>retrieveAllProjects</name>
+            <class>fr.cnes.regards.modules.project.rest.ProjectsControllerIT</class>
+        </test>
+    </requirement>
+</requirements>

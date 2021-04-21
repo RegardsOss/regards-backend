@@ -1,0 +1,203 @@
+{
+  "primaryPane": "EXPANDED_COLLAPSIBLE",
+  "searchResult": {
+    "primaryPane": "EXPANDED_COLLAPSIBLE",
+    "facets": {
+      "enabledFor": {
+        "DATA": true,
+        "DATASET": true
+      },
+      "initiallyEnabled": true,
+      "list": [
+        {
+          "attributes": [
+            {
+              "name": "properties.dist"
+            }
+          ],
+          "label": {
+            "en": "Distance",
+            "fr": "Distance"
+          }
+        }
+      ]
+    },
+    "restrictions": {
+      "byDataset": {
+        "type": "NONE",
+        "selection": []
+      }
+    },
+    "viewsGroups": {
+      "DATA": {
+        "enabled": true,
+        "initialMode": "LIST",
+        "enableDownload": true,
+        "sorting": [
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ]
+          }
+        ],
+        "views": {
+          "TABLE": {
+            "enabled": true,
+            "attributes": [
+              {
+                "attributes": [
+                  {
+                    "name": "label"
+                  }
+                ],
+                "label": {
+                  "en": "Label",
+                  "fr": "Label"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "properties.value_l1"
+                  }
+                ],
+                "label": {
+                  "en": "long value",
+                  "fr": "long value"
+                }
+              }
+            ]
+          },
+          "QUICKLOOK": {
+            "enabled": true,
+            "attributes": [
+              {
+                "attributes": [
+                  {
+                    "name": "label"
+                  }
+                ],
+                "label": {
+                  "en": "Label",
+                  "fr": "Label"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "tags"
+                  }
+                ],
+                "label": {
+                  "en": "Tags",
+                  "fr": "Tags"
+                }
+              }
+            ]
+          },
+          "MAP": {
+            "enabled": false,
+            "attributes": [],
+            "backgroundLayer": {
+              "url": null,
+              "type": "AsynchroneWMS"
+            }
+          }
+        },
+        "tabTitle": {
+          "en": "Data",
+          "fr": "Données"
+        }
+      },
+      "DATASET": {
+        "enabled": true,
+        "initialMode": "TABLE",
+        "sorting": [],
+        "views": {
+          "TABLE": {
+            "enabled": true,
+            "attributes": [
+              {
+                "attributes": [
+                  {
+                    "name": "label"
+                  }
+                ],
+                "label": {
+                  "en": "Label",
+                  "fr": "Label"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "properties.values_l1_sum"
+                  }
+                ],
+                "label": {
+                  "en": "long sum",
+                  "fr": "long sum"
+                }
+              },
+              {
+                "attributes": [
+                  {
+                    "name": "properties.Missions"
+                  }
+                ],
+                "label": {
+                  "en": "Missions",
+                  "fr": "Missions"
+                }
+              }
+            ]
+          }
+        },
+        "tabTitle": {
+          "en": "Set",
+          "fr": "Jeux"
+        }
+      }
+    }
+  },
+  "graphLevels": [
+    "COLLECTION_MODEL"
+  ],
+  "graphDatasetAttributes": [
+    {
+      "attributes": [
+        {
+          "name": "label"
+        }
+      ],
+      "label": {
+        "en": "Label",
+        "fr": "Label"
+      }
+    },
+    {
+      "attributes": [
+        {
+          "name": "properties.values_l1_sum"
+        }
+      ],
+      "label": {
+        "en": "long sum",
+        "fr": "long sum"
+      }
+    },
+    {
+      "attributes": [
+        {
+          "name": "properties.Missions"
+        }
+      ],
+      "label": {
+        "en": "Missions",
+        "fr": "Missions"
+      }
+    }
+  ]
+}

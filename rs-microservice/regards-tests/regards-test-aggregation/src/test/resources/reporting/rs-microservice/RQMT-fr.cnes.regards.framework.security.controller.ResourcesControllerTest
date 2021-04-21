@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_ADM_ADM_240">
+        <test>
+            <purpose>Check the /resources common endpoint that retrieves all resources of a microservice.</purpose>
+            <name>resourcesTest</name>
+            <class>fr.cnes.regards.framework.security.controller.ResourcesControllerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Check the /resources common endpoint that retrieves all resources of a microservice.</purpose>
+            <name>resourcesTest</name>
+            <class>fr.cnes.regards.framework.security.controller.ResourcesControllerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Check security filter with subdomain ip adress for endpoints accesses</purpose>
+            <name>subdomainIpFilterTest</name>
+            <class>fr.cnes.regards.framework.security.filter.IPFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Check security filter with ip adress for endpoints accesses</purpose>
+            <name>ipFilterTest</name>
+            <class>fr.cnes.regards.framework.security.filter.IPFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with Jwt access token</purpose>
+            <name>test</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationProviderTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_030">
+        <test>
+            <purpose>Check security filter with cors requests access denied for a given Role</purpose>
+            <name>corsFilterRoleAccessDeniedTest</name>
+            <class>fr.cnes.regards.framework.security.filter.CorsFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_040">
+        <test>
+            <purpose>Check security filter with cors requests access denied for a given Role</purpose>
+            <name>corsFilterRoleAccessDeniedTest</name>
+            <class>fr.cnes.regards.framework.security.filter.CorsFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_030">
+        <test>
+            <purpose>Check security filter with cors requests</purpose>
+            <name>corsFilterTest</name>
+            <class>fr.cnes.regards.framework.security.filter.CorsFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with valid Jwt access token</purpose>
+            <name>jwtFilterAccessGrantedTest</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with no Jwt access token for public access (scope in header)</purpose>
+            <name>jwtFilterPublicAccessWithHeader</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with no Jwt access token</purpose>
+            <name>jwtFilterAccessDeniedWithoutToken</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with invlid request authorization header</purpose>
+            <name>jwtFilterAccessDeniedTest</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_100">
+        <test>
+            <purpose>Check security filter with no Jwt access token for public access (scope as query parameter)</purpose>
+            <name>jwtFilterPublicAccess</name>
+            <class>fr.cnes.regards.framework.security.filter.JWTAuthenticationFilterTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify access to plugin resources per microservice</purpose>
+            <name>defaultPluginResourceManagerTest</name>
+            <class>fr.cnes.regards.framework.security.endpoint.DefaultPluginManagementTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify access granted/denied to endpoints defined in authorized resources for a specific tenant</purpose>
+            <name>testResourceAccessVoterVote</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify internal management of resources endponts by tenants and resources</purpose>
+            <name>testManagedAuthoritiesByTenantAndResources</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify access denied to endpoints not defined in authorized resources</purpose>
+            <name>testResourceAccessVoterVoteDenied</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithDifferentValueAndPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithGETAnnotation</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>missingRessourceAccessAnnotationWithValueSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithPATCHAnnotation</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithSameValueAndPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>missingRessourceAccessAnnotationWithSameValueAndPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithPutAndValueSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithGetAndValueSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>missingRessourceAccessAnnotationWithPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithDELETEAnnotation</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithPOSTAnnotation</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>missingRessourceAccessAnnotationWithDifferentValueAndPathSpecified</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify introspection code to get the informations about endpoint access resources</purpose>
+            <name>presentRessourceAccessAnnotationWithPUTAnnotation</name>
+            <class>fr.cnes.regards.framework.security.endpoint.MethodAuthorizationTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_SEC_200">
+        <test>
+            <purpose>Verify access to all resources access per microservice</purpose>
+            <name>defaultAuthorityProviderTest</name>
+            <class>fr.cnes.regards.framework.security.endpoint.DefaultAuthorityProviderTest</class>
+        </test>
+    </requirement>
+</requirements>

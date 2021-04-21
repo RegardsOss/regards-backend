@@ -1,0 +1,78 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.access.services.rest.user.mock;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+
+@Primary
+@Component
+public class AccessSettingsClientMock implements IAccessRightSettingClient, IResourceController<DynamicTenantSetting> {
+
+    public static final List<String> ACCESS_SETTINGS_STUB_GROUPS = Lists.newArrayList("dummy");
+
+    public static final List<DynamicTenantSetting> ACCESS_SETTINGS_STUB = Arrays
+            .asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
+                    AccessSettings.DEFAULT_ROLE_SETTING,
+                    AccessSettings.MODE_SETTING);
+
+    @Autowired
+    private IResourceService resourceService;
+
+    @Override
+    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
+        return new ResponseEntity<>(HateoasUtils.wrapList(ACCESS_SETTINGS_STUB), HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
+        return new ResponseEntity<>(toResource(setting), HttpStatus.OK);
+    }
+
+    @Override
+    public EntityModel<DynamicTenantSetting> toResource(final DynamicTenantSetting element, final Object... extras) {
+        EntityModel<DynamicTenantSetting> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "update",
+                                LinkRels.UPDATE,
+                                MethodParamFactory.build(AccessSettings.class));
+
+        return resource;
+    }
+}

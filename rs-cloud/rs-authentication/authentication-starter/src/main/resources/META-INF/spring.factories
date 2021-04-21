@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.authentication.internal.Oauth2DefaultTokenAdapter,\
+fr.cnes.regards.framework.authentication.autoconfigure.Oauth2AutoConfiguration

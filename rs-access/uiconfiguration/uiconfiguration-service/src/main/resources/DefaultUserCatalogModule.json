@@ -1,0 +1,147 @@
+{
+  "primaryPane": "ALWAYS_EXPANDED",
+  "facets": {
+    "enabledFor": {
+      "DATA": true,
+      "DATASET": true
+    },
+    "initiallyEnabled": true,
+    "list": []
+  },
+  "restrictions": {
+    "byDataset": {
+      "type": "NONE",
+      "selection": []
+    },
+    "onData": {
+      "lastVersionOnly": false
+    }
+  },
+  "viewsGroups": {
+    "DATA": {
+      "enabled": true,
+      "tabTitle": {},
+      "initialMode": "TABLE",
+      "enableDownload": false,
+      "sorting": [
+        {
+          "attributes": [
+            {
+              "name": "label"
+            }
+          ]
+        }
+      ],
+      "views": {
+        "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "files"
+                }
+              ],
+              "label": {
+                "en": "Thumbnail",
+                "fr": "Vignette"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "providerId"
+                }
+              ],
+              "label": {
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
+              }
+            }
+          ]
+        },
+        "QUICKLOOK": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "providerId"
+                }
+              ],
+              "label": {
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
+              }
+            }
+          ]
+        },
+        "MAP": {
+          "enabled": false,
+          "attributes": [],
+          "initialViewMode": "MODE_3D",
+          "mapEngine": "CESIUM",
+          "layers": []
+        }
+      }
+    },
+    "DATASET": {
+      "enabled": true,
+      "tabTitle": {},
+      "initialMode": "TABLE",
+      "sorting": [],
+      "views": {
+        "TABLE": {
+          "enabled": true,
+          "attributes": [
+            {
+              "attributes": [
+                {
+                  "name": "label"
+                }
+              ],
+              "label": {
+                "en": "Label",
+                "fr": "Libellé"
+              }
+            },
+            {
+              "attributes": [
+                {
+                  "name": "providerId"
+                }
+              ],
+              "label": {
+                "en": "Provider ID",
+                "fr": "ID fournisseur"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "criteriaGroups": []
+}

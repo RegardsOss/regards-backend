@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ERG_310">
+        <test>
+            <purpose>Check the data map is properly stored and recovered.</purpose>
+            <name>testDataMapStorage</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Check the data map is properly stored and recovered.</purpose>
+            <name>testDataMapStorage</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_460">
+        <test>
+            <purpose>Check the data map is properly stored and recovered.</purpose>
+            <name>testDataMapStorage</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ERG_310">
+        <test>
+            <purpose>Quick JPA check. If no error is thrown, the persistance is likely to be correct.</purpose>
+            <name>testSaveNew</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_440">
+        <test>
+            <purpose>Quick JPA check. If no error is thrown, the persistance is likely to be correct.</purpose>
+            <name>testSaveNew</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_460">
+        <test>
+            <purpose>Quick JPA check. If no error is thrown, the persistance is likely to be correct.</purpose>
+            <name>testSaveNew</name>
+            <class>fr.cnes.regards.modules.templates.dao.TemplateRepositoryTest</class>
+        </test>
+    </requirement>
+</requirements>

@@ -1,0 +1,60 @@
+{
+    "requestId": "{{uuid()}}",
+    "requestDate": "{{odt()}}",
+    "metadata": {
+        "sessionOwner": "CHRONOS",
+        "session": "{{enum(LUNDI,MARDI,MERCREDI,JEUDI,VENDREDI)}}",
+        "override": false,
+        "priority": "NORMAL"
+    },
+    "feature": {
+        "id": "{{seq('FEATURE:MSI3:%05d')}}",
+        "type": "Feature",
+        "entityType": "DATA",
+        "model": "GEODE001",
+        "geometry": {
+            "coordinates": [
+                10.0,
+                20.0
+            ],
+            "type": "Point"
+        },
+        "properties": {
+            "system": {
+                "filesize": "{{integer(2000,10000)}}",
+                "ingestion_date": "{{now()}}",
+                "change_date": "{{now()}}",
+                "gpfs_url": "file://home/geode/test.tar",
+                "filename": "test.tar",
+                "extension": "{{enum(tar,nc,shp,zip,tgz,xml)}}"
+            },
+            "data": {
+                "type": "L0A_LR_Packet",
+                "production_date": "{{odt(2010-01-01,2020-01-01)}}",
+                "utc_start_date": "2020-03-03T23:00:00Z",
+                "utc_end_date": "2020-03-03T23:00:00Z",
+                "tai_start_date": "2020-03-03T23:00:00Z",
+                "tai_end_date": "2020-03-03T23:00:00Z",
+                "validity_flag": false
+            },
+            "swot": {
+                "crid": "crid",
+                "product_counter": "{{integer(1,99)}}",
+                "station": "{{enum(KUX,IVK)}}",
+                "day_date": "2020-03-03T00:00:00Z",
+                "cycle_number": "{{integer(1,25)}}",
+                "pass_number": 125,
+                "tile_number": 25,
+                "tile_side": "{{enum(Full,Left,Right)}}",
+                "file_identifier": "{{enum(Basic,WindWave,Expert,Unsmoothed)}}",
+                "apid": "0001",
+                "granule_type": "{{enum(Downlink unit,Cycle,Half Orbit,Tile,Full-swath scene,Bassin-cycle,Continent-pass,Daily)}}",
+                "continent_id": [
+                    1,
+                    2
+                ],
+                "bassin_id": "bassinid"
+            }
+        }
+    }
+}

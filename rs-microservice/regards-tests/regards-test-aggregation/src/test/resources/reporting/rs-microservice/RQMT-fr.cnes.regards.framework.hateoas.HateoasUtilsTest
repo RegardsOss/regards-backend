@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check that the wrapping method correctly wraps lists of objects.</purpose>
+            <name>wrapList</name>
+            <class>fr.cnes.regards.framework.hateoas.HateoasUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check that the unwrapping method correctly unwraps objects.</purpose>
+            <name>unwrap</name>
+            <class>fr.cnes.regards.framework.hateoas.HateoasUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check that the unwrapping method correctly unwraps objects lists.</purpose>
+            <name>unwrapList</name>
+            <class>fr.cnes.regards.framework.hateoas.HateoasUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Check that the wrapping method correctly wraps objects.</purpose>
+            <name>wrap</name>
+            <class>fr.cnes.regards.framework.hateoas.HateoasUtilsTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Test authorized link creation regarding security restriction.</purpose>
+            <name>testAuthorizedLinkCreation</name>
+            <class>fr.cnes.regards.framework.hateoas.DefaultResourceServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_020">
+        <test>
+            <purpose>Test not authorized link creation regarding security restriction.</purpose>
+            <name>testNotAuthorizedLinkCreation</name>
+            <class>fr.cnes.regards.framework.hateoas.DefaultResourceServiceTest</class>
+        </test>
+    </requirement>
+</requirements>

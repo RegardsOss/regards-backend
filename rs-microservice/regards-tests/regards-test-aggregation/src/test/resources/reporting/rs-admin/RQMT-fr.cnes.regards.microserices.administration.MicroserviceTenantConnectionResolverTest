@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Check for multitenant resolver throught administration microservice client</purpose>
+            <name>test</name>
+            <class>fr.cnes.regards.microserices.administration.MicroserviceTenantConnectionResolverTest</class>
+        </test>
+    </requirement>
+</requirements>

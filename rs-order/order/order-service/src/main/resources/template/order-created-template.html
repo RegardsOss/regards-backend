@@ -1,0 +1,15 @@
+<#setting datetime_format='d MMM yyyy HH:mm:ss z'>
+<div>Dear User,
+    <br>
+    <p>Order <b>"${order_label}"</b>, from project <b>${project}</b>, has been created.</p>
+    <p>It can be followed at this address: <a href="${orders_url}">Orders list</a> (you need to be connected).</p>
+    <p>It is available until <b>${expiration_date?datetime.iso}</b>.<br/>
+        A <a href="${metalink_download_url}">metalink</a> file is available.</br>
+        You can use it with <a href="${regards_downloader_url}">RegardsDownloader</a>.
+    </p>
+    <p>If there is any problem, please contact us at regards-admin@c-s.fr</p>
+
+    <p>
+        Best Regards
+    </p>
+</div>

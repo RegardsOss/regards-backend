@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system does not unlock a locked account if the wrong code is passed.</purpose>
+            <name>unlockAccountWrongCode</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.AccountWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system allows a user to unlock its account with a code.</purpose>
+            <name>unlockAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.AccountWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_450">
+        <test>
+            <purpose>Check that the system does unlock not locked accounts and feedbacks the caller.</purpose>
+            <name>unlockAccountNotLocked</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.AccountWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_510">
+        <test>
+            <purpose>Check that the system creates an Account when requesting an access if none already exists.</purpose>
+            <name>requestAccessNoAccount</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to delete a registration request.</purpose>
+            <name>removeAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to validate a registration request.</purpose>
+            <name>grantAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_520">
+        <test>
+            <purpose>Check that the system allows to deny a registration request.</purpose>
+            <name>denyAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_510">
+        <test>
+            <purpose>Check that the system set PUBLIC role as default when requesting access.</purpose>
+            <name>requestAccessNullRoleName</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_510">
+        <test>
+            <purpose>Check that the system fails when receiving an access request with an already used email.</purpose>
+            <name>requestAccessEmailAlreadyInUse</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_510">
+        <test>
+            <purpose>Check that the system allows the user to request a registration by creating a new project user.</purpose>
+            <name>requestAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.workflow.ProjectUserWorkflowManagerTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system does not remove a native role.</purpose>
+            <name>removeRoleNative</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_260">
+        <test>
+            <purpose>Check that the system is able to hierarchically compare two roles.</purpose>
+            <name>isHierarchicallyInferior</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to add resources accesses on a role.</purpose>
+            <name>updateRoleResourcesAccessAddingResourcesAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to remove all resources accesses of a role.</purpose>
+            <name>clearRoleResourcesAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to retrieve all users  from a role hierarchy.</purpose>
+            <name>retrieveRoleProjectUserList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system fails when trying to update a role which does not exist.</purpose>
+            <name>updateRoleNotExistent</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system fails when trying to create an already existing role.</purpose>
+            <name>createRoleDuplicate</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to update a role in a regular case.</purpose>
+            <name>updateRole</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the allows to retrieve a single role.</purpose>
+            <name>retrieveRole</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to update resources accesses of a role.</purpose>
+            <name>updateRoleResourcesAccessUpdatingResourcesAccess</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to delete a role in a regular case.</purpose>
+            <name>removeRole</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system fails when trying to update a role which id is different from the passed one.</purpose>
+            <name>updateRoleWrongId</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to create a role in a regular case.</purpose>
+            <name>createRole</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system fails when trying to update permissions of a role which does not exist.</purpose>
+            <name>updateRoleResourcesAccessNotExistent</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the system allows to retrieve all resources accesses from the role hierarchy.</purpose>
+            <name>retrieveRoleResourcesAccessList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_210">
+        <test>
+            <purpose>Check that the allows to retrieve roles.</purpose>
+            <name>retrieveRoleList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.RoleServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_240">
+        <test>
+            <purpose>Check that the collect resources functionnality is well done when no resources are collected</purpose>
+            <name>testEmptyResourcesToCollect</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ResourcesServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_240">
+        <test>
+            <purpose>Check that the collect resources functionnality is well done for remote services resources</purpose>
+            <name>testRemoteResourcesToCollect</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ResourcesServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system allows to update access settings in regular case.</purpose>
+            <name>update</name>
+            <class>fr.cnes.regards.modules.accessrights.service.AccessSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system fails when trying to update a non existing access settings.</purpose>
+            <name>updateEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.AccessSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="?">
+        <test>
+            <purpose>Check that the system allows to retrieve the access settings.</purpose>
+            <name>retrieve</name>
+            <class>fr.cnes.regards.modules.accessrights.service.AccessSettingsServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_260">
+        <test>
+            <purpose>Check that the system fail when trying to retrieve a user's permissions using a role not hierarchically inferior.</purpose>
+            <name>retrieveProjectUserAccessRightsBorrowedRoleNotInferior</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve all access requests for a project.</purpose>
+            <name>retrieveAccessRequestList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system fails when trying to retrieve a user with unknown email.</purpose>
+            <name>retrieveOneByEmailNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system fails when trying to retrieve a user with unknown email.</purpose>
+            <name>retrieveOneByEmailNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system fails when trying to retrieve a user with unknown email.</purpose>
+            <name>retrieveOneByEmailNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve the current logged user.</purpose>
+            <name>retrieveCurrentUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve the current logged user.</purpose>
+            <name>retrieveCurrentUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to retrieve the current logged user.</purpose>
+            <name>retrieveCurrentUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system fails when trying to update a non existing project user.</purpose>
+            <name>updateUserEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system fails when trying to update a non existing project user.</purpose>
+            <name>updateUserEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system fails when trying to update a non existing project user.</purpose>
+            <name>updateUserEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveUserListByStatus</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveUserListByStatus</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveUserListByStatus</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to update a project user.</purpose>
+            <name>updateUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to update a project user.</purpose>
+            <name>updateUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to update a project user.</purpose>
+            <name>updateUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system fails when user id differs from the passed id.</purpose>
+            <name>updateUserInvalidValue</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system fails when user id differs from the passed id.</purpose>
+            <name>updateUserInvalidValue</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system fails when user id differs from the passed id.</purpose>
+            <name>updateUserInvalidValue</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user by email.</purpose>
+            <name>retrieveOneByEmail</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user by email.</purpose>
+            <name>retrieveOneByEmail</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user by email.</purpose>
+            <name>retrieveOneByEmail</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user without exposing hidden meta data.</purpose>
+            <name>retrieveUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user without exposing hidden meta data.</purpose>
+            <name>retrieveUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to retrieve a specific user without exposing hidden meta data.</purpose>
+            <name>retrieveUser</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_260">
+        <test>
+            <purpose>Check that the system allows to retrieve all permissions a of user using a borrowed role.</purpose>
+            <name>retrieveProjectUserAccessRightsWithBorrowedRole</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_230">
+        <test>
+            <purpose>Check that the system allows to override role's access rights for a user.</purpose>
+            <name>updateUserAccessRights</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_480">
+        <test>
+            <purpose>Check that the system allows to override role's access rights for a user.</purpose>
+            <name>updateUserAccessRights</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_260">
+        <test>
+            <purpose>Check that the system allows to retrieve all permissions a of user.</purpose>
+            <name>retrieveProjectUserAccessRights</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_230">
+        <test>
+            <purpose>Check that the system fails when trying to override a not exisiting user's access rights.</purpose>
+            <name>updateUserAccessRightsEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_480">
+        <test>
+            <purpose>Check that the system fails when trying to override a not exisiting user's access rights.</purpose>
+            <name>updateUserAccessRightsEntityNotFound</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_300">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveAllUserList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_310">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveAllUserList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_ADM_320">
+        <test>
+            <purpose>Check that the system allows to retrieve the users of a project.</purpose>
+            <name>retrieveAllUserList</name>
+            <class>fr.cnes.regards.modules.accessrights.service.ProjectUserServiceTest</class>
+        </test>
+    </requirement>
+</requirements>

@@ -1,0 +1,5 @@
+servers:
+  - url: https://api.example.com/v1
+    description: Production server (uses live data)
+  - url: http://localhost:8080/api-docs.yaml
+    description: Sandbox server (uses test data)
