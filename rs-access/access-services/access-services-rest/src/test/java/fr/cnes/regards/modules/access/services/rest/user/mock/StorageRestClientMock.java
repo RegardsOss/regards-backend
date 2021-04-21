@@ -34,14 +34,6 @@ public class StorageRestClientMock implements IStorageRestClient {
 
     private static final Random random = new Random();
 
-    public static final Long DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA = (long) random.nextInt(10_000);
-
-    public static final Long DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT = (long) random.nextInt(10_000);
-
-    public static final List<DynamicTenantSetting> DEFAULT_STORAGE_SETTING_STUB = Arrays
-            .asList(StorageSetting.MAX_QUOTA.setValue(DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA),
-                    StorageSetting.RATE_LIMIT.setValue(DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT));
-
     public static final long USER_QUOTA_LIMITS_STUB_MAX_QUOTA = random.nextInt(10_000);
 
     public static final long USER_QUOTA_LIMITS_STUB_RATE_LIMIT = random.nextInt(10_000);
@@ -57,16 +49,6 @@ public class StorageRestClientMock implements IStorageRestClient {
 
     @Autowired
     private IAuthenticationResolver authResolver;
-
-    @Override
-    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
-        return new ResponseEntity<>(HateoasUtils.wrapList(DEFAULT_STORAGE_SETTING_STUB), HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
-        return new ResponseEntity<>(new EntityModel<>(setting), HttpStatus.OK);
-    }
 
     @Override
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(String userEmail) {

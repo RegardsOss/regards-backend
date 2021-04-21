@@ -27,9 +27,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
-import static fr.cnes.regards.modules.access.services.rest.user.mock.AccessSettingsClientMock.*;
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA;
-import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRestClientMock.DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT;
+import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA;
+import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageSettingClientMock.DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**

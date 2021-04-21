@@ -38,16 +38,6 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<EntityModel<DynamicTenantSetting>> update(String name, DynamicTenantSetting setting) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<EntityModel<DynamicTenantSetting>>> retrieveAll(Set<String> names) {
-        return null;
-    }
-
-    @Override
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(String userEmail) {
         return null;
     }
