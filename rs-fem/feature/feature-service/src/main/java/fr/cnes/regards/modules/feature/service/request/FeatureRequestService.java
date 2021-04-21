@@ -197,7 +197,7 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Override
     public void handleStorageSuccess(Set<String> groupIds) {
         Set<FeatureCreationRequest> request = this.fcrRepo.findByGroupIdIn(groupIds);
-
+        // FIXME : Update feature with new file location.
         featureCreationService.handleSuccessfulCreation(request);
     }
 
