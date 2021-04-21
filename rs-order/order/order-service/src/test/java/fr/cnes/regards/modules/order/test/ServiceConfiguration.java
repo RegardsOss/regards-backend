@@ -30,10 +30,13 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageFileListener;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -56,6 +59,11 @@ public class ServiceConfiguration {
     @Bean
     public IStorageRestClient storageRestClient() {
         return mock(IStorageRestClient.class);
+    }
+
+    @Bean
+    public IStorageSettingClient storageSettingClient() {
+        return Mockito.mock(IStorageSettingClient.class);
     }
 
     @Bean
