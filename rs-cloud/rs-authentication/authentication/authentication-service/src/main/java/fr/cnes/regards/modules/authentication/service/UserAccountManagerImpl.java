@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.authentication.service;
 
+import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,8 +11,8 @@ import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSettingClient;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
@@ -81,7 +80,7 @@ public class UserAccountManagerImpl implements IUserAccountManager {
                 .flatMap(unit -> getAccessRightSettings().transform(t -> wrapInUserCreationFailedHandler(t, userInfo)))
                 .flatMap(accessRightSettingMap -> {
                     String role = accessRightSettingMap.get(AccessSettings.DEFAULT_ROLE).getValue();
-                    List<String> groups = accessRightSettingMap.get(AccessSettings.DEFAULT_GROUPS).getValue();
+                    List<String> groups = List.of(((java.util.List<String>)accessRightSettingMap.get(AccessSettings.DEFAULT_GROUPS).getValue()).toArray(new String[0]));
                     return createProjectUser(userInfo, role, groups)
                             .transform(t -> wrapInUserCreationFailedHandler(t, userInfo)).map(unit -> role);
                 }).andFinally(FeignSecurityManager::reset);

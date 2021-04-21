@@ -1,5 +1,7 @@
 package fr.cnes.regards.modules.authentication.service;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -42,6 +44,7 @@ public class UserAccountManagerTest {
             .build();
     public static final Map<String, DynamicTenantSetting> ACCESS_SETTINGS;
     static {
+        GsonUtil.setGson(new Gson());
         ACCESS_SETTINGS = AccessSettings.SETTING_LIST.stream().collect(Collectors.toMap(DynamicTenantSetting::getName,
                                                                                         Function.identity()));
     }
@@ -138,7 +141,9 @@ public class UserAccountManagerTest {
             .getAccessRightSettings();
         doReturn(Try.failure(expected))
             .when(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()));
+            .createProjectUser(eq(PROVIDER_USER_INFO),
+                               eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()),
+                               eq(io.vavr.collection.List.of(((java.util.List<String>)ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()).toArray(new String[0]))));
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
@@ -152,7 +157,8 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .getAccessRightSettings();
         verify(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()),
+                               eq(List.of(((java.util.List<String>)ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()).toArray(new String[0]))));
         verify(accountManager)
             .createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO));
         verifyNoMoreInteractions(accountManager);
@@ -170,7 +176,8 @@ public class UserAccountManagerTest {
             .getAccessRightSettings();
         doReturn(Try.success(Unit.UNIT))
             .when(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()),
+                               eq(List.of(((java.util.List<String>)ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()).toArray(new String[0]))));
 
         Try<String> result =
             accountManager.createUserWithAccountAndGroups(
@@ -184,7 +191,7 @@ public class UserAccountManagerTest {
         verify(accountManager)
             .getAccessRightSettings();
         verify(accountManager)
-            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()));
+            .createProjectUser(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_ROLE).getValue()), eq(List.of(((java.util.List<String>)ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()).toArray(new String[0]))));
 //        verify(accountManager)
 //            .configureAccessGroups(eq(PROVIDER_USER_INFO), eq(ACCESS_SETTINGS.get(AccessSettings.DEFAULT_GROUPS).getValue()));
         verify(accountManager)
