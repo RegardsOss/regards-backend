@@ -3,8 +3,8 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -30,13 +30,13 @@ import org.springframework.test.context.TestPropertySource;
         "regards.session-agent.limit.store.session-steps=30", "regards.cipher.key-location=src/test/resources/testKey",
         "regards.cipher.iv=1234567812345678" })
 @ActiveProfiles(value = { "noscheduler" })
-public class AgentCleanServiceIT extends AbstractRegardsServiceTransactionalIT {
+public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private AgentSnapshotService agentSnapshotService;
 
     @Autowired
-    private AgentCleanService agentCleanService;
+    private AgentCleanSessionStepService agentCleanSessionStepService;
 
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
@@ -82,7 +82,7 @@ public class AgentCleanServiceIT extends AbstractRegardsServiceTransactionalIT {
         agentSnapshotService.generateSessionStep(snapshotProcess2, freezeDate);
 
         // CLEAN SESSION STEPS AND STEP PROPERTY UPDATE REQUESTS
-        int nbSessionStepsDeleted = agentCleanService.clean();
+        int nbSessionStepsDeleted = agentCleanSessionStepService.clean();
         checkClean(nbSessionStepsDeleted, stepRequests);
     }
 

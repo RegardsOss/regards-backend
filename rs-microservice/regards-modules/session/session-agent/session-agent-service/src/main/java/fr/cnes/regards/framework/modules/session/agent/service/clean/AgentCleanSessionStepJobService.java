@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService;
@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service to launch {@link AgentCleanJob}
+ * Service to launch {@link AgentCleanSessionStepJob}
  *
  * @author Iliana Ghazali
  **/
 @Service
-@RegardsTransactional
-public class AgentCleanJobService {
+@MultitenantTransactional
+public class AgentCleanSessionStepJobService {
 
     @Autowired
     private JobInfoService jobInfoService;
@@ -31,7 +31,7 @@ public class AgentCleanJobService {
     public void scheduleJob() {
         LOGGER.trace("[AGENT SNAPSHOT SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
-        JobInfo jobInfo = new JobInfo(false, 0, null, null, AgentCleanJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, 0, null, null, AgentCleanSessionStepJob.class.getName());
         // create job
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.trace("[AGENT SNAPSHOT SCHEDULER] AgentSnapshotJob scheduled in {}", System.currentTimeMillis() - start);

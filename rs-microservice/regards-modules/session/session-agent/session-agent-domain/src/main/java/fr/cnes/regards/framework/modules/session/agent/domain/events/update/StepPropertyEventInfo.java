@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.domain.events;
+package fr.cnes.regards.framework.modules.session.agent.domain.events.update;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 

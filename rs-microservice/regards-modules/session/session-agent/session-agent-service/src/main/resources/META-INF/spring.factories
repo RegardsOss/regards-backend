@@ -2,6 +2,6 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
 fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler,\
 fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService,\
 fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJobService,\
-fr.cnes.regards.framework.modules.session.agent.service.clean.AgentCleanService,\
+fr.cnes.regards.framework.modules.session.agent.service.clean.AgentCleanSessionStepService,\
 fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler,\
 fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandlerService

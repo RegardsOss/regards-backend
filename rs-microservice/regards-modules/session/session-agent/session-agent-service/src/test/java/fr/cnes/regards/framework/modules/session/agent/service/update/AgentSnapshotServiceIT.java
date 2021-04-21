@@ -3,8 +3,8 @@ package fr.cnes.regards.framework.modules.session.agent.service.update;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
@@ -27,7 +27,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_service_it",
-        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678" })
+        "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678", "regards"
+        + ".session.agent.page.size=2" })
 @ActiveProfiles(value = { "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalIT {
 
@@ -108,17 +109,17 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                                                                             StepPropertyEventStateEnum.OK,
                                                                             "store.products", "2", false, true)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(3),
-                                                       StepPropertyEventTypeEnum.DEC,
+                                                       StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.STORAGE,
                                                                             StepPropertyEventStateEnum.ERROR,
                                                                             "store.products.errors", "4", false,
-                                                                            true)));
+                                                                            false)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(4),
                                                        StepPropertyEventTypeEnum.VALUE,
                                                        new StepPropertyInfo(StepTypeEnum.STORAGE,
                                                                             StepPropertyEventStateEnum.ERROR,
                                                                             "store.products.state", "ERROR", false,
-                                                                            true)));
+                                                                            false)));
         // DISSEMINATION - metacatalog event
         stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(7),
                                                        StepPropertyEventTypeEnum.INC,
@@ -159,13 +160,13 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.STORAGE,
                                                                             StepPropertyEventStateEnum.OK,
-                                                                            "store.products", "4", false, false)));
+                                                                            "store.products", "4", false, true)));
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(38),
                                                        StepPropertyEventTypeEnum.VALUE,
                                                        new StepPropertyInfo(StepTypeEnum.STORAGE,
                                                                             StepPropertyEventStateEnum.OK,
                                                                             "store.products.state", "OK", false,
-                                                                            false)));
+                                                                            true)));
         // DISSEMINATION - metacatalog event
         stepRequests.add(new StepPropertyUpdateRequest("metacatalog", SOURCE, OWNER_1, CREATION_DATE.plusMinutes(40),
                                                        StepPropertyEventTypeEnum.INC,
@@ -190,7 +191,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 switch (step) {
                     case "scan":
                         Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                        Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
+                        Assert.assertEquals("Wrong num of input related", 6L, sessionStep.getInputRelated());
                         Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -203,7 +204,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                     case "oais":
                         Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                         Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                        Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                        Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -215,7 +216,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                     case "storage":
                         Assert.assertEquals("Wrong type", StepTypeEnum.STORAGE, sessionStep.getType());
                         Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                        Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
+                        Assert.assertEquals("Wrong num of output related", 2L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 2L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -247,7 +248,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
             } else if (session.equals(OWNER_2)) {
                 Assert.assertEquals("Wrong stepId", "scan", sessionStep.getStepId());
                 Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                Assert.assertEquals("Wrong num of input related", 1L, sessionStep.getInputRelated());
+                Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -260,7 +261,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong stepId", "storage", sessionStep.getStepId());
                 Assert.assertEquals("Wrong type", StepTypeEnum.STORAGE, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -289,7 +290,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 switch (step) {
                     case "scan":
                         Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                        Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
+                        Assert.assertEquals("Wrong num of input related", 6L, sessionStep.getInputRelated());
                         Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -302,7 +303,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                     case "oais":
                         Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                         Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                        Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                        Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -314,7 +315,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                     case "storage":
                         Assert.assertEquals("Wrong type", StepTypeEnum.STORAGE, sessionStep.getType());
                         Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                        Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
+                        Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 2L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -330,7 +331,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                     case "metacatalog":
                         Assert.assertEquals("Wrong type", StepTypeEnum.DISSEMINATION, sessionStep.getType());
                         Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                        Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
+                        Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 1L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
@@ -346,7 +347,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
             } else if (session.equals(OWNER_2)) {
                 Assert.assertEquals("Wrong stepId", "scan", sessionStep.getStepId());
                 Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                Assert.assertEquals("Wrong num of input related", 1L, sessionStep.getInputRelated());
+                Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -359,7 +360,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong stepId", "storage", sessionStep.getStepId());
                 Assert.assertEquals("Wrong type", StepTypeEnum.STORAGE, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                Assert.assertEquals("Wrong num of output related", 6L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());

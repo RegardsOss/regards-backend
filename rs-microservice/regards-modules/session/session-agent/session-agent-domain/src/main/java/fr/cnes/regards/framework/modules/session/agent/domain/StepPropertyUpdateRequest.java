@@ -1,7 +1,8 @@
 package fr.cnes.regards.framework.modules.session.agent.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import javax.persistence.CascadeType;
@@ -24,7 +25,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Entity created after receiving a
- * {@link fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent}.
+ * {@link StepPropertyUpdateRequestEvent}.
  * <p>
  * {@link StepPropertyUpdateRequest}s will then be used to create {@link SessionStep}s, they are an aggregation of
  * these steps.

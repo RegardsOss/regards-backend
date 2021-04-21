@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.domain.events;
+package fr.cnes.regards.framework.modules.session.agent.domain.events.update;
 
 /**
  * Event states for {@link StepPropertyUpdateRequestEvent}

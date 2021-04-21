@@ -1,10 +1,10 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepEvent;
@@ -74,7 +74,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
             if (source.equals(SOURCE_1) && session.equals(OWNER_1)) {
                 Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
+                Assert.assertEquals("Wrong num of input related", 15L, sessionStep.getInputRelated());
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -84,7 +84,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong properties", "15", properties.get("gen.products"));
             } else if (source.equals(SOURCE_1) && session.equals(OWNER_2)) {
                 Assert.assertEquals("Wrong type", StepTypeEnum.ACQUISITION, sessionStep.getType());
-                Assert.assertEquals("Wrong num of input related", 2L, sessionStep.getInputRelated());
+                Assert.assertEquals("Wrong num of input related", 12L, sessionStep.getInputRelated());
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
@@ -95,7 +95,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
             } else if (source.equals(SOURCE_2) && session.equals(OWNER_1)) {
                 Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 1L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());

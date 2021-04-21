@@ -1,11 +1,11 @@
 package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
  * @author Iliana Ghazali
  **/
 @Service
-@RegardsTransactional
+@MultitenantTransactional
 public class SessionAgentHandlerService {
 
     /**

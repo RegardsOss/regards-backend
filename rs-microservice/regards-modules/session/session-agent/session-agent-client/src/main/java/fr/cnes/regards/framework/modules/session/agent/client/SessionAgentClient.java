@@ -19,9 +19,10 @@
 package fr.cnes.regards.framework.modules.session.agent.client;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,8 +48,9 @@ public class SessionAgentClient {
      */
     public void increment(String stepId, String source, String session, StepPropertyEventInfo stepPropertyEventInfo) {
         // Create new event
-        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session
-                ,StepPropertyEventTypeEnum.INC, stepPropertyEventInfo);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session,
+                                                                                              StepPropertyEventTypeEnum.INC,
+                                                                                              stepPropertyEventInfo);
         // Publish event
         publisher.publish(stepPropertyEvent);
     }
@@ -59,8 +61,9 @@ public class SessionAgentClient {
      */
     public void decrement(String stepId, String source, String session, StepPropertyEventInfo stepPropertyEventInfo) {
         // Create new event
-        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session
-                ,StepPropertyEventTypeEnum.DEC, stepPropertyEventInfo);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session,
+                                                                                              StepPropertyEventTypeEnum.DEC,
+                                                                                              stepPropertyEventInfo);
         // Publish event
         publisher.publish(stepPropertyEvent);
     }
@@ -69,13 +72,22 @@ public class SessionAgentClient {
      * Send a {@link StepPropertyUpdateRequestEvent} with a {@link StepPropertyEventTypeEnum} of type increment. The
      * corresponding property in the session step will be set to the value provided.
      */
-    public void stepValue(String stepId, String source, String session, StepPropertyEventInfo stepPropertyEventInfo) {
+    public void stepValue(String stepId, String source, String session, StepPropertyEventInfo stepPropertyEventInfo)
+            throws EntityInvalidException {
+        // check if input and output are false
+        if (stepPropertyEventInfo.isInputRelated() || stepPropertyEventInfo.isOutputRelated()) {
+            String msg = String
+                    .format("Step property with source \"%s\", session \"%s\" and step \"%s\" cannot be input "
+                                    + "related or output related if the event is of type \"VALUE\"", source, session,
+                            stepId);
+            throw new EntityInvalidException(msg);
+        }
+
         // Create new event
-        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session
-                ,StepPropertyEventTypeEnum.VALUE, stepPropertyEventInfo);
+        StepPropertyUpdateRequestEvent stepPropertyEvent = new StepPropertyUpdateRequestEvent(stepId, source, session,
+                                                                                              StepPropertyEventTypeEnum.VALUE,
+                                                                                              stepPropertyEventInfo);
         // Publish event
         publisher.publish(stepPropertyEvent);
-
-        // if input or output is true throw exception
     }
 }

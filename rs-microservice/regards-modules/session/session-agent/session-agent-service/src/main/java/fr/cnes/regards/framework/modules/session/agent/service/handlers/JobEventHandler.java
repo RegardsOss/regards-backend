@@ -10,7 +10,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
 /**
- * Listen to JobEvent Completion
+ * Listen to JobEvent Completion to update {@link fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess}
  *
  * @author Iliana Ghazali
  **/
@@ -42,7 +42,7 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
             LOGGER.info("[JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
             long start = System.currentTimeMillis();
             // sort job
-            jobEventService.handle(messages);
+            jobEventService.updateSnapshotProcess(messages);
             LOGGER.info("[JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {

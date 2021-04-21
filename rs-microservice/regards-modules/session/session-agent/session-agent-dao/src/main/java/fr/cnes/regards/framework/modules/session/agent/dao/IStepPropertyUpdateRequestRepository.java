@@ -8,7 +8,8 @@ import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdate
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,12 +22,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
-    Set<StepPropertyUpdateRequest> findBySourceAndDateBetween(String source, OffsetDateTime lastUpdate,
-            OffsetDateTime freezeDate);
+    Page<StepPropertyUpdateRequest> findBySourceAndDateBetween(String source, OffsetDateTime lastUpdate,
+            OffsetDateTime freezeDate, Pageable page);
 
     long countBySourceAndDateBetween(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
 
-    Set<StepPropertyUpdateRequest> findBySourceAndDateBefore(String source, OffsetDateTime freezeDate);
+    Page<StepPropertyUpdateRequest> findBySourceAndDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
 
     long countBySourceAndDateBefore(String source, OffsetDateTime lastUpdate);
 

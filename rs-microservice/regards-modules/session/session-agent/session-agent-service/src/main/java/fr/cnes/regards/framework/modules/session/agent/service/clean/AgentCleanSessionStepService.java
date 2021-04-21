@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
@@ -22,8 +22,8 @@ import org.springframework.stereotype.Service;
  * @author Iliana Ghazali
  **/
 @Service
-@RegardsTransactional
-public class AgentCleanService {
+@MultitenantTransactional
+public class AgentCleanSessionStepService {
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -34,10 +34,13 @@ public class AgentCleanService {
     @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
-    @Value("${regards.session-agent.limit.store.session-steps:30}")
+    @Value("${regards.session.agent.limit.store.session.steps:30}")
     private int limitStoreSessionSteps;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanService.class);
+    @Value("${regards.session.agent.clean.session.steps.page:1000}")
+    private int pageSize;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSessionStepService.class);
 
     public int clean() {
         // Init startClean with the current date minus the limit of SessionStep save configured
@@ -45,8 +48,7 @@ public class AgentCleanService {
         LOGGER.debug("Check old session steps before {}", startClean);
 
         int nbSessionStepsDeleted = 0;
-        //FIXME set ppt for page
-        Pageable page = PageRequest.of(0, 100);
+        Pageable page = PageRequest.of(0, pageSize);
         Page<SessionStep> sessionStepsToDelete;
         do {
             // Get all session steps to delete older than startClean

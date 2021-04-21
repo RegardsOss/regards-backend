@@ -1,7 +1,7 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -26,7 +26,7 @@ import org.springframework.stereotype.Service;
  * @author Iliana Ghazali
  **/
 @Service
-@RegardsTransactional
+@MultitenantTransactional
 public class AgentSnapshotJobService {
 
     @Autowired

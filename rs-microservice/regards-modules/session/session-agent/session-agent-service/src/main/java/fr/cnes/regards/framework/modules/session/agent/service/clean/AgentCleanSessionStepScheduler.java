@@ -46,7 +46,7 @@ import java.time.Instant;
 @Profile("!noscheduler")
 @Component
 @EnableScheduling
-public class AgentCleanScheduler extends AbstractTaskScheduler {
+public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotScheduler.class);
 
@@ -57,7 +57,7 @@ public class AgentCleanScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private AgentCleanJobService agentCleanJobService;
+    private AgentCleanSessionStepJobService agentCleanSessionStepJobService;
 
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
@@ -82,7 +82,7 @@ public class AgentCleanScheduler extends AbstractTaskScheduler {
      */
     private final LockingTaskExecutor.Task snapshotProcessTask = () -> {
         LockAssert.assertLocked();
-        agentCleanJobService.scheduleJob();
+        agentCleanSessionStepJobService.scheduleJob();
     };
 
     /**

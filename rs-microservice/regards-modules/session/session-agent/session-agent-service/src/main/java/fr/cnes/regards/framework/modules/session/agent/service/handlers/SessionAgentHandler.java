@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
