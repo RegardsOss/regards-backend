@@ -177,12 +177,12 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     protected void awaitLatches(CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) throws InterruptedException {
-        if (!orderCreatedLatch.await(1, TimeUnit.MINUTES)) {
+        if (!orderCreatedLatch.await(5, TimeUnit.MINUTES)) {
             fail("Did not create the order in a large amount of time.");
         }
         LOGGER.info("Order has been created !!");
 
-        if (!receivedExecutionResultsLatch.await(1L, TimeUnit.MINUTES)) {
+        if (!receivedExecutionResultsLatch.await(5L, TimeUnit.MINUTES)) {
             fail("Did not reach the expected number of treated execution results in a large amount of time.");
         }
 
