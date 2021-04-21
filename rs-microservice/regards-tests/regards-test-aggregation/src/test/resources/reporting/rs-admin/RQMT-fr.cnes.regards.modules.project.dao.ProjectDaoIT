@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose> Test to retrieve projects connections of given project's name in instance database.</purpose>
+            <name>testFindByProjectName</name>
+            <class>fr.cnes.regards.modules.project.dao.ProjectDaoIT</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Test to create and retrieve projects connections in instance database.</purpose>
+            <name>createAndRetreiveProjectConnections</name>
+            <class>fr.cnes.regards.modules.project.dao.ProjectDaoIT</class>
+        </test>
+    </requirement>
+</requirements>

@@ -1,0 +1,24 @@
+CREATE TABLE t_snapshot_process (
+    source              varchar(255)    NOT NULL,
+    last_update         timestamp               ,
+    job_id              uuid                    ,
+    primary key (source)
+);
+
+CREATE TABLE t_session_step (
+    id                  int8            NOT NULL,
+    step_id             varchar(255)    NOT NULL,
+    source              varchar(255)    NOT NULL,
+    session             varchar(255)    NOT NULL,
+    type                varchar(100)    NOT NULL,
+    input_related       int8            NOT NULL,
+    output_related      int8            NOT NULL,
+    errors              int8            NOT NULL,
+    waiting             int8            NOT NULL,
+    running             boolean         NOT NULL,
+    properties          jsonb                   ,
+    last_update         timestamp               ,
+    primary key (id)
+);
+
+create sequence seq_session start 1 increment 50;

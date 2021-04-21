@@ -1,0 +1,2 @@
+-- Create dump settings
+create table t_dump_settings (id int8 not null, active_module boolean not null, cron_trigger varchar(1000) not null, dump_location varchar(260), last_dump_req_date timestamp, primary key (id));

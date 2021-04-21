@@ -1,0 +1,38 @@
+#!/usr/bin/env groovy
+
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+pipeline {
+    agent { label 'fast-build' }
+
+    stages {
+        stage('Deploy artifacts') {
+            when {
+                expression { BRANCH_NAME ==~ /(develop.*|release.*)/ }
+            }
+            steps {
+                sh 'mvn -U clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent install sonar:sonar' +
+                        ' -Dsonar.branch.name=${BRANCH_NAME} -Dmaven.repo.local=/DATA/maven-fast-repository' +
+                        ' -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true'
+            }
+        }
+    }
+}
