@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_aip_last on t_aip (provider_id) where last;

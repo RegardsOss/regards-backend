@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model>
+    <name>Pays</name>
+    <description>Pays</description>
+    <type>DATASET</type>
+    <attribute alterable="true" optional="false">
+        <label>number of data</label>
+        <name>count</name>
+        <type unit="unitless">LONG</type>
+        <computation>
+            <label>CountValidationConfModel1</label>
+            <count/>
+        </computation>
+    </attribute>
+</model>

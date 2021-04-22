@@ -1,0 +1,22 @@
+<#setting datetime_format='d MMM yyyy HH:mm:ss z'>
+<div>Dear User,
+    <p>
+    One or more orders of your own are waiting to be downloaded:
+    </p>
+    <#list orders as order>
+    <p>- Order <b>"${order.label}"</b> from project <b>${project}</b> created on <b>${order.creationDate?datetime.iso}</b> will expire on <b>${order.expirationDate?datetime.iso}</b>.<br/>
+      It contains <b>${order.availableFilesCount}</b> available for download files since ${order.availableUpdateDate?datetime.iso}.</p>
+    </#list>
+</div>
+<div>
+    <p>
+        <b>Note: all order files are deleted as soon as expiration date is reached.</b>
+    </p>
+</div>
+<div>
+    <p>If there is any problem, please contact us at regards-admin@c-s.fr</p>
+
+    <p>
+        Best Regards
+    </p>
+</div>
