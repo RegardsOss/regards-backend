@@ -1,0 +1,54 @@
+######################
+# Eclipse
+######################
+.project
+.metadata
+.classpath
+.settings/
+.springBeans
+.pmd
+.factorypath
+
+######################
+# Eclipse ObjectAidUML
+######################
+*.ucls
+
+######################
+# Intellij
+######################
+.idea/**
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+######################
+# Maven
+######################
+target/
+bin/
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+######################
+# Logs
+######################
+
+######################
+# Mardown preview
+######################
+*.md.html
+
+######################
+# CI
+######################
+**/.hash
+**/.deps.hash
+**/scripts/data*/
+**/.flattened-pom.xml
