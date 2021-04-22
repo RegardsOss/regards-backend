@@ -23,13 +23,14 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>accessrights-instance</artifactId>
+    <version>${modules.accessrights-instance.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath></relativePath>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -59,27 +60,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.accessrights-instance.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.accessrights-instance.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-rest</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.accessrights-instance.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-service</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.accessrights-instance.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
                 <artifactId>accessrights-instance-client</artifactId>
-                <version>${project.version}</version>
+                <version>${modules.accessrights-instance.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

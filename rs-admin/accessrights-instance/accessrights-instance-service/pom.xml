@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>accessrights-instance</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.accessrights-instance.version}</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

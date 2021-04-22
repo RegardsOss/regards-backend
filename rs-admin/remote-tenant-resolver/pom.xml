@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>remote-tenant-resolver</artifactId>
-	<version>1.5.0</version>
+	<version>${fr.cnes.regards.microservices.administration.remote-tenant-resolver.version}</version>
 	<packaging>jar</packaging>
 
 	<name>Remote Tenant Resolver</name>
@@ -51,45 +51,53 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath></relativePath>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
+			<version>${feign.starter.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
+			<version>${modules.project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
+			<version>${modules.accessrights.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<version>${jpa.multitenant.starter.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>cloud-regards-starter</artifactId>
+			<version>${cloud.starter.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
+			<version>${com.google.guava.version}</version>
 		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
+			<version>${regards.test.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
+			<version>${hsqldb.hsqldb.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

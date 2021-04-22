@@ -23,14 +23,15 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>templates</artifactId>
+    <version>${framework.modules.templates.version}</version>
     <description>Module providing template features for mailing</description>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -67,27 +68,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.templates</groupId>
                 <artifactId>templates-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.templates.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.templates</groupId>
                 <artifactId>templates-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.templates.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.jobtemplatess</groupId>
                 <artifactId>templates-rest</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.templates.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.templates</groupId>
                 <artifactId>templates-service</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.templates.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.templates</groupId>
                 <artifactId>templates-client</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.templates.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

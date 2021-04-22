@@ -23,6 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>acquisition</artifactId>
+	<version>${modules.dataprovider.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Module detecting data files, extracting meta data from them and generating SIP from them in order to passing them to ingest.</description>
@@ -49,9 +50,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<dependencyManagement>
@@ -60,27 +61,27 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dataprovider.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dataprovider.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-plugins-ssalto</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dataprovider.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dataprovider.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.acquisition</groupId>
 				<artifactId>acquisition-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dataprovider.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

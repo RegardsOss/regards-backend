@@ -24,6 +24,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>model</artifactId>
+	<version>${modules.model.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Feature management module</description>
@@ -50,10 +51,60 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-client</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-dao</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-domain</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-dto</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-gson</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-gson-helper</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-rest</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-service</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.model</groupId>
+				<artifactId>model-validation</artifactId>
+				<version>${modules.model.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<modules>
 		<module>model-dto</module>

@@ -23,13 +23,15 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>bootstrap-config</artifactId>
+    <version>${config.bootstrap.version}</version>
+
     <description>REGARDS Cloud - Configuration server</description>
-    
+
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath></relativePath>
+        <version>${regards.boot.parent.version}</version>
+        <relativePath>../../../rs-bom/regards-boot-parent</relativePath>
     </parent>
 
     <properties>

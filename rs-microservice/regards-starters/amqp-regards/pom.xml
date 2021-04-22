@@ -22,12 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>amqp-regards</artifactId>
+    <version>${amqp.starter.version}</version>
     <description>REGARDS AMQP business module</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>1.5.0</version>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

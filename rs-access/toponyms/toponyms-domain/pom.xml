@@ -48,11 +48,11 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>toponyms</artifactId>
-		<version>1.5.0</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>toponyms</artifactId>
+        <version>${modules.toponyms.version}</version>
+    </parent>
 
 	<dependencies>
 		<dependency>

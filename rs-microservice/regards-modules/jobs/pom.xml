@@ -23,14 +23,15 @@
 
     <groupId>fr.cnes.regards.framework.modules</groupId>
     <artifactId>jobs</artifactId>
+    <version>${framework.modules.jobs.version}</version>
     <description>Jobs manager module</description>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -66,17 +67,17 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.jobs.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.jobs.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-service</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.jobs.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

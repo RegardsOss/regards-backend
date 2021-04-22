@@ -23,13 +23,14 @@
 
     <groupId>${groupId}</groupId>
     <artifactId>${artifactId}</artifactId>
-    <version>${version}</version>
+    <version>$${modules.${artifactId}.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>$${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -59,27 +60,27 @@
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-dao</artifactId>
-                <version>${version}</version>
+                <version>$${modules.${rootArtifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-domain</artifactId>
-                <version>${version}</version>
+                <version>$${modules.${rootArtifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-rest</artifactId>
-                <version>${version}</version>
+                <version>$${modules.${rootArtifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-service</artifactId>
-                <version>${version}</version>
+                <version>$${modules.${rootArtifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-client</artifactId>
-                <version>${version}</version>
+                <version>$${modules.${rootArtifactId}.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -22,7 +22,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>access-services</artifactId>
-	<version>1.5.0</version>
+	<version>${modules.access-services.version}</version>
 	<packaging>pom</packaging>
 
 	<name>Access Services</name>
@@ -48,12 +48,12 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath/>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
 	<dependencyManagement>
 		<dependencies>
@@ -61,32 +61,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-dao</artifactId>
-				<version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-domain</artifactId>
-				<version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-rest</artifactId>
-				<version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>access-services-service</artifactId>
-				<version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
 			</dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules</groupId>
                 <artifactId>access-services-client</artifactId>
-                <version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.accessrights</groupId>
                 <artifactId>accessrights-client</artifactId>
-                <version>${project.version}</version>
+	            <version>${modules.access-services.version}</version>
             </dependency>
 		</dependencies>
 	</dependencyManagement>

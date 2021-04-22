@@ -22,11 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-data-regards</artifactId>
+    <version>${jpa.data.version}</version>
     <description>REGARDS JPA data</description>
+
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>1.5.0</version>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

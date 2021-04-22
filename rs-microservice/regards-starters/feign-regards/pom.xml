@@ -23,12 +23,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>feign-regards</artifactId>
+    <version>${feign.starter.version}</version>
     <description>REGARDS Feignr</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>1.5.0</version>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

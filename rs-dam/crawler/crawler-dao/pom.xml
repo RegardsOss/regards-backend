@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>crawler</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.crawler.version}</version>
 	</parent>
 	<dependencies>
 		<dependency>

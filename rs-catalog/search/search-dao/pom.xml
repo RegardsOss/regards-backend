@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>search</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.search.version}</version>
 	</parent>
 
 	<dependencies>

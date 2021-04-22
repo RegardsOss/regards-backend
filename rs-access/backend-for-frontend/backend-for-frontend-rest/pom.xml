@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>backend-for-frontend</artifactId>
-		<version>1.5.0</version>
+        <version>${modules.backend-for-frontend.version}</version>
 	</parent>
 
 	<dependencies>

@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Allow piping through tee to forward exit statuses
+set -o pipefail
+
+source ${SCRIPTS}/utils
+source ${SCRIPTS}/variables
+source ${SCRIPTS}/hash
+source ${SCRIPTS}/build
+
+STEP=$1
+
+mkdir -p ${DATADIR}
+#TODO mkdir pour swagger? la doc?
+
+echo "#####################################"
+echo "#        ---  REGARDS CI ---        #"
+echo "#####################################"
+
+cd ${SERVICES} || exit
+case $STEP in
+    verify)
+        tm dependencyTree
+        tm computeHashes
+        tm verify
+    ;;
+    deploy)
+        tm dependencyTree
+        tm computeHashes
+        tm deploy
+    ;;
+    fast)
+        tm dependencyTree
+        tm computeHashes
+        tm fast
+    ;;
+    nightly)
+        tm nightly
+    ;;
+  #TODO Junit test report (+ maven-assembly-plugin) + Artifacts
+  #TODO Improve hash (get git diff since last build success' commit, assoc files to modules, only hash those)
+  #TODO Build docs site
+    *)
+        echo -e "Unknown step '$STEP'. Available steps:
+        \n- verify
+        \n- deploy
+        \n- fast
+        \n- nightly
+        "
+    ;;
+esac
+
+echo "######################################"
+echo "#           ---  END ---             #"
+echo "######################################"
+
+
+

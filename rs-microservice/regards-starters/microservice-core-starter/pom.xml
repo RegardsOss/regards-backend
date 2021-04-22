@@ -22,12 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>microservice-core-starter</artifactId>
+    <version>${microservice.core.version}</version>
     <description>Convenient starter for microservice basic starters dependencies</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>1.5.0</version>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

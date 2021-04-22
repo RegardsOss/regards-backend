@@ -1,16 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath></relativePath>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.microservices.administration</groupId>
     <artifactId>remote-authorities-provider</artifactId>
+    <version>${fr.cnes.regards.microservices.administration.remote-authorities-provider}</version>
     <packaging>jar</packaging>
+
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
     <name>remote-authorities-provider</name>
     <url>http://maven.apache.org</url>
@@ -23,23 +25,28 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>cloud-regards-starter</artifactId>
+            <version>${cloud.starter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <version>${com.google.guava.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
+            <version>${security.starter.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>feign-regards-starter</artifactId>
+            <version>${feign.starter.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-client</artifactId>
+            <version>${modules.accessrights.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -1,15 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath></relativePath>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.microservices.administration</groupId>
     <artifactId>local-authorities-provider</artifactId>
+    <version>${fr.cnes.regards.microservices.administration.local-authorities-provider}</version>
+
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
     <name>local-authorities-provider</name>
     <url>http://maven.apache.org</url>
@@ -22,20 +24,24 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-regards</artifactId>
+            <version>${security.starter.version}</version>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.accessrights</groupId>
             <artifactId>accessrights-service</artifactId>
+            <version>${modules.accessrights.version}</version>
         </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
+            <version>${regards.test.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
+            <version>${hsqldb.hsqldb.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

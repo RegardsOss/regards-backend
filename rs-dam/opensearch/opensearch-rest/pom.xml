@@ -41,7 +41,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>opensearch</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.opensearch.version}</version>
 	</parent>
 
 	<dependencies>

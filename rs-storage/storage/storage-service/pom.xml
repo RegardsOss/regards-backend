@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
         <artifactId>storage</artifactId>
-        <version>1.5.0</version>
+        <version>${modules.storage.version}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

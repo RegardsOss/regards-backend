@@ -22,9 +22,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>notification-regards</artifactId>
+	<version>${fr.cnes.regards.framework.notification.version}</version>
+
 	<parent>
-		<artifactId>regards-starters</artifactId>
 		<groupId>fr.cnes.regards.framework</groupId>
-		<version>1.5.0</version>
+		<artifactId>regards-starters</artifactId>
+		<version>${regards.starters.version}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 </project>

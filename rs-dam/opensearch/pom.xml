@@ -21,7 +21,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>opensearch</artifactId>
-	<version>1.5.0</version>
+	<version>${modules.opensearch.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Module responsible for treating the OpenSearch requests performed when searching indexed data</description>
@@ -48,11 +48,10 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath/>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
-	
 
 	<dependencyManagement>
 		<dependencies>
@@ -60,12 +59,17 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.opensearch</groupId>
 				<artifactId>opensearch-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.opensearch.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.opensearch</groupId>
 				<artifactId>opensearch-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.opensearch.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.opensearch</groupId>
+				<artifactId>opensearch-rest</artifactId>
+				<version>${modules.opensearch.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -73,6 +77,6 @@
 	<modules>
 		<module>opensearch-service</module>
 		<module>opensearch-domain</module>
-    <module>opensearch-rest</module>
+    	<module>opensearch-rest</module>
   </modules>
 </project>

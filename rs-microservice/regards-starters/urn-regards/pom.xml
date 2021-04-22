@@ -19,14 +19,17 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>regards-starters</artifactId>
-        <groupId>fr.cnes.regards.framework</groupId>
-        <version>1.5.0</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fr.cnes.regards.framework</groupId>
+        <artifactId>regards-starters</artifactId>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
     <artifactId>urn-regards</artifactId>
+    <version>${urn.starter.version}</version>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>

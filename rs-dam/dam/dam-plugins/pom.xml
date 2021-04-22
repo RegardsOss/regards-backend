@@ -49,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>dam</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.dam.version}</version>
 	</parent>
 
 	<dependencies>

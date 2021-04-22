@@ -23,6 +23,7 @@
 
     <groupId>fr.cnes.regards.cloud</groupId>
     <artifactId>rs-cloud</artifactId>
+    <version>${regards.cloud.version}</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -34,8 +35,8 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath></relativePath>
+        <version>${regards.aggregator.parent.version}</version>
+        <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 
     <modules>

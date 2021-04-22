@@ -4,6 +4,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>catalog-services</artifactId>
+	<version>${modules.catalog-services.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Module managing the plugins/services applicable to the entities</description>
@@ -30,9 +31,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath/>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<dependencyManagement>
@@ -41,27 +42,27 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.catalog-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.catalog-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.catalog-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.catalog-services.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules</groupId>
 				<artifactId>catalog-services-client</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.catalog-services.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

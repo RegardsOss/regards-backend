@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>accessrights</artifactId>
-		<version>1.5.0</version>
+		<version>${modules.accessrights.version}</version>
 	</parent>
 
 	<dependencies>

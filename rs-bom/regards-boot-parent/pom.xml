@@ -22,6 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>regards-boot-parent</artifactId>
+    <version>${regards.boot.parent.version}</version>
     <packaging>pom</packaging>
 
     <description>Aggregates the frontend-boot and all [microservice]-boot modules</description>
@@ -48,9 +49,9 @@
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.5.0</version>
-        <relativePath>../regards-parent/</relativePath>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -76,7 +77,7 @@
                         <serverId>REGARDS-DockerHub</serverId>
                         <registryUrl>${docker.registry.host}</registryUrl>
                         <imageTags>
-                            <imageTag>${project.version}</imageTag>
+                            <imageTag>${regards.version}</imageTag>
                         </imageTags>
                         <entryPoint>${docker.entryPoint}</entryPoint>
                         <!-- copy the service's jar file from target into the root directory
@@ -113,7 +114,7 @@
                         <dependency>
                             <groupId>fr.cnes.regards</groupId>
                             <artifactId>regards-suppress-cve</artifactId>
-                            <version>1.5.0</version>
+                            <version>${regards.suppress.cve.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -139,7 +140,7 @@
 	<dependency>
             <groupId>fr.cnes.regards</groupId>
             <artifactId>regards-suppress-cve</artifactId>
-            <version>1.5.0</version>
+            <version>${regards.suppress.cve.version}</version>
         </dependency>
 </dependencies>
 

@@ -23,6 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>notification</artifactId>
+	<version>${modules.notification.version}</version>
 	<packaging>pom</packaging>
 
 	<name>Notification</name>
@@ -50,9 +51,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath></relativePath>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<modules>
@@ -68,17 +69,17 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification</groupId>
 				<artifactId>notification-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.notification.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification</groupId>
 				<artifactId>notification-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.notification.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.notification</groupId>
 				<artifactId>notification-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.notification.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
