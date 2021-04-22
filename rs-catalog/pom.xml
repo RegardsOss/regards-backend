@@ -21,6 +21,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>catalog</artifactId>
+	<version>${regards.catalog.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice providing data to the users through a searchable catalog</description>
@@ -48,8 +49,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath/>
+		<version>${regards.aggregator.parent.version}</version>
+		<relativePath>../rs-bom/regards-aggregator-parent</relativePath>
 	</parent>
 
 	<modules>

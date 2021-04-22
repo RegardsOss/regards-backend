@@ -23,6 +23,8 @@
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access-project</artifactId>
+    <version>${accessproject.bootstrap.version}</version>
+
 	<name>Bootstrap Access Project</name>
 	<description>Boots the Access microservice with multi-tenant features</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -46,12 +48,12 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath></relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>${regards.boot.parent.version}</version>
+        <relativePath>../../rs-bom/regards-boot-parent</relativePath>
+    </parent>
 
 	<properties>
 		<microservice.heap.size>512m</microservice.heap.size>

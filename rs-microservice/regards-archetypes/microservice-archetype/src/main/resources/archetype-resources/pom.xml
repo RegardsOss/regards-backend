@@ -14,12 +14,14 @@
 
     <groupId>${groupId}</groupId>
     <artifactId>${artifactId}</artifactId>
+    <version>$${regards.${artifactId}.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>$${regards.aggregator.parent.version}</version>
+        <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -42,7 +44,5 @@
             <organizationUrl>http://www.c-s.fr</organizationUrl>
         </developer>
     </developers>
-
-    <version>${version}</version>
 
 </project>

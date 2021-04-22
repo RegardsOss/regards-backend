@@ -23,14 +23,14 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>featureprovider</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>${modules.featureprovider.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -60,27 +60,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.featureprovider</groupId>
                 <artifactId>featureprovider-dao</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${modules.featureprovider.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.featureprovider</groupId>
                 <artifactId>featureprovider-domain</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${modules.featureprovider.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.featureprovider</groupId>
                 <artifactId>featureprovider-rest</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${modules.featureprovider.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.featureprovider</groupId>
                 <artifactId>featureprovider-service</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${modules.featureprovider.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.featureprovider</groupId>
                 <artifactId>featureprovider-client</artifactId>
-                <version>1.4.1-SNAPSHOT</version>
+                <version>${modules.featureprovider.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

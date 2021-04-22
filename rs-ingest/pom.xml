@@ -21,6 +21,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>ingest</artifactId>
+	<version>${regards.ingest.version}</version>
 	<packaging>pom</packaging>
 
 	<description>OAIS submission (SIP) and archival (AIP) information package manager</description>
@@ -48,8 +49,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath/>
+		<version>${regards.aggregator.parent.version}</version>
+		<relativePath>../rs-bom/regards-aggregator-parent</relativePath>
 	</parent>
 
 	<modules>

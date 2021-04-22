@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+
+SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Allow piping through tee to forward exit statuses
+set -o pipefail
+
+declare -A hashes
+declare -a orderedHashes
+declare -A modulesOnlyHashes
+
+source ${SCRIPTS}/utils
+source ${SCRIPTS}/variables
+
+function dependencyTree {
+    echo -e "\nCalculating hash for dependency tree..."
+    local pomsHash
+    pomsHash=$(find . -type f -name pom.xml -print0 \
+            ! -path '*/rs-doc*/*' \
+            | sort -z | xargs -0 sha1sum | sha1sum | awk '{ print $1 }')
+
+    mkdir -p ${DATADIR}
+
+    # Try downloading an existing dependency tree
+    set -x
+    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} ${NEXUS_RAW}/tests/regards/dependencyTree-${pomsHash}.txt -o ${DATADIR}/dependencyTree.txt --noproxy '*' -k --fail
+    dlResult=$?
+    set +x
+
+    if [ "${dlResult}" -ge 1 ]; then
+       echo -e "\nBuilding dependency tree..."
+
+       cd "${SERVICES}" || exit
+
+       set -x
+       mvn -B -P CI,oracle process-classes dependency:tree \
+           -Dregards.version="ci-${JOB_ID}" \
+           -Dmaven.multiModuleProjectDirectory=${SERVICES} \
+           -Dfile.encoding=UTF-8 \
+           -DcmdLineTarget=target \
+           -Dincludes='fr.cnes.*' \
+           -Dmaven.test.skip=true \
+           -DskipTests=true \
+           -Dmaven.javadoc.skip=true \
+           -Dmaven.source.skip=true \
+           -Dmaven-deploy.skip=true \
+           -Djacoco.skip=true \
+           -Dmdep.skip=true \
+           -DskipDocker=true \
+           -Dasciidoctor.skip=true \
+           -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+           -Dmaven.wagon.http.ssl.insecure=true \
+           -Dmaven.wagon.http.ssl.allowall=true \
+           -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
+           2>&1 | tee ${DATADIR}/mvn-deptree.log
+       failCheck $?
+       set +x
+
+       if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-deptree.log"; then
+           sed -r 's/^[0-9:,]*\s?\[[A-Z]*\]\s//' ${DATADIR}/mvn-deptree.log \
+                | awk '$6 ~ /^-+</ && $7 ~ /^fr\.cnes.*:/ {sub(/fr\.cnes.*:/, "", $7); print "module:" $7} $6=="+-" || $6=="\\-" { print $7 }' \
+                | awk -F: '/fr.cnes/ { print "+" $2 } $1=="module" { print }' \
+                > ${DATADIR}/dependencyTree.txt
+           curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/dependencyTree.txt ${NEXUS_RAW}/tests/regards/dependencyTree-${pomsHash}.txt --noproxy '*' -k --fail
+       else
+            echo "Error while building dependency tree"
+            exit 1
+       fi
+       echo "Dependency tree built."
+   else
+        echo "Found existing dependency tree with this hash, no need to rebuild it."
+   fi
+}
+
+function relativePath {
+    cd ${SERVICES}
+    if [[ "$1" == "regards-oss-backend" ]]; then
+        # Root directory
+        echo "."
+    else
+        echo $(find . -maxdepth 4 -type d -name "$1" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
+    fi
+}
+
+function folderHash {
+    find $1 -type f \
+        ! -path '*/.idea/*' \
+        ! -path '*.iml' \
+        ! -path '*/.idea' \
+        ! -path '*/target/*' \
+        ! -path '*/builds/*' \
+        ! -path '*/bin/*' \
+        ! -path '*/.classpath' \
+        ! -path '*/.project' \
+        ! -path '*/.settings/*' \
+        ! -path '*/maven-eclipse.xml' \
+        ! -path '*/.flattened-pom.xml' \
+        ! -path '*/.mvn/*' \
+        ! -path '*/tmp/*' \
+        ! -path '*/logs/*' \
+        ! -path '*.log' \
+        ! -path '*/README.md' \
+        ! -path '*/etc/*' \
+        ! -path '*/site' \
+        ! -path '*/.hash' \
+        ! -path '*.git*' \
+        ! -path '*/LICENSE' \
+        ! -path '*/license.md' \
+        ! -path '*/banner.txt' \
+        -print0 | sort -z | xargs -0 sha1sum | sha1sum | awk '{ print $1 }'
+}
+
+function parentHash {
+    find $1 -maxdepth 0 -type f \
+        -name "pom.xml" \
+        -o -name ".deps.hash" \
+        -print0 | sort -z | xargs -0 sha1sum | sha1sum | awk '{ print $1 }'
+}
+
+function calculateHash {
+    local module=$1
+    local parentModule=$2
+    local treated=0
+    local moduleHash
+
+    if [[ ! -z "${hashes[${module}]}" ]]; then
+        # Module's hash has already been calculated
+        moduleHash=${hashes[${module}]}
+        treated=1
+    else
+        # We will now calculate current module hash
+        echo "hashing module ${module}"
+
+        local modulePath=$(relativePath ${module})
+
+        # Module is a module from services repo
+        if [[ ! -z "${modulePath}" ]]; then
+            cd  "${SERVICES}"
+
+            # Calculate parent pom hash and add it as a dependency of current module (in current module .deps.hash)
+            local parentPomName=$(awk '$1=="<parent>" { flag=1 }; /artifactId/ && flag==1 { print }; $1=="</parent>" {flag=0}' ${modulePath}/pom.xml \
+                | sed -r 's/\s*<\/?artifactId>\s*//g')
+            if [[ ! -z "${parentPomName}" ]]; then
+                # Check if parent pom hash has already been calculated ('+abc' simply allows returning "true" if the key does exist in the array)
+                if [ ! ${hashes[${parentPomName}]+abc} ]; then
+                   calculateHash ${parentPomName}
+                fi
+                local parentPomHash=${hashes[${parentPomName}]}
+                echo "${parentPomHash} (hash of parent pom ${parentPomName})" >> "${modulePath}/.deps.hash"
+            fi
+
+            if grep -q "<packaging>pom</packaging>" ${modulePath}/pom.xml; then
+                # Treating a parent pom
+                moduleHash=$(parentHash ${modulePath})
+                orderedHashes+=("$module")
+            else
+                # Treating an actual module (jar or other packaging)
+                moduleHash=$(folderHash ${modulePath})
+                modulesOnlyHashes[$module]=${moduleHash}
+
+                if [[ -z "${parentModule}" ]]; then
+                    # Only save parent modules in this associative arrays, to keep reactor order
+                    orderedHashes+=("$module")
+                fi
+            fi
+            hashes[$module]=${moduleHash}
+            echo ${moduleHash} > ${modulePath}/.hash
+            treated=1
+        fi
+    fi
+
+    if [ ${treated} == 1 ]; then
+        if [[ ! -z "${parentModule}" ]]; then
+            local upperModulePath=$(relativePath ${parentModule})
+            echo "${moduleHash} (hash of module ${module})" >> "${upperModulePath}/.deps.hash"
+        fi
+    fi
+}
+
+function displayModule {
+    echo "-----------------------------------"
+    echo "|   Module : $1"
+    echo "-----------------------------------"
+}
+
+
+function computeHashes {
+    echo -e "\nComputing hashes for all modules..."
+
+    # Clean old stuff beforehand
+    find . -name '*.hash' -delete -o -name 'hashes*.txt' -delete
+
+    start=1
+    previousIsModule=1
+    parentModule=
+
+    # Let's goooo
+    while read line; do
+        if [[ "$line" =~ ^module:.* ]]; then
+            module=$(echo ${line} | sed -r s/module://g)
+            # First module, just put it as the first parent module
+            if [ ${start} == 1 ]; then
+
+                parentModule=${module}
+                start=0
+            else
+                if [ ${previousIsModule} == 1 ]; then
+                    # Previous module had no dependencies
+                    calculateHash ${parentModule}
+                else
+                    # Previous module had dependencies (and all have now been treated)
+                    calculateHash ${parentModule}
+                fi
+                parentModule=${module}
+                previousIsModule=1
+            fi
+        else
+            module=$(echo ${line} | sed -r s/^\\+//g)
+            if [ ${previousIsModule} == 1 ]; then
+                # First dependency of the parent module
+
+                # Remove old dependencies hash file for parent module
+                parentModulePath=$(relativePath ${parentModule})
+            fi
+
+            calculateHash ${module} ${parentModule}
+            previousIsModule=0
+        fi
+    done <${DATADIR}/dependencyTree.txt
+
+    # Treat last parent...
+    calculateHash ${parentModule}
+
+    # Output all hashes to file
+    for i in "${!orderedHashes[@]}"; do
+        moduleName=${orderedHashes[$i]}
+        moduleHash=${hashes[${orderedHashes[$i]}]}
+        echo "${moduleName}:${moduleHash}" \
+        | awk '{ print $1 }' \
+        >> "${DATADIR}/hashes.txt"
+    done
+    # Output all modules hashes to another file
+    for i in "${!modulesOnlyHashes[@]}"; do
+        echo "$i:${modulesOnlyHashes[$i]}" >> "${DATADIR}/hashes-modules-only.txt"
+    done
+
+    echo "Hashes computed."
+}

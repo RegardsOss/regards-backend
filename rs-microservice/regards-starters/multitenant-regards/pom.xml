@@ -22,12 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>multitenant-regards</artifactId>
+    <version>${multitenant.starter.version}</version>
     <description>REGARDS multitenant</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${regards.starters.version}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

@@ -21,14 +21,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>spring-utils</artifactId>
+    <version>${spring.utils.version}</version>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>

@@ -23,6 +23,8 @@
 
 	<groupId>fr.cnes.regards.microservices.storage</groupId>
 	<artifactId>bootstrap-storage</artifactId>
+	<version>${storage.bootstrap.version}</version>
+
 	<description>Boots the STORAGE microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -48,8 +50,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<version>${regards.boot.parent.version}</version>
+		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
 	</parent>
 
 	<properties>

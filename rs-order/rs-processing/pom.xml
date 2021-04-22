@@ -7,13 +7,14 @@
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>rs-processing</artifactId>
+    <version>${modules.processing.version}</version>
     <packaging>pom</packaging>
 
     <modules>

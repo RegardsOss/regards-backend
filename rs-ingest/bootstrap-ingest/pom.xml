@@ -23,6 +23,8 @@
 
 	<groupId>fr.cnes.regards.microservices.ingestion</groupId>
 	<artifactId>bootstrap-ingest</artifactId>
+	<version>${ingest.bootstrap.version}</version>
+
 	<description>Boots the microservice Ingest</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -48,8 +50,8 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath/>
+		<version>${regards.boot.parent.version}</version>
+		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
 	</parent>
 
 	<properties>
