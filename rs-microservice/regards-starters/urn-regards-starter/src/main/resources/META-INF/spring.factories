@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.urn.converters.StringToUrn,\
+fr.cnes.regards.framework.urn.converters.UrnToString

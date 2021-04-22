@@ -1,0 +1,2 @@
+create table t_service_provider (name varchar(128) not null, auth_url text not null, plugin_conf_id int8, primary key (name));
+alter table t_service_provider add constraint fk_service_provider_plugin_conf foreign key (plugin_conf_id) references t_plugin_configuration;

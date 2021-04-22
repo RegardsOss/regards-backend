@@ -1,0 +1,175 @@
+{
+  "allowSearching": true,
+  "DATA": {
+    "showDescription": true,
+    "showTags": true,
+    "showCoupling": true,
+    "showLinkedDocuments": true,
+    "showLinkedEntities": true,
+    "showThumbnail": true,
+    "groups": [
+      {
+        "showTitle": false,
+        "title": {
+          "en": "",
+          "fr": ""
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          }
+        ]
+      }
+    ],
+    "attributeToDescriptionFiles": [],
+    "hideEmptyAttributes": false
+  },
+  "DATASET": {
+    "showDescription": true,
+    "showTags": true,
+    "showCoupling": true,
+    "showLinkedDocuments": true,
+    "showLinkedEntities": true,
+    "showThumbnail": false,
+    "groups": [
+      {
+        "showTitle": false,
+        "title": {
+          "en": "",
+          "fr": ""
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          }
+        ]
+      }
+    ],
+    "attributeToDescriptionFiles": [],
+    "hideEmptyAttributes": false
+  },
+  "COLLECTION": {
+    "showDescription": true,
+    "showTags": true,
+    "showCoupling": true,
+    "showLinkedDocuments": true,
+    "showLinkedEntities": true,
+    "showThumbnail": false,
+    "groups": [
+      {
+        "showTitle": false,
+        "title": {
+          "en": "",
+          "fr": ""
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          }
+        ]
+      }
+    ],
+    "attributeToDescriptionFiles": [],
+    "hideEmptyAttributes": false
+  },
+  "DOCUMENT": {
+    "showDescription": true,
+    "showTags": true,
+    "showCoupling": true,
+    "showLinkedDocuments": true,
+    "showLinkedEntities": true,
+    "showThumbnail": false,
+    "groups": [
+      {
+        "showTitle": false,
+        "title": {
+          "en": "",
+          "fr": ""
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          }
+        ]
+      }
+    ],
+    "attributeToDescriptionFiles": [],
+    "hideEmptyAttributes": false
+  }
+}

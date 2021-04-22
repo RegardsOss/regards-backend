@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "street_address": { "type": "string" },
+    "city":           { "type": "string" },
+    "state":          { "type": "string" },
+    "code" :          { "type": "integer", "enum": [10, 20,31] },
+    "active" :        { "type": "boolean" },
+    "creation" :      { "type": "string", "format" : "date-time" },
+    "dates" :         { "type": "array",  "items": {    "type": "string", "format" : "date-time" }},
+    "price" :         { "type": "number"},
+    "link"  :         { "type": "string", "format" : "uri","pattern":"^.*//.*" },
+    "appartements":   { "type": "array", "items": {  "type": "object",
+      "properties": {
+        "number" : { "type": "integer" },
+        "rooms"  : { "type": "array", "items": {  "type": "object",
+          "properties": {
+            "width" : { "type": "integer" },
+            "height": { "type": "integer" },
+            "name"  : {  "type" : "string" }
+          }
+        }}
+      }
+    }}
+  },
+  "required": ["street_address", "city", "state"]
+}

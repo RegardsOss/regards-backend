@@ -1,0 +1,4 @@
+{
+    "integer":"{{integer()}}",
+    "integerBounded":"{{integer(100,200)}}"
+}

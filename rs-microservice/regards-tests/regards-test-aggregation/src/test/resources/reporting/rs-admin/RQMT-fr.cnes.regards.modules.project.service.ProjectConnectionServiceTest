@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<requirements>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Test to retrieve projects connections of passed id in instance database.</purpose>
+            <name>testRetrieveProjectConnectionById</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectConnectionServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Test creation of a new database connection for a given project and a given microservice.</purpose>
+            <name>createProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectConnectionServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Test updating of a database connection for a given project and a given microservice.</purpose>
+            <name>updateProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectConnectionServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose> Test to retrieve projects connections of given project's name in instance database.</purpose>
+            <name>testRetrieveProjectsConnectionsByProject</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectConnectionServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_SYS_ARC_050">
+        <test>
+            <purpose>Test deletion of a database connection for a given project and a given microservice.</purpose>
+            <name>deleteProjectConnection</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectConnectionServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check that the system allows to update a project on an instance and handle fail cases.</purpose>
+            <name>updateProject</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check that the system allows to retrieve a project on an instance and handle fail cases.</purpose>
+            <name>getProjectTest</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_130">
+        <test>
+            <purpose>Check that the system allows to retrieve all projects for an instance.</purpose>
+            <name>retrieveAllProjectTest</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectServiceTest</class>
+        </test>
+    </requirement>
+    <requirement ref="REGARDS_DSL_ADM_INST_100">
+        <test>
+            <purpose>Check that the system allows to create a project.</purpose>
+            <name>createProjectTest</name>
+            <class>fr.cnes.regards.modules.project.service.ProjectServiceTest</class>
+        </test>
+    </requirement>
+</requirements>

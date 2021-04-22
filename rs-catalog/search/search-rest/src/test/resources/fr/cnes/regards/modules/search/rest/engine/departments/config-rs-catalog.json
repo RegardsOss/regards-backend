@@ -1,0 +1,76 @@
+{
+  "microservice": "rs-catalog",
+  "modules": [
+    {
+      "module": {
+        "id": "search",
+        "name": "Search Module",
+        "description": "Module handling anything to do with searching entities and rights",
+        "version": "3.0.0",
+        "author": "CSSI",
+        "legalOwner": "CNES",
+        "documentation": "https://github.com/RegardsOss"
+      },
+      "configuration": [
+        {
+          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
+          "value": {
+            "label": "Open search protocol",
+            "configuration": {
+              "businessId": "opensearch-plugin",
+              "label": "Open search engine",
+              "active": true,
+              "pluginId": "opensearch",
+              "version": "1.0.0",
+              "priorityOrder": 1,
+              "parameters": [
+				{
+				  "type": "POJO",
+      			  "name": "engineConfiguration",
+      			  "clazz": "fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter.EngineConfiguration",
+				  "value": {
+                    "searchTitle": "Open search",
+                    "searchDescription": "Open search",
+                    "contact": "regards@c-s.fr",
+                    "shortName": "Open search",
+                    "longName": "Open search"
+                  }
+    			},
+                {
+                  "type": "POJO",
+      			  "name": "timeExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.geo.GeoTimeExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "POJO",
+      			  "name": "regardsExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.regards.RegardsExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+               {
+                  "type": "POJO",
+      			  "name": "mediaExtension",
+      			  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.media.MediaExtension",
+                  "value": {
+                    "activated": true
+                  }
+                },
+                {
+                  "type": "COLLECTION",
+                  "name": "paramConfigurations",
+                  "clazz": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration",
+                  "value": []
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
