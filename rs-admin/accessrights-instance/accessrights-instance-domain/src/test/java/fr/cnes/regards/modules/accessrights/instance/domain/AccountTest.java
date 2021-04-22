@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +36,7 @@ public class AccountTest {
     /**
      * Test email
      */
-    private final String email = "mail";
+    private final String email = "mail@cnes.fr";
 
     /**
      * Test firstName
@@ -70,7 +74,15 @@ public class AccountTest {
      */
     @Test
     public void testAccountFull() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
         final Account account = new Account(email, firstName, lastName, password);
+
+        System.out.println(account.getEmail().length());
+        validator.validate(account).forEach(c -> System.out.println(c.getMessage()));
+
+        Assert.assertTrue(validator.validate(account).isEmpty());
 
         Assert.assertNull(account.getId());
         Assert.assertEquals(email, account.getEmail());
