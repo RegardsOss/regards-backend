@@ -135,7 +135,7 @@ public class EsAggsTest {
         Assert.assertEquals(12, summary.getDocumentsCount());
         // 24 because 12 RAWDATA and 12 QUICKLOOKS
         Assert.assertEquals(24, summary.getFilesCount());
-        Assert.assertEquals(236071586, summary.getFilesSize()); // 3 * 118 Mb
+        Assert.assertEquals(90210386, summary.getFilesSize());
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("FIFI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("RIRI"));
         Assert.assertTrue(summary.getSubSummariesMap().containsKey("LOULOU"));
