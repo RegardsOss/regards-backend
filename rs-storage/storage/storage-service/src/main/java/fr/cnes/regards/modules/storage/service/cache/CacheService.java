@@ -46,11 +46,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.storage.dao.ICacheFileRepository;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
@@ -79,9 +81,9 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 @MultitenantTransactional
 public class CacheService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
-
     public static final String CACHE_NAME = "internal-cache";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CacheService.class);
 
     @Value("${regards.storage.cache.schedule.purge.bulk.size:500}")
     private static int BULK_SIZE = 500;
@@ -92,25 +94,12 @@ public class CacheService {
     @Autowired
     private ICacheFileRepository cachedFileRepository;
 
-    /**
-     * Cache path origin for all tenants.
-     */
-    @Value("${regards.storage.cache.path}")
-    private String globalCachePath;
-
-    /**
-     * Maximum cache size per tenant in ko.
-     */
-    @Value("${regards.storage.cache.size.limit.ko.per.tenant:500000000}")
-    private Long maxCacheSizeKo;
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     /**
      * Creates a new cache file if the checksum does not match an existing file.
      * If file already exists in cache, updates the associated information.
-     * @param checksum
-     * @param fileSize
-     * @param location
-     * @param expirationDate
      */
     public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, String type, URL location,
             OffsetDateTime expirationDate, String groupId) {
@@ -130,7 +119,6 @@ public class CacheService {
 
     /**
      * Search for a file in cache with the given checksum.
-     * @param checksum
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> search(String checksum) {
@@ -139,9 +127,8 @@ public class CacheService {
 
     /**
      * Check coherence between database and physical files in cache location.
-     * @throws IOException
      */
-    public void checkDiskDBCoherence() throws IOException {
+    public void checkDiskDBCoherence() {
         Page<CacheFile> shouldBeAvailableSet;
         Pageable page = PageRequest.of(0, BULK_SIZE, Direction.ASC, "id");
         Set<Long> toDelete = Sets.newHashSet();
@@ -178,7 +165,6 @@ public class CacheService {
 
     /**
      * Initialize the cache file system for the given tenant
-     * @param tenant
      */
     public void initCacheFileSystem(String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
@@ -190,35 +176,29 @@ public class CacheService {
             try {
                 Files.createDirectories(tenantCachePath);
             } catch (IOException e) {
-                throw new RuntimeException(e.getMessage(), e);
+                throw new RsRuntimeException(e.getMessage(), e);
             }
         }
-        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead()
-                || !cachedPathFile.canWrite()) {
-            throw new RuntimeException(
-                    String.format("Error initializing storage cache directory. %s is not a valid directory",
-                                  tenantCachePath));
+        if (!cachedPathFile.exists() || !cachedPathFile.isDirectory() || !cachedPathFile.canRead() || !cachedPathFile
+                .canWrite()) {
+            throw new RsRuntimeException(String.format(
+                    "Error initializing storage cache directory. %s is not a valid directory",
+                    tenantCachePath));
         }
         runtimeTenantResolver.clearTenant();
     }
 
     /**
      * Retrieve a file from the cache by is checksum.
-     * @param checksum
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> getCacheFile(String checksum) {
         Optional<CacheFile> ocf = cachedFileRepository.findOneByChecksum(checksum);
-        if (ocf.isPresent()) {
-            return ocf;
-        } else {
-            return Optional.empty();
-        }
+        return ocf;
     }
 
     /**
      * Retrieve all {@link FileReference}s available in cache.
-     * @param fileReferences
      * @param groupId new availability request business identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
@@ -287,18 +267,24 @@ public class CacheService {
             Path fileLocation = Paths.get(cachedFile.getLocation().getPath());
             if (fileLocation.toFile().exists()) {
                 try {
-                    LOGGER.trace("Deletion of cached file {} (exp date={}). {}", cachedFile.getChecksum(),
-                                 cachedFile.getExpirationDate().toString(), fileLocation);
+                    LOGGER.trace("Deletion of cached file {} (exp date={}). {}",
+                                 cachedFile.getChecksum(),
+                                 cachedFile.getExpirationDate().toString(),
+                                 fileLocation);
                     Files.delete(fileLocation);
                     cachedFileRepository.delete(cachedFile);
                     LOGGER.debug(" [CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
-                                 cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                                 cachedFile.getChecksum(),
+                                 cachedFile.getExpirationDate().toString(),
+                                 fileLocation);
                 } catch (NoSuchFileException e) {
                     // File does not exists, just log a warning and do delet file in db.
                     LOGGER.warn(e.getMessage(), e);
                     cachedFileRepository.delete(cachedFile);
                     LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
-                                 cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                                 cachedFile.getChecksum(),
+                                 cachedFile.getExpirationDate().toString(),
+                                 fileLocation);
                 } catch (IOException e) {
                     // File exists but is not deletable.
                     LOGGER.error(e.getMessage(), e);
@@ -307,12 +293,15 @@ public class CacheService {
                 LOGGER.error("File to delete {} does not exists", fileLocation);
                 cachedFileRepository.delete(cachedFile);
                 LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}). {}",
-                             cachedFile.getChecksum(), cachedFile.getExpirationDate().toString(), fileLocation);
+                             cachedFile.getChecksum(),
+                             cachedFile.getExpirationDate().toString(),
+                             fileLocation);
             }
         } else {
             cachedFileRepository.delete(cachedFile);
             LOGGER.debug("[CACHE FILE DELETION SUCCESS] Cached file {} deleted (exp date={}).",
-                         cachedFile.getChecksum(), cachedFile.getExpirationDate().toString());
+                         cachedFile.getChecksum(),
+                         cachedFile.getExpirationDate().toString());
         }
     }
 
@@ -320,17 +309,12 @@ public class CacheService {
      * Retrieve the path of the cache for te curent tenant.
      */
     public Path getTenantCachePath() {
-        String currentTenant = runtimeTenantResolver.getTenant();
-        if (currentTenant == null) {
-            throw new RuntimeException(
-                    "Unable to define current tenant cache directory path, Tenant is not defined from the runtimeTenantResolver.");
-        }
-        return Paths.get(globalCachePath, currentTenant);
+        return dynamicTenantSettingService.read(StorageSetting.CACHE_PATH_NAME)
+                .orElseThrow(() -> new RsRuntimeException("Tenant cache path has not been initialized")).getValue();
     }
 
     /**
      * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
-     * @param fileChecksum
      * @return file path
      */
     public String getFilePath(String fileChecksum) {
@@ -339,7 +323,6 @@ public class CacheService {
 
     /**
      * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
-     * @param fileChecksum
      * @return file path
      */
     public String getCacheDirectoryPath(String fileChecksum) {
@@ -359,12 +342,17 @@ public class CacheService {
      */
     public Long getFreeSpaceInBytes() {
         Long currentCacheTotalSize = getCacheSizeUsedBytes();
-        Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
+        Long cacheMaxSizeInOctets = getMaxCacheSizeKo() * 1024;
         return cacheMaxSizeInOctets - currentCacheTotalSize;
     }
 
     public Long getCacheSizeLimit() {
-        return maxCacheSizeKo * 1024;
+        return getMaxCacheSizeKo() * 1024;
+    }
+
+    private Long getMaxCacheSizeKo() {
+        return dynamicTenantSettingService.read(StorageSetting.CACHE_MAX_SIZE_NAME)
+                .orElseThrow(()-> new RsRuntimeException("Max cache size setting has not been initialized")).getValue();
     }
 
     public long getTotalCachedFiles() {
@@ -372,10 +360,14 @@ public class CacheService {
     }
 
     public StorageLocationDTO toStorageLocation() {
-        StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo);
+        StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, getMaxCacheSizeKo());
         conf.setStorageType(StorageType.CACHE);
-        return StorageLocationDTO.build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
-                                        false, conf);
+        return StorageLocationDTO
+                .build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false, false, conf);
+    }
+
+    public boolean isCacheEmpty() {
+        return cachedFileRepository.count() == 0;
     }
 
 }

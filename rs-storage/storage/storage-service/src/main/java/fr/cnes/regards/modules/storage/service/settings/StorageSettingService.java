@@ -41,6 +41,13 @@ public class StorageSettingService extends AbstractSettingService {
 
     @Override
     protected List<DynamicTenantSetting> getSettingList() {
+        // Default tenant cache path has to be fully computed at runtime
+        // we can happily set the value no matter what as it will only be applied once by initialization logic
+        DynamicTenantSetting tenantCachePath = StorageSetting.CACHE_PATH;
+        String tenant = runtimeTenantResolver.getTenant();
+        tenantCachePath.setDefaultValue(StorageSetting.DEFAULT_CACHE_ROOT.resolve(tenant));
+        // default value is only there as information for users, so we also need to set the correct value for the first initialization
+        tenantCachePath.setValue(StorageSetting.DEFAULT_CACHE_ROOT.resolve(tenant));
         return StorageSetting.SETTING_LIST;
     }
 

@@ -35,16 +35,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
+import com.netflix.discovery.converters.Auto;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
@@ -60,14 +64,21 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
  *
  */
 @ActiveProfiles({ "noschedule" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests",
-        "regards.storage.cache.path=target/cache" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests" }, locations = { "classpath:application-test.properties" })
 public class FileDeletionRequestServiceTest extends AbstractStorageTest {
+
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Before
     @Override
     public void init() throws ModuleException {
         super.init();
+        simulateApplicationStartedEvent();
+        simulateApplicationReadyEvent();
+        // we override cache setting values for tests
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
+        dynamicTenantSettingService.update(StorageSetting.CACHE_MAX_SIZE_NAME, 5L);
     }
 
     @Test
@@ -88,7 +99,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void deleteFileReference() throws EntityNotFoundException, InterruptedException, ExecutionException {
+    public void deleteFileReference() {
 
         // Add a new file reference without storage with two owners
         String storage = "anywhere";
@@ -133,7 +144,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void deleteFileStoredMultiple() throws EntityNotFoundException, InterruptedException, ExecutionException {
+    public void deleteFileStoredMultiple() throws InterruptedException, ExecutionException {
 
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
@@ -172,7 +183,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void deleteFileReferenceError() throws EntityNotFoundException, InterruptedException, ExecutionException {
+    public void deleteFileReferenceError() throws InterruptedException, ExecutionException {
 
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
@@ -211,8 +222,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_100")
     @Purpose("Check that a deletion request for file is well when physical deletion is allowed.")
-    public void deleteStoredFile()
-            throws InterruptedException, ExecutionException, MalformedURLException, ModuleException {
+    public void deleteStoredFile() {
         Path deletedFilePath = deleteStoredFile(ONLINE_CONF_LABEL);
         Assert.assertFalse("File should be deleted on disk", Files.exists(deletedFilePath));
     }
@@ -220,8 +230,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_100")
     @Purpose("Check that a deletion request for file is well when physical deletion is not allowed.")
-    public void deleteStoredFileWithoutPhysicalDeletion()
-            throws InterruptedException, ExecutionException, MalformedURLException, ModuleException {
+    public void deleteStoredFileWithoutPhysicalDeletion() {
         Path deletedFilePath = deleteStoredFile(ONLINE_CONF_LABEL_WITHOUT_DELETE);
         Assert.assertTrue("File should not be deleted on disk", Files.exists(deletedFilePath));
     }
@@ -245,7 +254,7 @@ public class FileDeletionRequestServiceTest extends AbstractStorageTest {
             Assert.assertTrue("File reference should belongs to second owner",
                               oFileRef.get().getOwners().contains(secondOwner));
             fileRef = oFileRef.get();
-            Path filePathToDelete = null;
+            Path filePathToDelete;
             filePathToDelete = Paths.get(new URL(fileRef.getLocation().getUrl()).getPath());
 
             // Delete file reference for one owner

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,6 +31,10 @@ public final class StorageSetting {
 
     public static final String MAX_QUOTA_NAME = "maxQuota";
 
+    public static final String CACHE_PATH_NAME = "tenantCachePath";
+
+    public static final String CACHE_MAX_SIZE_NAME = "cacheMaxSize";
+
     public static final DynamicTenantSetting MAX_QUOTA = new DynamicTenantSetting(MAX_QUOTA_NAME,
                                                                                   "Default max quota for RAWDATA download. Must be > -1.",
                                                                                   -1L);
@@ -37,9 +43,21 @@ public final class StorageSetting {
                                                                                    "Default rate limit for RAWDATA download. Must be > -1.",
                                                                                    -1L);
 
-    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
+    public static final Path DEFAULT_CACHE_ROOT = Paths.get("cache");
+
+    public static final DynamicTenantSetting CACHE_PATH = new DynamicTenantSetting(CACHE_PATH_NAME,
+                                                                                   "Cache path for this tenant. The path does not need to exist but it has to be readable and writable if it does.",
+                                                                                   DEFAULT_CACHE_ROOT);
+
+    public static final DynamicTenantSetting CACHE_MAX_SIZE = new DynamicTenantSetting(CACHE_MAX_SIZE_NAME,
+                                                                                        "Cache max size for this tenant in kilo-bytes. it has to be >0",
+                                                                                        500000000L);
+
+    protected static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
             MAX_QUOTA,
-            RATE_LIMIT
+            RATE_LIMIT,
+            CACHE_PATH,
+            CACHE_MAX_SIZE
     );
 
     private StorageSetting() {

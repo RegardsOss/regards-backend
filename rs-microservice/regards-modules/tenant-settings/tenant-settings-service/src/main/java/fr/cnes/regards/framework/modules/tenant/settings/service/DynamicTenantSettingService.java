@@ -121,7 +121,7 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         }
 
         if (!settingCustomizer.isValid(dynamicTenantSetting)) {
-            throw new EntityInvalidException("Invalid Tenant Setting");
+            throw new EntityInvalidException(String.format("Invalid Tenant Setting: %s", dynamicTenantSetting));
         }
 
         return settingCustomizer;

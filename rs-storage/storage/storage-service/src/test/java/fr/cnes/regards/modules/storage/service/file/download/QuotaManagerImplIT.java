@@ -2,13 +2,19 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
+import fr.cnes.regards.modules.storage.service.file.flow.AvailabilityUpdateCustomTestAction;
 import io.vavr.Tuple2;
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,8 +65,11 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     @Autowired @InjectMocks
     private QuotaManagerImpl quotaManager;
 
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
+
     @Before
-    public void setUp() {
+    public void setUp() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         MockitoAnnotations.initMocks(this);
         quotaRepositoryDelegate = quotaRepository;
         quotaRepository =
@@ -69,6 +79,8 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());
         quotaManager.setDiffsAccumulatorByTenant(new HashMap<>());//HashMap.empty());
+        // we override cache setting values for tests
+        dynamicTenantSettingService.update(StorageSetting.CACHE_PATH_NAME, Paths.get("target", "cache", getDefaultTenant()));
     }
 
     @After
@@ -78,7 +90,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void test_gauges() throws ExecutionException, InterruptedException {
+    public void test_gauges() throws InterruptedException {
         // given
         // there is a user with some quota definition
         DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(getDefaultTenant(), "foo@bar.com", -1L, -1L);

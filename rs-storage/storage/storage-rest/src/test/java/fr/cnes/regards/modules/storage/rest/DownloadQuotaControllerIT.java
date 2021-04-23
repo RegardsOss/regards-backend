@@ -58,8 +58,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=quota_rest_it",
-        "regards.storage.cache.path=target/cache" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=quota_rest_it" })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
