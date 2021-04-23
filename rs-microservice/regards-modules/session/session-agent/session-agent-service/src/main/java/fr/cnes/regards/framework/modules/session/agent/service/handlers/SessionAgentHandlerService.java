@@ -4,8 +4,8 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class SessionAgentHandlerService {
      *
      * @param events {@link StepPropertyUpdateRequestEvent}s
      */
-    public void handle(List<StepPropertyUpdateRequestEvent> events) {
+    public void createStepRequests(List<StepPropertyUpdateRequestEvent> events) {
         List<StepPropertyUpdateRequest> stepPropertiesToSave = new ArrayList<>();
         Set<String> sourcesToBeUpdated = new HashSet<>();
         // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received

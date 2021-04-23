@@ -3,8 +3,8 @@ package fr.cnes.regards.framework.modules.session.agent.service.update;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
@@ -24,11 +24,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
+ * Test for {@link AgentSnapshotService}
+ *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_service_it",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_snapshot_service_it",
         "regards.cipher.key-location=src/test/resources" + "/testKey", "regards.cipher.iv=1234567812345678", "regards"
-        + ".session.agent.page.size=2" })
+        + ".session.agent.step.requests.page.size=2" })
 @ActiveProfiles(value = { "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalIT {
 
@@ -58,7 +60,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
     }
 
     @Test
-    @Purpose("The the generation of SessionStep following the publication of StepEvents")
+    @Purpose("Test if session steps are correctly generated from step property requests")
     public void generateSessionStepTest() {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
         SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE, CREATION_DATE, null);

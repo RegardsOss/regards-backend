@@ -35,5 +35,6 @@
     <modules>
         <module>session-agent</module>
         <module>session-commons</module>
+        <module>session-management</module>
     </modules>
 </project>

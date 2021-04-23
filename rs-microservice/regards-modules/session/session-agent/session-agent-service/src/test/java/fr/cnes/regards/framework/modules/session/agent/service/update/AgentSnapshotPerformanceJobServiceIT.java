@@ -1,9 +1,9 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -21,9 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 /**
+ * Performance test for {@link AgentSnapshotJobService}
+ *
  * @author Iliana Ghazali
  **/
-
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it" })
 public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsTest {
 
@@ -38,8 +39,8 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
     private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
 
     @Test
-    @Purpose("The the generation of SessionStep following the publication of StepEvents")
-    public void generateSessionStepTest() {
+    @Purpose("Test the performance while generation session steps from step update requests")
+    public void performanceGenerateSessionStepTest() {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
         SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE_1, CREATION_DATE, null);
         int nbSources = 10;
@@ -69,7 +70,6 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         }
 
         checkResult(nbSources);
-
     }
 
     private void checkResult(int nbSessionStepExpected) {
@@ -98,5 +98,4 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         this.publisher.publish(stepRequests);
         return stepRequests.size();
     }
-
 }

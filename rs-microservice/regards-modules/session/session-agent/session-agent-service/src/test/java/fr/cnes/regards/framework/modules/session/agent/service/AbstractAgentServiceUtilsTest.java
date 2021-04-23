@@ -9,13 +9,17 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.service.handlers.AgentSnapshotJobEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -23,14 +27,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Iliana Ghazali
  **/
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS, hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServiceTransactionalIT {
@@ -89,7 +91,9 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
     @After
     public void after() throws Exception {
         subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
+        subscriber.unsubscribeFrom(JobEvent.class);
         cleanAMQPQueues(SessionAgentHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
+        cleanAMQPQueues(AgentSnapshotJobEventHandler.class, Target.MICROSERVICE);
         doAfter();
     }
 
@@ -129,6 +133,7 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
 
     protected boolean waitForStepPropertyEventsStored(int nbEvents) {
         long count, now = System.currentTimeMillis(), end = now + 200000L;
+        LOGGER.debug("Waiting for step property requests to be saved ...");
         do {
             count = this.stepPropertyRepo.count();
             now = System.currentTimeMillis();
@@ -136,8 +141,26 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         return count == nbEvents;
     }
 
+    protected boolean waitForSnapshotUpdateSuccesses() {
+        long count = 0; long now = System.currentTimeMillis(), end = now + 200000L;
+        List<SnapshotProcess> snapshotProcessList = this.snapshotProcessRepo.findAll();
+        int processSize = snapshotProcessList.size();
+        LOGGER.info("Waiting for snapshot update ...");
+        do {
+            for(SnapshotProcess snapshotProcess : snapshotProcessList) {
+                if(snapshotProcess.getLastUpdate() != null && snapshotProcess.getJobId() == null) {
+                    count++;
+                }
+            }
+            snapshotProcessList = this.snapshotProcessRepo.findAll();
+            now = System.currentTimeMillis();
+        } while(count!=processSize && now <= end);
+        return count == processSize;
+    }
+
     protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) {
         long count, now = System.currentTimeMillis(), end = now + timeout;
+        LOGGER.info("Waiting for jobs to be in success state ...");
         do {
             count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
             now = System.currentTimeMillis();

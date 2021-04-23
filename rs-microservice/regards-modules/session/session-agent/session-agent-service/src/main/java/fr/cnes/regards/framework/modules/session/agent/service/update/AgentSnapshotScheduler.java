@@ -86,8 +86,10 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
     /**
      * Bulk save queued items every second.
      */
-    @Scheduled(initialDelayString = "${regards.snapshot.process.bulk.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.snapshot.process.bulk.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.session.agent.snapshot.process.scheduler.bulk.initial.delay:"
+            + DEFAULT_INITIAL_DELAY + "}",
+            fixedDelayString = "${regards.session.agent.snapshot.process.scheduler.bulk.delay:"
+                    + DEFAULT_SCHEDULING_DELAY + "}")
     protected void scheduleAIPPostProcessingJobs() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

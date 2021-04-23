@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
+import java.util.Objects;
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -68,5 +69,20 @@ public class SnapshotProcess {
 
     public void setJobId(UUID jobId) {
         this.jobId = jobId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SnapshotProcess that = (SnapshotProcess) o;
+        return source.equals(that.source);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(source);
     }
 }

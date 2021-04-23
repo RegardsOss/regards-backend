@@ -53,14 +53,14 @@
     </developers>
 
 	<dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+            <artifactId>session-commons-dao</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
-            <artifactId>session-commons-domain</artifactId>
-        </dependency>
 		<!-- Test -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

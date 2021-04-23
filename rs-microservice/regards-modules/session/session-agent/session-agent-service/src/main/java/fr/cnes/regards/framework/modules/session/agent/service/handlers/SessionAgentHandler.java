@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class SessionAgentHandler
         try {
             LOGGER.info("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
             long start = System.currentTimeMillis();
-            sessionAgentHandlerService.handle(messages);
+            sessionAgentHandlerService.createStepRequests(messages);
             LOGGER.info("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {

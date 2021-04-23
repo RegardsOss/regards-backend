@@ -11,7 +11,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,46 +43,38 @@ public class AgentSnapshotJobService {
     public void scheduleJob() {
         long start = System.currentTimeMillis();
         LOGGER.info("[AGENT SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
-        JobInfo jobInfo;
 
         // Freeze start date to select stepEvents
         OffsetDateTime schedulerStartDate = OffsetDateTime.now();
         List<SnapshotProcess> snapshotProcessesRetrieved = this.snapshotProcessRepo.findAll();
-        Set<SnapshotProcess> snapshotProcessesUpdated = new HashSet<>();
 
-        // RETRIEVE SNAPSHOT PROCESSES
-        // search on every source, if events were added until schedulerStartDate
-        for (SnapshotProcess snapshotProcess : snapshotProcessesRetrieved) {
-            // Add snapshot only is there is no current job already processing events
-            if (snapshotProcess.getJobId() == null) {
-                OffsetDateTime lastUpdated = snapshotProcess.getLastUpdate();
-                if ((lastUpdated == null && stepPropertyUpdateRequestRepo
-                        .countBySourceAndDateBefore(snapshotProcess.getSource(), schedulerStartDate) >= 1) || (
-                        lastUpdated != null && stepPropertyUpdateRequestRepo
-                                .countBySourceAndDateBetween(snapshotProcess.getSource(),
-                                                             snapshotProcess.getLastUpdate(), schedulerStartDate)
-                                >= 1)) {
-                    snapshotProcessesUpdated.add(snapshotProcess);
-                }
-            }
-        }
+        // Filter out all snapshot processes currently running or with no step events to update
+        Predicate<SnapshotProcess> predicateAlreadyProcessed = process -> (process.getJobId() != null) || (
+                (process.getLastUpdate() == null && stepPropertyUpdateRequestRepo
+                        .countBySourceAndDateBefore(process.getSource(), schedulerStartDate) == 0) || (
+                        process.getLastUpdate() != null && stepPropertyUpdateRequestRepo
+                                .countBySourceAndDateBetween(process.getSource(), process.getLastUpdate(),
+                                                             schedulerStartDate) == 0));
+
+        snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);
 
         // IF EVENTS WERE ADDED
         // launch one job per snapshotProcess, ie, one job per source
-        if (!snapshotProcessesUpdated.isEmpty()) {
-            for (SnapshotProcess snapshotProcessToUpdate : snapshotProcessesUpdated) {
+        if (!snapshotProcessesRetrieved.isEmpty()) {
+            for (SnapshotProcess snapshotProcessToUpdate : snapshotProcessesRetrieved) {
                 // create one job per each source
                 HashSet<JobParameter> jobParameters = Sets
                         .newHashSet(new JobParameter(AgentSnapshotJob.SNAPSHOT_PROCESS, snapshotProcessToUpdate),
                                     new JobParameter(AgentSnapshotJob.FREEZE_DATE, schedulerStartDate));
-                jobInfo = new JobInfo(false, 0, jobParameters, null, AgentSnapshotJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false, 0, jobParameters, null, AgentSnapshotJob.class.getName());
+
+                // create job
+                jobInfo = jobInfoService.createAsQueued(jobInfo);
 
                 // update snapshot process with new job id to indicate there is a current process ongoing
                 snapshotProcessToUpdate.setJobId(jobInfo.getId());
                 this.snapshotProcessRepo.save(snapshotProcessToUpdate);
 
-                // create job
-                jobInfoService.createAsQueued(jobInfo);
                 LOGGER.info("[AGENT SNAPSHOT SCHEDULER] AgentSnapshotJob scheduled in {} ms for source {}",
                             System.currentTimeMillis() - start, snapshotProcessToUpdate.getSource());
             }

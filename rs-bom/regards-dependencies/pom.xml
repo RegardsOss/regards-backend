@@ -595,6 +595,11 @@
 				<artifactId>session-commons</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session</groupId>
+				<artifactId>session-management</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
 			<!-- Session agent -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
@@ -619,6 +624,32 @@
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
 				<artifactId>session-agent-client</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<!-- Session management -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+				<artifactId>session-management-dao</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+				<artifactId>session-management-domain</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+				<artifactId>session-management-rest</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+				<artifactId>session-management-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+				<artifactId>session-management-client</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
 			<!-- Session commons -->

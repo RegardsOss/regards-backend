@@ -3,8 +3,9 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
@@ -24,6 +25,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 /**
+ * Test for {@link AgentCleanSessionStepService}
+ *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_service_it",
@@ -65,7 +68,7 @@ public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransa
     }
 
     @Test
-    @Purpose("The the generation of SessionStep following the publication of StepEvents")
+    @Purpose("Test if old session steps and related step requests are correctly deleted")
     public void cleanSessionStepsTest() {
         OffsetDateTime freezeDate = OffsetDateTime.now(ZoneOffset.UTC);
 

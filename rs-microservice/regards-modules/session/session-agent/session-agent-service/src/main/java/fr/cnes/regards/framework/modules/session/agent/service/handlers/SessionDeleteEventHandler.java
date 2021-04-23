@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.modules.session.agent.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.deletion.SessionDeleteEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -5,11 +5,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepEvent;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
@@ -48,7 +48,7 @@ public class AgentSnapshotService {
     @Autowired
     private IPublisher publisher;
 
-    @Value("${regards.session.agent.page.size:1000}")
+    @Value("${regards.session.agent.step.requests.page.size:1000}")
     private int stepPropertyPageSize;
 
     /**

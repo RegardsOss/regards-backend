@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.session.agent.domain;
 
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventStateEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;

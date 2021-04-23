@@ -11,6 +11,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -32,4 +34,9 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
     long countBySourceAndDateBefore(String source, OffsetDateTime lastUpdate);
 
     List<StepPropertyUpdateRequest> findBySessionStepIn(List<SessionStep> content);
+
+    @Modifying
+    @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM StepPropertyUpdateRequest s) "
+            + "AND (p.lastUpdate IS NULL OR p.lastUpdate <= ?1)")
+    int deleteUnusedProcess(OffsetDateTime limitDate);
 }

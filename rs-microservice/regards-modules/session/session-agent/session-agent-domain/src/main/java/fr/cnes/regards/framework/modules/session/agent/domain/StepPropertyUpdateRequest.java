@@ -1,8 +1,8 @@
 package fr.cnes.regards.framework.modules.session.agent.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.update.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
+import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import javax.persistence.CascadeType;
@@ -68,7 +68,7 @@ public class StepPropertyUpdateRequest {
     private StepPropertyInfo stepPropertyInfo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "session_step_id", foreignKey = @ForeignKey(name = "fk_session_step"))
+    @JoinColumn(name = "session_step_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_session_step_id"))
     private SessionStep sessionStep;
 
     public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,

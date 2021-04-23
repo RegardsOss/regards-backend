@@ -27,8 +27,8 @@ public class SessionStep {
      * Id of the SessionStep
      */
     @Id
-    @SequenceGenerator(name = "sessionSequence", initialValue = 1, sequenceName = "seq_session")
-    @GeneratedValue(generator = "sessionSequence", strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(name = "sessionStepSequence", initialValue = 1, sequenceName = "seq_session_step")
+    @GeneratedValue(generator = "sessionStepSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
     /**
@@ -36,6 +36,7 @@ public class SessionStep {
      */
     @Column(name = "step_id")
     @Unique
+    @NotNull
     private String stepId;
 
     /**
