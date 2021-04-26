@@ -41,7 +41,7 @@ public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaS
 
     Page<Toponym> findByLabelContainingIgnoreCase(String partialLabel, Pageable page);
 
-    @Query(value = "select bid, label, label_fr, ST_Simplify(geom, ?2,true) as geom, copyright, description from {h-schema}t_toponyms where bid = ?1",
+    @Query(value = "select bid, label, label_fr, public.ST_Simplify(geom, ?2,true) as geom, copyright, description from {h-schema}t_toponyms where bid = ?1",
             nativeQuery = true)
     Optional<Toponym> findOneSimplified(String businessId, double tolerance);
 
