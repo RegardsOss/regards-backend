@@ -53,7 +53,7 @@ public final class StorageSetting {
                                                                                         "Cache max size for this tenant in kilo-bytes. it has to be >0",
                                                                                         500000000L);
 
-    protected static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
+    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
             MAX_QUOTA,
             RATE_LIMIT,
             CACHE_PATH,
