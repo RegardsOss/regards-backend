@@ -112,14 +112,18 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             case STARTS_WITH:
                 return QueryBuilders.matchPhrasePrefixQuery(attName, searchValue).maxExpansions(10_000);
             case ENDS_WITH:
-                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + searchValue);
+                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + escape(searchValue));
             case CONTAINS:
-                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + searchValue + ".*");
+                return QueryBuilders.regexpQuery(attName + KEYWORD, ".*" + escape(searchValue) + ".*");
             case REGEXP:
                 return QueryBuilders.regexpQuery(attName + KEYWORD, searchValue);
             default:
                 return null;
         }
+    }
+
+    private String escape(String searchValue) {
+        return "\""+searchValue+"\"";
     }
 
     @Override
