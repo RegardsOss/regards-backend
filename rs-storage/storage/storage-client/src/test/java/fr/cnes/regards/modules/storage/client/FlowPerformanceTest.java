@@ -39,7 +39,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.locks.dao.ILockRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
@@ -78,9 +77,6 @@ public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
     protected IGroupRequestInfoRepository grpReqInfoRepo;
 
     @Autowired
-    private ILockRepository lockRepo;
-
-    @Autowired
     private StorageClient client;
 
     @Autowired
@@ -94,7 +90,6 @@ public class FlowPerformanceTest extends AbstractRegardsTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         grpReqInfoRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        lockRepo.deleteAll();
 
         // populate();
 

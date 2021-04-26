@@ -680,22 +680,6 @@
 				<artifactId>dump-rest</artifactId>
 				<version>${dump.starter.version}</version>
 			</dependency>
-			<!-- Regards Locks -->
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-				<artifactId>locks-dao</artifactId>
-				<version>${framework.modules.locks.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-				<artifactId>locks-domain</artifactId>
-				<version>${framework.modules.locks.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-				<artifactId>locks-service</artifactId>
-				<version>${framework.modules.locks.version}</version>
-			</dependency>
 			<!-- Regards Plugins -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
