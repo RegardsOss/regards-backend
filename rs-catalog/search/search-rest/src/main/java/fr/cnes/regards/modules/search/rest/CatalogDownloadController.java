@@ -113,9 +113,10 @@ public class CatalogDownloadController {
                 // Add all headers from storage microservice response except for cache control ones.
                 // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
                 for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
-                    if ((!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.CACHE_CONTROL))
-                            && (!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.EXPIRES))
-                            && (!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.PRAGMA))) {
+                    if ((!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.CACHE_CONTROL.toLowerCase()))
+                            && (!h.getKey().toLowerCase().equals(CustomCacheControlHeadersWriter.EXPIRES.toLowerCase()))
+                            && (!h.getKey().toLowerCase()
+                                    .equals(CustomCacheControlHeadersWriter.PRAGMA.toLowerCase()))) {
                         h.getValue().forEach(v -> headers.add(h.getKey(), v));
                     }
                 }
