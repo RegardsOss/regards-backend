@@ -18,18 +18,14 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
-import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
-import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
-import fr.cnes.regards.modules.model.client.IAttributeModelClient;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.model.client.IModelClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import fr.cnes.regards.modules.accessrights.client.IAccessSettingsClient;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -61,25 +57,5 @@ public class FeignMockConfiguration {
     @Bean
     public IRegistrationClient registrationClient() {
         return Mockito.mock(IRegistrationClient.class);
-    }
-
-    @Bean
-    public IUserClient userClient() {
-        return Mockito.mock(IUserClient.class);
-    }
-
-    @Bean
-    public IAttributeModelClient attributeModelClient() {
-        return Mockito.mock(IAttributeModelClient.class);
-    }
-
-    @Bean
-    public IModelAttrAssocClient modelAttrAssocClient() {
-        return Mockito.mock(IModelAttrAssocClient.class);
-    }
-
-    @Bean
-    public IModelClient modelClient() {
-        return Mockito.mock(IModelClient.class);
     }
 }
