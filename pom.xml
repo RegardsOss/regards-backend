@@ -866,6 +866,11 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-accessrights-client</artifactId>
+				<version>${modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-gson</artifactId>
 				<version>${modules.dam.version}</version>
 			</dependency>
