@@ -67,6 +67,7 @@
 		<module>dam-gson</module>
 		<module>dam-plugins</module>
 		<module>dam-client</module>
+		<module>dam-accessrights-client</module>
 		<module>dam-client-it</module>
 	</modules>
 

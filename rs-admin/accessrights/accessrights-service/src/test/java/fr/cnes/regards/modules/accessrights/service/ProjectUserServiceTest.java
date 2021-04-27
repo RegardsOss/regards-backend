@@ -42,6 +42,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -57,6 +58,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -64,9 +66,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 
 /**
  * Test class for {@link ProjectUserService}.
@@ -138,6 +142,12 @@ public class ProjectUserServiceTest {
 
     private IAuthenticationResolver authResolver;
 
+    private IUserClient userAccessGroupsClient;
+
+    private IAccessSettingsService accessSettingsService;
+
+    private AccessSettings settings;
+
     /**
      * Do some setup before each test
      */
@@ -162,10 +172,16 @@ public class ProjectUserServiceTest {
         roleService = Mockito.mock(IRoleService.class);
         accountsClient = Mockito.mock(IAccountsClient.class);
         authResolver = Mockito.mock(IAuthenticationResolver.class);
+        userAccessGroupsClient = Mockito.mock(IUserClient.class);
+        accessSettingsService = Mockito.mock(IAccessSettingsService.class);
+        settings = new AccessSettings();
+        settings.setDefaultRole(new Role(DefaultRole.PUBLIC.toString()));
+        settings.setDefaultGroups(Lists.newArrayList("group1"));
+        Mockito.when(accessSettingsService.retrieve()).thenReturn(settings);
 
         // Construct the tested service
         projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountsClient,
-                "instance_admin@regards.fr", new Gson());
+                userAccessGroupsClient, "instance_admin@regards.fr", accessSettingsService, new Gson());
     }
 
     @Test
@@ -175,14 +191,27 @@ public class ProjectUserServiceTest {
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+        ProjectUser user = new ProjectUser();
+        user.setEmail("test@regards.fr");
+        Mockito.when(projectUserRepository.save(Mockito.any(ProjectUser.class))).thenAnswer(args -> {
+            return args.getArgument(0, ProjectUser.class);
+        });
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName", null,
+                null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
-            projectUserService.createProjectUser(accessRequest);
+            ProjectUser newUser = projectUserService.createProjectUser(accessRequest);
+            Assert.assertEquals(settings.getDefaultRole(), newUser.getRole());
 
-            // Chcek that createAccount method is called
+            // Check group association
+            Assert.assertTrue("This test needs some groups configured id default settings",
+                              !settings.getDefaultGroups().isEmpty());
+            settings.getDefaultGroups().forEach(g -> {
+                Mockito.verify(userAccessGroupsClient, Mockito.times(1)).associateAccessGroupToUser(user.getEmail(), g);
+            });
+
+            // Check that createAccount method is called
             Mockito.verify(accountsClient).createAccount(Mockito.any());
             Mockito.verify(projectUserRepository).save(Mockito.any(ProjectUser.class));
 
@@ -201,12 +230,20 @@ public class ProjectUserServiceTest {
                         HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
+        ProjectUser user = new ProjectUser();
+        user.setEmail("test@regards.fr");
+        Mockito.when(projectUserRepository.save(Mockito.any())).thenReturn(user);
 
         final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
                 "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
+
+            // Check group association
+            settings.getDefaultGroups().forEach(g -> {
+                Mockito.verify(userAccessGroupsClient, Mockito.times(1)).associateAccessGroupToUser(user.getEmail(), g);
+            });
 
             // Chcek that createAccount method is called
             Mockito.verify(accountsClient, Mockito.never()).createAccount(Mockito.any());

@@ -22,9 +22,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.modules.dam</groupId>
-	<artifactId>dam-client-it</artifactId>
+	<artifactId>dam-accessrights-client</artifactId>
 	
-	<description>DAM client test layer (to avoid cyclic dependencies)</description>
+	<description>DAM client layer</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -54,28 +54,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-accessrights-client</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-			<scope>test</scope>
+			<artifactId>feign-regards-starter</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-rest</artifactId>
-			<scope>test</scope>
+			<artifactId>dam-domain</artifactId>
 		</dependency>
 	</dependencies>
 </project>
