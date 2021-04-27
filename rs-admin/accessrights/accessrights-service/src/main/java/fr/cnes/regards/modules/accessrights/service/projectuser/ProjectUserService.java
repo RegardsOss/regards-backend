@@ -43,6 +43,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -401,16 +402,22 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void configureAccessGroups(ProjectUser projectUser) {
-        AccessSettings settings = accessSettingsService.retrieve();
-        if ((settings != null) && (settings.getDefaultGroups() != null) && !settings.getDefaultGroups().isEmpty()) {
-            settings.getDefaultGroups().forEach(group -> {
-                try {
-                    userAccessGroupsClient.associateAccessGroupToUser(projectUser.getEmail(), group);
-                } catch (HttpServerErrorException | HttpClientErrorException e) {
-                    LOG.error(String.format("Error associating group %s to user %s.", group, projectUser.getEmail()),
-                              e);
-                }
-            });
+        FeignSecurityManager.asSystem();
+        try {
+            AccessSettings settings = accessSettingsService.retrieve();
+            if ((settings != null) && (settings.getDefaultGroups() != null) && !settings.getDefaultGroups().isEmpty()) {
+                settings.getDefaultGroups().forEach(group -> {
+                    try {
+                        userAccessGroupsClient.associateAccessGroupToUser(projectUser.getEmail(), group);
+                    } catch (HttpServerErrorException | HttpClientErrorException e) {
+                        LOG.error(String.format("Error associating group %s to user %s.", group,
+                                                projectUser.getEmail()),
+                                  e);
+                    }
+                });
+            }
+        } finally {
+            FeignSecurityManager.reset();
         }
     }
 
