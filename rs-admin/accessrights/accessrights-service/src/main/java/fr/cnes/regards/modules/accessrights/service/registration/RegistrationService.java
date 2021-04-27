@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.registration;
 
-import java.util.ArrayList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -33,11 +31,9 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
@@ -45,9 +41,9 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
-import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * {@link IRegistrationService} implementation.
@@ -76,12 +72,7 @@ public class RegistrationService implements IRegistrationService {
     /**
      * CRUD repository handling {@link ProjectUser}s. Autowired by Spring.
      */
-    private final IProjectUserRepository projectUserRepository;
-
-    /**
-     * CRUD repository handling {@link Role}s. Autowired by Spring.
-     */
-    private final IRoleService roleService;
+    private final IProjectUserService projectUserService;
 
     /**
      * CRUD service handling {@link EmailVerificationToken}s. Autowired by Spring.
@@ -90,12 +81,11 @@ public class RegistrationService implements IRegistrationService {
 
     private final WaitForQualificationListener listener;
 
-    public RegistrationService(IProjectUserRepository pProjectUserRepository, IRoleService pRoleService,
-            IEmailVerificationTokenService pTokenService, IAccountSettingsClient accountSettingsClient,
-            IAccountsClient accountsClient, WaitForQualificationListener listener) {
+    public RegistrationService(IProjectUserService projectUserService, IEmailVerificationTokenService pTokenService,
+            IAccountSettingsClient accountSettingsClient, IAccountsClient accountsClient,
+            WaitForQualificationListener listener) {
         super();
-        projectUserRepository = pProjectUserRepository;
-        roleService = pRoleService;
+        this.projectUserService = projectUserService;
         tokenService = pTokenService;
         this.accountsClient = accountsClient;
         this.accountSettingsClient = accountSettingsClient;
@@ -103,12 +93,13 @@ public class RegistrationService implements IRegistrationService {
     }
 
     @Override
-    public void requestAccess(final AccessRequestDto accountDto, Boolean isExternalAccess) throws EntityException {
+    public ProjectUser requestAccess(final AccessRequestDto accountDto, Boolean isExternalAccess)
+            throws EntityException {
         // Create the account if needed
         requestAccountIfNecessary(accountDto, isExternalAccess);
 
         // Create the project user
-        requestProjectUser(accountDto, isExternalAccess);
+        return requestProjectUser(accountDto, isExternalAccess);
     }
 
     /**
@@ -170,7 +161,8 @@ public class RegistrationService implements IRegistrationService {
      * @param accountDto {@link AccessRequestDto} account to create if missing
      * @param isExternalAccess {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
      */
-    private void requestProjectUser(final AccessRequestDto accountDto, Boolean isExternal) throws EntityException {
+    private ProjectUser requestProjectUser(final AccessRequestDto accountDto, Boolean isExternal)
+            throws EntityException {
         try {
             FeignSecurityManager.asSystem();
             // Check that an associated account exists
@@ -182,24 +174,16 @@ public class RegistrationService implements IRegistrationService {
             Account account = accountResponse.getBody().getContent();
 
             // Check that no project user with same email exists
-            if (projectUserRepository.findOneByEmail(accountDto.getEmail()).isPresent()) {
+            if (projectUserService.retrieveOneOptionalByEmail(accountDto.getEmail()).isPresent()) {
                 throw new EntityAlreadyExistsException("The email " + accountDto.getEmail() + "is already in use.");
             }
 
-            // Init with default role
-            final Role role = roleService.getDefaultRole();
-
-            // Create a new project user
-            ProjectUser projectUser = new ProjectUser(accountDto.getEmail(), role, new ArrayList<>(),
-                    accountDto.getMetadata());
-
             // Create
-            if (isExternal) {
+            ProjectUser projectUser = projectUserService.createProjectUser(accountDto);
+            if (!isExternal) {
                 // External authenticated accounts doesn't need to validate email.
-                projectUser.setStatus(UserStatus.ACCESS_GRANTED);
-                projectUser = projectUserRepository.save(projectUser);
-            } else {
-                projectUser = projectUserRepository.save(projectUser);
+                projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
+                projectUser = projectUserService.updateUser(projectUser.getId(), projectUser);
                 // Init the email verification token
                 tokenService.create(projectUser, accountDto.getOriginUrl(), accountDto.getRequestLink());
 
@@ -210,7 +194,7 @@ public class RegistrationService implements IRegistrationService {
                     listener.onAccountActivation(account.getEmail());
                 }
             }
-
+            return projectUser;
         } finally {
             FeignSecurityManager.reset();
         }

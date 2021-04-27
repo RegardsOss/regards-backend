@@ -280,6 +280,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<EntityModel<ProjectUser>> createUser(@Valid @RequestBody AccessRequestDto dto)
             throws EntityException {
         final ProjectUser userCreated = projectUserService.createProjectUser(dto);
+        projectUserService.configureAccessGroups(userCreated);
         return new ResponseEntity<>(toResource(userCreated), HttpStatus.CREATED);
     }
 
@@ -396,7 +397,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * project admins.
      * @param projectUser {@link ProjectUser} to transform to HATEOAS resources.
      * @return HATEOAS resources for {@link ProjectUser}
-    
+
      */
     public EntityModel<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
         EntityModel<ProjectUser> resource = resourceService.toResource(projectUser);

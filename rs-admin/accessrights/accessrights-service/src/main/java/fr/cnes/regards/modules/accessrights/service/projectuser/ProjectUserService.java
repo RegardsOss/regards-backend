@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -160,16 +159,23 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveOneByEmail(String userEmail) throws EntityNotFoundException {
-        ProjectUser user;
+        return retrieveOneOptionalByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
+    }
+
+    @Override
+    public Optional<ProjectUser> retrieveOneOptionalByEmail(String userEmail) {
+        Optional<ProjectUser> user;
         if (instanceAdminUserEmail.equals(userEmail)) {
-            user = new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
-                    new ArrayList<>());
+            user = Optional.of(new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null),
+                    new ArrayList<>(), new ArrayList<>()));
         } else {
-            user = projectUserRepository.findOneByEmail(userEmail)
-                    .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
+            user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
-            try (Stream<MetaData> stream = user.getMetadata().stream()) {
-                stream.filter(keepVisibleMetaData);
+            if (user.isPresent()) {
+                try (Stream<MetaData> stream = user.get().getMetadata().stream()) {
+                    user.get().setMetadata(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
+                }
             }
         }
         return user;
@@ -348,9 +354,7 @@ public class ProjectUserService implements IProjectUserService {
                 newProjectUser.setMetadata(accessRequestDto.getMetadata());
             }
             newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
-            newProjectUser = save(newProjectUser);
-            configureAccessGroups(newProjectUser, settings);
-            return newProjectUser;
+            return save(newProjectUser);
         } else {
             throw new EntityAlreadyExistsException("Project user already exists");
         }
@@ -395,8 +399,9 @@ public class ProjectUserService implements IProjectUserService {
         projectUserRepository.delete(projectUser);
     }
 
-    @VisibleForTesting
-    protected void configureAccessGroups(ProjectUser projectUser, AccessSettings settings) {
+    @Override
+    public void configureAccessGroups(ProjectUser projectUser) {
+        AccessSettings settings = accessSettingsService.retrieve();
         if ((settings != null) && (settings.getDefaultGroups() != null) && !settings.getDefaultGroups().isEmpty()) {
             settings.getDefaultGroups().forEach(group -> {
                 try {

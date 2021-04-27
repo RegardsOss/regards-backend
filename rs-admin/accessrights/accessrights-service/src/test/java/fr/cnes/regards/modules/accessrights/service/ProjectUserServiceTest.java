@@ -202,6 +202,7 @@ public class ProjectUserServiceTest {
 
         try {
             ProjectUser newUser = projectUserService.createProjectUser(accessRequest);
+            projectUserService.configureAccessGroups(newUser);
             Assert.assertEquals(settings.getDefaultRole(), newUser.getRole());
 
             // Check group association
@@ -238,7 +239,8 @@ public class ProjectUserServiceTest {
                 "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
-            projectUserService.createProjectUser(accessRequest);
+            ProjectUser newuser = projectUserService.createProjectUser(accessRequest);
+            projectUserService.configureAccessGroups(newuser);
 
             // Check group association
             settings.getDefaultGroups().forEach(g -> {
