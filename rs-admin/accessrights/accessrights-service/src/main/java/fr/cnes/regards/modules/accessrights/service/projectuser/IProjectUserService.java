@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -70,6 +71,13 @@ public interface IProjectUserService {
     ProjectUser retrieveOneByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
+     * Retrieve the {@link ProjectUser} of passed <code>email</code>.
+     * @param pEmail The {@link ProjectUser}'s <code>email</code>
+     * @return The project user
+     */
+    Optional<ProjectUser> retrieveOneOptionalByEmail(String pEmail);
+
+    /**
      * Retrieve the current {@link ProjectUser}.
      * @return The project user
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with <code>email</code> equal to the one set in current tenant
@@ -86,6 +94,12 @@ public interface IProjectUserService {
      */
     ProjectUser createProjectUser(final AccessRequestDto pDto)
             throws EntityAlreadyExistsException, EntityInvalidException;
+
+    /**
+     * Associated user to AccessRights default groups.
+     * @param projectUser {@link ProjectUser}
+     */
+    void configureAccessGroups(ProjectUser projectUser);
 
     /**
      * Update the {@link ProjectUser} of id <code>pUserId</code>.

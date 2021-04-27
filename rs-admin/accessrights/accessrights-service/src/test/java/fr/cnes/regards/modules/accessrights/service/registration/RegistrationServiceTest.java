@@ -51,6 +51,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
@@ -120,6 +121,8 @@ public class RegistrationServiceTest {
 
     private IProjectUserRepository projectUserRepository;
 
+    private IProjectUserService projectUserService;
+
     private IRoleService roleService;
 
     private IAccountsClient accountsClient;
@@ -138,24 +141,38 @@ public class RegistrationServiceTest {
 
     /**
      * Do some setup before each test
+     * @throws EntityException
      */
     @Before
-    public void setUp() {
+    public void setUp() throws EntityException {
         accountsClient = Mockito.mock(IAccountsClient.class);
         accountSettingsClient = Mockito.mock(IAccountSettingsClient.class);
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         roleService = Mockito.mock(IRoleService.class);
         IEmailVerificationTokenService tokenService = Mockito.mock(IEmailVerificationTokenService.class);
         projectUserWorkflowManager = Mockito.mock(ProjectUserWorkflowManager.class);
+        // Prepare the project user we expect to be created by the access request
+        projectUser = new ProjectUser();
+        projectUser.setEmail(EMAIL);
+        projectUser.setPermissions(PERMISSIONS);
+        projectUser.setRole(ROLE);
+        projectUser.setMetadata(META_DATA);
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         // Mock
-        Mockito.when(roleService.getDefaultRole()).thenReturn(ROLE);
+        projectUserService = Mockito.mock(IProjectUserService.class);
+        Mockito.when(projectUserService.createProjectUser(Mockito.any())).thenAnswer(args -> {
+            return projectUser;
+        });
+        Mockito.when(projectUserService.updateUser(Mockito.any(), Mockito.any())).thenAnswer(args -> {
+            return args.getArgument(1, ProjectUser.class);
+        });
 
         WaitForQualificationListener listener = new WaitForQualificationListener(projectUserRepository,
                 projectUserWorkflowManager, Mockito.mock(IAccessSettingsService.class));
 
         // Create the tested service
-        registrationService = new RegistrationService(projectUserRepository, roleService, tokenService,
-                accountSettingsClient, accountsClient, listener);
+        registrationService = new RegistrationService(projectUserService, tokenService, accountSettingsClient,
+                accountsClient, listener);
 
         // Prepare the access request
         dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSOWRD, ORIGIN_URL,
@@ -163,14 +180,6 @@ public class RegistrationServiceTest {
 
         // Prepare the account we expect to be create by the access request
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSOWRD);
-
-        // Prepare the project user we expect to be created by the access request
-        projectUser = new ProjectUser();
-        projectUser.setEmail(EMAIL);
-        projectUser.setPermissions(PERMISSIONS);
-        projectUser.setRole(ROLE);
-        projectUser.setMetadata(META_DATA);
-        projectUser.setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
 
         // Prepare account settings
         accountSettings = new AccountSettings();
@@ -191,11 +200,10 @@ public class RegistrationServiceTest {
     @Purpose("Check that the system fails when receiving an access request with an already used email.")
     public void requestAccessEmailAlreadyInUse() throws EntityException {
         // Prepare the duplicate
-        final List<ProjectUser> projectUsers = new ArrayList<>();
-        projectUsers.add(projectUser);
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(new ProjectUser()));
+        Mockito.when(projectUserService.retrieveOneOptionalByEmail(Mockito.any()))
+                .thenAnswer(a -> Optional.of(new ProjectUser()));
 
         // Make sur they have the same email, in order to throw the expected exception
         Assert.assertEquals(projectUser.getEmail(), dto.getEmail());
@@ -221,15 +229,14 @@ public class RegistrationServiceTest {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
-        registrationService.requestAccess(dto, false);
+        ProjectUser user = registrationService.requestAccess(dto, false);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+        Mockito.verify(projectUserService).createProjectUser(Mockito.refEq(dto));
+        Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, user.getStatus());
     }
 
     /**
@@ -249,17 +256,15 @@ public class RegistrationServiceTest {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
-        registrationService.requestAccess(dto, true);
+        ProjectUser user = registrationService.requestAccess(dto, true);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status ACCESS_GRANTED. We therefore exclude id, lastConnection and lastUpdate which we do not care about.
         // With external accounts, the project user does not need to validate his email.
-        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+        Mockito.verify(projectUserService).createProjectUser(Mockito.refEq(dto));
+        Assert.assertEquals(UserStatus.ACCESS_GRANTED, user.getStatus());
     }
 
     /**
@@ -298,19 +303,17 @@ public class RegistrationServiceTest {
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail())).then(accountsClientResponse);
         Mockito.when(accountsClient.createAccount(Mockito.any()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(newAccountToCreate), HttpStatus.CREATED));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
 
         // Call the service
-        registrationService.requestAccess(dto, true);
+        ProjectUser user = registrationService.requestAccess(dto, true);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status ACCESS_GRANTED. We therefore exclude id, lastConnection and lastUpdate which we do not care about.
         // With external accounts, the project user does not need to validate his email.
-        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+        Mockito.verify(projectUserService).createProjectUser(Mockito.refEq(dto));
+        Assert.assertEquals(UserStatus.ACCESS_GRANTED, user.getStatus());
     }
 
     /**
@@ -338,8 +341,6 @@ public class RegistrationServiceTest {
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.CREATED));
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(accountSettings), HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
-        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Trigger the exception
         registrationService.requestAccess(dto, false);
@@ -351,7 +352,7 @@ public class RegistrationServiceTest {
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCOUNT_ACTIVE. We therefore exclude id, lastConnection and lastUpdate which we do not
         // care about
-        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+        Mockito.verify(projectUserService).createProjectUser(Mockito.refEq(dto));
     }
 
     /**
@@ -368,7 +369,7 @@ public class RegistrationServiceTest {
         // Mock
         Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
                 .thenReturn(new ResponseEntity<>(new EntityModel<>(account), HttpStatus.OK));
-        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        Mockito.when(projectUserService.retrieveOneOptionalByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Trigger the exception
         final AccessRequestDto dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA,
