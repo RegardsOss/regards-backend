@@ -20,13 +20,10 @@ package fr.cnes.regards.modules.order.domain.exception;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
-/**
- * @author oroussel
- */
 @SuppressWarnings("serial")
-public class CannotPauseOrderException extends ModuleException {
+public class CannotRestartOrderException extends ModuleException {
 
-    public CannotPauseOrderException(String cause) {
+    public CannotRestartOrderException(String cause) {
         super(cause);
     }
 

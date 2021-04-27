@@ -25,11 +25,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
@@ -38,9 +35,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
+import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvailable;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -54,6 +49,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -62,13 +58,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -79,7 +70,7 @@ import java.util.concurrent.ExecutionException;
 @ActiveProfiles("test")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @DirtiesContext
-public class OrderServiceUnvalableFilesIT {
+public class OrderServiceUnavailableFilesIT {
 
     @Autowired
     private IOrderService orderService;
@@ -120,17 +111,9 @@ public class OrderServiceUnvalableFilesIT {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
-
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -149,54 +132,16 @@ public class OrderServiceUnvalableFilesIT {
         basketRepos.deleteAll();
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
-
         jobInfoRepos.deleteAll();
     }
 
-    private BasketSelectionRequest createBasketSelectionRequest(String query) {
-        BasketSelectionRequest request = new BasketSelectionRequest();
-        request.setEngineType("engine");
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("q", query);
-        request.setSearchParameters(parameters);
-        return request;
-    }
-
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-            String query) {
-
-        BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
-        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
-        item.setObjectsCount(objectsCount);
-        item.setDate(OffsetDateTime.now());
-        item.setSelectionRequest(createBasketSelectionRequest(query));
-        return item;
-    }
-
     @Test
-    public void testBucketsJobswithUnavalableFiles() throws IOException, InterruptedException, EntityInvalidException {
-        String user = "tulavu@qui.fr";
-        Basket basket = new Basket(user);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 3_000_171L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
+    public void testBucketsJobsWithUnavailableFiles() throws InterruptedException, EntityInvalidException {
+
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testUnavailableFiles");
         basketRepos.save(basket);
 
-        Order order = orderService.createOrder(basket, "perdu","http://perdu.com", 240);
+        Order order = orderService.createOrder(basket, basket.getOwner(), "http://perdu.com", 240);
         Thread.sleep(10_000);
         List<JobInfo> jobInfos = jobInfoRepo.findAllByStatusStatus(JobStatus.QUEUED);
         Assert.assertEquals(2, jobInfos.size());
@@ -223,7 +168,7 @@ public class OrderServiceUnvalableFilesIT {
         files.forEach(f -> f.setState(FileState.DOWNLOADED));
         orderDataFileService.save(files);
         // Act as true downloads
-        orderJobService.manageUserOrderStorageFilesJobInfos(user);
+        orderJobService.manageUserOrderStorageFilesJobInfos(basket.getOwner());
         // Re-wait a while to permit execution of last jobInfo
         Thread.sleep(10_000);
 
@@ -235,4 +180,5 @@ public class OrderServiceUnvalableFilesIT {
         Assert.assertEquals(100, order.getPercentCompleted());
         Assert.assertEquals(OrderStatus.FAILED, order.getStatus());
     }
+
 }

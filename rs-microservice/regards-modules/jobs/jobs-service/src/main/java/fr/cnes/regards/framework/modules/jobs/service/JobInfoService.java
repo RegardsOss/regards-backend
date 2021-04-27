@@ -202,6 +202,11 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
+    public void updateExpirationDate(OffsetDateTime expirationDate, Set<UUID> jobInfoIds) {
+        jobInfoRepository.updateExpirationDate(expirationDate, jobInfoIds);
+    }
+
+    @Override
     public void updateJobInfosHeartbeat(Collection<UUID> ids) {
         jobInfoRepository.updateHeartbeatDateForIdsIn(OffsetDateTime.now(), ids);
     }

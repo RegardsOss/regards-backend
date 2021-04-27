@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
@@ -38,12 +39,10 @@ import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.OrderLabelErrorEnum;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.processing.ProcessingExecutionResultEventHandler;
+import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -54,6 +53,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -64,11 +64,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MimeType;
-import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Date;
@@ -108,48 +105,39 @@ public class OrderServiceIT {
 
     @Autowired
     private IOrderService orderService;
-
+    @Autowired
+    private IOrderMaintenanceService orderMaintenanceService;
     @Autowired
     private IOrderRepository orderRepos;
-
     @Autowired
     private IOrderDataFileService orderDataFileService;
-
     @Autowired
     private IOrderJobService orderJobService;
-
     @Autowired
     private IOrderDataFileRepository dataFileRepos;
-
     @Autowired
     private IBasketRepository basketRepos;
-
     @Autowired
     private IJobInfoRepository jobInfoRepos;
-
     @Autowired
     private IAuthenticationResolver authResolver;
-
     @Autowired
     private IProjectsClient projectsClient;
-
     @Autowired
     private IEmailClient emailClient;
-
     @Autowired
     private IJobService jobService;
-
     @Autowired
     private IJobInfoRepository jobInfoRepo;
-
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
     @Autowired
     private ProcessingExecutionResultEventHandler plop;
+
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
     @Before
     public void init() {
@@ -168,52 +156,12 @@ public class OrderServiceIT {
         basketRepos.deleteAll();
         orderRepos.deleteAll();
         dataFileRepos.deleteAll();
-
         jobInfoRepos.deleteAll();
-    }
-
-    private BasketSelectionRequest createBasketSelectionRequest(String query) {
-        BasketSelectionRequest request = new BasketSelectionRequest();
-        request.setEngineType("engine");
-        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
-        parameters.add("q", query);
-        request.setSearchParameters(parameters);
-        return request;
-    }
-
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-            String query) {
-
-        BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        item.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        item.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", filesCount);
-        item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
-        item.setObjectsCount(objectsCount);
-        item.setDate(OffsetDateTime.now());
-        item.setSelectionRequest(createBasketSelectionRequest(query));
-        return item;
     }
 
     @Test
     public void testCreateOKLabelProvided() throws Exception {
-        Basket basket = new Basket();
-        basket.setOwner(USER_EMAIL);
-
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetLabel("DS1");
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
-        dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
-        basket.addDatasetSelection(dsSelection);
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateOKLabelProvided");
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, "myCommand", "http://perdu.com", 240);
         Assert.assertNotNull(order);
@@ -222,21 +170,7 @@ public class OrderServiceIT {
 
     @Test
     public void testCreateOKLabelGen() throws Exception {
-        Basket basket = new Basket();
-        basket.setOwner(USER_EMAIL);
-
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetLabel("DS1");
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
-        dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
-        basket.addDatasetSelection(dsSelection);
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateOKLabelGen");
         basket = basketRepos.save(basket);
         Order order = orderService.createOrder(basket, null, "http://perdu.com", 240);
         Assert.assertTrue("Label should be generated using current date (up to second)",
@@ -245,25 +179,10 @@ public class OrderServiceIT {
 
     @Test
     public void testCreateNOKLabelTooLong() throws Exception {
-        Basket basket = new Basket();
-        basket.setOwner(USER_EMAIL);
-
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetLabel("DS1");
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
-        dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
-        basket.addDatasetSelection(dsSelection);
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateNOKLabelTooLong");
         basket = basketRepos.save(basket);
         try {
-            Order order = orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)",
-                                                   "http://perdu.com", 240);
+            orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)", "http://perdu.com", 240);
             Assert.fail("An exception should have been thrown as label is too long");
         } catch (EntityInvalidException e) {
             Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
@@ -273,21 +192,7 @@ public class OrderServiceIT {
 
     @Test
     public void testCreateNOKLabelAlreadyUsed() throws Exception {
-        Basket basket = new Basket();
-        basket.setOwner(USER_EMAIL);
-
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetLabel("DS1");
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 1L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 1_000_000L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 1L);
-        dsSelection.setObjectsCount(1);
-        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001L, 1, 1, "someone:something"));
-        basket.addDatasetSelection(dsSelection);
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateNOKLabelAlreadyUsed");
         basket = basketRepos.save(basket);
         orderService.createOrder(basket, "myCommand", "http://perdu.com", 240);
         try {
@@ -316,7 +221,7 @@ public class OrderServiceIT {
         ds1OrderTask.setFilesCount(1);
         ds1OrderTask.setFilesSize(1_000_000l);
         ds1OrderTask.setObjectsCount(1);
-        ds1OrderTask.addSelectionRequest(createBasketSelectionRequest("all:ds1"));
+        ds1OrderTask.addSelectionRequest(OrderTestUtils.createBasketSelectionRequest("all:ds1"));
         order.addDatasetOrderTask(ds1OrderTask);
 
         // DS1 files sub order tasks
@@ -377,21 +282,9 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_STO_CMD_050")
     @Requirement("REGARDS_DSL_STO_ARC_470")
     @Requirement("REGARDS_DSL_STO_ARC_490")
-    public void testBucketsJobs() throws IOException, InterruptedException, EntityInvalidException {
-        String user = "tulavu@qui.fr";
-        Basket basket = new Basket(user);
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 3_000_171L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
+    public void testBucketsJobs() throws InterruptedException, EntityInvalidException {
+
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testBucketsJobs");
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
@@ -421,7 +314,7 @@ public class OrderServiceIT {
         files.forEach(f -> f.setState(FileState.DOWNLOADED));
         orderDataFileService.save(files);
         // Act as true downloads
-        orderJobService.manageUserOrderStorageFilesJobInfos(user);
+        orderJobService.manageUserOrderStorageFilesJobInfos(basket.getOwner());
         // Re-wait a while to permit execution of last jobInfo
         Thread.sleep(10_000);
 
@@ -436,27 +329,16 @@ public class OrderServiceIT {
 
     @Test
     @Ignore
-    public void testExpiredOrders() throws IOException, InterruptedException, EntityInvalidException {
-        Basket basket = new Basket("tulavu@qui.fr");
-        BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setDatasetIpid(DS1_IP_ID.toString());
-        dsSelection.setDatasetLabel("DS");
-        dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 3_000_171L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 3_000_171L);
-        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171L, 12, 3, "ALL"));
-        basket.addDatasetSelection(dsSelection);
+    public void testExpiredOrders() throws EntityInvalidException {
+
+        Basket basket = OrderTestUtils.getBasketSingleSelection("testExpiredOrders");
         basketRepos.save(basket);
 
         Order order = orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
         order.setExpirationDate(OffsetDateTime.now().minus(1, ChronoUnit.DAYS));
         orderRepos.save(order);
 
-        orderService.cleanExpiredOrders();
+        orderMaintenanceService.cleanExpiredOrders();
 
         // No files should remain
         List<OrderDataFile> files = dataFileRepos.findAllAvailables(order.getId());
@@ -471,6 +353,7 @@ public class OrderServiceIT {
     @Test
     @Ignore
     public void testEmailNotifications() {
+
         Mockito.when(emailClient.sendEmail(Mockito.any())).thenAnswer(invocation -> {
             mailMessage = (SimpleMailMessage) invocation.getArguments()[0];
             return new ResponseEntity<>(HttpStatus.CREATED);
@@ -486,14 +369,14 @@ public class OrderServiceIT {
         order = orderRepos.save(order);
 
         // No running order
-        orderService.sendPeriodicNotifications();
+        orderMaintenanceService.sendPeriodicNotifications();
         // No mail should have been sent (order hasn't even been started)
         Assert.assertNull(mailMessage);
 
         order.setAvailableFilesCount(10);
         orderRepos.save(order);
         // available files count has been updated, available Update date too
-        orderService.sendPeriodicNotifications();
+        orderMaintenanceService.sendPeriodicNotifications();
         // No mail should have been sent (it must have more than 3 days between last available update date and now)
         Assert.assertNull(mailMessage);
 

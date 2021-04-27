@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,10 +68,16 @@ public class BasketServiceIT {
     private IOrderService orderService;
 
     @Autowired
+    private IOrderMaintenanceService orderMaintenanceService;
+
+    @Autowired
     private IAuthenticationResolver authResolver;
 
     @Autowired
     private IProjectsClient projectsClient;
+
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
     private static final String USER_EMAIL = "test@test.fr";
 
@@ -192,7 +200,7 @@ public class BasketServiceIT {
         orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
 
         // manage periodic email notifications
-        orderService.sendPeriodicNotifications();
+        orderMaintenanceService.sendPeriodicNotifications();
     }
 
     static SimpleMailMessage mailMessage;

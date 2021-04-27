@@ -66,6 +66,7 @@ import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -152,7 +153,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                         subOrderDuration
                     ))
                     .doOnNext(dsTask::addReliantTask)
-                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1))
+                    .map(filesTask -> new OrderCounts(0, filesTask.getFiles().size(), 1, Collections.singleton(filesTask.getJobInfo().getId())))
                     .reduce(OrderCounts.initial(), OrderCounts::add)
                     .block();
         

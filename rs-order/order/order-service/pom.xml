@@ -98,6 +98,10 @@
 			<artifactId>project-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.accessrights</groupId>
+			<artifactId>accessrights-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
 			<artifactId>emails-client</artifactId>
 		</dependency>

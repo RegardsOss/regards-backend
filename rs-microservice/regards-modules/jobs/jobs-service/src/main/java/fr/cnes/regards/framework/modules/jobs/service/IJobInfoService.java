@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -134,6 +136,8 @@ public interface IJobInfoService {
      * @param jobInfo list of {@link JobInfo} to save
      */
     void saveAll(List<JobInfo> jobInfo);
+
+    void updateExpirationDate(OffsetDateTime expirationDate, Set<UUID> jobInfoIds);
 
     void updateJobInfosHeartbeat(Collection<UUID> ids);
 

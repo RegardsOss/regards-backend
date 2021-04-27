@@ -29,11 +29,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -78,6 +80,9 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
+
+    @MockBean
+    private IProjectUsersClient projectUsersClient;
 
     public static final UniformResourceName DS1_IP_ID = UniformResourceName
             .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);

@@ -1,0 +1,70 @@
+/*
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.order.service;
+
+import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.basket.Basket;
+
+import java.util.Set;
+import java.util.UUID;
+
+
+public interface IOrderCreationService {
+
+    /**
+     * Asynchronous method called by createOrder to complete order creation. This method cannot be transactional (due
+     * to proxyfication and thread-context execution) so it @see {@link IOrderCreationService#completeOrderCreation} calls next one after forcing given tenant
+     *
+     * @param basket basket used to create order (removed at the end of the method)
+     * @param order  created order to be completed
+     * @param role   current user role
+     * @param tenant current tenant
+     */
+    void asyncCompleteOrderCreation(Basket basket, Order order, int subOrderDuration, String role, String tenant);
+
+    /**
+     * Transactional completeOrderCreation method (must be called AFTER forcing tenant)
+     *
+     * @param basket basket used to create order (removed at the end of the method)
+     * @param order  created order to be completed
+     * @param role   user role
+     * @param tenant current tenant
+     */
+    void completeOrderCreation(Basket basket, Order order, String role, int subOrderDuration, String tenant);
+
+    /**
+     * @param dsTask
+     * @param bucketFiles
+     * @param order
+     */
+    void createExternalSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order);
+
+    /**
+     * @param dsTask
+     * @param bucketFiles
+     * @param order
+     * @param role
+     * @param priority
+     * @return
+     */
+    UUID createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority);
+
+}
