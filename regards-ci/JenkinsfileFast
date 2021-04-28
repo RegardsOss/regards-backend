@@ -38,7 +38,7 @@ pipeline {
                 }
             }
             environment {
-                TAG_NAME = "fast-${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
+                REGARDS_VERSION="fast-${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
                 MODE="fast"
             }
             steps {
@@ -58,7 +58,7 @@ pipeline {
                 branch pattern: /(develop.*|release.*)/, comparator: "REGEXP"
             }
             environment {
-                TAG_NAME="fast-${BRANCH_NAME.replaceAll('/', '-')}"
+                REGARDS_VERSION="fast-${BRANCH_NAME.replaceAll('/', '-')}"
                 MODE="fast"
             }
             steps {

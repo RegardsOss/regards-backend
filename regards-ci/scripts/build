@@ -48,8 +48,8 @@ function checkArtifactsRebuild {
     fi
 }
 
-function verify {
-    checkArtifactsRebuild ${JOB_NAME}
+function install {
+    checkArtifactsRebuild ${REGARDS_VERSION}
 
     echo -e "\nRunning Maven verify..."
 
@@ -57,7 +57,8 @@ function verify {
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
         set -x
-        mvn -U -B -P delivery,CI,oracle clean verify \
+        mvn -U -B -P delivery,CI,oracle clean install \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
             -DcmdLineTarget=target \
@@ -72,7 +73,7 @@ function verify {
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
         failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
+        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${REGARDS_VERSION}.txt --noproxy '*' -k --fail
         set +x
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
@@ -85,7 +86,7 @@ function verify {
 }
 
 function deploy {
-    checkArtifactsRebuild ${JOB_NAME}
+    checkArtifactsRebuild ${BRANCH_NAME}
 
     echo -e "\nRunning Maven deploy..."
 
@@ -109,7 +110,7 @@ function deploy {
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
         failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
+        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${BRANCH_NAME}.txt --noproxy '*' -k --fail
         set +x
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
@@ -122,7 +123,7 @@ function deploy {
 }
 
 function fast {
-    checkArtifactsRebuild ${TAG}
+    checkArtifactsRebuild ${REGARDS_VERSION}
 
     echo -e "\nRunning Maven build and Docker tag..."
 
@@ -131,7 +132,7 @@ function fast {
     else
         set -x
         mvn -U -B -P docker,install clean install docker:build \
-            -Dregards.version="${TAG}" \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.repo.local=/fastRepository \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
@@ -142,7 +143,7 @@ function fast {
             -Djacoco.skip=true \
             -DskipDocker=false \
             -DpushImageTag=true \
-            -DdockerImageTags="${TAG}" \
+            -DdockerImageTags="${REGARDS_VERSION}" \
             -Dasciidoctor.skip=true \
             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
             -Dmaven.wagon.http.ssl.insecure=true \
@@ -151,7 +152,7 @@ function fast {
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
         failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${TAG}.txt --noproxy '*' -k --fail
+        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${REGARDS_VERSION}.txt --noproxy '*' -k --fail
         set +x
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
