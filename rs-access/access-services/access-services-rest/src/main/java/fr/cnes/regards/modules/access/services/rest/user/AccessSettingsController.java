@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.access.services.rest.user;
 
 import javax.validation.Valid;
-import java.util.StringJoiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,8 +65,6 @@ import io.vavr.control.Validation;
 public class AccessSettingsController implements IResourceController<AccessSettingsDto> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessSettingsController.class);
-
-    private static final StringJoiner JOINER = new StringJoiner("\n");
 
     /**
      * Root mapping for requests of this rest controller
@@ -157,11 +154,19 @@ public class AccessSettingsController implements IResourceController<AccessSetti
                         accessSettings.setDefaultGroups(accessSettingsDto.getGroups());
                         return accessSettings;
                     })
-                        .map(accessSettingsClient::updateAccessSettings)
+                        .map(setting->{
+                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
+                                    return accessSettingsClient.updateAccessSettings(setting);
+                            })
+                        .andFinally(FeignSecurityManager::reset)
                         .transform(handleClientFailure("accessrights-client"))
                         .map(EntityModel::getContent),
                     Try.of(() -> new DefaultDownloadQuotaLimits(accessSettingsDto.getMaxQuota(), accessSettingsDto.getRateLimit()))
-                        .map(storageClient::changeDefaultDownloadQuotaLimits)
+                        .map(defaultQuota->{
+                                    FeignSecurityManager.asUser(authentivationResolver.getUser(), RoleAuthority.getSysRole(appName));
+                                    return storageClient.changeDefaultDownloadQuotaLimits(defaultQuota);
+                            })
+                        .andFinally(FeignSecurityManager::reset)
                         .map(ResponseEntity::getBody)
                         // special value for frontend if any error on storage or storage not deploy
                         .onFailure(t -> LOGGER.debug("Failed to query rs-storage for quotas.", t))
