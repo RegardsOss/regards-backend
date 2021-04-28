@@ -2080,6 +2080,18 @@
 					<version>1.0.1</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
+						<flattenMode>bom</flattenMode>
+						<pomElements>
+						    <pluginManagement>keep</pluginManagement>
+						    <!--
+						    <dependencyManagement>keep</dependencyManagement>
+						    <parent>keep</parent>
+						    <properties>keep</properties>
+						    <modules>keep</modules>
+						    <build>keep</build>
+						    <reporting>keep</reporting>
+						    -->
+						</pomElements>
 					</configuration>
 					<executions>
 						<execution>
