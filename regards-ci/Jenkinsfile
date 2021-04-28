@@ -38,8 +38,8 @@ pipeline {
                 }
             }
             environment {
-                JOB_NAME="${JOB_NAME.replaceAll('/', '-')}"
-                MODE="verify"
+                REGARDS_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
+                MODE="install"
             }
             steps {
                 sh 'printenv'
