@@ -31,14 +31,14 @@ pipeline {
                      && docker-compose -f docker/docker-compose.yml pull'
             }
         }
-        stage("(Docker) Tag git special branch (fast build)") {
+        stage("(Docker) Tag git feature branch (fast build)") {
             when {
                 not {
                     branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
                 }
             }
             environment {
-                TAG_NAME = "${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
+                TAG_NAME = "fast-${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}"
                 MODE="fast"
             }
             steps {
@@ -53,7 +53,7 @@ pipeline {
                             rs-build'
             }
         }
-        stage("(Docker) Tag git feature branch (fast build)") {
+        stage("(Docker) Tag git special branch (fast build)") {
             when {
                 branch pattern: /(develop.*|release.*)/, comparator: "REGEXP"
             }
