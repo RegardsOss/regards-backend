@@ -131,6 +131,7 @@ function fast {
     else
         set -x
         mvn -U -B -P docker,install clean install docker:build \
+            -Dregards.version="${TAG}" \
             -Dmaven.repo.local=/fastRepository \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
