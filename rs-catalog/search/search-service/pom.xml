@@ -91,6 +91,10 @@
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-client</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-accessrights-client</artifactId>
+		</dependency>
 		<!-- COTS -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

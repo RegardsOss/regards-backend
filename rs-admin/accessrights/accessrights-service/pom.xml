@@ -66,6 +66,10 @@
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
 		<dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-accessrights-client</artifactId>
+        </dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>
 		</dependency>

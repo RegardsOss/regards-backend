@@ -64,6 +64,16 @@
 				<artifactId>catalog-services-client</artifactId>
 				<version>${modules.catalog-services.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>catalog-services-plugin</artifactId>
+				<version>${modules.catalog-services.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules</groupId>
+				<artifactId>catalog-services-helper</artifactId>
+				<version>${modules.catalog-services.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -74,6 +84,6 @@
     <module>catalog-services-rest</module>
     <module>catalog-services-service</module>
     <module>catalog-services-plugin</module>
-    <module>catalogue-services-helper</module>
+    <module>catalog-services-helper</module>
   </modules>
 </project>
