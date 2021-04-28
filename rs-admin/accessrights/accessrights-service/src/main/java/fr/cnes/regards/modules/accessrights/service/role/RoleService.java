@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.service.role;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,8 +31,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -42,7 +41,6 @@ import org.springframework.util.Assert;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -587,7 +585,7 @@ public class RoleService implements IRoleService {
         try {
             providedRole = retrieveRole(roleName);
             currentRole = retrieveRole(securityRole);
-            return isHierarchicallyInferior(providedRole, currentRole);
+            return securityRole.equals(DefaultRole.PROJECT_ADMIN.toString()) || isHierarchicallyInferior(providedRole, currentRole);
         } catch (EntityNotFoundException e) {
             LOGGER.error("Failed to compare the current role {} with {}, as one of them does not exist", securityRole,
                          roleName, e);
