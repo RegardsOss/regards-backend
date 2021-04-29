@@ -292,7 +292,7 @@ public class IngestService implements IIngestService {
                 if (regardsDataType == DataType.QUICKLOOK_HD || regardsDataType == DataType.QUICKLOOK_MD
                         || regardsDataType == DataType.QUICKLOOK_SD || regardsDataType == DataType.THUMBNAIL) {
                     for (OAISDataObjectLocation location : dobj.getLocations()) {
-                        if (Strings.isNullOrEmpty(location.getStorage()) && (height == null || width == null)) {
+                        if (!Strings.isNullOrEmpty(location.getStorage()) && (height == null || width == null)) {
                             errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
                                           String.format(
                                                   "Both height and width must be set for files(%s in SIP: %s) that are being referenced!",
