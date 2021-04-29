@@ -295,7 +295,7 @@ public class IngestService implements IIngestService {
                         if (!Strings.isNullOrEmpty(location.getStorage()) && (height == null || width == null)) {
                             errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
                                           String.format(
-                                                  "Both height and width must be set for files(%s in SIP: %s) that are being referenced!",
+                                                  "Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
                                                   dobj.getFilename(),
                                                   sip.getId()));
                         }
