@@ -1,6 +1,6 @@
 CREATE TABLE t_snapshot_process (
     source              varchar(255)    NOT NULL,
-    last_update         timestamp               ,
+    last_update_date    timestamp               ,
     job_id              uuid                    ,
     primary key (source)
 );
@@ -17,7 +17,7 @@ CREATE TABLE t_session_step (
     waiting             int8            NOT NULL DEFAULT 0    ,
     running             boolean         NOT NULL DEFAULT false,
     properties          jsonb                                 ,
-    last_update         timestamp                             ,
+    last_update_date    timestamp                             ,
     primary key (id)
 );
 

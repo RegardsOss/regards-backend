@@ -25,6 +25,8 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import fr.cnes.regards.framework.modules.session.management.service.controllers.SessionService;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Controller for {@link Session}
+ *
  * @author Iliana Ghazali
  **/
 
@@ -75,9 +79,10 @@ public class SessionController implements IResourceController<Session> {
 
     @GetMapping
     @ResponseBody
+    @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(@RequestParam(required = false) String name,
             @RequestParam(required = false) String state, @RequestParam(required = false) String source,
-            @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
+            @PageableDefault(sort = "lastUpdateDate" , direction = Sort.Direction.DESC, size = 20) Pageable pageable,
             PagedResourcesAssembler<Session> assembler) {
         Page<Session> sessions = this.sessionService.loadSessions(name, state, source, pageable);
         return ResponseEntity.ok(toPagedResources(sessions, assembler));
@@ -85,6 +90,7 @@ public class SessionController implements IResourceController<Session> {
 
     @RequestMapping(value = DELETE_SESSION_MAPPING, method = RequestMethod.DELETE)
     @ResponseBody
+    @ResourceAccess(description = "Endpoint to delete a session", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Void> deleteSession(@PathVariable("id") final long id) {
         try {
             this.sessionService.orderDeleteSession(id);
@@ -97,13 +103,14 @@ public class SessionController implements IResourceController<Session> {
     @Override
     public EntityModel<Session> toResource(Session session, Object... extras) {
         EntityModel<Session> resource = resourceService.toResource(session);
-        resourceService.addLink(resource, this.getClass(), "getSessions", LinkRels.LIST,
+       /* resourceService.addLink(resource, this.getClass(), "getSessions", LinkRels.LIST,
                                 MethodParamFactory.build(String.class, session.getName()),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(String.class, session.getSource()),
-                                MethodParamFactory.build(Pageable.class));
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));*/
         resourceService.addLink(resource, this.getClass(), "deleteSession", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, session.getId()));
+                                MethodParamFactory.build(Long.TYPE, session.getId()));
         return resourceService.toResource(session);
     }
 }

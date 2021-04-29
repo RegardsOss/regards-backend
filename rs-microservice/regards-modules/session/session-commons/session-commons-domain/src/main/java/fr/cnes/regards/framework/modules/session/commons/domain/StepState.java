@@ -23,6 +23,12 @@ public class StepState {
     public StepState() {
     }
 
+    public StepState(long errors, long waiting, boolean running) {
+        this.errors = errors;
+        this.waiting = waiting;
+        this.running = running;
+    }
+
     public long getErrors() {
         return errors;
     }

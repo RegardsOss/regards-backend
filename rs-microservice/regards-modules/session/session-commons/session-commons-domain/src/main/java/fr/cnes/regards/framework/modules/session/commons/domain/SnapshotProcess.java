@@ -28,9 +28,9 @@ public class SnapshotProcess {
     /**
      * Last date since when the SessionSteps were updated with StepPropertyUpdateEventRequests
      */
-    @Column(name = "last_update")
+    @Column(name = "last_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastUpdate;
+    private OffsetDateTime lastUpdateDate;
 
     /**
      * If there is an ongoing update on {@link SessionStep}
@@ -38,9 +38,9 @@ public class SnapshotProcess {
     @Column(name = "job_id")
     private UUID jobId;
 
-    public SnapshotProcess(String source, OffsetDateTime lastUpdate, UUID jobId) {
+    public SnapshotProcess(String source, OffsetDateTime lastUpdateDate, UUID jobId) {
         this.source = source;
-        this.lastUpdate = lastUpdate;
+        this.lastUpdateDate = lastUpdateDate;
         this.jobId = jobId;
     }
 
@@ -55,12 +55,12 @@ public class SnapshotProcess {
         this.source = source;
     }
 
-    public OffsetDateTime getLastUpdate() {
-        return lastUpdate;
+    public OffsetDateTime getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setLastUpdate(OffsetDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public UUID getJobId() {

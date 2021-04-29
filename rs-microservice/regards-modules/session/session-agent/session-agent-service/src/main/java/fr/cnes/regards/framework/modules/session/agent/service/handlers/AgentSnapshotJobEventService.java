@@ -61,7 +61,7 @@ public class AgentSnapshotJobEventService {
                 switch (jobInfoStatus.getStatus()) {
                     case SUCCEEDED:
                         snapshotProcess.setJobId(null);
-                        snapshotProcess.setLastUpdate(jobInfoStatus.getStopDate());
+                        snapshotProcess.setLastUpdateDate(jobInfoStatus.getStopDate());
                         LOGGER.trace("Updated SnapshotProcess with source {} following JobEvent in success state",
                                      snapshotProcess.getSource());
                         break;

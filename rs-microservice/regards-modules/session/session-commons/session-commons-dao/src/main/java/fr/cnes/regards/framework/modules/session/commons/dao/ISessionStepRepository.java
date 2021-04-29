@@ -19,6 +19,14 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
 
     Optional<SessionStep> findBySourceAndSessionAndStepId(String source, String session, String stepId);
 
-    Page<SessionStep> findByLastUpdateBefore(OffsetDateTime startClean, Pageable page);
+    Page<SessionStep> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable page);
 
+    int countBySourceAndLastUpdateDateBefore(String source, OffsetDateTime schedulerStartDate);
+
+    int countBySourceAndLastUpdateDateBetween(String source, OffsetDateTime lastUpdateDate, OffsetDateTime schedulerStartDate);
+
+    Page<SessionStep> findBySourceAndLastUpdateDateBetween(String source, OffsetDateTime lastUpdateDate,
+            OffsetDateTime freezeDate, Pageable pageToRequest);
+
+    Page<SessionStep> findBySourceAndLastUpdateDateBefore(String source, OffsetDateTime freezeDate, Pageable pageToRequest);
 }

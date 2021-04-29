@@ -199,7 +199,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(1),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
                         break;
@@ -211,7 +211,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(2),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
                         break;
@@ -223,7 +223,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(5),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("store.products"));
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products.state"));
@@ -239,7 +239,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 1L, sessionStep.getState().getWaiting());
                         Assert.assertTrue("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(7),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("gen.products"));
                         break;
@@ -256,7 +256,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                 Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
-                                    sessionStep.getLastUpdate());
+                                    sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "2", properties.get("gen.products"));
             } else if (session.equals(OWNER_3)) {
@@ -268,7 +268,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                 Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
-                                    sessionStep.getLastUpdate());
+                                    sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                 Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));
             } else {
@@ -298,7 +298,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(1),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
                         break;
@@ -310,7 +310,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(2),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
                         break;
@@ -322,7 +322,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(38),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products.state"));
@@ -338,7 +338,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                         Assert.assertEquals("Wrong num of waiting", 1L, sessionStep.getState().getWaiting());
                         Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                         Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(40),
-                                            sessionStep.getLastUpdate());
+                                            sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
                         break;
@@ -355,7 +355,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                 Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
-                                    sessionStep.getLastUpdate());
+                                    sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "2", properties.get("gen.products"));
             } else if (session.equals(OWNER_3)) {
@@ -367,7 +367,7 @@ public class AgentSnapshotServiceIT extends AbstractRegardsServiceTransactionalI
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
                 Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
-                                    sessionStep.getLastUpdate());
+                                    sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                 Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));
             } else {

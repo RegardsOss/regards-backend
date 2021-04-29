@@ -32,6 +32,9 @@ public class SourceSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
+    private SourceSpecifications(){
+    }
+
     public static Specification<Source> search(String name, String state) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
@@ -40,7 +43,7 @@ public class SourceSpecifications {
             }
 
             if(state !=null) {
-                if(!state.equals("ok")) {
+                if(state.equals("error") || state.equals("waiting") || state.equals("running")) {
                     predicates.add(cb.isTrue(root.get(state)));
                 } else if(state.equals("ok")) {
                     predicates.add(cb.isFalse(root.get("running")));

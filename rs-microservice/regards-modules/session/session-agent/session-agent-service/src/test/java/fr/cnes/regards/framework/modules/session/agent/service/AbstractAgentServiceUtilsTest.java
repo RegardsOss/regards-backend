@@ -148,7 +148,7 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         LOGGER.info("Waiting for snapshot update ...");
         do {
             for(SnapshotProcess snapshotProcess : snapshotProcessList) {
-                if(snapshotProcess.getLastUpdate() != null && snapshotProcess.getJobId() == null) {
+                if(snapshotProcess.getLastUpdateDate() != null && snapshotProcess.getJobId() == null) {
                     count++;
                 }
             }

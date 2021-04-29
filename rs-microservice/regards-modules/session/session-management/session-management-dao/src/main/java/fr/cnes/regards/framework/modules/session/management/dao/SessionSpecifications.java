@@ -25,27 +25,32 @@ import javax.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 /**
+ * Specifications for {@link Session}
+ *
  * @author Iliana Ghazali
  **/
 public class SessionSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
+    private SessionSpecifications(){
+    }
+
     public static Specification<Session> search(String name, String state, String source) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if(name != null) {
+            if (name != null) {
                 predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
             }
 
-            if(source != null) {
+            if (source != null) {
                 predicates.add(cb.like(root.get("source"), LIKE_CHAR + source + LIKE_CHAR));
             }
 
-            if(state !=null) {
-                if(!state.equals("ok")) {
+            if (state != null) {
+                if (state.equals("error") || state.equals("waiting") || state.equals("running")) {
                     predicates.add(cb.isTrue(root.get(state)));
-                } else if(state.equals("ok")) {
+                } else if (state.equals("ok")) {
                     predicates.add(cb.isFalse(root.get("running")));
                     predicates.add(cb.isFalse(root.get("error")));
                     predicates.add(cb.isFalse(root.get("waiting")));
@@ -54,5 +59,4 @@ public class SessionSpecifications {
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
-
 }

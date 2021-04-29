@@ -53,7 +53,7 @@ public class AgentCleanSessionStepService {
         Page<SessionStep> sessionStepsToDelete;
         do {
             // Get all session steps to delete older than startClean
-            sessionStepsToDelete = sessionStepRepo.findByLastUpdateBefore(startClean, page);
+            sessionStepsToDelete = sessionStepRepo.findByLastUpdateDateBefore(startClean, page);
             // Delete all related StepPropertyUpdateRequests
             this.stepPropertyRepo
                     .deleteInBatch(stepPropertyRepo.findBySessionStepIn(sessionStepsToDelete.getContent()));

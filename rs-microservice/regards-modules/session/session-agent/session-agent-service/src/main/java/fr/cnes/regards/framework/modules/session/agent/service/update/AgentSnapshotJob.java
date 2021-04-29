@@ -12,6 +12,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
+ * Job to create {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}s
+ *
  * @author Iliana Ghazali
  */
 public class AgentSnapshotJob extends AbstractJob<Void> {

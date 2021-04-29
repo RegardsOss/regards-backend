@@ -142,7 +142,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
-                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdate());
+                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "15", properties.get("gen.products"));
             } else if (source.equals(SOURCE_1) && session.equals(OWNER_2)) {
@@ -152,7 +152,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertTrue("Should not be in running state", sessionStep.getState().isRunning());
-                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdate());
+                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "12", properties.get("gen.products"));
             } else if (source.equals(SOURCE_2) && session.equals(OWNER_1)) {
@@ -162,7 +162,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of errors", 1L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
-                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdate());
+                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("ref.products.state"));
                 Assert.assertEquals("Wrong properties", "ERROR", properties.get("ref.products.state"));
             } else if (source.equals(SOURCE_3) && session.equals(OWNER_1)) {
@@ -172,7 +172,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 1L, sessionStep.getState().getWaiting());
                 Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
-                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdate());
+                Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("ref.products"));
                 Assert.assertEquals("Wrong properties", "1", properties.get("ref.products"));
             } else {

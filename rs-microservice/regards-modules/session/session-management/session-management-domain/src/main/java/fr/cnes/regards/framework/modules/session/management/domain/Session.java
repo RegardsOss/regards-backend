@@ -19,23 +19,27 @@
 package fr.cnes.regards.framework.modules.session.management.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Set;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 /**
  * A session is an aggregation of {@link SessionStep}
@@ -44,6 +48,7 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "t_session")
+@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 public class Session {
 
     /**
@@ -55,13 +60,6 @@ public class Session {
     private Long id;
 
     /**
-     * Name of the source
-     */
-    @Column(name = "source")
-    @NotNull
-    private String source;
-
-    /**
      * Name of the session
      */
     @Column(name = "name")
@@ -69,18 +67,24 @@ public class Session {
     private String name;
 
     /**
+     * Name of the related source
+     */
+    @Column(name = "source")
+    @NotNull
+    private String source;
+
+    /**
      * Session creation date
      */
     @Column(name = "creation_date")
     @NotNull
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime creationDate;
+    private OffsetDateTime creationDate = OffsetDateTime.now();
 
     /**
      * Date when session was last updated
      */
     @Column(name = "last_update_date")
-    @NotNull
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
 
@@ -88,32 +92,23 @@ public class Session {
      * Set of session steps associated to this session
      */
     @Valid
-    @Column(name = "steps")
-    @NotNull(message = "At least one session step is required")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "id", foreignKey = @ForeignKey(name = "fk_session_step_aggregation"))
-    private Set<SessionStep> steps;
+    @NotNull(message = "At least on session step is required")
+    @Column(name = "steps", columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+            value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
+    private Set<SessionStep> steps = new HashSet<>();
 
-    /**
-     * If session is running, ie, if one of SessionStep is running
-     */
-    @Column(name = "running")
+    @Embedded
     @NotNull
-    private boolean running = false;
+    private ManagerState managerState = new ManagerState();
 
-    /**
-     * If session is in error, ie, if one of SessionStep is in error state
-     */
-    @Column(name = "error")
-    @NotNull
-    private boolean error = false;
+    public Session(@NotNull String source, @NotNull String name) {
+        this.source = source;
+        this.name = name;
+    }
 
-    /**
-     * If session is waiting, ie, if one of SessionStep is in waiting state
-     */
-    @Column(name = "waiting")
-    @NotNull
-    private boolean waiting = false;
+    public Session(){
+    }
 
     public Long getId() {
         return id;
@@ -155,31 +150,19 @@ public class Session {
         return steps;
     }
 
-    public void setSteps(Set<SessionStep> steps) {
-        this.steps = steps;
+    public void setSteps(Set<SessionStep> pSteps) {
+        // This method is used to prevent the override of the set that Hibernate is tracking
+        this.steps.clear();
+        if(pSteps !=null) {
+            this.steps.addAll(pSteps);
+        }
     }
 
-    public boolean isRunning() {
-        return running;
+    public ManagerState getManagerState() {
+        return managerState;
     }
 
-    public void setRunning(boolean running) {
-        this.running = running;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    public void setError(boolean error) {
-        this.error = error;
-    }
-
-    public boolean isWaiting() {
-        return waiting;
-    }
-
-    public void setWaiting(boolean waiting) {
-        this.waiting = waiting;
+    public void setManagerState(ManagerState managerState) {
+        this.managerState = managerState;
     }
 }

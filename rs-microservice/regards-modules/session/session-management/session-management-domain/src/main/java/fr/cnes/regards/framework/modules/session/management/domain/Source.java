@@ -2,11 +2,14 @@ package fr.cnes.regards.framework.modules.session.management.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -37,46 +40,32 @@ public class Source {
      */
     @Column(name="nb_sessions")
     @NotNull
-    private long nbSessions = 0;
+    private long nbSessions = 0L;
 
     /**
      * Set of SourceStepAggregation associated to this source
      */
     @Valid
-    @Column(name = "steps")
-    @NotNull(message = "At least one source aggregation is required")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "source", foreignKey = @ForeignKey(name = "fk_source_step_aggregation"))
-    private List<SourceStepAggregation> steps;
+    @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "source_name", foreignKey = @ForeignKey(name = "fk_source_step_aggregation"))
+    private Set<SourceStepAggregation> steps = new HashSet<>();
 
     /**
      * Date when source was last updated
      */
     @Column(name = "last_update_date")
-    @NotNull
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
 
-    /**
-     * If Source is running, ie, if one of Session is running
-     */
-    @Column(name = "running")
-    @NotNull
-    private boolean running = false;
+    @Embedded
+    private ManagerState managerState = new ManagerState();
 
-    /**
-     * If Source is in error, ie, if one of Session is in error state
-     */
-    @Column(name = "error")
-    @NotNull
-    private boolean error = false;
+    public Source(@NotNull String name) {
+        this.name = name;
+    }
 
-    /**
-     * If Source is waiting, ie, if one of Session is in waiting state
-     */
-    @Column(name = "waiting")
-    @NotNull
-    private boolean waiting = false;
+    public Source(){
+    }
 
     public String getName() {
         return name;
@@ -90,12 +79,16 @@ public class Source {
         this.nbSessions = nbSessions;
     }
 
-    public List<SourceStepAggregation> getSteps() {
+    public Set<SourceStepAggregation> getSteps() {
         return steps;
     }
 
-    public void setSteps(List<SourceStepAggregation> steps) {
-        this.steps = steps;
+    public void setSteps(Set<SourceStepAggregation> pSteps) {
+        // This method is used to prevent the override of the set that Hibernate is tracking
+        this.steps.clear();
+        if(pSteps != null) {
+            this.steps.addAll(pSteps);
+        }
     }
 
     public OffsetDateTime getLastUpdateDate() {
@@ -106,27 +99,11 @@ public class Source {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public boolean isRunning() {
-        return running;
+    public ManagerState getManagerState() {
+        return managerState;
     }
 
-    public void setRunning(boolean running) {
-        this.running = running;
-    }
-
-    public boolean isError() {
-        return error;
-    }
-
-    public void setError(boolean error) {
-        this.error = error;
-    }
-
-    public boolean isWaiting() {
-        return waiting;
-    }
-
-    public void setWaiting(boolean waiting) {
-        this.waiting = waiting;
+    public void setManagerState(ManagerState managerState) {
+        this.managerState = managerState;
     }
 }

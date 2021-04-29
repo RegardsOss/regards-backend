@@ -25,4 +25,8 @@ public class SessionStepEvent implements ISubscribable {
 
     public SessionStepEvent() {
     }
+
+    public SessionStep getSessionStep() {
+        return sessionStep;
+    }
 }

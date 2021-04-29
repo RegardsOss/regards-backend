@@ -8,7 +8,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for {@link SessionAgentHandler}. It handles new amqp events received by saving
- * {@link StepPropertyUpdateRequestEvent}s in the database. It creates {@link SnapshotProcess}es related to the
+ * Service for {@link SessionAgentHandler}. It handles new amqp events received and saves new
+ * {@link StepPropertyUpdateRequest}s in the database. It creates {@link SnapshotProcess}es related to the
  * source if they do not exist
  *
  * @author Iliana Ghazali
@@ -40,11 +39,13 @@ public class SessionAgentHandlerService {
 
     /**
      * Events handled by {@link SessionAgentHandler}
+     * Save new {@link StepPropertyUpdateRequest} from {@link StepPropertyUpdateRequestEvent}
+     * Initialize new {@link SnapshotProcess}es to process step properties later.
      *
      * @param events {@link StepPropertyUpdateRequestEvent}s
      */
     public void createStepRequests(List<StepPropertyUpdateRequestEvent> events) {
-        List<StepPropertyUpdateRequest> stepPropertiesToSave = new ArrayList<>();
+        Set<StepPropertyUpdateRequest> stepPropertiesToSave = new HashSet<>();
         Set<String> sourcesToBeUpdated = new HashSet<>();
         // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
         // create the list of sources impacted by these events and create snapshot processes if not existing

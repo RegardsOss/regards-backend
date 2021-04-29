@@ -26,8 +26,6 @@ import fr.cnes.regards.framework.modules.session.management.dao.ISessionReposito
 import fr.cnes.regards.framework.modules.session.management.dao.SessionSpecifications;
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +40,6 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class SessionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SessionService.class);
 
     @Autowired
     private ISessionRepository sessionRepo;
@@ -51,7 +48,7 @@ public class SessionService {
     private IPublisher publisher;
 
     public Page<Session> loadSessions(String name, String state, String source, Pageable pageable) {
-        return this.sessionRepo.findAll(SessionSpecifications.search(name, source, state), pageable);
+        return this.sessionRepo.findAll(SessionSpecifications.search(name, state, source), pageable);
     }
 
     public void orderDeleteSession(long id) throws EntityNotFoundException {

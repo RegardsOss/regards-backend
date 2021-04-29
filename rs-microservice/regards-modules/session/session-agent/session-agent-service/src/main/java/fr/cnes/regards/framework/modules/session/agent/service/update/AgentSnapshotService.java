@@ -66,6 +66,7 @@ public class AgentSnapshotService {
         boolean interrupted;
         Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by(Sort.Order.asc("id")));
         List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed = new ArrayList<>();
+        // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
             pageToRequest = updateOnePageStepRequests(sessionStepsBySession, stepPropertyRequestsProcessed,
                                                       snapshotProcess, freezeDate, pageToRequest);
@@ -108,7 +109,7 @@ public class AgentSnapshotService {
             List<StepPropertyUpdateRequest> stepPropertyProcessed, SnapshotProcess snapshotProcess,
             OffsetDateTime freezeDate, Pageable pageToRequest) {
         String source = snapshotProcess.getSource();
-        OffsetDateTime lastUpdated = snapshotProcess.getLastUpdate();
+        OffsetDateTime lastUpdated = snapshotProcess.getLastUpdateDate();
 
         // get step property requests to process
         Page<StepPropertyUpdateRequest> stepPropertyPage;
@@ -175,7 +176,7 @@ public class AgentSnapshotService {
             sessionStep.getState().setWaiting(sessionStep.getState().getWaiting() + 1);
         } else if (state.equals(StepPropertyEventStateEnum.ERROR)) {
             sessionStep.getState().setErrors(sessionStep.getState().getErrors() + 1);
-        } else if (!sessionStep.getState().isRunning() && state.equals(StepPropertyEventStateEnum.RUNNING)) {
+        } else if (state.equals(StepPropertyEventStateEnum.RUNNING)) {
             sessionStep.getState().setRunning(true);
         }
 
@@ -183,9 +184,9 @@ public class AgentSnapshotService {
         updateProperties(sessionStep, stepPropertyInfo, stepPropertyUpdateRequest.getType());
 
         // update lastUpdateDate of SessionStep with the most recent date of stepPropertyUpdateRequest
-        if (sessionStep.getLastUpdate() == null || sessionStep.getLastUpdate()
+        if (sessionStep.getLastUpdateDate() == null || sessionStep.getLastUpdateDate()
                 .isBefore(stepPropertyUpdateRequest.getDate())) {
-            sessionStep.setLastUpdate(stepPropertyUpdateRequest.getDate());
+            sessionStep.setLastUpdateDate(stepPropertyUpdateRequest.getDate());
         }
     }
 

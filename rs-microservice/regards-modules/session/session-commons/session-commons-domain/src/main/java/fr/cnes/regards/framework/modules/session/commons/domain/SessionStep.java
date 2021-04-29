@@ -2,14 +2,23 @@ package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import org.checkerframework.common.aliasing.qual.Unique;
+import java.time.OffsetDateTime;
+import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 /**
  * A {@link SessionStep} represents a step in which data are added or processed. Currently 4 steps mainly exist to
@@ -29,13 +38,12 @@ public class SessionStep {
     @Id
     @SequenceGenerator(name = "sessionStepSequence", initialValue = 1, sequenceName = "seq_session_step")
     @GeneratedValue(generator = "sessionStepSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
+    private long id;
 
     /**
-     * Unique step identifier
+     * Step identifier
      */
     @Column(name = "step_id")
-    @Unique
     @NotNull
     private String stepId;
 
@@ -92,11 +100,11 @@ public class SessionStep {
     /**
      * Most recent StepPropertyUpdateEventRequest
      */
-    @Column(name = "last_update")
+    @Column(name = "last_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime lastUpdate;
+    private OffsetDateTime lastUpdateDate;
 
-    public SessionStep(@Unique String stepId, @NotNull String source, @NotNull String session,
+    public SessionStep(@NotNull String stepId, @NotNull String source, @NotNull String session,
             @NotNull StepTypeEnum type, @NotNull StepState state, SessionStepProperties properties) {
         this.stepId = stepId;
         this.source = source;
@@ -107,6 +115,10 @@ public class SessionStep {
     }
 
     public SessionStep() {
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getStepId() {
@@ -173,11 +185,27 @@ public class SessionStep {
         this.properties = properties;
     }
 
-    public OffsetDateTime getLastUpdate() {
-        return lastUpdate;
+    public OffsetDateTime getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setLastUpdate(OffsetDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SessionStep that = (SessionStep) o;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
 }

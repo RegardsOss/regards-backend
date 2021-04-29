@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.modules.session.management.dao;
 
 import fr.cnes.regards.framework.modules.session.management.domain.Session;
+import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -30,4 +32,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ISessionRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
 
+    Optional<Session> findBySourceAndName(String source, String sessionName);
+
+    long countBySourceAndNameIn(String name, Set<String> collect);
+
+    long countBySource(String sourceName);
 }
