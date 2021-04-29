@@ -166,6 +166,9 @@ function calculateHash {
             hashes[$module]=${moduleHash}
             echo ${moduleHash} > ${modulePath}/.hash
             treated=1
+        else
+            echo ERRROR "Failed to compute hash for module ${module}. Did not find a **directory** named: \"${module}\" to hash."
+            exit 1
         fi
     fi
 
