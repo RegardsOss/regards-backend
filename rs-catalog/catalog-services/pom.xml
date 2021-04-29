@@ -74,6 +74,6 @@
     <module>catalog-services-rest</module>
     <module>catalog-services-service</module>
     <module>catalog-services-plugin</module>
-    <module>catalogue-services-helper</module>
+    <module>catalog-services-helper</module>
   </modules>
 </project>
