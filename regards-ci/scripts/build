@@ -57,7 +57,7 @@ function install {
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
         set -x
-        mvn -U -B -P delivery,CI,oracle clean INSTALL \
+        mvn -U -B -P delivery,CI,oracle clean install \
             -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
