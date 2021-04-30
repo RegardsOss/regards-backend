@@ -54,7 +54,7 @@ function updateArtifacts {
     # Compile new hashes of modules that were successfully rebuilt
     for module in $(cat ${DATADIR}/mvn-build.log | sed -n -e '/Reactor Summary/,$p' | grep "SUCCESS" | grep -v "BUILD SUCCESS" | awk '{ print $6 }'); do
         grep "^$module:" ${DATADIR}/hashes.txt;
-    done >> hashes-success.txt
+    done >> ${DATADIR}/hashes-success.txt
 
     declare -a hashes
 
