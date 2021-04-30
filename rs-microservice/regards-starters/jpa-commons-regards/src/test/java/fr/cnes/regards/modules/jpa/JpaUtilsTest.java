@@ -100,9 +100,4 @@ public class JpaUtilsTest {
         // Check for database created
         Assert.assertTrue("Error creating embedded database.", Files.exists(Paths.get(path)));
     }
-
-    @Test
-    public void tralala() {
-        Assert.assertTrue(false);
-    }
 }

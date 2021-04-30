@@ -22,6 +22,9 @@ function checkArtifactsRebuild {
     curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} ${NEXUS_RAW}/tests/regards/hashes-${HASHES_SUFFIX}.txt -o ${DATADIR}/hashes-nexus.txt --noproxy '*' -k --fail
     set +x
 
+    echo "Module hashes from nexus"
+    cat ${DATADIR}/hashes-nexus.txt
+
     while read moduleWithHash; do
         local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
 
@@ -54,13 +57,17 @@ function updateArtifacts {
     # Compile new hashes of modules that were successfully rebuilt
     for module in $(cat ${DATADIR}/mvn-build.log | sed -n -e '/Reactor Summary/,$p' | grep "SUCCESS" | grep -v "BUILD SUCCESS" | awk '{ print $6 }'); do
         grep "^$module:" ${DATADIR}/hashes.txt;
-    done >> ${DATADIR}/hashes-success.txt
+    done > ${DATADIR}/hashes-success.txt
+
+    echo "Modules built successfully"
+    cat ${DATADIR}/hashes-success.txt
 
     declare -a hashes
 
     # For each module (with its new hash)
     while read moduleWithHash; do
         local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
+        echo "Checking hash to update for module $module"
 
         # Check if the module was successfully rebuilt
         newModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-success.txt")
@@ -68,22 +75,30 @@ function updateArtifacts {
 
         if [[ ! -z "${newModuleWithHash}" ]]; then
             # If so, take its new hash
+            echo "Found in successfully built modules, taking new hash ${newModuleWithHash}"
             hashes+=("${newModuleWithHash}")
         else
             if [[ ! -z "${previousModuleWithHash}" ]]; then
                 # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
+                echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
                 hashes+=("$previousModuleWithHash")
+            else
+                echo "Fuond nowhere, ignore hash"
             fi
             # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
         fi
     done <${DATADIR}/hashes.txt
 
+    rm ${DATADIR}/hashes.txt
     # Update the hashes
     for i in "${!hashes[@]}"; do
         moduleWithHash=${hashes[$i]}
         echo "${hashes[$i]}" \
         >> "${DATADIR}/hashes.txt"
     done
+
+    echo "Module hashes to nexus"
+    cat ${DATADIR}/hashes.txt
 
     set -x
     curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${HASHES_SUFFIX}.txt --noproxy '*' -k --fail
