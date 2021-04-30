@@ -82,12 +82,12 @@ function updateArtifacts {
     done
 
     set -x
-    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
+    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${HASHES_SUFFIX}.txt --noproxy '*' -k --fail
     set +x
 }
 
-function verify {
-    checkArtifactsRebuild ${JOB_NAME}
+function install {
+    checkArtifactsRebuild ${REGARDS_VERSION}
 
     echo -e "\nRunning Maven verify..."
 
@@ -95,7 +95,8 @@ function verify {
         echo "All modules have already been built in this code version, no need to rebuild anything !"
     else
         set -x
-        mvn -U -B -P delivery,CI,oracle clean verify \
+        mvn -U -B -P delivery,CI,oracle clean install \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
             -DcmdLineTarget=target \
@@ -111,7 +112,7 @@ function verify {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${JOB_NAME}
+        updateArtifacts ${REGARDS_VERSION}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -123,7 +124,7 @@ function verify {
 }
 
 function deploy {
-    checkArtifactsRebuild ${JOB_NAME}
+    checkArtifactsRebuild ${BRANCH_NAME}
 
     echo -e "\nRunning Maven deploy..."
 
@@ -148,7 +149,7 @@ function deploy {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${JOB_NAME}
+        updateArtifacts ${BRANCH_NAME}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -160,7 +161,7 @@ function deploy {
 }
 
 function fast {
-    checkArtifactsRebuild ${TAG}
+    checkArtifactsRebuild ${REGARDS_VERSION}
 
     echo -e "\nRunning Maven build and Docker tag..."
 
@@ -169,7 +170,7 @@ function fast {
     else
         set -x
         mvn -U -B -P docker,install clean install docker:build \
-            -Dregards.version="${TAG}" \
+            -Dregards.version="${REGARDS_VERSION}" \
             -Dmaven.repo.local=/fastRepository \
             -Dmaven.multiModuleProjectDirectory=${SERVICES} \
             -Dfile.encoding=UTF-8 \
@@ -180,7 +181,7 @@ function fast {
             -Djacoco.skip=true \
             -DskipDocker=false \
             -DpushImageTag=true \
-            -DdockerImageTags="${TAG}" \
+            -DdockerImageTags="${REGARDS_VERSION}" \
             -Dasciidoctor.skip=true \
             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
             -Dmaven.wagon.http.ssl.insecure=true \
@@ -190,7 +191,7 @@ function fast {
             2>&1 | tee ${DATADIR}/mvn-build.log
         set +x
 
-        updateArtifacts ${TAG}
+        updateArtifacts ${REGARDS_VERSION}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"

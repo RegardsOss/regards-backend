@@ -4,9 +4,7 @@ services:
     image: 172.26.46.158/rs-maven-ci
     environment:
       - BRANCH_NAME
-      - BUILD_TAG
-      - GIT_COMMIT
-      - TAG_NAME
+      - REGARDS_VERSION
       - WORKSPACE
       - CI_DIR=regards-ci/docker
       - MODE

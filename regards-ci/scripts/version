@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-if [[ -n ${TAG_NAME} ]]; then
-    VERSION=${TAG_NAME}
-else
-    VERSION=${GIT_BRANCH:-local}-SNAPSHOT
-fi
-
-echo ${VERSION}

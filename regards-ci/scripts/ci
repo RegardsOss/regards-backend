@@ -21,10 +21,10 @@ echo "#####################################"
 
 cd ${SERVICES} || exit
 case $STEP in
-    verify)
+    install)
         tm dependencyTree
         tm computeHashes
-        tm verify
+        tm install
     ;;
     deploy)
         tm dependencyTree
