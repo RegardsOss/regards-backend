@@ -34,7 +34,7 @@ pipeline {
         }
         stage("(Docker) Tag git branch (fast build)") {
             when {
-                branch 'develop'
+                branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
             }
             environment {
                 MODE="nightly"
