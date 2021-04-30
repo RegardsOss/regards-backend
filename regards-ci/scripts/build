@@ -48,6 +48,44 @@ function checkArtifactsRebuild {
     fi
 }
 
+function updateArtifacts {
+    HASHES_SUFFIX=$1
+
+    # Compile new hashes of modules that were successfully rebuilt
+    for module in $(cat ${DATADIR}/mvn-build.log | sed -n -e '/Reactor Summary/,$p' | grep "SUCCESS" | grep -v "BUILD SUCCESS" | awk '{ print $6 }'); do
+        grep "^$module:" ${DATADIR}/hashes.txt;
+    done >> hashes-success.txt
+
+    declare -a hashes
+
+    # For each module (with its new hash)
+    while read moduleWithHash; do
+        local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
+
+        # Check if the module was successfully rebuilt
+        newModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-success.txt")
+
+        if [[ ! -z "${newModuleWithHash}" ]]; then
+            # If so, take its new hash
+            hashes+=("${newModuleWithHash}")
+        else
+            # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
+            hashes+=("$moduleWithHash")
+        fi
+    done <${DATADIR}/hashes.txt
+
+    # Update the hashes
+    for i in "${!hashes[@]}"; do
+        moduleWithHash=${hashes[$i]}
+        echo "${hashes[$i]}" \
+        >> "${DATADIR}/hashes.txt"
+    done
+
+    set -x
+    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
+    set +x
+}
+
 function verify {
     checkArtifactsRebuild ${JOB_NAME}
 
@@ -71,9 +109,9 @@ function verify {
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
-        failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
         set +x
+
+        updateArtifacts ${JOB_NAME}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -108,9 +146,9 @@ function deploy {
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
-        failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${JOB_NAME}.txt --noproxy '*' -k --fail
         set +x
+
+        updateArtifacts ${JOB_NAME}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -150,9 +188,9 @@ function fast {
             -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
             -pl ${mvnPlArg} \
             2>&1 | tee ${DATADIR}/mvn-build.log
-        failCheck $?
-        curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${TAG}.txt --noproxy '*' -k --fail
         set +x
+
+        updateArtifacts ${TAG}
 
         if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
             echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
@@ -185,7 +223,6 @@ function nightly {
         -Dmaven.wagon.http.ssl.allowall=true \
         -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
         2>&1 | tee ${DATADIR}/mvn-build.log
-    failCheck $?
     set +x
 
     if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
