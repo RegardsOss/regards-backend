@@ -2100,6 +2100,7 @@
 						<pomElements>
 						    <pluginManagement>keep</pluginManagement>
 						    <dependencyManagement>resolve</dependencyManagement>
+						    <build>keep</build>
 						    <!--
 						    <parent>keep</parent>
 						    <properties>keep</properties>
