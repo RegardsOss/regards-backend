@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>dataprovider</artifactId>
-	<version>${regards.Dataprovider.version}</version>
+	<version>${regards.dataprovider.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Microservice crawling directoreis in order to find data to ingest</description>
