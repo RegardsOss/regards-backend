@@ -284,4 +284,5 @@ function computeHashes {
     done
 
     echo "Hashes computed."
+    cat ${DATADIR}/hashes.txt
 }
