@@ -25,7 +25,6 @@
 	<artifactId>toponyms-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms domain</name>
 	<description>Toponyms domain</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>

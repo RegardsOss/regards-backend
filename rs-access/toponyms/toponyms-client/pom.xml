@@ -25,7 +25,6 @@
 	<artifactId>toponyms-client</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms Client</name>
 	<description>Client for toponyms interfaces</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>

@@ -24,7 +24,6 @@
 	<groupId>fr.cnes.regards.modules.accessrights</groupId>
 	<artifactId>accessrights-dao</artifactId>
 	<packaging>jar</packaging>
-	<name>Accessrights DAO</name>
 	<description>DAO layer of Accessrights module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

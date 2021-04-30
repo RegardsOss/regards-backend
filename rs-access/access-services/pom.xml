@@ -25,7 +25,6 @@
 	<version>${modules.access-services.version}</version>
 	<packaging>pom</packaging>
 
-	<name>Access Services</name>
 	<description>Module managing the UI plugins</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

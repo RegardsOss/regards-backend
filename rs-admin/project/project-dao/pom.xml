@@ -25,7 +25,6 @@
 	<artifactId>project-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Project DAO</name>
 	<description>DAO layer of Project module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
