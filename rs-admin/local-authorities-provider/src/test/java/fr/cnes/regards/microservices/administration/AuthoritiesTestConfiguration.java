@@ -20,7 +20,6 @@ package fr.cnes.regards.microservices.administration;
 
 import javax.mail.internet.MimeMessage;
 
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -37,8 +36,10 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * Class JpaTenantConnectionConfiguration
@@ -107,6 +108,11 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IProjectsClient mockProjectsClient() {
         return Mockito.mock(IProjectsClient.class);
+    }
+
+    @Bean
+    public IUserClient mockUserClient() {
+        return Mockito.mock(IUserClient.class);
     }
 
     /**
