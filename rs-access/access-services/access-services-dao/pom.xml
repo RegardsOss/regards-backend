@@ -23,7 +23,6 @@
 	<artifactId>access-services-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Access Services DAO</name>
 	<description>DAO layer of the Access Services module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

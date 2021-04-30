@@ -25,7 +25,6 @@
 	<artifactId>bootstrap-access-instance-light</artifactId>
     <version>${access.bootstrap.version}</version>
 
-	<name>Bootstrap Access Instance without toponyms server</name>
 	<description>Boots the Access microservice with cross-tenant features without the toponyms server</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

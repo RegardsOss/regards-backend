@@ -17,7 +17,6 @@
 	<version>${regards.access.version}</version>
 	<packaging>pom</packaging>
 
-	<name>REGARDS Access</name>
 	<description>Microservice managing the UI of the system</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

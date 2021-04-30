@@ -16,7 +16,6 @@
 	<artifactId>uiconfiguration-domain</artifactId>
 	<packaging>jar</packaging>
 
-	<name>UI Configuration Domain</name>
 	<description>Model layer of the UI Configuration module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

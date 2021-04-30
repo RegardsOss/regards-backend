@@ -78,7 +78,43 @@ function relativePath {
         # Root directory
         echo "."
     else
-        echo $(find . -maxdepth 4 -type d -name "$1" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
+        local moduleDir
+        case $1 in
+            access)
+                moduleDir="rs-access"
+            ;;
+            administration)
+                moduleDir="rs-admin"
+            ;;
+            regards)
+                moduleDir="rs-bom"
+            ;;
+            catalog)
+                moduleDir="rs-catalog"
+            ;;
+            dam)
+                moduleDir="rs-dam"
+            ;;
+            dataprovider)
+                moduleDir="rs-dataprovider"
+            ;;
+            fem)
+                moduleDir="rs-fem"
+            ;;
+            ingest)
+                moduleDir="rs-ingest"
+            ;;
+            notifier)
+                moduleDir="rs-notifier"
+            ;;
+            storage)
+                moduleDir="rs-storage"
+            ;;
+            *)
+                moduleDir="$1"
+            ;;
+        esac
+        echo $(find . -maxdepth 4 -type d -name "${moduleDir}" ! -path '*.git*' -print | grep -v "rs-doc.*/" | head -n 1)
     fi
 }
 
@@ -166,6 +202,9 @@ function calculateHash {
             hashes[$module]=${moduleHash}
             echo ${moduleHash} > ${modulePath}/.hash
             treated=1
+        else
+            echo ERRROR "Failed to compute hash for module ${module}. Did not find a **directory** named: \"${module}\" to hash."
+            exit 1
         fi
     fi
 
@@ -245,4 +284,5 @@ function computeHashes {
     done
 
     echo "Hashes computed."
+    cat ${DATADIR}/hashes.txt
 }

@@ -26,7 +26,6 @@
 	<version>${modules.accessrights.version}</version>
 	<packaging>pom</packaging>
 
-	<name>Accessrights</name>
 	<description>Module for managing access right features</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

@@ -63,5 +63,4 @@ public class JsonbTest {
         Assert.assertEquals(te, fromSave);
         Assert.assertEquals(te, fromDBOpt.get());
     }
-
 }

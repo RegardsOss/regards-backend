@@ -18,7 +18,28 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -42,24 +63,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  *
@@ -220,21 +223,29 @@ public class PerformanceTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testDelete() throws ModuleException {
+        long expectedDuration = 15_000;
         long startTime = System.currentTimeMillis();
         productService.deleteByProcessingChain(acqProService.getFullChains().get(0));
-        LOGGER.info("File(s) deleted by chain in {} milliseconds", System.currentTimeMillis() - startTime);
-        if ((System.currentTimeMillis() - startTime) > 15_000) {
-            Assert.fail("Performance not reached for prodcuts deletion by chain");
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info("File(s) deleted by chain in {} milliseconds", duration);
+        if (duration > expectedDuration) {
+            Assert.fail(String
+                    .format("Performance not reached for prodcuts deletion by chain .Deletion took %s ms when %s ms expected",
+                            duration, expectedDuration));
         }
     }
 
     @Test
     public void testDeleteBySession() throws ModuleException {
+        long expectedDuration = 30_000;
         long startTime = System.currentTimeMillis();
         productService.deleteBySession(acqProService.getFullChains().get(1), sessionName);
-        LOGGER.info("File(s) deleted by session in {} milliseconds", System.currentTimeMillis() - startTime);
-        if ((System.currentTimeMillis() - startTime) > 15_000) {
-            Assert.fail("Performance not reached for prodcuts deletion by session");
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info("File(s) deleted by session in {} milliseconds", duration);
+        if (duration > expectedDuration) {
+            Assert.fail(String
+                    .format("Performance not reached for prodcuts deletion by session. Deletion took %s ms when %s ms expected",
+                            duration, expectedDuration));
         }
     }
 

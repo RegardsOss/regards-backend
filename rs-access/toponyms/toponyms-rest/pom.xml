@@ -25,7 +25,6 @@
 	<artifactId>toponyms-rest</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms REST</name>
 	<description>Controller layer of the UI Configuration module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>

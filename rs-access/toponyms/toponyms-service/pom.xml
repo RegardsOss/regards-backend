@@ -25,7 +25,6 @@
 	<artifactId>toponyms-service</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms service</name>
 	<description>Toponyms services</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>

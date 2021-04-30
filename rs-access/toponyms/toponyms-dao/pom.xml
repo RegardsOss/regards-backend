@@ -25,7 +25,6 @@
 	<artifactId>toponyms-dao</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Toponyms dao</name>
 	<description>Data base dao access for toponyms</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2021</inceptionYear>
