@@ -24,7 +24,6 @@
 	<groupId>fr.cnes.regards.modules.emails</groupId>
 	<artifactId>emails-dao</artifactId>
 	<packaging>jar</packaging>
-	<name>Emails DAO</name>
 	<description>DAO layer of Emails module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -50,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>emails</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.emails.version}</version>
 	</parent>
 
 	<dependencies>

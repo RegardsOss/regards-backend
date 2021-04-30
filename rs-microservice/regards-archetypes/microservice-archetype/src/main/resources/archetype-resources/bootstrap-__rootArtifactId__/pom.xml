@@ -14,12 +14,13 @@
 
     <groupId>${groupId}</groupId>
     <artifactId>${artifactId}</artifactId>
+    <version>$${${artifactId}.bootstrap.version}</version>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-boot-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath></relativePath>
+        <version>$${regards.boot.parent.version}</version>
+        <relativePath>../../rs-bom/regards-boot-parent</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

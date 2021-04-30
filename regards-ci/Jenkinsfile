@@ -1,0 +1,127 @@
+#!/usr/bin/env groovy
+
+/*
+ * LICENSE_PLACEHOLDER
+ */
+
+/**
+ * Declaratve Jenkinsfile. The language is Groovy.
+ * Contains the definition of a Jenkins Pipeline, is checked into source control
+ * and is expected to be the reference.
+ * To fully support multibranch builds without issues, we are using docker-compose to setup cots for each build.
+ *
+ * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
+ */
+
+pipeline {
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
+        disableConcurrentBuilds()
+    }
+    environment {
+        PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
+        REGARDS_HOME="${WORKSPACE}"
+    }
+    agent { label 'unix-integration' }
+    stages {
+        // Refresh docker images
+        stage('Pull docker images') {
+            steps {
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose -f docker/docker-compose.yml pull'
+            }
+        }
+        stage("Verifying git branch") {
+            when {
+                not {
+                    branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+                }
+            }
+            environment {
+                REGARDS_VERSION="${BRANCH_NAME.replaceAll('[^A-Za-z0-9._-]', '')}-SNAPSHOT"
+                MODE="install"
+            }
+            steps {
+                sh 'printenv'
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose \
+                            -f docker/docker-compose.yml \
+                            -p ' + PROJECT_NAME + ' \
+                            up \
+                            --exit-code-from rs-build \
+                            --abort-on-container-exit \
+                            rs-build'
+            }
+        }
+        stage("Deploy and (Docker) Tag git branch") {
+            when {
+                branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+            }
+            environment {
+                MODE="deploy"
+                RQMT_DIR="/RQMT/RQMT/${JOB_NAME}/"
+                DOC_DIR="/RQMT/APIDoc/${BRANCH_NAME}/${JOB_NAME}/"
+            }
+            steps {
+                sh 'printenv'
+                sh 'cd ' + CI_DIR + ' \
+                     && docker-compose \
+                            -f docker/docker-compose.yml \
+                            -p ' + PROJECT_NAME + ' \
+                            up \
+                            --exit-code-from rs-build \
+                            --abort-on-container-exit \
+                            rs-build'
+
+                echo 'Harvest requirements reports'
+                sh 'rm -rf ' + RQMT_DIR
+                sh 'mkdir -p ' + RQMT_DIR
+                sh 'find . -wholename \'*/target/requirement-reports/RQMT*\' -type f -exec cp {} ' + RQMT_DIR + ' \\;'
+
+                echo 'Harvest documentation snippets'
+                sh 'rm -rf ' + DOC_DIR
+                sh 'mkdir -p ' + DOC_DIR
+                sh 'find . -maxdepth 5 -type d -wholename \'*/target/generated-snippets/*\' -exec cp -r {} '+ DOC_DIR + ' \\;'
+            }
+        }
+    }
+    post {
+        failure {
+            echo 'The build FAILED, let\'s print all COTS logs'
+
+            // Log COTS only if they are existing
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' ps | grep rs-elasticsearch)" ]; then \
+                        echo "########################################" \
+                     && echo "#### ELASTICSEARCH" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' ps | grep rs-postgres)" ]; then \
+                        echo "########################################" \
+                     && echo "#### POSTGRES" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' logs rs-postgres; \
+                   fi'
+
+
+            sh 'cd ' + CI_DIR + ' \
+                 && if [ "$(docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' ps | grep rs-rabbitmq)" ]; then \
+                        echo "########################################" \
+                     && echo "#### RABBITMQ" \
+                     && echo "########################################" \
+                     && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq; \
+                   fi'
+        }
+        cleanup {
+            echo 'lets clean up the mess!'
+            sh 'cd ' + CI_DIR + ' \
+                 && docker-compose -f docker/docker-compose.yml -p ' + PROJECT_NAME + ' down'
+            echo 'In case any test played with access rights, lets add read/write to owner'
+            sh 'chmod -R +rw .'
+        }
+    }
+}

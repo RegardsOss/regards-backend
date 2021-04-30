@@ -21,10 +21,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-
 	<groupId>fr.cnes.regards</groupId>
 	<artifactId>regards</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>${regards.bom.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Main REGARDS project</description>
@@ -56,8 +55,6 @@
 
 	<modules>
 		<module>regards-boot-parent</module>
-		<module>regards-dependencies</module>
-		<module>regards-parent</module>
 		<module>regards-frontend-parent</module>
 		<module>regards-aggregator-parent</module>
 		<module>regards-suppress-cve</module>

@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>crawler</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>${modules.crawler.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Module crawling external datasources for data aspiration</description>
@@ -50,9 +50,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	
 	<modules>
@@ -68,22 +68,22 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
 				<artifactId>crawler-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.crawler.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
 				<artifactId>crawler-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.crawler.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
 				<artifactId>crawler-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.crawler.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.crawler</groupId>
 				<artifactId>crawler-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.crawler.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

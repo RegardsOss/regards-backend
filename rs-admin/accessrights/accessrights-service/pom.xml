@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>accessrights</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.accessrights.version}</version>
 	</parent>
 
 	<dependencies>
@@ -65,6 +65,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-accessrights-client</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.project</groupId>
 			<artifactId>project-client</artifactId>

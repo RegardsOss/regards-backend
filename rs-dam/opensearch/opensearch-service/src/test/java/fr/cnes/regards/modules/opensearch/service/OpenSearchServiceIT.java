@@ -63,6 +63,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     IOpenSearchService opensearchService;
 
     @Test
+    @Ignore("Test to fix by adding a mock http server to serve a mock descriptor response")
     public void test() throws Exception {
         OpenSearchDescription desc = opensearchService
                 .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
@@ -77,8 +78,7 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
 
     @Test(expected = ModuleException.class)
     public void testInvalidUrl() throws MalformedURLException, ModuleException {
-        opensearchService
-                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xmlx"));
+        opensearchService.readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xmlx"));
     }
 
     @Test(expected = ModuleException.class)

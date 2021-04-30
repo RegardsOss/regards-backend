@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
-import fr.cnes.regards.framework.modules.locks.dao.ILockRepository;
 import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
 import fr.cnes.regards.modules.storage.service.AbstractStorageTest;
 import fr.cnes.regards.modules.storage.service.JobsPriority;
@@ -54,15 +53,11 @@ import fr.cnes.regards.modules.storage.service.JobsPriority;
 public class FileCopyRequestsCreatorJobTest extends AbstractStorageTest {
 
     @Autowired
-    private ILockRepository lockRepo;
-
-    @Autowired
     private JobInfoService jobInfoService;
 
     @Before
     public void initialize() throws ModuleException {
         Mockito.clearInvocations(publisher);
-        lockRepo.deleteAll();
         super.init();
     }
 

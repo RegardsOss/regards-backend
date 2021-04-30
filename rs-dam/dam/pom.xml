@@ -24,6 +24,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>dam</artifactId>
+	<version>${modules.dam.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Data management module</description>
@@ -52,9 +53,9 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<modules>
@@ -66,6 +67,7 @@
 		<module>dam-gson</module>
 		<module>dam-plugins</module>
 		<module>dam-client</module>
+		<module>dam-accessrights-client</module>
 		<module>dam-client-it</module>
 	</modules>
 
@@ -74,37 +76,37 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-client</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-gson</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.dam</groupId>
 				<artifactId>dam-plugins</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.dam.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

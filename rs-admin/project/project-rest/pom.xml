@@ -27,10 +27,9 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>project</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.project.version}</version>
 	</parent>
 
-	<name>Project REST</name>
 	<description>Controller layer of Project module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>

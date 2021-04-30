@@ -23,14 +23,16 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>authentication</artifactId>
+    <version>${modules.authentication.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-parent</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
-        <relativePath/>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${regards.version}</version>
+        <relativePath>../../../pom.xml</relativePath>
     </parent>
+
     <modules>
         <module>authentication-domain</module>
         <module>authentication-client</module>
@@ -39,4 +41,39 @@
         <module>authentication-rest</module>
         <module>authentication-service</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.authentication</groupId>
+                <artifactId>authentication-domain</artifactId>
+                <version>${modules.authentication.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

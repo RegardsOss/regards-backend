@@ -21,15 +21,16 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<artifactId>security-regards</artifactId>
-	<description>REGARDS Security</description>
-
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${regards.starters.version}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<artifactId>security-regards</artifactId>
+	<version>${security.starter.version}</version>
+	<description>REGARDS Security</description>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
