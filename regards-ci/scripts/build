@@ -64,13 +64,17 @@ function updateArtifacts {
 
         # Check if the module was successfully rebuilt
         newModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-success.txt")
+        previousModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-nexus.txt")
 
         if [[ ! -z "${newModuleWithHash}" ]]; then
             # If so, take its new hash
             hashes+=("${newModuleWithHash}")
         else
-            # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
-            hashes+=("$moduleWithHash")
+            if [[ ! -z "${previousModuleWithHash}" ]]; then
+                # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
+                hashes+=("$previousModuleWithHash")
+            fi
+            # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
         fi
     done <${DATADIR}/hashes.txt
 
