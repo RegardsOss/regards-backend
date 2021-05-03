@@ -37,9 +37,9 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.collect.Lists;
 
+import feign.FeignException;
 import feign.Target;
 import feign.Target.HardCodedTarget;
-import feign.codec.DecodeException;
 import feign.httpclient.ApacheHttpClient;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -121,7 +121,7 @@ public class OpenSearchService implements IOpenSearchService {
                 throw new ModuleException(
                         String.format("Error retrieving opensearch descriptor at %s.", url.toString()));
             }
-        } catch (HttpClientErrorException | HttpServerErrorException | DecodeException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException | FeignException e) {
             throw new ModuleException(e.getMessage(), e);
         }
     }
