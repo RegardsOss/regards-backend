@@ -289,7 +289,7 @@
 		<docker.registry.baseImage>regards-java-alpine</docker.registry.baseImage>
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-		<jacoco.outputDir>${project.basedir}/target/coverage-reports</jacoco.outputDir>
+		<jacoco.outputDir>target/coverage-reports</jacoco.outputDir>
 		<!-- Jacoco output file for UTs -->
 		<jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
 		<!-- Tells Sonar where the Jacoco coverage result file is located for UT -->
@@ -1993,13 +1993,13 @@
 			<build>
 				<testResources>
 					<testResource>
-						<directory>${basedir}/src/test/resources</directory>
+						<directory>src/test/resources</directory>
 						<filtering>true</filtering>
 					</testResource>
 				</testResources>
 				<resources>
 					<resource>
-						<directory>${basedir}/src/main/resources</directory>
+						<directory>src/main/resources</directory>
 						<filtering>true</filtering>
 					</resource>
 				</resources>
@@ -2011,16 +2011,16 @@
 		<profile>
 			<id>CI</id>
 			<build>
-				<directory>${basedir}/${cmdLineTarget}</directory>
+				<directory>${cmdLineTarget}</directory>
 				<testResources>
 					<testResource>
-						<directory>${basedir}/src/test/resources</directory>
+						<directory>src/test/resources</directory>
 						<filtering>true</filtering>
 					</testResource>
 				</testResources>
 				<resources>
 					<resource>
-						<directory>${basedir}/src/main/resources</directory>
+						<directory>src/main/resources</directory>
 						<filtering>true</filtering>
 					</resource>
 				</resources>
@@ -2039,7 +2039,7 @@
 		<!-- Turn on filtering by default for application properties -->
 		<resources>
 			<resource>
-				<directory>${basedir}/src/main/resources</directory>
+				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 				<includes>
 					<include>**/application*.yml</include>
@@ -2047,7 +2047,7 @@
 				</includes>
 			</resource>
 			<resource>
-				<directory>${basedir}/src/main/resources</directory>
+				<directory>src/main/resources</directory>
 				<excludes>
 					<exclude>**/application*.yml</exclude>
 					<exclude>**/application*.properties</exclude>
@@ -2085,6 +2085,7 @@
 						    <pluginManagement>keep</pluginManagement>
 						    <dependencyManagement>resolve</dependencyManagement>
 						    <build>keep</build>
+						    <profiles>resolve</profiles>
 						    <!--
 						    <parent>keep</parent>
 						    <properties>keep</properties>
