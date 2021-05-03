@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.security.endpoint.voter;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.security.access.ConfigAttribute;
@@ -28,7 +27,6 @@ import org.springframework.security.core.Authentication;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
@@ -60,8 +58,7 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
         // Get authorized ip associated to given role
         final JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
 
-        if (pObject instanceof MethodInvocation) {
-
+        if ((authentication != null) && (pObject instanceof MethodInvocation)) {
             final MethodInvocation mi = (MethodInvocation) pObject;
             // Get resource access anotation
             final ResourceAccess[] ra = mi.getMethod().getAnnotationsByType(ResourceAccess.class);
@@ -69,13 +66,8 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
                 // If the resource access default ROLE is PUBLIC and the user role is PUBLIC and the tenant is instance,
                 // allow access.
                 if (ra[0].role().name().equals(DefaultRole.PUBLIC.toString())) {
-                    // If authenticated user is the instance admin user allow all.
-                    @SuppressWarnings("unchecked")
-                    final List<RoleAuthority> roles = (List<RoleAuthority>) authentication.getAuthorities();
-                    if ((authentication.getTenant().equals(instanceTenantName)) && roles.get(0).getAuthority()
-                            .equals(RoleAuthority.getRoleAuthority(DefaultRole.PUBLIC.toString()))) {
-                        access = ACCESS_GRANTED;
-                    }
+                    // Endpoint is public so allowed to any authenticated user.
+                    access = ACCESS_GRANTED;
                 }
             }
         }
