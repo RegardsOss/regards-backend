@@ -100,6 +100,9 @@ public interface RandomGenerator<T> {
             case UUID:
                 rg = new RandomUuid(fd);
                 break;
+            case CRID:
+                rg = new RandomCrid(fd);
+                break;
             default:
                 throw new IllegalArgumentException(String.format("Unsupported function %s", fd.getType()));
         }
