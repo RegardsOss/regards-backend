@@ -135,7 +135,7 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         PluginMetaData meta = new PluginMetaData();
         meta.setPluginId("test");
         meta.setPluginClassName("fr.cnes.regards.modules.dam.domain.datasources.plugins.DefaultPostgrConnectionPlugin");
-        dbConn.setMetaData(meta);
+        dbConn.setMetaDataAndPluginId(meta);
 
         performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConn,
                            customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
@@ -150,7 +150,7 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         PluginMetaData meta = new PluginMetaData();
         meta.setPluginId("test");
         meta.setPluginClassName(POSTGRESQL_PLUGIN_CONNECTION);
-        dbConn.setMetaData(meta);
+        dbConn.setMetaDataAndPluginId(meta);
 
         performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConn,
                            customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
@@ -344,7 +344,7 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         PluginMetaData meta = new PluginMetaData();
         meta.setPluginId("test");
         meta.setPluginClassName(pluginClassName);
-        dbConnection.setMetaData(meta);
+        dbConnection.setMetaDataAndPluginId(meta);
         return dbConnection;
     }
 

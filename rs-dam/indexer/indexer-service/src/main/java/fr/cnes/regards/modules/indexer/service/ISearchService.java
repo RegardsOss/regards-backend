@@ -113,9 +113,9 @@ public interface ISearchService {
      * @param <T> document type
      * @return specified result page
      */
-    <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object pValue, String... fields);
+    <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, Pageable pageRequest, Object pValue, String... fields);
 
-    default <T> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, int pageSize, Object value, String... fields) {
+    default <T extends IIndexable> Page<T> multiFieldsSearch(SearchKey<T, T> searchKey, int pageSize, Object value, String... fields) {
         return multiFieldsSearch(searchKey, PageRequest.of(0, pageSize), value, fields);
     }
 

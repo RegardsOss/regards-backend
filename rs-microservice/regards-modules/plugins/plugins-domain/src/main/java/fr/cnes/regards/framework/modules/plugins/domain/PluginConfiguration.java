@@ -39,6 +39,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import io.vavr.control.Option;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -257,8 +258,12 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public void setMetaData(PluginMetaData metaData) {
+        this.metaData = metaData;
+    }
+
+    public void setMetaDataAndPluginId(PluginMetaData metaData) {
         // For serialization
-        pluginId = metaData.getPluginId();
+        Option.of(metaData).peek(m -> pluginId = m.getPluginId());
         // Transient information only useful at runtime
         this.metaData = metaData;
     }

@@ -18,60 +18,12 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-
-import org.apache.http.HttpHost;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
-import org.elasticsearch.search.aggregations.metrics.min.ParsedMin;
-import org.elasticsearch.search.aggregations.metrics.sum.ParsedSum;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -122,216 +74,55 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
+import org.elasticsearch.search.aggregations.metrics.min.ParsedMin;
+import org.elasticsearch.search.aggregations.metrics.sum.ParsedSum;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noschedule") // Disable scheduling, this will activate IngesterService during all tests
-@TestPropertySource(locations = { "classpath:test.properties" })
-@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-public class IndexerServiceDataSourceIT {
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(IndexerServiceDataSourceIT.class);
-
-    @SuppressWarnings("unused")
-    private static final String TABLE_NAME_TEST = "t_validation_1";
-
-    private static final String DATA_MODEL_FILE_NAME = "validationDataModel1.xml";
-
-    private static final String DATASET_MODEL_FILE_NAME = "validationDatasetModel1.xml";
-
-    @Autowired
-    private MultitenantFlattenedAttributeAdapterFactoryEventHandler gsonAttributeFactoryHandler;
-
-    @Autowired
-    private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
-
-    @Value("${regards.tenant}")
-    private String tenant;
-
-    @Value("${postgresql.datasource.host}")
-    private String dbHost;
-
-    @Value("${postgresql.datasource.port}")
-    private String dbPort;
-
-    @Value("${postgresql.datasource.name}")
-    private String dbName;
-
-    @Value("${postgresql.datasource.username}")
-    private String dbUser;
-
-    @Value("${postgresql.datasource.password}")
-    private String dbPpassword;
-
-    @Value("${postgresql.datasource.schema}")
-    private String dbSchema;
-
-    @Value("${regards.elasticsearch.host:}")
-    private String esHost;
-
-    @Value("${regards.elasticsearch.address:}")
-    private String esAddress;
-
-    @Value("${regards.elasticsearch.http.port}")
-    private int esPort;
-
-    @Autowired
-    private IModelService modelService;
-
-    @Autowired
-    private IModelRepository modelRepository;
-
-    @Autowired
-    private IAttributeModelRepository attrModelRepo;
-
-    @Autowired
-    private IModelAttrAssocRepository modelAttrAssocRepo;
-
-    @Autowired
-    private IFragmentRepository fragRepo;
-
-    @Autowired
-    private IDatasetService dsService;
-
-    @Autowired
-    private IAttributeModelService attributeModelService;
-
-    @Autowired
-    private ISearchService searchService;
-
-    @Autowired
-    private IngesterService ingesterService;
-
-    @Autowired
-    private ICrawlerAndIngesterService crawlerService;
-
-    @Autowired
-    private IAbstractEntityRepository<AbstractEntity<?>> entityRepos;
-
-    @Autowired
-    private IDatasetRepository datasetRepos;
-
-    @Autowired
-    private IEsRepository esRepos;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IPluginService pluginService;
-
-    @Autowired
-    private IPluginConfigurationRepository pluginConfRepo;
-
-    @Autowired
-    private IPublisher publisher;
-
-    @Autowired
-    private IDatasourceIngestionRepository dsIngestionRepos;
-
-    private Model dataModel;
-
-    private Model datasetModel;
-
-    private PluginConfiguration dataSourcePluginConf;
-
-    private Dataset dataset1;
-
-    private Dataset dataset2;
-
-    private Dataset dataset3;
-
-    @Autowired
-    private ProjectGeoSettings settings;
-
-    @Before
-    public void setUp() throws Exception {
-        Mockito.when(settings.getCrs()).thenReturn(Crs.WGS_84);
-
-        // Simulate spring boot ApplicationStarted event to start mapping for each tenants.
-        gsonAttributeFactoryHandler.onApplicationEvent(null);
-
-        runtimeTenantResolver.forceTenant(tenant);
-        if (esRepos.indexExists(tenant)) {
-            esRepos.deleteIndex(tenant);
-        }
-        esRepos.createIndex(tenant);
-
-        crawlerService.setConsumeOnlyMode(false);
-        ingesterService.setConsumeOnlyMode(true);
-
-        publisher.purgeQueue(DatasetEvent.class);
-        publisher.purgeQueue(NotDatasetEntityEvent.class);
-
-        datasetRepos.deleteAll();
-        entityRepos.deleteAll();
-        modelAttrAssocRepo.deleteAll();
-        pluginConfRepo.deleteAll();
-        attrModelRepo.deleteAll();
-        modelRepository.deleteAll();
-        fragRepo.deleteAll();
-
-        // get a model for DataObject, by importing them it also register them for (de)serialization
-        importModel(DATA_MODEL_FILE_NAME);
-        dataModel = modelService.getModelByName("VALIDATION_DATA_MODEL_1");
-
-        // get a model for Dataset
-        importModel(DATASET_MODEL_FILE_NAME);
-        datasetModel = modelService.getModelByName("VALIDATION_DATASET_MODEL_1");
-
-        // DataSource PluginConf
-        dataSourcePluginConf = getPostgresDataSource();
-        pluginService.savePluginConfiguration(dataSourcePluginConf);
-    }
-
-    @Test
-    public void testDeleteByDatasource() throws InactiveDatasourceException, ModuleException, InterruptedException,
-            ExecutionException, DataSourceException, NotFinishedException {
-        String tenant = runtimeTenantResolver.getTenant();
-
-        // Creation
-        DatasourceIngestion dsi = new DatasourceIngestion(dataSourcePluginConf.getBusinessId());
-        dsi.setLabel("Label");
-        dsIngestionRepos.save(dsi);
-
-        // Ingest datas
-        crawlerService.ingest(dsi.getId()).get();
-
-        // Check ingested datas
-        Long datasourceId = dataSourcePluginConf.getId();
-        SimpleSearchKey<DataObject> key = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        key.setSearchIndex(tenant);
-        Page<DataObject> result = esRepos.search(key, 10, ICriterion.all());
-        Assert.assertEquals(4, result.getContent().size());
-
-        // Delete all from this datasource
-        long nbDeleted = esRepos.deleteByDatasource(tenant, datasourceId);
-        Assert.assertEquals(4, nbDeleted);
-        int loop = 0;
-        while (!result.isEmpty() && (loop < 10)) {
-            Thread.sleep(500);
-            result = esRepos.search(key, 10, ICriterion.all());
-            loop++;
-        }
-        Assert.assertEquals(0, result.getContent().size());
-    }
-
-    @After
-    public void clean() {
-        entityRepos.deleteAll();
-        modelAttrAssocRepo.deleteAll();
-        pluginConfRepo.deleteAll();
-        attrModelRepo.deleteAll();
-        modelRepository.deleteAll();
-        fragRepo.deleteAll();
-    }
-
-    private PluginConfiguration getPostgresDataSource() {
-        Set<IPluginParam> param = IPluginParam
-                .set(IPluginParam.build(TestDataSourcePlugin.MODEL, PluginParameterTransformer.toJson(dataModel)),
-                     IPluginParam.build(DataSourcePluginConstants.MODEL_NAME_PARAM, dataModel.getName()));
-        return PluginConfiguration.build(TestDataSourcePlugin.class, null, param);
-    }
+public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServiceDataSourceIT {
 
     @Requirement("REGARDS_DSL_DAM_COL_420")
     @Purpose("Requirement is for collection. Multi search field is used here on data objects but the code is the same")
@@ -550,22 +341,4 @@ public class IndexerServiceDataSourceIT {
         return pDataset.getProperties().stream().filter(p -> p.getName().equals(pPropertyName)).findAny().orElse(null);
     }
 
-    /**
-     * Import model definition file from resources directory
-     * @param pFilename filename
-     * @throws ModuleException if error occurs
-     */
-    private void importModel(final String pFilename) throws ModuleException {
-        try {
-            InputStream input = Files
-                    .newInputStream(Paths.get("src", "test", "resources", "validation", "models", pFilename));
-            modelService.importModel(input);
-
-            List<AttributeModel> attributes = attributeModelService.getAttributes(null, null, null);
-            gsonAttributeFactory.refresh(tenant, attributes);
-        } catch (final IOException e) {
-            String errorMessage = "Cannot import " + pFilename;
-            throw new AssertionError(errorMessage);
-        }
-    }
 }

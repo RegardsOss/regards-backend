@@ -30,6 +30,7 @@ import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -180,6 +181,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
 
     @Autowired
+    protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
+
+    @Autowired
     protected IIndexerService indexerService;
 
     @Autowired
@@ -295,6 +299,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
         gsonAttributeFactory.refresh(getDefaultTenant(), atts);
+        jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // - Manage attribute cache
         List<EntityModel<AttributeModel>> resAtts = new ArrayList<>();
@@ -464,21 +469,21 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         DataFile quicklooksd = new DataFile();
         quicklooksd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklooksd.setUri(URI.create("http://regards/le_quicklook_sd.jpg"));
+        quicklooksd.setUri(URI.create("http://regards/le_quicklook_sd.jpg").toString());
         quicklooksd.setReference(false);
         quicklooksd.setImageWidth(100d);
         quicklooksd.setImageHeight(100d);
         planet.getFiles().put(DataType.QUICKLOOK_SD, quicklooksd);
         DataFile quicklookmd = new DataFile();
         quicklookmd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookmd.setUri(URI.create("http://regards/le_quicklook_md.jpg"));
+        quicklookmd.setUri(URI.create("http://regards/le_quicklook_md.jpg").toString());
         quicklookmd.setReference(false);
         quicklookmd.setImageWidth(100d);
         quicklookmd.setImageHeight(100d);
         planet.getFiles().put(DataType.QUICKLOOK_MD, quicklookmd);
         DataFile quicklookhd = new DataFile();
         quicklookhd.setMimeType(MimeType.valueOf("application/jpg"));
-        quicklookhd.setUri(URI.create("http://regards/le_quicklook_hd.jpg"));
+        quicklookhd.setUri(URI.create("http://regards/le_quicklook_hd.jpg").toString());
         quicklookhd.setReference(false);
         quicklookhd.setImageWidth(100d);
         quicklookhd.setImageHeight(100d);
@@ -486,7 +491,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         DataFile thumbnail = new DataFile();
         thumbnail.setMimeType(MimeType.valueOf("application/png"));
-        thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
+        thumbnail.setUri(URI.create("http://regards/thumbnail.png").toString());
         thumbnail.setImageWidth(250d);
         thumbnail.setImageHeight(250d);
         thumbnail.setReference(false);

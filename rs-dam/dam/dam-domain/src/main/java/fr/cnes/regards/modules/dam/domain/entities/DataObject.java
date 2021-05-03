@@ -89,7 +89,7 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
                       providerId, label));
     }
 
-    private DataObject(Model model, DataObjectFeature feature) {
+    public DataObject(Model model, DataObjectFeature feature) {
         super(model, feature);
     }
 

@@ -1,5 +1,47 @@
 package fr.cnes.regards.modules.indexer.dao;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.*;
+import com.google.common.reflect.TypeParameter;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
+import de.svenjacobs.loremipsum.LoremIpsum;
+import fr.cnes.regards.framework.geojson.AbstractFeature;
+import fr.cnes.regards.framework.geojson.coordinates.Position;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Point;
+import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
+import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SearchKey;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.model.domain.Model;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.metrics.geobounds.ParsedGeoBounds;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -10,62 +52,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.*;
-import com.google.common.reflect.TypeParameter;
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
-import fr.cnes.regards.framework.geojson.AbstractFeature;
-import fr.cnes.regards.framework.geojson.coordinates.Position;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
-import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
-import fr.cnes.regards.modules.model.domain.Model;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.transport.NoNodeAvailableException;
-import org.elasticsearch.common.geo.GeoPoint;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.IndexNotFoundException;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.metrics.geobounds.ParsedGeoBounds;
-import org.elasticsearch.search.aggregations.metrics.max.ParsedMax;
-import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.svenjacobs.loremipsum.LoremIpsum;
-import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SearchKey;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 
 /**
  * EsRepository test
@@ -419,6 +405,7 @@ public class EsRepositoryTest {
                                           elasticHost,
                                           elasticPort,
                                           0,
+                                          new GsonDeserializeIIndexableStrategy(gson),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
         } catch (NoNodeAvailableException e) {

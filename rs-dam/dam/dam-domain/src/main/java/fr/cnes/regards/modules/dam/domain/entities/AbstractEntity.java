@@ -48,6 +48,7 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import io.vavr.control.Option;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -142,7 +143,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     @CollectionTable(name = "t_entity_tag", joinColumns = @JoinColumn(name = "entity_id"),
             foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
     @Column(name = "value", length = 200)
-    private Set<String> tags = new HashSet<>();
+    protected Set<String> tags = new HashSet<>();
 
     /**
      * Computed indirect access groups.<br/>
@@ -238,7 +239,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     public void setIpId(UniformResourceName ipId) {
         this.ipId = ipId;
         // Propagate to feature
-        feature.setId(ipId);
+        Option.of(feature).peek(f -> f.setId(ipId));
     }
 
     /**
@@ -251,36 +252,35 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setTags(Set<String> tags) {
-        Assert.notEmpty(tags, TAGS_MUST_NOT_BE_NULL_OR_EMPTY);
         this.tags = tags;
         // Propagate to feature
-        feature.setTags(tags);
+        Option.of(feature).peek(f -> f.setTags(tags));
     }
 
     public void addTags(Collection<String> tags) {
         this.tags.addAll(tags);
         // Propagate to feature
-        feature.addTags(tags);
+        Option.of(feature).peek(f -> f.addTags(tags));
     }
 
     public void addTags(String... tags) {
         Assert.notEmpty(tags, TAGS_MUST_NOT_BE_NULL_OR_EMPTY);
         this.tags.addAll(Arrays.asList(tags));
         // Propagate to feature
-        feature.addTags(tags);
+        Option.of(feature).peek(f -> f.addTags(tags));
     }
 
     public void removeTags(Collection<String> tags) {
         Assert.notEmpty(tags, TAGS_MUST_NOT_BE_NULL_OR_EMPTY);
         this.tags.removeAll(tags);
         // Propagate to feature
-        feature.removeTags(tags);
+        Option.of(feature).peek(f -> f.removeTags(tags));
     }
 
     public void clearTags() {
         this.tags.clear();
         // Propagate to feature
-        feature.getTags().clear();
+        Option.of(feature).peek(f -> f.getTags().clear());
     }
 
     /**
@@ -333,7 +333,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      * @param attributes
      */
     public void setProperties(Set<IProperty<?>> attributes) {
-        feature.setProperties(attributes);
+        Option.of(feature).peek(f -> f.setProperties(attributes));
     }
 
     public Model getModel() {
@@ -349,7 +349,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setProviderId(String providerId) {
-        feature.setProviderId(providerId);
+        Option.of(feature).peek(f -> f.setProviderId(providerId));
     }
 
     @Override
@@ -358,7 +358,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setLabel(String label) {
-        feature.setLabel(label);
+        Option.of(feature).peek(f -> f.setLabel(label));
     }
 
     public Set<String> getGroups() {
@@ -376,7 +376,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setNormalizedGeometry(IGeometry geometry) {
-        feature.setNormalizedGeometry(geometry);
+        Option.of(feature).peek(f -> f.setNormalizedGeometry(geometry));
     }
 
     @SuppressWarnings("unchecked")
@@ -385,7 +385,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setGeometry(IGeometry geometry) {
-        feature.setGeometry(geometry);
+        Option.of(feature).peek(f -> f.setGeometry(geometry));
     }
 
     @SuppressWarnings("unchecked")
@@ -445,7 +445,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setLast(boolean last) {
-        feature.setLast(last);
+        Option.of(feature).peek(f -> f.setLast(last));
     }
 
     public UniformResourceName getVirtualId() {
@@ -453,7 +453,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setVirtualId() {
-        feature.setVirtualId();
+        Option.of(feature).peek(f -> f.setVirtualId());
     }
 
     public void removeVirtualId() {
@@ -465,6 +465,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     }
 
     public void setVersion(Integer version) {
-        feature.setVersion(version);
+        Option.of(feature).peek(f -> f.setVersion(version));
     }
+
 }

@@ -81,8 +81,12 @@ import java.util.Set;
  */
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @ActiveProfiles({ "indexer-service", "noschedule" })
-@TestPropertySource(locations = { "classpath:test-indexer.properties" }, properties = { "regards.tenant=entity_indexer",
-        "spring.jpa.properties.hibernate.default_schema=entity_indexer" })
+@TestPropertySource(
+    locations = { "classpath:test-indexer.properties" },
+    properties = {
+        "regards.tenant=entity_indexer",
+        "spring.jpa.properties.hibernate.default_schema=entity_indexer"
+    })
 public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private static String TENANT = "entity_indexer";
@@ -184,6 +188,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     @Before
     public void init() throws ModuleException {
+        clear();
+
         runtimeTenantResolver.forceTenant(TENANT);
         initIndex(TENANT);
         createModels();
@@ -542,14 +548,15 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Page<AbstractEntity> taggedWithVirtualId = searchService
                 .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString()));
 
-//        Assert.assertTrue(taggedWithVirtualId.getContent().contains(taggedWithLatest));
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+        DataObject dataObject = (DataObject) taggedWithVirtualId.getContent().get(0);
+
+        Assert.assertEquals(dataObject.getNwPoint()
                 .getLon(),-122.40305900573729, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getNwPoint()
+        Assert.assertEquals(dataObject.getNwPoint()
                 .getLat(),37.63931540283398, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+        Assert.assertEquals(dataObject.getSePoint()
                 .getLon(),-122.35490798950194, 0.0000001);
-        Assert.assertEquals(((DataObject) taggedWithVirtualId.getContent().get(0)).getSePoint()
+        Assert.assertEquals(dataObject.getSePoint()
                 .getLat(),37.604304248565484, 0.0000001);
     }
 

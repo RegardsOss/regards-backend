@@ -133,7 +133,7 @@ public class OrderPerformanceTest extends AbstractMultitenantServiceTest {
                         Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                         DataFile dataFile = new DataFile();
                         dataFile.setOnline(false);
-                        dataFile.setUri(new URI("file:///test/" + id));
+                        dataFile.setUri(new URI("file:///test/" + id).toString());
                         dataFile.setFilename(id);
                         dataFile.setFilesize(10L);
                         dataFile.setReference(false);

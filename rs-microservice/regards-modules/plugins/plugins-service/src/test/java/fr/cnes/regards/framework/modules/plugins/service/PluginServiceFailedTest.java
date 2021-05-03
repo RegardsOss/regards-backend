@@ -255,7 +255,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         aPluginConfiguration.setIsActive(Boolean.FALSE);
         aPluginConfiguration.setId(AN_ID);
-        aPluginConfiguration.setMetaData(metaData);
+        aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
         Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
