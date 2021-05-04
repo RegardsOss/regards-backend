@@ -90,6 +90,39 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<configuration>
+					<retryPushCount>0</retryPushCount>
+					<skipDockerBuild>false</skipDockerBuild>
+					<forceTags>true</forceTags>
+					<imageName>${docker.registry.host}/rs-amqp-client</imageName>
+					<serverId>REGARDS-DockerHub</serverId>
+					<registryUrl>${docker.registry.host}</registryUrl>
+					<imageTags>
+						<imageTag>${project.version}</imageTag>
+					</imageTags>
+					<dockerDirectory>${project.basedir}/docker</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>*-spring-boot.jar</include>
+						</resource>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.basedir}/src/main/resources</directory>
+							<include>application.properties</include>
+						</resource>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.basedir}/script</directory>
+							<include>*.sh</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
