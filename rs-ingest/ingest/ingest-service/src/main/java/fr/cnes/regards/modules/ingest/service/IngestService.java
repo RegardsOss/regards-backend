@@ -45,6 +45,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -118,13 +119,11 @@ public class IngestService implements IIngestService {
      * @param item request to manage
      */
     private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
-        return registerIngestRequest(item.getRequestId(),
-                                     item.getSip(),
+        return registerIngestRequest(item.getRequestId(), item.getSip(),
                                      metadataMapper.dtoToMetadata(item.getMetadata()),
                                      RequestInfoDto.build(item.getMetadata().getSessionOwner(),
                                                           item.getMetadata().getSession()),
-                                     new HashSet<>(),
-                                     item.getSip().getId());
+                                     new HashSet<>(), item.getSip().getId());
     }
 
     /**
@@ -141,32 +140,29 @@ public class IngestService implements IIngestService {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
-        // Check for each feature if storage locations are valide for feature files
-        checkSipStorageLocations(sip, ingestMetadata, errors);
 
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService.handleRequestDenied(IngestRequest.build(requestId,
-                                                                         ingestMetadata,
-                                                                         InternalRequestState.ERROR,
-                                                                         IngestRequestStep.LOCAL_DENIED,
-                                                                         sip,
-                                                                         errs));
+            ingestRequestService
+                    .handleRequestDenied(IngestRequest.build(requestId, ingestMetadata, InternalRequestState.ERROR,
+                                                             IngestRequestStep.LOCAL_DENIED, sip, errs));
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(joiner::add);
             LOGGER.debug("Ingest request ({}) rejected for following reason(s) : {}",
-                         requestId == null ? "per REST" : requestId,
-                         joiner.toString());
+                         requestId == null ? "per REST" : requestId, joiner.toString());
             // Trace denied request
             info.addDeniedRequest(sipId, joiner.toString());
 
             return null;
         }
 
+        // Check for each feature if storage locations are valide for feature files
+        checkSipStorageLocations(sip, ingestMetadata, errors);
+
         // Save granted ingest request, versioning mode is being handled later
-        IngestRequest request = IngestRequest
-                .build(requestId, ingestMetadata, InternalRequestState.CREATED, IngestRequestStep.LOCAL_SCHEDULED, sip);
+        IngestRequest request = IngestRequest.build(requestId, ingestMetadata, InternalRequestState.CREATED,
+                                                    IngestRequestStep.LOCAL_SCHEDULED, sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
@@ -197,9 +193,9 @@ public class IngestService implements IIngestService {
 
         // Check submission limit / If there are more features than configurated bulk max size, reject request!
         if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
-            throw new EntityInvalidException(String.format(
-                    "Invalid request due to ingest configuration max bulk size set to %s.",
-                    confProperties.getMaxBulkSize()));
+            throw new EntityInvalidException(
+                    String.format("Invalid request due to ingest configuration max bulk size set to %s.",
+                                  confProperties.getMaxBulkSize()));
         }
 
         // Validate and transform ingest metadata
@@ -207,8 +203,7 @@ public class IngestService implements IIngestService {
 
         // Register requests
         Collection<IngestRequest> grantedRequests = new ArrayList<>();
-        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(),
-                                                   ingestMetadata.getSession(),
+        RequestInfoDto info = RequestInfoDto.build(ingestMetadata.getSessionOwner(), ingestMetadata.getSession(),
                                                    "SIP Collection ingestion scheduled");
 
         int count = 1;
@@ -281,23 +276,20 @@ public class IngestService implements IIngestService {
                 OAISDataObject dobj = ci.getDataObject();
                 DataType regardsDataType = dobj.getRegardsDataType();
                 // If file needed to be stored check that the data type is well configured
-                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null) && !handleTypes
-                        .contains(regardsDataType)) {
-                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE",
-                                  String.format(
-                                          "Data type %s to store is not associated to a configured storage location",
-                                          regardsDataType.toString()));
+                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null)
+                        && !handleTypes.contains(regardsDataType)) {
+                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE", String
+                            .format("Data type %s to store is not associated to a configured storage location",
+                                    regardsDataType.toString()));
                 }
                 // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
-                if (regardsDataType == DataType.QUICKLOOK_HD || regardsDataType == DataType.QUICKLOOK_MD
-                        || regardsDataType == DataType.QUICKLOOK_SD || regardsDataType == DataType.THUMBNAIL) {
+                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD)
+                        || (regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
                     for (OAISDataObjectLocation location : dobj.getLocations()) {
-                        if (!Strings.isNullOrEmpty(location.getStorage()) && (height == null || width == null)) {
-                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
-                                          String.format(
-                                                  "Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
-                                                  dobj.getFilename(),
-                                                  sip.getId()));
+                        if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
+                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION", String
+                                    .format("Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
+                                            dobj.getFilename(), sip.getId()));
                         }
                     }
                 }
