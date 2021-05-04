@@ -18,22 +18,40 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.amqp.event.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
+import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
+import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * Common publisher methods
@@ -67,9 +85,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
     /**
-     * Map tracing already published events to avoid redeclaring all AMQP elements
+     * Map tracing already published events to avoid redeclaring all AMQP elements.
+     * Routing key can be different from one tenant to another, so for simplicity we decided to declare so declare thing once per tenant.
      */
-    private final Map<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, ExchangeAndRoutingKey>> exchangesAndRoutingKeysByEventPerTenant = new ConcurrentHashMap<>();
 
     public AbstractPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
@@ -269,9 +288,9 @@ public abstract class AbstractPublisher implements IPublisherContract {
             rabbitVirtualHostAdmin.bind(virtualHost);
 
             // Declare AMQP elements for first publication
-            if (! exchangesAndRoutingKeysByEvent.containsKey(eventType.getName())) {
-                synchronized (eventType.getName().intern()) {
-                    if (! exchangesAndRoutingKeysByEvent.containsKey(eventType.getName())) {
+            ConcurrentMap<String, ExchangeAndRoutingKey> exchangesAndRoutingKeysByEvent = exchangesAndRoutingKeysByEventPerTenant.computeIfAbsent(tenant, key -> new ConcurrentHashMap<>());
+            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.computeIfAbsent(eventType.getName(), key ->
+                {
                         amqpAdmin.declareDeadLetter();
 
                         // Declare exchange
@@ -285,29 +304,25 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                 amqpAdmin.purgeQueue(queue.getName(), false);
                             }
                             amqpAdmin.declareBinding(queue, exchange, workerMode);
-                            exchangesAndRoutingKeysByEvent.put(eventType.getName(),
-                                ExchangeAndRoutingKey.of(
+                            return ExchangeAndRoutingKey.of(
                                     exchange.getName(),
                                     amqpAdmin.getRoutingKey(Optional.of(queue), workerMode)
-                                ));
+                                );
                         } else if (WorkerMode.BROADCAST.equals(workerMode)) {
                             // Routing key useless ... always skipped with a fanout exchange
-                            exchangesAndRoutingKeysByEvent.put(eventType.getName(),
-                                ExchangeAndRoutingKey.of(
+                            return ExchangeAndRoutingKey.of(
                                     exchange.getName(),
                                     amqpAdmin.getRoutingKey(Optional.empty(), workerMode)
-                                ));
+                                );
                         } else {
                             String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
                             LOGGER.error(errorMessage);
                             throw new IllegalArgumentException(errorMessage);
                         }
-                    }
-                }
-            }
+
+                });
 
             // Publish
-            ExchangeAndRoutingKey er = exchangesAndRoutingKeysByEvent.get(eventType.getName());
             publishMessageByTenant(tenant, er.exchange, er.routingKey, event, priority, null);
         } finally {
             rabbitVirtualHostAdmin.unbind();
