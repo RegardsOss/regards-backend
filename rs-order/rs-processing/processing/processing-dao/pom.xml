@@ -57,15 +57,18 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-r2dbc</artifactId>
-            <version>2.3.2.RELEASE</version>
         </dependency>
 
         <!-- Libraries -->
         <dependency>
-            <groupId>io.r2dbc</groupId>
-            <artifactId>r2dbc-postgresql</artifactId>
-            <version>0.8.4.RELEASE</version>
-        </dependency>
+        	<groupId>io.netty</groupId>
+        	<artifactId>netty-all</artifactId>
+        	<version>4.1.51.Final</version>
+    	</dependency>
+       <dependency>
+		  <groupId>io.r2dbc</groupId>
+		  <artifactId>r2dbc-postgresql</artifactId>
+		</dependency>
         <dependency>
             <groupId>name.nkonev.r2dbc-migrate</groupId>
             <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
@@ -74,7 +77,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
