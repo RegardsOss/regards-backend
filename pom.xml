@@ -2101,7 +2101,7 @@
 						    <pluginManagement>keep</pluginManagement>
 						    <dependencyManagement>resolve</dependencyManagement>
 						    <build>keep</build>
-						    <profiles>resolve</profiles>
+						    <profiles>keep</profiles>
 						    <!--
 						    <parent>keep</parent>
 						    <properties>keep</properties>
