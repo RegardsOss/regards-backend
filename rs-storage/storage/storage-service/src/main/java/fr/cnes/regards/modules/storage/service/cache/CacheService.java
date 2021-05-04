@@ -46,7 +46,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -374,8 +373,8 @@ public class CacheService {
     public StorageLocationDTO toStorageLocation() {
         StorageLocationConfiguration conf = new StorageLocationConfiguration(CACHE_NAME, null, maxCacheSizeKo);
         conf.setStorageType(StorageType.CACHE);
-        return StorageLocationDTO.build(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
-                                        false, conf);
+        return new StorageLocationDTO(CACHE_NAME, getTotalCachedFiles(), getCacheSizeUsedKB(), 0L, 0L, false, false,
+                                      false, conf, true);
     }
 
 }

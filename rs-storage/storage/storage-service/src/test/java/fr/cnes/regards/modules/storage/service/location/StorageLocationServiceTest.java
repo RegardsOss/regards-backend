@@ -30,7 +30,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
@@ -128,7 +127,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void retrieveOne() throws EntityNotFoundException {
+    public void retrieveOne() throws ModuleException {
         String storage = "STAF";
         createFileReference(storage, 2048L);
         createFileReference(storage, 2048L);
@@ -143,7 +142,7 @@ public class StorageLocationServiceTest extends AbstractStorageTest {
     }
 
     @Test
-    public void retrieveAll() throws EntityNotFoundException {
+    public void retrieveAll() throws ModuleException {
         String storage = "STAF";
         createFileReference(storage, 2 * 1024L);
         createFileReference(storage, 2 * 1024L);
