@@ -156,6 +156,11 @@
 
             <!-- Libraries -->
             <dependency>
+	        	<groupId>io.netty</groupId>
+	        	<artifactId>netty-all</artifactId>
+	        	<version>4.1.51.Final</version>
+	    	</dependency>
+            <dependency>
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-core</artifactId>
                 <version>${feign.version}</version>

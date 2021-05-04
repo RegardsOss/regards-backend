@@ -63,9 +63,8 @@
         <dependency>
         	<groupId>io.netty</groupId>
         	<artifactId>netty-all</artifactId>
-        	<version>4.1.51.Final</version>
     	</dependency>
-       <dependency>
+        <dependency>
 		  <groupId>io.r2dbc</groupId>
 		  <artifactId>r2dbc-postgresql</artifactId>
 		</dependency>
@@ -96,6 +95,7 @@
         <dependency>
             <groupId>fr.cnes.regards.modules.processing</groupId>
             <artifactId>processing-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
