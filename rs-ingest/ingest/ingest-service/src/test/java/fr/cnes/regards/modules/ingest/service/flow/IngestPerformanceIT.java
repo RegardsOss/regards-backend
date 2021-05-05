@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceTest;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.sessionmanager.client.SessionNotificationPublisher;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 
 /**
@@ -76,9 +75,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
 
     @Autowired
     private ISubscriber subscriber;
-
-    @Autowired
-    private SessionNotificationPublisher sessionNotifier;
 
     @Autowired
     private IOAISDeletionService deletionService;
@@ -147,7 +143,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", (maxloops * maxSessions) + existingItems,
                     System.currentTimeMillis() - start);
 
-        sessionNotifier.debugSession();
 
         //        // 3. Delete products
         //        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
@@ -362,7 +357,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         ingestServiceTest.waitForAIP(1, 30_000, AIPState.GENERATED);
         ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR);
 
-        sessionNotifier.debugSession();
 
         // Remove request
         SearchRequestsParameters filters = SearchRequestsParameters.build().withProviderIds(providerId);
@@ -371,6 +365,5 @@ public class IngestPerformanceIT extends IngestMultitenantServiceTest {
         // Wait
         ingestServiceTest.waitForIngestRequest(0, 30_000, null);
 
-        sessionNotifier.debugSession();
     }
 }

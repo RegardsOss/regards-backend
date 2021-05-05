@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.assertj.core.util.Sets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -49,8 +31,19 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionMonitoringEvent;
-import fr.cnes.regards.modules.sessionmanager.domain.event.SessionNotificationOperator;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import org.assertj.core.util.Sets;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.TestPropertySource;
 
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(
@@ -103,7 +96,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
         Mockito.clearInvocations(publisher);
     }
 
-    @SuppressWarnings("unused")
+    /*@SuppressWarnings("unused")
     private Map<String, Long> getResultUsingNotifs(List<SessionMonitoringEvent> allValues) {
         Map<String, Long> result = new HashMap<>();
         for (SessionMonitoringEvent e : allValues) {
@@ -117,7 +110,7 @@ public class SessionNotifierTest extends AbstractMultitenantServiceTest {
             }
         }
         return result;
-    }
+    }*/
 
     //    @Test
     //    public void testGenerationStart() {

@@ -170,8 +170,6 @@ public class IngestRequestService implements IIngestRequestService {
         for (IngestRequest request : requests) {
             // Attach job
             request.setJobInfo(jobInfo);
-            // Monitoring
-            sessionNotifier.incrementProductCount(request);
         }
         requests.forEach(r -> r.setJobInfo(jobInfo));
     }

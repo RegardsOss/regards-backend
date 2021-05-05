@@ -72,6 +72,10 @@
 			<groupId>fr.cnes.regards.modules.session-manager</groupId>
 			<artifactId>session-manager-rest</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
+			<artifactId>session-management-rest</artifactId>
+		</dependency>
 	</dependencies>
 
 	<profiles>
