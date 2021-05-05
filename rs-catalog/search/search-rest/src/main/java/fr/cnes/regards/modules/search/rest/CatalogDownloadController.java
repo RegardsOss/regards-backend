@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.service.ICatalogSearchService;
@@ -50,6 +51,8 @@ import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 
 /**
  * REST Controller handling operations on downloads.
+ *
+ * <b>Note : </b> See {@link CustomCacheControlHeadersWriter} to know more about cache control handling for download resources.
  *
  * @author Kevin Marchois
  */
@@ -106,6 +109,16 @@ public class CatalogDownloadController {
             try {
                 response = storageRestClient.downloadFile(checksum);
                 InputStreamResource isr = null;
+                HttpHeaders headers = new HttpHeaders();
+                // Add all headers from storage microservice response except for cache control ones.
+                // This download endpoints must not activate cache control. Cache control is handled by CustomCacheControlHeaderWriter
+                for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
+                    if ((!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.CACHE_CONTROL))
+                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.EXPIRES))
+                            && (!h.getKey().equalsIgnoreCase(CustomCacheControlHeadersWriter.PRAGMA))) {
+                        h.getValue().forEach(v -> headers.add(h.getKey(), v));
+                    }
+                }
                 if (response.status() == HttpStatus.OK.value()) {
                     isr = new InputStreamResource(new ResponseStreamProxy(response));
                 } else {
@@ -115,11 +128,7 @@ public class CatalogDownloadController {
                         isr = new InputStreamResource(new ResponseStreamProxy(response));
                     }
                 }
-                HttpHeaders headers = new HttpHeaders();
-                for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
-                    h.getValue().forEach(v -> headers.add(h.getKey(), v));
-                }
-                return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(response.status()));
+                return ResponseEntity.status(response.status()).headers(headers).body(isr);
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
                                            e.getMessage()),

@@ -41,5 +41,7 @@ public class WebNoSecurityAutoConfiguration extends WebSecurityConfigurerAdapter
         // Disable CSRF
         // Disable authentication for all requests
         http.csrf().disable().authorizeRequests().anyRequest().permitAll();
+        // Disable web security headers. Let upstream response set needed headers. Useful to let cache control to the upstream microservice
+        http.headers().disable();
     }
 }

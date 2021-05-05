@@ -24,12 +24,13 @@
     <groupId>fr.cnes.regards.framework.modules.session</groupId>
     <artifactId>session-commons</artifactId>
     <description>Commons module</description>
+    <version>${framework.modules.session.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards.framework.modules</groupId>
         <artifactId>session</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${framework.modules.session.version}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -59,12 +60,12 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
                 <artifactId>session-commons-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
                 <artifactId>session-commons-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>search</artifactId>
-	<version>1.4.1-SNAPSHOT</version>
+	<version>${modules.search.version}</version>
 	<packaging>pom</packaging>
 
 	<description>Module providing search features on the entities catalog</description>
@@ -50,11 +50,10 @@
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath />
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
-	
 
 	<modules>
 		<module>search-client</module>
@@ -70,27 +69,27 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.search.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.search.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.search.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.search.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.search</groupId>
 				<artifactId>search-client</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.search.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

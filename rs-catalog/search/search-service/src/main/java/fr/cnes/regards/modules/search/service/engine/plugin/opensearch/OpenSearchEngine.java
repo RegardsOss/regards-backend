@@ -18,42 +18,15 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.DateProperty;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
-import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
-import fr.cnes.regards.modules.search.domain.PropertyBound;
-import fr.cnes.regards.modules.search.domain.plugin.*;
-import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.service.IBusinessSearchService;
-import fr.cnes.regards.modules.search.service.ICatalogSearchService;
-import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
-import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.common.Strings;
@@ -75,10 +48,47 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.indexer.dao.FacetPage;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.DateProperty;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
+import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
+import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
+import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
+import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchEngine;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.description.DescriptionBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.ExtensionException;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception.UnsupportedMediaTypesException;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.SearchParameter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.geo.GeoTimeExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.media.MediaExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.regards.RegardsExtension;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.IResponseBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.AtomResponseBuilder;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
 
 /**
  * OpenSearch engine plugin
@@ -173,7 +183,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
             IEntityLinkBuilder linkBuilder) throws ModuleException {
         FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
-                                                                  context.getPageable());
+                                                                  getPagination(context));
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
@@ -183,9 +193,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Retrieve entity
         EntityFeature entity = searchService.get(context.getUrn().get());
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
-        context.setPageable(PageRequest.of(0,1));
+        context.setPageable(PageRequest.of(0, 1));
         FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
-                context.getPageable(), 1);
+                getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
@@ -386,6 +396,65 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         return ResponseEntity.ok(summary);
     }
 
+    /**
+     * Try to read pagination parameters from :<ul>
+     * <li>1. From opensearch specific parameters 'count' & 'startPage'. Startpage is from 1 to X where X is last page.</li>
+     * <li>2. From spring standard parameters 'size' & 'page'
+     * </ul>
+     * @param context
+     * @return
+     */
+    private Pageable getPagination(SearchContext context) {
+        List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
+        List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
+
+        int size = context.getPageable().getPageSize();
+        if ((count != null) && (count.size() == 1)) {
+            try {
+                size = Integer.valueOf(count.get(0));
+                if (size > SEARCH_PAGE_SIZE_LIMIT) {
+                    size = SEARCH_PAGE_SIZE_LIMIT;
+                }
+            } catch (NumberFormatException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
+        int start = context.getPageable().getPageNumber();
+        if ((startPage != null) && (startPage.size() == 1)) {
+            start = Integer.valueOf(startPage.get(0));
+        }
+
+        if ((startPage != null) && (startPage.size() == 1)) {
+            try {
+                start = Integer.valueOf(startPage.get(0));
+                // Handle page starts at 1 but 0 for spring Pageable
+                if (start > 0) {
+                    start = start - 1;
+                }
+            } catch (NumberFormatException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
+        // Build sort parameters from parameter configuration
+        List<Order> orders = Lists.newArrayList();
+        context.getPageable().getSort().get().forEach(order -> {
+            try {
+                if (order.isAscending()) {
+                    orders.add(Order.asc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
+                } else {
+                    orders.add(Order.desc(getParameterAttribute(order.getProperty()).getLeft().getFullJsonPath()));
+                }
+            } catch (OpenSearchUnknownParameter e) {
+                // Nothing to do
+                LOGGER.info("Sort parameter invalid {}", order.getProperty(), e);
+            }
+        });
+
+        return PageRequest.of(start, size, Sort.by(orders));
+    }
+
     @Override
     public ResponseEntity<List<EntityModel<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
             throws ModuleException {
@@ -401,24 +470,23 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         String datasetUrn = element.getDatasetUrn();
         if (datasetUrn != null) {
             result.add(resourceService.buildLink(searchEngineControllerClass, "searchSingleDatasetExtra",
-                    LinkRelation.of(EXTRA_DESCRIPTION),
-                    MethodParamFactory.build(String.class,
-                            element.getConfiguration().getPluginId()),
-                    MethodParamFactory.build(String.class, datasetUrn),
-                    MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
-                    MethodParamFactory.build(HttpHeaders.class),
-                    MethodParamFactory.build(MultiValueMap.class),
-                    MethodParamFactory.build(Pageable.class)));
-        }
-        else {
+                                                 LinkRelation.of(EXTRA_DESCRIPTION),
+                                                 MethodParamFactory.build(String.class,
+                                                                          element.getConfiguration().getPluginId()),
+                                                 MethodParamFactory.build(String.class, datasetUrn),
+                                                 MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
+                                                 MethodParamFactory.build(HttpHeaders.class),
+                                                 MethodParamFactory.build(MultiValueMap.class),
+                                                 MethodParamFactory.build(Pageable.class)));
+        } else {
             result.add(resourceService.buildLink(searchEngineControllerClass, "searchAllDataobjectsExtra",
-                    LinkRelation.of(EXTRA_DESCRIPTION),
-                    MethodParamFactory.build(String.class,
-                            element.getConfiguration().getPluginId()),
-                    MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
-                    MethodParamFactory.build(HttpHeaders.class),
-                    MethodParamFactory.build(MultiValueMap.class),
-                    MethodParamFactory.build(Pageable.class)));
+                                                 LinkRelation.of(EXTRA_DESCRIPTION),
+                                                 MethodParamFactory.build(String.class,
+                                                                          element.getConfiguration().getPluginId()),
+                                                 MethodParamFactory.build(String.class, EXTRA_DESCRIPTION),
+                                                 MethodParamFactory.build(HttpHeaders.class),
+                                                 MethodParamFactory.build(MultiValueMap.class),
+                                                 MethodParamFactory.build(Pageable.class)));
         }
         return result;
     }

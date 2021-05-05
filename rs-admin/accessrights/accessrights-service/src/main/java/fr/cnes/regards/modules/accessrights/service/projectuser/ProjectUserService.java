@@ -43,6 +43,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -56,6 +57,7 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -67,6 +69,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 
 /**
  * {@link IProjectUserService} implementation
@@ -102,6 +105,10 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final IAuthenticationResolver authResolver;
 
+    private final IAccessSettingsService accessSettingsService;
+
+    private final IUserClient userAccessGroupsClient;
+
     /**
      * Gson serializer/deserializer
      */
@@ -118,15 +125,18 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final String instanceAdminUserEmail;
 
-    public ProjectUserService(IAuthenticationResolver authResolver, IProjectUserRepository pProjectUserRepository,
-            final IRoleService pRoleService, IAccountsClient accountsClient,
-            @Value("${regards.accounts.root.user.login}") String pInstanceAdminUserEmail, Gson gson) {
+    public ProjectUserService(IAuthenticationResolver authResolver, IProjectUserRepository projectUserRepository,
+            final IRoleService roleService, IAccountsClient accountsClient, IUserClient userAccessGroupsClient,
+            @Value("${regards.accounts.root.user.login}") String instanceAdminUserEmail,
+            IAccessSettingsService accessSettingsService, Gson gson) {
         super();
         this.authResolver = authResolver;
-        projectUserRepository = pProjectUserRepository;
-        roleService = pRoleService;
-        instanceAdminUserEmail = pInstanceAdminUserEmail;
+        this.projectUserRepository = projectUserRepository;
+        this.roleService = roleService;
+        this.instanceAdminUserEmail = instanceAdminUserEmail;
         this.accountsClient = accountsClient;
+        this.userAccessGroupsClient = userAccessGroupsClient;
+        this.accessSettingsService = accessSettingsService;
         this.gson = gson;
     }
 
@@ -150,16 +160,23 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveOneByEmail(String userEmail) throws EntityNotFoundException {
-        ProjectUser user;
+        return retrieveOneOptionalByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
+    }
+
+    @Override
+    public Optional<ProjectUser> retrieveOneOptionalByEmail(String userEmail) {
+        Optional<ProjectUser> user;
         if (instanceAdminUserEmail.equals(userEmail)) {
-            user = new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
-                    new ArrayList<>());
+            user = Optional.of(new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null),
+                    new ArrayList<>(), new ArrayList<>()));
         } else {
-            user = projectUserRepository.findOneByEmail(userEmail)
-                    .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
+            user = projectUserRepository.findOneByEmail(userEmail);
             // Filter out hidden meta data
-            try (Stream<MetaData> stream = user.getMetadata().stream()) {
-                stream.filter(keepVisibleMetaData);
+            if (user.isPresent()) {
+                try (Stream<MetaData> stream = user.get().getMetadata().stream()) {
+                    user.get().setMetadata(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
+                }
             }
         }
         return user;
@@ -317,13 +334,14 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         if (!existUser(accessRequestDto.getEmail())) {
+            AccessSettings settings = accessSettingsService.retrieve();
             // Get role for projectUser to create
             Role role;
             try {
                 if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
                     role = roleService.retrieveRole(accessRequestDto.getRoleName());
                 } else {
-                    role = roleService.getDefaultRole();
+                    role = settings.getDefaultRole();
                 }
             } catch (EntityNotFoundException e) {
                 role = roleService.getDefaultRole();
@@ -380,6 +398,27 @@ public class ProjectUserService implements IProjectUserService {
     public void deleteByEmail(String Email) throws EntityNotFoundException {
         ProjectUser projectUser = retrieveOneByEmail(Email);
         projectUserRepository.delete(projectUser);
+    }
+
+    @Override
+    public void configureAccessGroups(ProjectUser projectUser) {
+        FeignSecurityManager.asSystem();
+        try {
+            AccessSettings settings = accessSettingsService.retrieve();
+            if ((settings != null) && (settings.getDefaultGroups() != null) && !settings.getDefaultGroups().isEmpty()) {
+                settings.getDefaultGroups().forEach(group -> {
+                    try {
+                        userAccessGroupsClient.associateAccessGroupToUser(projectUser.getEmail(), group);
+                    } catch (HttpServerErrorException | HttpClientErrorException e) {
+                        LOG.error(String.format("Error associating group %s to user %s.", group,
+                                                projectUser.getEmail()),
+                                  e);
+                    }
+                });
+            }
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

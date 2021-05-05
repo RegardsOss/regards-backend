@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
@@ -86,7 +87,7 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
     private IAccessRightService accessRightService;
 
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "send the whole list of accessGroups")
+    @ResourceAccess(description = "send the whole list of accessGroups", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
             @RequestParam(name = "public", required = false) Boolean isPublic,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -110,7 +111,7 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, path = PATH_ACCESS_GROUPS_NAME)
-    @ResourceAccess(description = "send the access group of name requested")
+    @ResourceAccess(description = "send the access group of name requested", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<AccessGroup>> retrieveAccessGroup(@Valid @PathVariable("name") String groupName)
             throws EntityNotFoundException {
         AccessGroup ag = accessGroupService.retrieveAccessGroup(groupName);

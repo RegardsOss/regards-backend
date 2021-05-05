@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>processing</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.processing.version}</version>
 	</parent>
 
 	<dependencies>
@@ -55,6 +55,10 @@
 		</dependency>
 
 		<!-- Framework -->
+		<dependency>
+        	<groupId>io.netty</groupId>
+        	<artifactId>netty-all</artifactId>
+    	</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>

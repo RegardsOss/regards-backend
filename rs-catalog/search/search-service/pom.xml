@@ -50,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>search</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.search.version}</version>
 	</parent>
 
 	<dependencies>
@@ -81,11 +81,7 @@
 			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 			<artifactId>plugins-service</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
-			<artifactId>locks-service</artifactId>
-		</dependency>
-		
+
 		<!-- Microservice clients -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
@@ -94,6 +90,10 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-accessrights-client</artifactId>
 		</dependency>
 		<!-- COTS -->
 		<dependency>

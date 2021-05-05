@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -49,6 +51,8 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
         version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class StoragePlugin implements IStorageService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StoragePlugin.class);
 
     private final static String URI_TEMPLATE = "%s?scope=%s";
 
@@ -82,7 +86,8 @@ public class StoragePlugin implements IStorageService {
                     .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
                     .collect(Collectors.toSet());
             this.entityRequestRepo.saveAll(infos);
-        } else {
+        } else if (!files.isEmpty()) {
+            LOGGER.info("[FILES CREATE] Service not configured to store files with storage microservice.");
             String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";
             String[] users = new String[] { authResolver.getUser() };
@@ -93,8 +98,7 @@ public class StoragePlugin implements IStorageService {
 
     @Override
     public <T extends AbstractEntity<?>> T update(T toUpdate, T oldEntity) {
-        if (storage != null) {
-
+        if ((storage != null) && !storage.isEmpty()) {
             // manage added files in toUpdate and not in oldEntity
             Collection<FileStorageRequestDTO> filesToAdd = toUpdate.getFiles().values().stream()
                     .filter(file -> !oldEntity.getFiles().values().stream()
@@ -115,19 +119,23 @@ public class StoragePlugin implements IStorageService {
             if (!filesToDelete.isEmpty()) {
                 this.storageClient.delete(filesToDelete);
             }
+        } else {
+            LOGGER.info("[FILES UPDATE] Service not configured to store files with storage microservice.");
         }
-
         return toUpdate;
     }
 
     @Override
     public void delete(AbstractEntity<?> toDelete) {
-        if (storage != null) {
-
+        if ((storage != null) && !storage.isEmpty()) {
             Collection<FileDeletionRequestDTO> files = toDelete.getFiles().values().stream()
                     .map(entry -> initDeletionRequest(entry, toDelete.getIpId().toString()))
                     .collect(Collectors.toList());
-            this.storageClient.delete(files);
+            if (!files.isEmpty()) {
+                this.storageClient.delete(files);
+            }
+        } else {
+            LOGGER.info("[FILES DELETION] Service not configured to store files with storage microservice.");
         }
     }
 

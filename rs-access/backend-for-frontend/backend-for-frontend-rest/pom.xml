@@ -24,7 +24,6 @@
 	<artifactId>backend-for-frontend-rest</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Backend For Frontend REST</name>
 	<description>Controller layer of the Backend For Frontend module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -50,7 +49,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>backend-for-frontend</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+        <version>${modules.backend-for-frontend.version}</version>
 	</parent>
 
 	<dependencies>

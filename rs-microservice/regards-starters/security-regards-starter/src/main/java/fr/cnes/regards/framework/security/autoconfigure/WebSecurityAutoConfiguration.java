@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -62,6 +64,8 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSecurityAutoConfiguration.class);
+
     /**
      * JWT service
      */
@@ -92,13 +96,19 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
 
-        http.headers(headers->headers.withObjectPostProcessor(new ObjectPostProcessor<HeaderWriterFilter>() {
+        http.headers(headers -> headers.withObjectPostProcessor(new ObjectPostProcessor<HeaderWriterFilter>() {
+
             @Override
             public HeaderWriterFilter postProcess(HeaderWriterFilter headerWriterFilter) {
                 headerWriterFilter.setShouldWriteHeadersEagerly(true);
                 return headerWriterFilter;
             }
         }));
+        // Disable spring security cache control to use a custom one forcing use of cache for specified endpoints.
+        // This custom writter will be remove once spring-boo & jetty version is upgraded to fix issue https://github.com/spring-projects/spring-security/issues/9175
+        // https://github.com/spring-projects/spring-security/issues/9175
+        http.headers().cacheControl().disable();
+        http.headers().addHeaderWriter(new CustomCacheControlHeadersWriter());
         // lets disable frame options by default and then add our writer that will set DENY by default and let any other
         // value if the devs choose one
         http.headers().frameOptions().disable();
@@ -114,7 +124,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
 
         // Add JWT Authentication filter
         http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
-            PublicAuthenticationFilter.class);
+                            PublicAuthenticationFilter.class);
         http.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
         http.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 

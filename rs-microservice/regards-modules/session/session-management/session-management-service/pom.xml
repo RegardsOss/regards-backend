@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards.framework.modules.session</groupId>
         <artifactId>session-management</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${framework.modules.session.version}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -60,10 +60,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-management</groupId>
             <artifactId>session-management-dao</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.locks</groupId>
-            <artifactId>locks-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>

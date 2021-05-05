@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+
+SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Allow piping through tee to forward exit statuses
+set -o pipefail
+
+mvnPlArg=
+
+source ${SCRIPTS}/utils
+source ${SCRIPTS}/variables
+
+function checkArtifactsRebuild {
+    echo -e "\nChecking artifacts for rebuild..."
+
+    HASHES_SUFFIX=$1
+
+    # Try downloading an existing hashes for this job
+    set -x
+    rm -f ${DATADIR}/hashes-nexus.txt
+    touch ${DATADIR}/hashes-nexus.txt
+    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} ${NEXUS_RAW}/tests/regards/hashes-${HASHES_SUFFIX}.txt -o ${DATADIR}/hashes-nexus.txt --noproxy '*' -k --fail
+    set +x
+
+    echo "Module hashes from nexus"
+    cat ${DATADIR}/hashes-nexus.txt
+
+    while read moduleWithHash; do
+        local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
+
+        found=$(grep -c "${moduleWithHash}" <"${DATADIR}/hashes-nexus.txt")
+
+        if [[ "${found}" -eq 0 ]]; then
+            if [[ ! -z "$mvnPlArg" ]]; then
+                mvnPlArg="${mvnPlArg},"
+            fi
+            mvnPlArg="${mvnPlArg}:${module}"
+            artifactsThatNeedARebuild+=("$module")
+        else
+            artifactsUnchanged+=("$module")
+        fi
+    done <${DATADIR}/hashes.txt
+
+    if [ ${#artifactsThatNeedARebuild[@]} -eq 0 ]; then
+        echo "All modules have been found in Nexus: we don't need to rebuild any !"
+    else
+        echo "Following modules needs to be rebuilt (changed since last build):"
+        for i in "${!artifactsThatNeedARebuild[@]}"; do
+            echo "- ${artifactsThatNeedARebuild[$i]}"
+        done
+    fi
+}
+
+function updateArtifacts {
+    HASHES_SUFFIX=$1
+
+    # Compile new hashes of modules that were successfully rebuilt
+    for module in $(cat ${DATADIR}/mvn-build.log | sed -n -e '/Reactor Summary/,$p' | grep "SUCCESS" | grep -v "BUILD SUCCESS" | awk '{ print $6 }'); do
+        grep "^$module:" ${DATADIR}/hashes.txt;
+    done > ${DATADIR}/hashes-success.txt
+
+    echo "Modules built successfully"
+    cat ${DATADIR}/hashes-success.txt
+
+    declare -a hashes
+
+    # For each module (with its new hash)
+    while read moduleWithHash; do
+        local module=$(echo ${moduleWithHash} | awk -F: '{print $1}')
+        echo "Checking hash to update for module $module"
+
+        # Check if the module was successfully rebuilt
+        newModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-success.txt")
+        previousModuleWithHash=$(grep "^${module}:" <"${DATADIR}/hashes-nexus.txt")
+
+        if [[ ! -z "${newModuleWithHash}" ]]; then
+            # If so, take its new hash
+            echo "Found in successfully built modules, taking new hash ${newModuleWithHash}"
+            hashes+=("${newModuleWithHash}")
+        else
+            if [[ ! -z "${previousModuleWithHash}" ]]; then
+                # Otherwise, keep its old one. During next build, the new hash will be re-calculated and the module will be rebuilt
+                echo "Not found in success build, but found in previous hashes file from nexus, taking previous hash ${previousModuleWithHash}"
+                hashes+=("$previousModuleWithHash")
+            else
+                echo "Fuond nowhere, ignore hash"
+            fi
+            # If module was not successful and was not referenced on nexus before we aren't going to reference it now so do nothing
+        fi
+    done <${DATADIR}/hashes.txt
+
+    rm ${DATADIR}/hashes.txt
+    # Update the hashes
+    for i in "${!hashes[@]}"; do
+        moduleWithHash=${hashes[$i]}
+        echo "${hashes[$i]}" \
+        >> "${DATADIR}/hashes.txt"
+    done
+
+    echo "Module hashes to nexus"
+    cat ${DATADIR}/hashes.txt
+
+    set -x
+    curl -u ${NEXUS_DEPLOY_USER}:${NEXUS_DEPLOY_PASSWORD} --upload-file ${DATADIR}/hashes.txt ${NEXUS_RAW}/tests/regards/hashes-${HASHES_SUFFIX}.txt --noproxy '*' -k --fail
+    set +x
+}
+
+function install {
+    checkArtifactsRebuild ${REGARDS_VERSION}
+
+    echo -e "\nRunning Maven verify..."
+
+    if [[ -z "${mvnPlArg}" ]]; then
+        echo "All modules have already been built in this code version, no need to rebuild anything !"
+    else
+        set -x
+        mvn -U -B -P delivery,CI,oracle clean install \
+            -Dregards.version="${REGARDS_VERSION}" \
+            -Dmaven.multiModuleProjectDirectory=${SERVICES} \
+            -Dfile.encoding=UTF-8 \
+            -DcmdLineTarget=target \
+            -Dmaven-deploy.skip=true \
+            -Djacoco.skip=true \
+            -DskipDocker=true \
+            -Dasciidoctor.skip=true \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+            -Dmaven.wagon.http.ssl.insecure=true \
+            -Dmaven.wagon.http.ssl.allowall=true \
+            -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
+            -pl ${mvnPlArg} \
+            2>&1 | tee ${DATADIR}/mvn-build.log
+        set +x
+
+        updateArtifacts ${REGARDS_VERSION}
+
+        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-build.log' artifact for more information."
+            exit 1
+        fi
+    fi
+}
+
+function deploy {
+    checkArtifactsRebuild ${BRANCH_NAME}
+
+    echo -e "\nRunning Maven deploy..."
+
+    if [[ -z "${mvnPlArg}" ]]; then
+        echo "All modules have already been built in this code version, no need to rebuild anything !"
+    else
+        set -x
+        mvn -B -P delivery,docker,CI,oracle clean deploy docker:build \
+            -Dmaven.multiModuleProjectDirectory=${SERVICES} \
+            -Dfile.encoding=UTF-8 \
+            -DcmdLineTarget=target \
+            -Dmaven-deploy.skip=false \
+            -Djacoco.skip=true \
+            -DskipDocker=false \
+            -DpushImageTag=true \
+            -Dasciidoctor.skip=true \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+            -Dmaven.wagon.http.ssl.insecure=true \
+            -Dmaven.wagon.http.ssl.allowall=true \
+            -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
+            -pl ${mvnPlArg} \
+            2>&1 | tee ${DATADIR}/mvn-build.log
+        set +x
+
+        updateArtifacts ${BRANCH_NAME}
+
+        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-build.log' artifact for more information."
+            exit 1
+        fi
+    fi
+}
+
+function fast {
+    checkArtifactsRebuild ${REGARDS_VERSION}
+
+    echo -e "\nRunning Maven build and Docker tag..."
+
+    if [[ -z "${mvnPlArg}" ]]; then
+        echo "All modules have already been built in this code version, no need to rebuild anything !"
+    else
+        set -x
+        mvn -U -B -P docker,install clean install docker:build \
+            -Dregards.version="${REGARDS_VERSION}" \
+            -Dmaven.repo.local=/fastRepository \
+            -Dmaven.multiModuleProjectDirectory=${SERVICES} \
+            -Dfile.encoding=UTF-8 \
+            -DcmdLineTarget=target-docker \
+            -Dmaven.test.skip=true \
+            -DskipTests=true \
+            -Dmaven-deploy.skip=true \
+            -Djacoco.skip=true \
+            -DskipDocker=false \
+            -DpushImageTag=true \
+            -DdockerImageTags="${REGARDS_VERSION}" \
+            -Dasciidoctor.skip=true \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+            -Dmaven.wagon.http.ssl.insecure=true \
+            -Dmaven.wagon.http.ssl.allowall=true \
+            -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
+            -pl ${mvnPlArg} \
+            2>&1 | tee ${DATADIR}/mvn-build.log
+        set +x
+
+        updateArtifacts ${REGARDS_VERSION}
+
+        if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
+            echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
+        else
+            echo "Error while executing Maven build, please refer to the full 'mvn-build.log' artifact for more information."
+            exit 1
+        fi
+    fi
+}
+
+function nightly {
+    echo -e "\nRunning nightly Maven build and Docker tag..."
+
+    set -x
+    mvn -B -P delivery,docker,CI,oracle clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent \
+        deploy docker:build sonar:sonar \
+        -Dsonar.jacoco.reportPath="${SERVICES}/jacoco-ut.exec" \
+        -Dsonar.jacoco.itReportPath="${SERVICES}/jacoco-it.exec" \
+        -Dsonar.branch.name=${BRANCH_NAME} \
+        -Dmaven.multiModuleProjectDirectory=${SERVICES} \
+        -Dfile.encoding=UTF-8 \
+        -DcmdLineTarget=target \
+        -Dmaven-deploy.skip=false \
+        -Djacoco.skip=false \
+        -DskipDocker=false \
+        -DpushImageTag=true \
+        -Dasciidoctor.skip=true \
+        -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+        -Dmaven.wagon.http.ssl.insecure=true \
+        -Dmaven.wagon.http.ssl.allowall=true \
+        -Dmaven.wagon.http.ssl.ignore.validity.dates=true \
+        2>&1 | tee ${DATADIR}/mvn-build.log
+    set +x
+
+    if grep -q "BUILD SUCCESS" "${DATADIR}/mvn-build.log"; then
+        echo -e "BUILD SUCCESS ! \nPlease refer to the full 'mvn-build.log' artifact for more information"
+    else
+        echo "Error while executing Maven build, please refer to the full 'mvn-build.log' artifact for more information."
+        exit 1
+    fi
+}

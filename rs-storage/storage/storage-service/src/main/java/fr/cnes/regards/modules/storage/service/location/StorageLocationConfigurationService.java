@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,8 +34,10 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationConfigurationRepostory;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
+import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 
 /**
@@ -293,5 +294,18 @@ public class StorageLocationConfigurationService {
             return null;
         }
         return lowestPrioritizedStorage.getPriority();
+    }
+
+    public boolean allowPhysicalDeletion(StorageLocationConfiguration conf) throws ModuleException {
+        if(conf != null && conf.getPluginConfiguration() != null) {
+            try {
+                IStorageLocation location = pluginService.getPlugin(conf.getPluginConfiguration().getBusinessId());
+                return location.allowPhysicalDeletion();
+            } catch (NotAvailablePluginConfigurationException e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

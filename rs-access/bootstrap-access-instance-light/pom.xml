@@ -23,7 +23,8 @@
 
 	<groupId>fr.cnes.regards.microservices.access</groupId>
 	<artifactId>bootstrap-access-instance-light</artifactId>
-	<name>Bootstrap Access Instance without toponyms server</name>
+    <version>${access.bootstrap.version}</version>
+
 	<description>Boots the Access microservice with cross-tenant features without the toponyms server</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -45,14 +46,13 @@
 			<organizationUrl>http://www.c-s.fr</organizationUrl>
 		</developer>
 	</developers>
-	
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
-		<version>1.5.0</version>
-		<relativePath></relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>${regards.boot.parent.version}</version>
+        <relativePath>../../rs-bom/regards-boot-parent</relativePath>
+    </parent>
 
 	<properties>
 		<microservice.heap.size>512m</microservice.heap.size>

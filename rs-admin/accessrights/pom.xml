@@ -23,8 +23,9 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>accessrights</artifactId>
+	<version>${modules.accessrights.version}</version>
 	<packaging>pom</packaging>
-	<name>Accessrights</name>
+
 	<description>Module for managing access right features</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -46,11 +47,12 @@
 			<organizationUrl>http://www.c-s.fr</organizationUrl>
 		</developer>
 	</developers>
+
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
-		<relativePath></relativePath>
+		<artifactId>regards-oss-backend</artifactId>
+		<version>${regards.version}</version>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<modules>
@@ -67,27 +69,27 @@
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-dao</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.accessrights.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-domain</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.accessrights.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-rest</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.accessrights.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-service</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.accessrights.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.modules.accessrights</groupId>
 				<artifactId>accessrights-client</artifactId>
-				<version>${project.version}</version>
+				<version>${modules.accessrights.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

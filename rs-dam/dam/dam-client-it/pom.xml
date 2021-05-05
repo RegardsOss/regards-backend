@@ -49,13 +49,17 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>dam</artifactId>
-		<version>1.4.1-SNAPSHOT</version>
+		<version>${modules.dam.version}</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-accessrights-client</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

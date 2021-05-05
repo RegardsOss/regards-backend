@@ -23,13 +23,14 @@
 
     <groupId>fr.cnes.regards.framework.modules.session</groupId>
     <artifactId>session-management</artifactId>
-    <description>Session management module</description>
+    <description>Session management module for the dashboard</description>
+    <version>${framework.modules.session.version}</version>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards.framework.modules</groupId>
         <artifactId>session</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${framework.modules.session.version}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -59,27 +60,27 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-management-dao</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-management-domain</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-management-rest</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-management-service</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.session</groupId>
                 <artifactId>session-management-client</artifactId>
-                <version>${project.version}</version>
+                <version>${framework.modules.session.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

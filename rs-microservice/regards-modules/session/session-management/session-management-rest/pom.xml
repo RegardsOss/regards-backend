@@ -28,7 +28,7 @@
     <parent>
         <groupId>fr.cnes.regards.framework.modules.session</groupId>
         <artifactId>session-management</artifactId>
-        <version>1.4.1-SNAPSHOT</version>
+        <version>${framework.modules.session.version}</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
