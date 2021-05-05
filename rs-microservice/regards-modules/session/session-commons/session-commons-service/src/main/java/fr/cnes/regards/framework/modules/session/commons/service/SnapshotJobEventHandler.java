@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+package fr.cnes.regards.framework.modules.session.commons.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationListener;
  *
  * @author Iliana Ghazali
  **/
-public class AgentSnapshotJobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent>  {
+public class SnapshotJobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent>  {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -23,7 +23,7 @@ public class AgentSnapshotJobEventHandler implements ApplicationListener<Applica
     private ISubscriber subscriber;
 
     @Autowired
-    private AgentSnapshotJobEventService agentSnapshotJobEventService;
+    private SnapshotJobEventService snapshotJobEventService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -42,7 +42,7 @@ public class AgentSnapshotJobEventHandler implements ApplicationListener<Applica
             LOGGER.info("[AGENT SNAPSHOT JOB EVENT HANDLER] Handling {} JobEvents...", messages.size());
             long start = System.currentTimeMillis();
             // sort job
-            agentSnapshotJobEventService.updateSnapshotProcess(messages);
+            snapshotJobEventService.updateSnapshotProcess(messages);
             LOGGER.info("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
                         System.currentTimeMillis() - start);
         } finally {

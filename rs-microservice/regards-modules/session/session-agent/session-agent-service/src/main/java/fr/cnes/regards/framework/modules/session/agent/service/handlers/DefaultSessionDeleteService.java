@@ -13,9 +13,8 @@ public class DefaultSessionDeleteService implements ISessionDeleteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSessionDeleteService.class);
 
     @Override
-    public boolean deleteSession(String source, String session) {
+    public void deleteSession(String source, String session) {
         LOGGER.warn("Bean missing to delete session, the session {} from source {} will not be deleted", session,
                     source);
-        return false;
     }
 }

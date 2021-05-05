@@ -13,5 +13,5 @@ public interface ISourceDeleteService {
      * @param source source to be deleted
      * @return if source is successfully deleted
      */
-    boolean deleteSource(String source);
+    void deleteSource(String source);
 }

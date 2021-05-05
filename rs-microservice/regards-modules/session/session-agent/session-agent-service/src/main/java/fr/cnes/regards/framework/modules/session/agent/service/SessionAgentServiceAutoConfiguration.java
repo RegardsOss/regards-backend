@@ -6,8 +6,6 @@ import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.AgentSnapshotJobEventHandler;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.AgentSnapshotJobEventService;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.DefaultSessionDeleteService;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.DefaultSourceDeleteService;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.ISessionDeleteService;
@@ -68,11 +66,6 @@ public class SessionAgentServiceAutoConfiguration {
      */
 
     @Bean
-    public AgentSnapshotJobEventHandler agentSnapshotJobEventHandler() {
-        return new AgentSnapshotJobEventHandler();
-    }
-
-    @Bean
     public SessionAgentHandler sessionAgentHandler() {
         return new SessionAgentHandler();
     }
@@ -97,11 +90,6 @@ public class SessionAgentServiceAutoConfiguration {
     @ConditionalOnMissingBean(ISourceDeleteService.class)
     public ISourceDeleteService sourceDeleteService() {
         return new DefaultSourceDeleteService();
-    }
-
-    @Bean
-    public AgentSnapshotJobEventService agentSnapshotJobEventService(){
-        return new AgentSnapshotJobEventService();
     }
 
     @Bean

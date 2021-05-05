@@ -92,7 +92,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
             + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.delay:"
                     + DEFAULT_SCHEDULING_DELAY + "}")
-    protected void scheduleAIPPostProcessingJobs() {
+    protected void scheduleCleanSessionStep() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

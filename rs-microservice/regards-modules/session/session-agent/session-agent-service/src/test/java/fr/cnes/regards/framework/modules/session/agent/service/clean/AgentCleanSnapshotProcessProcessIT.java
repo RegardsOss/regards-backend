@@ -117,7 +117,7 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
                                                        StepPropertyEventTypeEnum.INC,
 
                                                        new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "1", true, false)));
 
         // REFERENCING
@@ -125,14 +125,14 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractRegardsServiceTr
                                                        StepPropertyEventTypeEnum.INC,
 
                                                        new StepPropertyInfo(StepTypeEnum.REFERENCING,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "1", true, false)));
 
         // STORAGE
         stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_3, "OWNER_3", OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.STORAGE,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "1", true, false)));
         // SAVE
         this.stepPropertyUpdateRequestRepo.saveAll(stepRequests);

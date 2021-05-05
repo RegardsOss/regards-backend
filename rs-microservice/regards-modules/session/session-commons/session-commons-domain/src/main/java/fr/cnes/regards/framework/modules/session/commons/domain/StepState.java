@@ -18,12 +18,12 @@ public class StepState {
     private long waiting = 0L;
 
     @Column(name = "running")
-    private boolean running = false;
+    private long running = 0L;
 
     public StepState() {
     }
 
-    public StepState(long errors, long waiting, boolean running) {
+    public StepState(long errors, long waiting, long running) {
         this.errors = errors;
         this.waiting = waiting;
         this.running = running;
@@ -45,11 +45,11 @@ public class StepState {
         this.waiting = waiting;
     }
 
-    public boolean isRunning() {
+    public long getRunning() {
         return running;
     }
 
-    public void setRunning(boolean running) {
+    public void setRunning(long running) {
         this.running = running;
     }
 }

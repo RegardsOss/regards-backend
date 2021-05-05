@@ -7,7 +7,7 @@ CREATE TABLE t_session (
     last_update_date    timestamp                             ,
     steps               jsonb           NOT NULL              ,
     running             boolean         NOT NULL DEFAULT false,
-    error               boolean         NOT NULL DEFAULT false,
+    errors              boolean         NOT NULL DEFAULT false,
     waiting             boolean         NOT NULL DEFAULT false,
     primary key (id)
 );
@@ -20,7 +20,7 @@ CREATE TABLE t_source (
     name                varchar(255)    NOT NULL              ,
     nb_sessions         int8            NOT NULL DEFAULT 0    ,
     last_update_date    timestamp                             ,
-    error               boolean         NOT NULL DEFAULT false,
+    errors              boolean         NOT NULL DEFAULT false,
     waiting             boolean         NOT NULL DEFAULT false,
     running             boolean         NOT NULL DEFAULT false,
     primary key (name)

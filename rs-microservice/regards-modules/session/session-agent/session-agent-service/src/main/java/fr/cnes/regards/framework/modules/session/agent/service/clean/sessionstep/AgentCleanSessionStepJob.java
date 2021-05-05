@@ -15,10 +15,10 @@ public class AgentCleanSessionStepJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("[{}] AgentCleanJob starts for source {}", jobInfoId);
+        logger.debug("[{}] AgentCleanSessionStepJob starts", jobInfoId);
         long start = System.currentTimeMillis();
         int nbSessionStep = agentCleanSessionStepService.clean();
-        logger.debug("[{}] AgentCleanJob ends in {} ms. {} session step deleted", jobInfoId,
+        logger.debug("[{}] AgentCleanSessionStepJob ends in {} ms. {} session step deleted", jobInfoId,
                      System.currentTimeMillis() - start, nbSessionStep);
     }
 

@@ -187,7 +187,7 @@ public class SessionControllerIT extends AbstractRegardsTransactionalIT {
         sessionList.add(session6);
 
         // modify parameters to test filters
-        sessionList.get(0).getManagerState().setError(true);
+        sessionList.get(0).getManagerState().setErrors(true);
         sessionList.get(1).getManagerState().setWaiting(true);
         sessionList.get(2).getManagerState().setRunning(true);
 

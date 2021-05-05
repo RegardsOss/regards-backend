@@ -3,7 +3,6 @@ package fr.cnes.regards.framework.modules.session.agent.service.clean.sessionste
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import java.time.OffsetDateTime;
 import org.slf4j.Logger;
@@ -30,9 +29,6 @@ public class AgentCleanSessionStepService {
     private ISessionStepRepository sessionStepRepo;
 
     @Autowired
-    private ISnapshotProcessRepository snapshotRepo;
-
-    @Autowired
     private IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
     @Value("${regards.session.agent.clean.session.step.limit.store.session.steps:30}")
@@ -57,7 +53,7 @@ public class AgentCleanSessionStepService {
             // Delete all related StepPropertyUpdateRequests
             this.stepPropertyRepo
                     .deleteInBatch(stepPropertyRepo.findBySessionStepIn(sessionStepsToDelete.getContent()));
-            // Delete SesionSteps
+            // Delete SessionSteps
             this.sessionStepRepo.deleteInBatch(sessionStepsToDelete);
             nbSessionStepsDeleted += sessionStepsToDelete.getNumberOfElements();
         } while (sessionStepsToDelete.hasNext());

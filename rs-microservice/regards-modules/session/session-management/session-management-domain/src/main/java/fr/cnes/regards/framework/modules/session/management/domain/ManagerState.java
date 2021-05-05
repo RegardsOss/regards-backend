@@ -40,9 +40,9 @@ public class ManagerState {
     /**
      * If Source or Session is in error, ie, if one of Source or Session is in error state
      */
-    @Column(name = "error")
+    @Column(name = "errors")
     @NotNull
-    private boolean error = false;
+    private boolean errors = false;
 
     /**
      * If Source or Session is waiting, ie, if one of Source or Session is in waiting state
@@ -62,12 +62,12 @@ public class ManagerState {
         this.running = running;
     }
 
-    public boolean isError() {
-        return error;
+    public boolean isErrors() {
+        return errors;
     }
 
-    public void setError(boolean error) {
-        this.error = error;
+    public void setErrors(boolean errors) {
+        this.errors = errors;
     }
 
     public boolean isWaiting() {

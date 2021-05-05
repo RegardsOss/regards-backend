@@ -69,8 +69,9 @@ public class ManagerSnapshotService {
     /**
      * Create or update the session and source snapshots
      *
-     * @param snapshotProcess
-     * @param freezeDate
+     * @param snapshotProcess process used to calculate the sessionSteps to be processed
+     * @param freezeDate      corresponds to the scheduler date. Every sessionStep with a lastUpdateDate after the
+     *                        freezeDate will not be processed.
      */
     public void generateSnapshots(SnapshotProcess snapshotProcess, OffsetDateTime freezeDate) {
         // Session snapshot
@@ -226,12 +227,12 @@ public class ManagerSnapshotService {
         session.setManagerState(new ManagerState());
         for (SessionStep step : steps) {
             if (step.getState().getErrors() > 0) {
-                session.getManagerState().setError(true);
+                session.getManagerState().setErrors(true);
             }
             if (step.getState().getWaiting() > 0) {
                 session.getManagerState().setWaiting(true);
             }
-            if (step.getState().isRunning()) {
+            if (step.getState().getRunning() > 0) {
                 session.getManagerState().setRunning(true);
             }
         }
@@ -257,11 +258,7 @@ public class ManagerSnapshotService {
             // update states
             delta.setError(sessionStep.getState().getErrors() - oldSessionStep.getState().getErrors());
             delta.setWaiting(sessionStep.getState().getWaiting() - oldSessionStep.getState().getWaiting());
-            if (oldSessionStep.getState().isRunning() && !sessionStep.getState().isRunning()) {
-                delta.setRunning(delta.getRunning() - 1);
-            } else if (!oldSessionStep.getState().isRunning() && sessionStep.getState().isRunning()) {
-                delta.setRunning(delta.getRunning() + 1);
-            }
+            delta.setRunning(sessionStep.getState().getRunning() - oldSessionStep.getState().getRunning());
             // remove oldSessionStep from the set
             steps.remove(oldSessionStep);
         } else {
@@ -272,9 +269,7 @@ public class ManagerSnapshotService {
             // update states
             delta.setError(sessionStep.getState().getErrors());
             delta.setWaiting(sessionStep.getState().getWaiting());
-            if (sessionStep.getState().isRunning()) {
-                delta.setRunning(delta.getRunning() + 1);
-            }
+            delta.setRunning(sessionStep.getState().getRunning());
         }
     }
 
@@ -330,7 +325,7 @@ public class ManagerSnapshotService {
         source.setManagerState(new ManagerState());
         for (SourceStepAggregation agg : aggSet) {
             if (agg.getState().getErrors() > 0) {
-                source.getManagerState().setError(true);
+                source.getManagerState().setErrors(true);
             }
             if (agg.getState().getWaiting() > 0) {
                 source.getManagerState().setWaiting(true);

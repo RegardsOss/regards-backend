@@ -120,11 +120,11 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
         sessionStep1Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(62));
 
         sessionStep2Updated.getState().setWaiting(0);
-        sessionStep2Updated.getState().setRunning(false);
+        sessionStep2Updated.getState().setRunning(0);
         sessionStep2Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(56));
 
         SessionStep sessionStep4Updated = sessionStepsCreated.get(4);
-        sessionStep4Updated.getState().setRunning(false);
+        sessionStep4Updated.getState().setRunning(0);
         sessionStep4Updated.setLastUpdateDate(LAST_UPDATED.plusMinutes(60));
 
         this.sessionStepRepo.saveAll(sessionStepsCreated);
@@ -138,35 +138,35 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
 
         // SESSION 1
         SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, true), null);
+                                                   new StepState(0, 0, 2), null);
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(10));
 
         SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
-                                                   new StepState(2, 0, false), null);
+                                                   new StepState(2, 0, 0), null);
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(9));
 
         // SESSION 2
         SessionStep sessionStep2 = new SessionStep("storage", SOURCE_1, SESSION_2, StepTypeEnum.STORAGE,
-                                                   new StepState(0, 4, true), null);
+                                                   new StepState(0, 4, 0), null);
         sessionStep2.setOutputRelated(4);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(8));
 
         // SESSION 3
         // create future event - should not be taken into account until run2
         SessionStep sessionStep3 = new SessionStep("storage", SOURCE_1, SESSION_3, StepTypeEnum.STORAGE,
-                                                   new StepState(0, 0, false), null);
+                                                   new StepState(0, 0, 0), null);
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.plusMinutes(2));
         SessionStep sessionStep4 = new SessionStep("metacatalog", SOURCE_1, SESSION_3, StepTypeEnum.DISSEMINATION,
-                                                   new StepState(0, 0, true), null);
+                                                   new StepState(0, 0, 4), null);
         sessionStep4.setOutputRelated(10);
         sessionStep4.setLastUpdateDate(LAST_UPDATED.plusMinutes(7));
 
         // create future event - should not be taken into account until run3
         SessionStep sessionStep5 = new SessionStep("scan", SOURCE_1, SESSION_4, StepTypeEnum.ACQUISITION,
-                                                   new StepState(0, 0, true), null);
+                                                   new StepState(0, 0, 3), null);
         sessionStep5.setInputRelated(5);
         sessionStep5.setLastUpdateDate(LAST_UPDATED.plusMinutes(52));
 
@@ -195,10 +195,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                                       sessionStepSet.contains(sessionStepsCreated.get(0)));
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(1)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.minusMinutes(9),
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -206,10 +206,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Unexpected session step created", 1, sessionStepSet.size());
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(2)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.minusMinutes(8),
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(8),
                                         session.getLastUpdateDate());
                     break;
                 default:
@@ -223,9 +223,9 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
         Source source = sourceOpt.get();
         Assert.assertEquals("Wrong number of sessions", 2L, source.getNbSessions());
         Assert.assertEquals("Wrong last update date", LAST_UPDATED.minusMinutes(8), source.getLastUpdateDate());
-        Assert.assertTrue("Wrong state", source.getManagerState().isError());
-        Assert.assertTrue("Wrong state", source.getManagerState().isRunning());
-        Assert.assertTrue("Wrong state", source.getManagerState().isWaiting());
+        Assert.assertTrue("Wrong source state", source.getManagerState().isErrors());
+        Assert.assertTrue("Wrong source state", source.getManagerState().isRunning());
+        Assert.assertTrue("Wrong source state", source.getManagerState().isWaiting());
         Set<SourceStepAggregation> aggSet = source.getSteps();
         Assert.assertEquals("Wrong number of aggregation steps", 3, aggSet.size());
 
@@ -237,7 +237,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Wrong number of output related", 0L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 0L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 1L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 2L, agg.getState().getRunning());
                     break;
                 case REFERENCING:
                     Assert.assertEquals("Wrong number of input related", 0L, agg.getTotalIn());
@@ -251,7 +251,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Wrong number of output related", 4L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 4L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 1L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 0L, agg.getState().getRunning());
                     break;
                 default:
                     Assert.fail(String.format("Unexpected aggregation step created : %s", type));
@@ -275,10 +275,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                                       sessionStepSet.contains(sessionStepsCreated.get(0)));
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(1)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.minusMinutes(9),
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -286,10 +286,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Unexpected session step created", 1, sessionStepSet.size());
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(2)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(9),
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
 
@@ -300,10 +300,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                                       sessionStepSet.contains(sessionStepsCreated.get(3)));
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(4)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(7),
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(7),
                                         session.getLastUpdateDate());
                     break;
                 default:
@@ -318,7 +318,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
         Source source = sourceOpt.get();
         Assert.assertEquals("Wrong number of sessions", 3L, source.getNbSessions());
         Assert.assertEquals("Wrong last update date", LAST_UPDATED.plusMinutes(9), source.getLastUpdateDate());
-        Assert.assertTrue("Wrong state", source.getManagerState().isError());
+        Assert.assertTrue("Wrong state", source.getManagerState().isErrors());
         Assert.assertTrue("Wrong state", source.getManagerState().isRunning());
         Assert.assertTrue("Wrong state", source.getManagerState().isWaiting());
         Set<SourceStepAggregation> aggSet = source.getSteps();
@@ -332,7 +332,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Wrong number of output related", 0L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 0L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 1L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 2L, agg.getState().getRunning());
                     break;
                 case REFERENCING:
                     Assert.assertEquals("Wrong number of input related", 0L, agg.getTotalIn());
@@ -346,14 +346,14 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Wrong number of output related", 14L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 2L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 1L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 0L, agg.getState().getRunning());
                     break;
                 case DISSEMINATION:
                     Assert.assertEquals("Wrong number of input related", 0L, agg.getTotalIn());
                     Assert.assertEquals("Wrong number of output related", 10L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 0L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 1L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 4L, agg.getState().getRunning());
                     break;
                 default:
                     Assert.fail(String.format("Unexpected aggregation step created : %s", type));
@@ -376,10 +376,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                                       sessionStepSet.contains(sessionStepsCreated.get(0)));
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(1)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(62),
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(62),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -387,10 +387,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Unexpected session step created", 1, sessionStepSet.size());
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(2)));
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(56),
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(56),
                                         session.getLastUpdateDate());
                     break;
 
@@ -401,10 +401,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                                       sessionStepSet.contains(sessionStepsCreated.get(3)));
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(4)));
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(60),
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(60),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_4:
@@ -412,10 +412,10 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Unexpected session step created", 1, sessionStepSet.size());
                     Assert.assertTrue("Unexpected session step associated",
                                       sessionStepSet.contains(sessionStepsCreated.get(5)));
-                    Assert.assertTrue("Wrong session property", session.getManagerState().isRunning());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isWaiting());
-                    Assert.assertFalse("Wrong session property", session.getManagerState().isError());
-                    Assert.assertEquals("Wrong session property", LAST_UPDATED.plusMinutes(52),
+                    Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
+                    Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
+                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(52),
                                         session.getLastUpdateDate());
                     break;
                 default:
@@ -430,9 +430,9 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
         Source source = sourceOpt.get();
         Assert.assertEquals("Wrong number of sessions", 4L, source.getNbSessions());
         Assert.assertEquals("Wrong last update date", LAST_UPDATED.plusMinutes(62), source.getLastUpdateDate());
-        Assert.assertFalse("Wrong state", source.getManagerState().isError());
-        Assert.assertTrue("Wrong state", source.getManagerState().isRunning());
-        Assert.assertFalse("Wrong state", source.getManagerState().isWaiting());
+        Assert.assertFalse("Wrong source state", source.getManagerState().isErrors());
+        Assert.assertTrue("Wrong source state", source.getManagerState().isRunning());
+        Assert.assertFalse("Wrong source state", source.getManagerState().isWaiting());
         Set<SourceStepAggregation> aggSet = source.getSteps();
         Assert.assertEquals("Wrong number of aggregation steps", 4, aggSet.size());
 
@@ -444,7 +444,7 @@ public class ManagerSnapshotServiceIT extends AbstractRegardsServiceTransactiona
                     Assert.assertEquals("Wrong number of output related", 0L, agg.getTotalOut());
                     Assert.assertEquals("Wrong number of errors", 0L, agg.getState().getErrors());
                     Assert.assertEquals("Wrong number of waiting", 0L, agg.getState().getWaiting());
-                    Assert.assertEquals("Wrong number of running", 2L, agg.getState().getRunning());
+                    Assert.assertEquals("Wrong number of running", 5L, agg.getState().getRunning());
                     break;
                 case REFERENCING:
                     Assert.assertEquals("Wrong number of input related", 0L, agg.getTotalIn());

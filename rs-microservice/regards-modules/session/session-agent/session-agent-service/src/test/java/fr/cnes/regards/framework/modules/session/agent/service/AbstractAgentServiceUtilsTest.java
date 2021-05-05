@@ -13,11 +13,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
-import fr.cnes.regards.framework.modules.session.agent.service.handlers.AgentSnapshotJobEventHandler;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandler;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import fr.cnes.regards.framework.modules.session.commons.service.SnapshotJobEventHandler;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import java.util.List;
 import org.junit.After;
@@ -76,7 +76,6 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
 
     protected static final String OWNER_2 = "OWNER 2";
 
-
     @Before
     public void init() throws Exception {
         this.stepPropertyRepo.deleteAll();
@@ -87,19 +86,18 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         doInit();
     }
 
-
     @After
     public void after() throws Exception {
         subscriber.unsubscribeFrom(StepPropertyUpdateRequestEvent.class);
         subscriber.unsubscribeFrom(JobEvent.class);
         cleanAMQPQueues(SessionAgentHandler.class, Target.ONE_PER_MICROSERVICE_TYPE);
-        cleanAMQPQueues(AgentSnapshotJobEventHandler.class, Target.MICROSERVICE);
+        cleanAMQPQueues(SnapshotJobEventHandler.class, Target.MICROSERVICE);
         doAfter();
     }
 
-
     /**
      * Custom test initialization to override
+     *
      * @throws Exception
      */
     protected void doInit() throws Exception {
@@ -108,6 +106,7 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
 
     /**
      * Custom test cleaning to override
+     *
      * @throws Exception
      */
     protected void doAfter() throws Exception {
@@ -131,39 +130,49 @@ public abstract class AbstractAgentServiceUtilsTest extends AbstractRegardsServi
         }
     }
 
-    protected boolean waitForStepPropertyEventsStored(int nbEvents) {
+    protected boolean waitForStepPropertyEventsStored(int nbEvents) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + 200000L;
-        LOGGER.debug("Waiting for step property requests to be saved ...");
+        LOGGER.info("Waiting for step property requests to be saved ...");
         do {
             count = this.stepPropertyRepo.count();
             now = System.currentTimeMillis();
+            if (count != nbEvents) {
+                Thread.sleep(5000L);
+            }
         } while (count != nbEvents && now <= end);
         return count == nbEvents;
     }
 
-    protected boolean waitForSnapshotUpdateSuccesses() {
-        long count = 0; long now = System.currentTimeMillis(), end = now + 200000L;
+    protected boolean waitForSnapshotUpdateSuccesses() throws InterruptedException {
+        long count = 0;
+        long now = System.currentTimeMillis(), end = now + 200000L;
         List<SnapshotProcess> snapshotProcessList = this.snapshotProcessRepo.findAll();
         int processSize = snapshotProcessList.size();
         LOGGER.info("Waiting for snapshot update ...");
         do {
-            for(SnapshotProcess snapshotProcess : snapshotProcessList) {
-                if(snapshotProcess.getLastUpdateDate() != null && snapshotProcess.getJobId() == null) {
+            for (SnapshotProcess snapshotProcess : snapshotProcessList) {
+                if (snapshotProcess.getLastUpdateDate() != null && snapshotProcess.getJobId() == null) {
                     count++;
                 }
             }
             snapshotProcessList = this.snapshotProcessRepo.findAll();
             now = System.currentTimeMillis();
-        } while(count!=processSize && now <= end);
+            if (count != processSize) {
+                Thread.sleep(5000L);
+            }
+        } while (count != processSize && now <= end);
         return count == processSize;
     }
 
-    protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) {
+    protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + timeout;
         LOGGER.info("Waiting for jobs to be in success state ...");
         do {
             count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
             now = System.currentTimeMillis();
+            if (count != nbJobs) {
+                Thread.sleep(5000L);
+            }
         } while (count != nbJobs && now <= end);
         return count == nbJobs;
     }

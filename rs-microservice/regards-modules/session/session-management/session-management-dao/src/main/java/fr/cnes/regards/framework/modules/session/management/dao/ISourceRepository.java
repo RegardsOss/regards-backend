@@ -32,4 +32,6 @@ import org.springframework.stereotype.Repository;
 public interface ISourceRepository extends JpaRepository<Source, Long>, JpaSpecificationExecutor<Source> {
 
     Optional<Source> findByName(String name);
+
+    void deleteByNbSessions(int noSession);
 }

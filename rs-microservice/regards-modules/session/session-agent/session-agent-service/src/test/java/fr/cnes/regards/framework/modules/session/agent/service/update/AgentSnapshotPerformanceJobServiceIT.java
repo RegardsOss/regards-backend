@@ -40,7 +40,7 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
 
     @Test
     @Purpose("Test the performance while generation session steps from step update requests")
-    public void performanceGenerateSessionStepTest() {
+    public void performanceGenerateSessionStepTest() throws InterruptedException {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
         SnapshotProcess snapshotProcess = new SnapshotProcess(SOURCE_1, CREATION_DATE, null);
         int nbSources = 10;
@@ -90,7 +90,7 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
             // ACQUISITION - scan event SOURCE 1 OWNER 1
             stepRequests.add(new StepPropertyUpdateRequestEvent("scan", source, OWNER_1, StepPropertyEventTypeEnum.INC,
                                                                 new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                          StepPropertyEventStateEnum.OK,
+                                                                                          StepPropertyEventStateEnum.SUCCESS,
                                                                                           "gen.products", "1", true,
                                                                                           false)));
         }

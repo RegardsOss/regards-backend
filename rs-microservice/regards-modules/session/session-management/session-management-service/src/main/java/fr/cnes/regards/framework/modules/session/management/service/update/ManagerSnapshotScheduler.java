@@ -20,6 +20,9 @@ package fr.cnes.regards.framework.modules.session.management.service.update;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.session.management.service.clean.session.ManagerCleanJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import net.javacrumbs.shedlock.core.LockAssert;
@@ -60,6 +63,9 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
+    @Autowired
+    private IJobInfoService jobInfoService;
+
     @Value("${spring.application.name}")
     private static String microserviceName;
 
@@ -90,14 +96,23 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
             + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
                     + DEFAULT_SCHEDULING_DELAY + "}")
-    protected void scheduleAIPPostProcessingJobs() {
+    protected void scheduleManagerSnapshot() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, MANAGER_SNAPSHOT_PROCESS);
-                lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                     new LockConfiguration(MANAGER_SNAPSHOT_PROCESS_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                // check if a clean process is currently running, if not launch ManagerSnapshotTask
+                if (this.jobInfoService
+                        .retrieveJobsCount(ManagerCleanJob.class.getName(), JobStatus.QUEUED, JobStatus.PENDING,
+                                           JobStatus.RUNNING) == 0) {
+                    lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                                                         new LockConfiguration(MANAGER_SNAPSHOT_PROCESS_LOCK,
+                                                                               Instant.now()
+                                                                                       .plusSeconds(MAX_TASK_DELAY)));
+                } else {
+                    LOGGER.warn("{} could not be executed because a ManagerCleanJob is currently running",
+                                MANAGER_SNAPSHOT_PROCESS_TITLE);
+                }
             } catch (Throwable e) {
                 handleSchedulingError(MANAGER_SNAPSHOT_PROCESS, MANAGER_SNAPSHOT_PROCESS_TITLE, e);
             } finally {

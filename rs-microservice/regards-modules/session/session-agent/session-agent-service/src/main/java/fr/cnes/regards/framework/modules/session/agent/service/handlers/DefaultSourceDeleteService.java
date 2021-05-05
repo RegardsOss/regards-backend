@@ -13,8 +13,7 @@ public class DefaultSourceDeleteService implements ISourceDeleteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSourceDeleteService.class);
 
     @Override
-    public boolean deleteSource(String source) {
-        LOGGER.warn("Bean missing to delete session, the source {} will not be deleted", source);
-        return false;
+    public void deleteSource(String source) {
+        LOGGER.warn("Bean missing to delete the source {}. It will not be deleted", source);
     }
 }

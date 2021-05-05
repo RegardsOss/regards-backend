@@ -1,20 +1,16 @@
 package fr.cnes.regards.framework.modules.session.agent.service.update;
 
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsTest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Assert;
@@ -28,25 +24,15 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.application.name=rs-test",
-        "spring.jpa.properties.hibernate.default_schema=agent_job_service_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_job_service_it" })
 public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
 
     @Autowired
     private AgentSnapshotJobService agentJobSnapshotService;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepo;
-
-    private static final OffsetDateTime CREATION_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30);
-
-
     @Test
     @Purpose("Test the generation of session steps from step request events")
-    public void generateSessionStepTest() {
+    public void generateSessionStepTest() throws InterruptedException {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
         int nbEvents = createRunStepEvents();
 
@@ -86,19 +72,19 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
         // ACQUISITION - scan event SOURCE 1 OWNER 1
         stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_1, StepPropertyEventTypeEnum.INC,
                                                             new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.OK,
+                                                                                      StepPropertyEventStateEnum.SUCCESS,
                                                                                       "gen.products", "10", true,
                                                                                       false)));
 
         stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_1, StepPropertyEventTypeEnum.INC,
                                                             new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.OK,
+                                                                                      StepPropertyEventStateEnum.SUCCESS,
                                                                                       "gen.products", "5", true,
                                                                                       false)));
         // ACQUISITION - scan event SOURCE 1 OWNER 2
         stepRequests.add(new StepPropertyUpdateRequestEvent("scan", SOURCE_1, OWNER_2, StepPropertyEventTypeEnum.INC,
                                                             new StepPropertyEventInfo(StepTypeEnum.ACQUISITION,
-                                                                                      StepPropertyEventStateEnum.OK,
+                                                                                      StepPropertyEventStateEnum.SUCCESS,
                                                                                       "gen.products", "8", true,
                                                                                       false)));
 
@@ -109,23 +95,27 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                                                                                       false)));
 
         // REFERENCING - oais event SOURCE 2 OWNER 1
+        stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_2, OWNER_1, StepPropertyEventTypeEnum.INC,
+                                                            new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
+                                                                                      StepPropertyEventStateEnum.ERROR,
+                                                                                      "ref.products.errors", "6", false,
+                                                                                      false)));
         stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_2, OWNER_1, StepPropertyEventTypeEnum.VALUE,
                                                             new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
                                                                                       StepPropertyEventStateEnum.ERROR,
                                                                                       "ref.products.state", "ERROR",
-                                                                                      false, true)));
+                                                                                      false, false)));
         // REFERENCING - oais event SOURCE 3 OWNER 1
         stepRequests.add(new StepPropertyUpdateRequestEvent("oais", SOURCE_3, OWNER_1, StepPropertyEventTypeEnum.INC,
                                                             new StepPropertyEventInfo(StepTypeEnum.REFERENCING,
                                                                                       StepPropertyEventStateEnum.WAITING,
-                                                                                      "ref.products", "1", false,
+                                                                                      "ref.products", "3", false,
                                                                                       true)));
 
         // Publish events
         this.publisher.publish(stepRequests);
         return stepRequests.size();
     }
-
 
     private void checkResult() {
         List<SessionStep> sessionSteps = this.sessionStepRepo.findAll();
@@ -141,7 +131,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
-                Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
+                Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
                 Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "15", properties.get("gen.products"));
@@ -151,7 +141,7 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
-                Assert.assertTrue("Should not be in running state", sessionStep.getState().isRunning());
+                Assert.assertEquals("Wrong num of running", 4L, sessionStep.getState().getRunning());
                 Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "12", properties.get("gen.products"));
@@ -159,22 +149,24 @@ public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsTest {
                 Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
                 Assert.assertEquals("Wrong num of output related", 0L, sessionStep.getOutputRelated());
-                Assert.assertEquals("Wrong num of errors", 1L, sessionStep.getState().getErrors());
+                Assert.assertEquals("Wrong num of errors", 6L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
-                Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
+                Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
                 Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
+                Assert.assertTrue("Wrong properties", properties.containsKey("ref.products.errors"));
+                Assert.assertEquals("Wrong properties", "6", properties.get("ref.products.errors"));
                 Assert.assertTrue("Wrong properties", properties.containsKey("ref.products.state"));
                 Assert.assertEquals("Wrong properties", "ERROR", properties.get("ref.products.state"));
             } else if (source.equals(SOURCE_3) && session.equals(OWNER_1)) {
                 Assert.assertEquals("Wrong type", StepTypeEnum.REFERENCING, sessionStep.getType());
                 Assert.assertEquals("Wrong num of input related", 0L, sessionStep.getInputRelated());
-                Assert.assertEquals("Wrong num of output related", 1L, sessionStep.getOutputRelated());
+                Assert.assertEquals("Wrong num of output related", 3L, sessionStep.getOutputRelated());
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
-                Assert.assertEquals("Wrong num of waiting", 1L, sessionStep.getState().getWaiting());
-                Assert.assertFalse("Should not be in running state", sessionStep.getState().isRunning());
+                Assert.assertEquals("Wrong num of waiting", 3L, sessionStep.getState().getWaiting());
+                Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
                 Assert.assertNotNull("Wrong last update date", sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("ref.products"));
-                Assert.assertEquals("Wrong properties", "1", properties.get("ref.products"));
+                Assert.assertEquals("Wrong properties", "3", properties.get("ref.products"));
             } else {
                 Assert.fail(String.format("Unexpected step source %s or session %s created", source, session));
             }

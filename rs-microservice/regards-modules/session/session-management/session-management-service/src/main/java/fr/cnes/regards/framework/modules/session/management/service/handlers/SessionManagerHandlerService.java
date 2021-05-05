@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class SessionManagerHandlerService {
      * @param events {@link SessionStepEvent}s
      */
     public void createSessionSteps(List<SessionStepEvent> events) {
-        Set<SessionStep> sessionSteps = new HashSet<>();
+        List<SessionStep> sessionSteps = new ArrayList<>();
         Set<String> sourcesToBeUpdated = new HashSet<>();
 
         // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received

@@ -1,4 +1,4 @@
-package fr.cnes.regards.framework.modules.session.agent.service.handlers;
+package fr.cnes.regards.framework.modules.session.commons.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -6,7 +6,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatusInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
-import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotJob;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import java.util.List;
@@ -20,14 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Service for {@link AgentSnapshotJobEventHandler}. Update {@link SnapshotProcess} according to the {@link AgentSnapshotJob}
+ * Service for {@link SnapshotJobEventHandler}. Update {@link SnapshotProcess} according to the
  * status
  *
  * @author Iliana Ghazali
  **/
 @Service
 @MultitenantTransactional
-public class AgentSnapshotJobEventService {
+public class SnapshotJobEventService {
 
     @Autowired
     private ISnapshotProcessRepository snapshotRepo;
@@ -35,7 +34,7 @@ public class AgentSnapshotJobEventService {
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotJobEventService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnapshotJobEventService.class);
 
     /**
      * Handle event by calling the listener method associated to the event type.

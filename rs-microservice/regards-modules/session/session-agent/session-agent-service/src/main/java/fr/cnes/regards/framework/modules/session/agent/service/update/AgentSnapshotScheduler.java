@@ -90,7 +90,7 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
             + DEFAULT_INITIAL_DELAY + "}",
             fixedDelayString = "${regards.session.agent.snapshot.process.scheduler.bulk.delay:"
                     + DEFAULT_SCHEDULING_DELAY + "}")
-    protected void scheduleAIPPostProcessingJobs() {
+    protected void scheduleAgentSnapshot() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

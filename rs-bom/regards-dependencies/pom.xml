@@ -663,6 +663,11 @@
 				<artifactId>session-commons-domain</artifactId>
 				<version>${framework.modules.session.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
+				<artifactId>session-commons-service</artifactId>
+				<version>${framework.modules.session.version}</version>
+			</dependency>
             <!-- Regards Locks -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.locks</groupId>

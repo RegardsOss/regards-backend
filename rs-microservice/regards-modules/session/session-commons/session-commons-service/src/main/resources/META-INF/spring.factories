@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.modules.session.commons.service.SnapshotJobEventHandler,\
+fr.cnes.regards.framework.modules.session.commons.service.SnapshotJobEventService

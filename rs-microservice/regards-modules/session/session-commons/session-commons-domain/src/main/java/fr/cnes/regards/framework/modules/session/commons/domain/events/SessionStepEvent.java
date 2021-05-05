@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.session.commons.domain.events;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 
@@ -11,7 +12,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
  * @author Iliana Ghazali
  **/
 
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class SessionStepEvent implements ISubscribable {
 
     /**

@@ -151,7 +151,7 @@ public class SourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // create sources
         Source source1 = new Source(SOURCE_1);
-        source1.getManagerState().setError(true);
+        source1.getManagerState().setErrors(true);
         sourceSet.add(source1);
 
         Source source2 = new Source(SOURCE_2);

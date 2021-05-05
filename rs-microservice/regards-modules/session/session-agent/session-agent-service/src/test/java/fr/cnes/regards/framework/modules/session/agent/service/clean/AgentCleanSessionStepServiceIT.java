@@ -129,26 +129,26 @@ public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransa
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE,
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "10", true, false)));
 
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1, CREATION_DATE.plusMinutes(1),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "10", true, false)));
         // ACQUISITION - scan event OWNER 2
         stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE,
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "8", true, false)));
 
         stepRequests
                 .add(new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2, CREATION_DATE.plusDays(limitStore + 1),
                                                    StepPropertyEventTypeEnum.INC,
                                                    new StepPropertyInfo(StepTypeEnum.ACQUISITION,
-                                                                        StepPropertyEventStateEnum.OK, "gen.products",
+                                                                        StepPropertyEventStateEnum.SUCCESS, "gen.products",
                                                                         "4", true, false)));
 
         // REFERENCING - oais event OWNER 1
@@ -156,16 +156,15 @@ public class AgentCleanSessionStepServiceIT extends AbstractRegardsServiceTransa
                 .add(new StepPropertyUpdateRequest("oais", SOURCE_2, OWNER_1, CREATION_DATE.plusDays(limitStore + 1),
                                                    StepPropertyEventTypeEnum.INC,
                                                    new StepPropertyInfo(StepTypeEnum.REFERENCING,
-                                                                        StepPropertyEventStateEnum.OK, "gen.products",
+                                                                        StepPropertyEventStateEnum.SUCCESS, "gen.products",
                                                                         "6", false, true)));
         // REFERENCING - oais event OWNER 1
         stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1, CREATION_DATE.plusDays(limitStore),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyInfo(StepTypeEnum.REFERENCING,
-                                                                            StepPropertyEventStateEnum.OK,
+                                                                            StepPropertyEventStateEnum.SUCCESS,
                                                                             "gen.products", "6", false, true)));
 
         return this.stepPropertyRepo.saveAll(stepRequests);
     }
-
 }

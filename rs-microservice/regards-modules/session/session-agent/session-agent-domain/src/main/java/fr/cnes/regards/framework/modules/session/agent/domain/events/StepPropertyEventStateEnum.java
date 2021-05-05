@@ -6,5 +6,6 @@ package fr.cnes.regards.framework.modules.session.agent.domain.events;
  * @author Iliana Ghazali
  **/
 public enum StepPropertyEventStateEnum {
-    OK, RUNNING, ERROR, WAITING;
+
+    SUCCESS, RUNNING, ERROR, WAITING, INFO;
 }

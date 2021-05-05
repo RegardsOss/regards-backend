@@ -11,8 +11,7 @@ public interface ISessionDeleteService {
      *
      * @param source  source including the session to delete
      * @param session the session to be deleted
-     * @return if session is successfully deleted
      */
-    boolean deleteSession(String source, String session);
+    void deleteSession(String source, String session);
 
 }

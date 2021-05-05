@@ -15,7 +15,7 @@ CREATE TABLE t_session_step (
     output_related      int8            NOT NULL DEFAULT 0    ,
     errors              int8            NOT NULL DEFAULT 0    ,
     waiting             int8            NOT NULL DEFAULT 0    ,
-    running             boolean         NOT NULL DEFAULT false,
+    running             int8            NOT NULL DEFAULT 0    ,
     properties          jsonb                                 ,
     last_update_date    timestamp                             ,
     primary key (id)
